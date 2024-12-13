@@ -1,12 +1,10 @@
 'use client';
-import React from "react";
+import React from 'react';
 
-const Home = () => {
-  return (
-      <div>
+const Home: React.FC = () => (
+    <div>
         <header>Aditya Raj | Software Developer | Frontend</header>
-      </div>
-  );
-};
+    </div>
+);
 
 export default Home;
