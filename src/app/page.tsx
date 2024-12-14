@@ -6,6 +6,7 @@ import logger from '@/logger';
 
 const Home: React.FC = () => {
     useEffect(() => {
+        //TODO : Remove this code
         apiService({ url: '/api/health' }).then((response) => {
             logger.info(response);
         });
