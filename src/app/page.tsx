@@ -3,7 +3,7 @@ import React from 'react';
 
 const Home: React.FC = () => (
     <div>
-        <header>Aditya Raj | Software Developer | Frontend</header>
+        <div>Aditya Raj | Software Developer | Frontend</div>
     </div>
 );
 
