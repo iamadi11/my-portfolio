@@ -18,9 +18,11 @@
                 "name": "next"
             }
         ],
-        "baseUrl": "src/",
+        "baseUrl": ".",
         "paths": {
-            "@/*": ["./src/*"]
+            "@/*": ["./src/*"],
+            "@/apiService": ["./src/utils/axios/apiClient"],
+            "@/logger": ["./src/utils/logger"]
         }
     },
     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "commitlint.config.ts"],
