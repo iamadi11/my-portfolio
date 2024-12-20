@@ -14,7 +14,8 @@ const eslintConfig = [
         'plugin:prettier/recommended',
         'plugin:react/recommended',
         'plugin:react-hooks/recommended',
-        'plugin:tailwindcss/recommended'
+        'plugin:tailwindcss/recommended',
+        'plugin:@tanstack/eslint-plugin-query/recommended'
     ),
     {
         rules: {

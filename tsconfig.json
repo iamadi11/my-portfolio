@@ -4,7 +4,6 @@
         "lib": ["dom", "dom.iterable", "esnext"],
         "allowJs": true,
         "skipLibCheck": true,
-        "strict": true,
         "noEmit": true,
         "esModuleInterop": true,
         "module": "esnext",
@@ -22,8 +21,10 @@
         "paths": {
             "@/*": ["./src/*"],
             "@/apiService": ["./src/utils/axios/apiClient"],
-            "@/logger": ["./src/utils/logger"]
-        }
+            "@/logger": ["./src/utils/logger"],
+            "@/components/*": ["./src/components/*"]
+        },
+        "strict": true
     },
     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "commitlint.config.ts"],
     "exclude": ["node_modules"]
