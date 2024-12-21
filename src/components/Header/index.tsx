@@ -10,7 +10,7 @@ import { FaGithub } from 'react-icons/fa6';
 const headerJson = {
     tag: 'div',
     visible: true,
-    className: clsx('md:grid md:grid-cols-6 md:gap-12 md:px-12 md:py-4'),
+    className: clsx('p-4 md:grid md:grid-cols-6 md:gap-12 md:px-12 md:py-4'),
     children: [
         {
             tag: 'div',
@@ -38,7 +38,9 @@ const headerJson = {
         {
             tag: 'div',
             visible: true,
-            className: clsx('md:col-span-4 md:col-start-2 md:flex md:justify-center md:gap-8'),
+            className: clsx(
+                'flex justify-between py-4 md:col-span-4 md:col-start-2 md:flex md:justify-center md:gap-8 md:py-0'
+            ),
             children: [
                 { tag: 'Link', visible: true, href: '/', children: 'Home' },
                 { tag: 'Link', visible: true, href: '/about', children: 'About' },
@@ -49,7 +51,9 @@ const headerJson = {
         {
             tag: 'div',
             visible: true,
-            className: clsx('md:col-span-1 md:col-start-6 md:flex md:justify-end md:gap-8'),
+            className: clsx(
+                'flex justify-start gap-8 py-4 md:col-span-1 md:col-start-6 md:flex md:justify-end md:gap-8 md:py-0'
+            ),
             children: [
                 {
                     tag: 'Link',
