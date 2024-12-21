@@ -1,6 +1,7 @@
 import React from 'react';
 
 import clsx from 'clsx';
+import Image from 'next/image';
 import Link from 'next/link';
 import { FaLinkedin } from 'react-icons/fa';
 import { FaGithub } from 'react-icons/fa6';
@@ -10,7 +11,15 @@ const headerJson = {
     logo: {
         visible: true,
         className: clsx('md:col-span-1 md:col-start-1'),
-        icon: 'LOGO',
+        icon: (
+            <Image
+                src="/favicon-32x32.png"
+                alt="Logo"
+                width={24}
+                height={24}
+                className="animate-pulse drop-shadow-custom"
+            />
+        ),
     },
     nav: {
         visible: true,
