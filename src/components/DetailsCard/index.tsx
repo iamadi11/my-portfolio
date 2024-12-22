@@ -31,7 +31,13 @@ const DetailsCard: React.FC = () => (
             </div>
         </div>
         <div className="md:size-50 relative size-40 overflow-hidden rounded-full border-4 border-cyan-400 shadow-md">
-            <Image src="/profile_pic.jpg" alt="Aditya's Profile Picture" fill objectFit="cover" />
+            <Image
+                src="/profile_pic.jpg"
+                alt="Aditya's Profile Picture"
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 50vw"
+            />
         </div>
     </div>
 );
