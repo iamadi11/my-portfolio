@@ -6,7 +6,11 @@ import { useQuery } from '@tanstack/react-query';
 import { apiService } from '@/apiService';
 import logger from '@/logger';
 
-const Home: React.FC = () => {
+interface HomeProps {
+    children: React.ReactNode;
+}
+
+const Home: React.FC<HomeProps> = ({ children }) => {
     const { data: queryData } = useQuery({
         queryKey: ['health'],
         queryFn: () => apiService({ url: '/api/health' }),
@@ -18,11 +22,7 @@ const Home: React.FC = () => {
     //         logger.info(response);
     //     });
     // }, []);
-    return (
-        <div>
-            <div>Aditya Raj | Software Developer | Frontend</div>
-        </div>
-    );
+    return <div>{children}</div>;
 };
 
 export default Home;
