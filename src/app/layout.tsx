@@ -6,6 +6,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import ClientProvider from '@/components/ClientProvider';
 import Header from '@/components/Header';
 import Layout from '@/components/Layout';
+import SocialLinks from '@/components/SocialLinks';
 import './globals.css';
 
 const geistSans = Geist({
@@ -41,7 +42,12 @@ export default function RootLayout({
                         </Layout.Sidebar> */}
                         <Layout.Main>{children}</Layout.Main>
                         <Layout.Footer>
-                            <div>© 2021 Aditya</div>
+                            <div className="flex items-center justify-between p-4">
+                                <div>© 2021 Aditya</div>
+                                <div className="md:hidden">
+                                    <SocialLinks />
+                                </div>
+                            </div>
                         </Layout.Footer>
                     </Layout>
                 </ClientProvider>
