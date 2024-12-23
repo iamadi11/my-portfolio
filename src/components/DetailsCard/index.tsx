@@ -4,7 +4,12 @@ import clsx from 'clsx';
 import Image from 'next/image';
 
 const DetailsCard: React.FC = () => (
-    <div className={clsx('flex flex-col items-center gap-8', 'md:flex-row md:justify-evenly md:gap-12')}>
+    <div
+        className={clsx(
+            'm-8 flex flex-col items-center gap-8 p-8',
+            'md:flex-row md:justify-evenly md:gap-12'
+        )}
+    >
         <div className="text-center md:text-left">
             <div className="text-xl font-semibold text-gray-400">
                 Hello <span className="inline-block origin-[70%_70%] animate-wave">👋</span>,
@@ -30,7 +35,7 @@ const DetailsCard: React.FC = () => (
                 challenges and building intuitive solutions.
             </div>
         </div>
-        <div className="md:size-50 relative size-40 overflow-hidden rounded-full border-4 border-cyan-400 shadow-md">
+        <div className="md:min-h-50 md:min-w-50 relative min-h-40 min-w-40 overflow-hidden rounded-full border-4 border-cyan-400 shadow-md">
             <Image
                 src="/profile_pic.jpg"
                 alt="Aditya's Profile Picture"
