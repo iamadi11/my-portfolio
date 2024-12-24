@@ -39,7 +39,7 @@ const Layout: LayoutComponent = ({ children, className }: Props) => {
     return (
         <div
             className={clsx(
-                'grid h-screen grid-rows-[auto_1fr_auto]',
+                'grid h-dvh grid-rows-[auto_1fr_auto]',
                 hasVisibleSidebar ? 'grid-cols-[250px_1fr]' : 'grid-cols-[1fr]',
                 className
             )}
