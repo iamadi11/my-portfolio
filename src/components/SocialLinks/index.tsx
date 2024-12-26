@@ -7,14 +7,14 @@ import { FaGithub } from 'react-icons/fa6';
 
 const SocialLinks: React.FC = () => (
     <div className={clsx('flex flex-row items-center justify-end gap-4')}>
-        <Link href="tel:+919667967979" className="text-sm text-gray-300 transition-colors hover:text-white">
+        <Link href="tel:+919667967979" className="text-md text-gray-300 transition-colors hover:text-white">
             <FaPhoneAlt />
         </Link>
         <Link
             href="https://github.com/iamadi11"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-lg text-gray-300 transition-colors hover:text-white"
+            className="text-xl text-gray-300 transition-colors hover:text-white"
         >
             <FaGithub />
         </Link>
@@ -22,7 +22,7 @@ const SocialLinks: React.FC = () => (
             href="https://www.linkedin.com/in/adityaraj11/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-lg text-gray-300 transition-colors hover:text-white"
+            className="text-xl text-gray-300 transition-colors hover:text-white"
         >
             <FaLinkedin />
         </Link>
