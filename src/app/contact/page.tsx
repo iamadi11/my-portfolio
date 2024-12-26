@@ -17,13 +17,13 @@ const Contact: React.FC = () => (
         <div className={clsx('flex flex-row items-center justify-center gap-8')}>
             <Link
                 href="tel:+919667967979"
-                className="text-2xl text-green-300 transition-transform duration-200 hover:scale-105 hover:text-green-400"
+                className="text-2xl text-green-300 transition-transform duration-200 hover:scale-150 hover:text-green-400"
             >
                 <FaPhoneAlt />
             </Link>
             <Link
                 href="mailto:adityaiiitl@gmail.com"
-                className="text-2xl text-orange-200 transition-transform duration-200 hover:scale-105 hover:text-orange-300"
+                className="text-2xl text-orange-200 transition-transform duration-200 hover:scale-150 hover:text-orange-300"
             >
                 <FaMailBulk />
             </Link>
@@ -31,7 +31,7 @@ const Contact: React.FC = () => (
                 href="https://github.com/iamadi11"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-3xl text-gray-400 transition-transform duration-200 hover:scale-105 hover:text-gray-500"
+                className="text-3xl text-gray-300 transition-transform duration-200 hover:scale-150 hover:text-gray-200"
             >
                 <FaGithub />
             </Link>
@@ -39,7 +39,7 @@ const Contact: React.FC = () => (
                 href="https://www.linkedin.com/in/adityaraj11/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-3xl text-blue-500 transition-transform duration-200 hover:scale-105 hover:text-blue-600"
+                className="text-3xl text-blue-500 transition-transform duration-200 hover:scale-150 hover:text-blue-600"
             >
                 <FaLinkedin />
             </Link>
