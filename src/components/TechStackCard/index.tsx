@@ -61,7 +61,8 @@ const TechStackCard: React.FC = () => (
                     key={tech.name}
                     className={clsx(
                         'flex flex-col items-center',
-                        'transition-all duration-100 ease-in-out hover:scale-150'
+                        'transition-all duration-100 ease-in-out hover:scale-125',
+                        'hover:rotate-1'
                     )}
                 >
                     <div

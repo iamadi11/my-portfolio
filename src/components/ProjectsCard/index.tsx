@@ -27,7 +27,7 @@ const ProjectsCard: React.FC = () => (
             {projectsData.map((project) => (
                 <Card
                     key={project.title}
-                    className="flex min-w-64 max-w-64 flex-col rounded-xl bg-neutral-900 text-center"
+                    className="flex min-w-64 max-w-64 flex-col rounded-xl bg-neutral-900 text-center shadow-custom transition-all duration-100 ease-in-out hover:scale-105"
                 >
                     <Card.ImageCard
                         className="overflow-hidden rounded-t-xl"
