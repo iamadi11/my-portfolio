@@ -7,15 +7,15 @@
 
 ## Identity
 
-| Field    | Value (resume)                                                                        |
-| -------- | ------------------------------------------------------------------------------------- |
-| Name     | Aditya Raj                                                                            |
-| Location | Bengaluru, Karnataka, India                                                           |
-| Title    | Senior Frontend Engineer (resume summary framing; current role: Frontend Engineer II) |
-| Email    | adityaraj92.20@gmail.com                                                              |
-| Phone    | +91 72578 07070 → `tel:+917257807070`                                                 |
-| LinkedIn | https://www.linkedin.com/in/adityaraj11/                                              |
-| GitHub   | https://github.com/iamadi11                                                           |
+| Field    | Value (resume)                                                                                      |
+| -------- | --------------------------------------------------------------------------------------------------- |
+| Name     | Aditya Raj                                                                                          |
+| Location | Bengaluru, Karnataka, India                                                                         |
+| Title    | Frontend Engineer II (resume current role, Cashfree Payments; hero + site metadata + JSON-LD match) |
+| Email    | adityaraj92.20@gmail.com                                                                            |
+| Phone    | +91 72578 07070 → `tel:+917257807070`                                                               |
+| LinkedIn | https://www.linkedin.com/in/adityaraj11/                                                            |
+| GitHub   | https://github.com/iamadi11                                                                         |
 
 **Tagline (resume summary, shortened for UI):** Frontend engineer with ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise; strong React / Next.js / TypeScript; performance and production systems focus.
 
