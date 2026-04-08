@@ -3,6 +3,8 @@ import React, { JSX } from 'react';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
+import { getSiteOrigin } from '@/lib/site';
+
 import './globals.css';
 
 const geistSans = Geist({
@@ -15,10 +17,8 @@ const geistMono = Geist_Mono({
     subsets: ['latin'],
 });
 
-/** Production: set NEXT_PUBLIC_SITE_URL (e.g. https://yourdomain.com). Vercel sets VERCEL_URL automatically. */
-const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+/** Same origin as `sitemap.xml` / `robots.txt` (`@/lib/site`). */
+const siteUrl = getSiteOrigin();
 
 /** Same resume-backed tagline as About + SOURCE_OF_TRUTH.md (search / OG / Twitter). */
 const defaultDescription =
