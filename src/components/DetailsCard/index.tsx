@@ -90,14 +90,24 @@ const DetailsCard: React.FC = () => {
                         className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start"
                     >
                         <Link
-                            href="https://github.com/iamadi11"
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            href="/contact"
                             className={clsx(
                                 'inline-flex items-center justify-center rounded-xl border border-cyan-400/35',
                                 'bg-gradient-to-r from-cyan-500/15 to-sky-500/10 px-5 py-2.5 text-sm font-semibold text-cyan-100',
                                 'shadow-[0_0_24px_-4px_rgba(34,211,238,0.35)] transition-all duration-200',
                                 'hover:border-cyan-300/50 hover:from-cyan-500/25 hover:to-sky-500/15'
+                            )}
+                        >
+                            Contact
+                        </Link>
+                        <Link
+                            href="https://github.com/iamadi11"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={clsx(
+                                'border-white/12 inline-flex items-center justify-center rounded-xl border',
+                                'bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-zinc-200',
+                                'transition-all duration-200 hover:border-white/20 hover:bg-white/[0.07]'
                             )}
                         >
                             GitHub
@@ -113,16 +123,6 @@ const DetailsCard: React.FC = () => {
                             )}
                         >
                             LinkedIn
-                        </Link>
-                        <Link
-                            href="/contact"
-                            className={clsx(
-                                'border-white/12 inline-flex items-center justify-center rounded-xl border',
-                                'bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-zinc-200',
-                                'transition-all duration-200 hover:border-white/20 hover:bg-white/[0.07]'
-                            )}
-                        >
-                            Contact
                         </Link>
                     </motion.div>
                 </motion.div>
