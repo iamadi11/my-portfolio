@@ -104,7 +104,7 @@ const ProjectsCard: React.FC = () => {
                                 <Card.ImageCard
                                     className="overflow-hidden rounded-t-2xl"
                                     src={githubRepoOpenGraphImage(project.githubLink) || '/profile_pic.png'}
-                                    alt={`GitHub Open Graph preview for ${project.title}`}
+                                    alt=""
                                 />
                                 <Card.Main className="flex size-full flex-col justify-between gap-3">
                                     <div className="flex flex-col gap-3 px-5 pt-5">
