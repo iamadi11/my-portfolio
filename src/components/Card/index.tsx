@@ -27,7 +27,7 @@ const ImageCard = ({
     <div className={clsx('relative min-h-40 min-w-40', className)}>
         <Image
             src={src}
-            alt={alt || 'Image'}
+            alt={alt ?? 'Image'}
             fill={fill}
             priority={priority}
             sizes={sizes}
