@@ -18,6 +18,7 @@ import {
 import {
     SiExpress,
     SiJest,
+    SiMongodb,
     SiReactquery,
     SiRedis,
     SiRedux,
@@ -56,6 +57,7 @@ const techStack: TechItem[] = [
     { name: 'Node.js', icon: <RiNodejsLine size={ICON_SIZE} />, color: '#7BBF49' },
     { name: 'Express', icon: <SiExpress size={ICON_SIZE} />, color: '#FFFFFF' },
     { name: 'Redis', icon: <SiRedis size={ICON_SIZE} />, color: '#DC382D' },
+    { name: 'MongoDB', icon: <SiMongodb size={ICON_SIZE} />, color: '#47A248' },
     { name: 'Webpack', icon: <SiWebpack size={ICON_SIZE} />, color: '#4B93FF' },
     { name: 'Turborepo', icon: <SiTurborepo size={ICON_SIZE} />, color: '#EF4444' },
     { name: 'Jest', icon: <SiJest size={ICON_SIZE} />, color: '#C21325' },
