@@ -15,40 +15,57 @@ const Contact: React.FC = () => (
                 Phone, email, GitHub, and LinkedIn — same details as on my resume.
             </p>
         </div>
-        <div className={clsx('flex flex-row flex-wrap items-center justify-center gap-8')}>
-            <Link
-                href="tel:+917257807070"
-                className="text-2xl text-green-300 transition-transform duration-200 hover:scale-110 hover:text-green-400"
-                aria-label="Call"
-            >
-                <FaPhoneAlt />
-            </Link>
-            <Link
-                href="mailto:adityaraj92.20@gmail.com"
-                className="text-2xl text-orange-200 transition-transform duration-200 hover:scale-110 hover:text-orange-300"
-                aria-label="Email"
-            >
-                <FaMailBulk />
-            </Link>
-            <Link
-                href="https://github.com/iamadi11"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-3xl text-gray-300 transition-transform duration-200 hover:scale-110 hover:text-gray-200"
-                aria-label="GitHub"
-            >
-                <FaGithub />
-            </Link>
-            <Link
-                href="https://www.linkedin.com/in/adityaraj11/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-3xl text-blue-500 transition-transform duration-200 hover:scale-110 hover:text-blue-600"
-                aria-label="LinkedIn"
-            >
-                <FaLinkedin />
-            </Link>
-        </div>
+        <ul
+            className={clsx(
+                'flex w-full max-w-md flex-col gap-4 rounded-xl border border-white/10 bg-white/[0.03] p-6 text-left',
+                'md:max-w-lg'
+            )}
+        >
+            <li>
+                <Link
+                    href="tel:+917257807070"
+                    className="flex items-center gap-4 text-green-300 transition-colors hover:text-green-200"
+                >
+                    <FaPhoneAlt className="size-5 shrink-0" aria-hidden />
+                    <span className="text-base font-medium text-gray-200">+91 72578 07070</span>
+                </Link>
+            </li>
+            <li>
+                <Link
+                    href="mailto:adityaraj92.20@gmail.com"
+                    className="flex items-center gap-4 text-orange-200 transition-colors hover:text-orange-100"
+                >
+                    <FaMailBulk className="size-5 shrink-0" aria-hidden />
+                    <span className="break-all text-base font-medium text-gray-200">
+                        adityaraj92.20@gmail.com
+                    </span>
+                </Link>
+            </li>
+            <li>
+                <Link
+                    href="https://github.com/iamadi11"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 text-gray-300 transition-colors hover:text-gray-100"
+                >
+                    <FaGithub className="size-6 shrink-0" aria-hidden />
+                    <span className="text-base font-medium text-gray-200">github.com/iamadi11</span>
+                </Link>
+            </li>
+            <li>
+                <Link
+                    href="https://www.linkedin.com/in/adityaraj11/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 text-blue-400 transition-colors hover:text-blue-300"
+                >
+                    <FaLinkedin className="size-6 shrink-0" aria-hidden />
+                    <span className="break-all text-base font-medium text-gray-200">
+                        linkedin.com/in/adityaraj11
+                    </span>
+                </Link>
+            </li>
+        </ul>
     </div>
 );
 
