@@ -65,8 +65,10 @@ const DetailsCard: React.FC = () => {
                         </span>
                     </motion.h1>
 
-                    <motion.p variants={item} className="mt-4 text-lg text-zinc-300 sm:text-xl">
-                        <span className="font-semibold text-white">Frontend Engineer II</span>
+                    <motion.p variants={item} className="mt-4 text-pretty text-lg text-zinc-300 sm:text-xl">
+                        <span className="font-semibold text-white">Frontend Engineer II</span>{' '}
+                        <span className="text-zinc-400">at</span>{' '}
+                        <span className="font-medium text-zinc-200">Cashfree Payments</span>
                         <span className="text-zinc-500"> — React, Next.js, TypeScript</span>
                     </motion.p>
 
