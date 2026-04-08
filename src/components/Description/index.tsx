@@ -19,8 +19,9 @@ const Description: React.FC = () => (
             About
         </h1>
         <p className="text-base leading-relaxed text-zinc-300 sm:text-lg">
-            Frontend engineer with ~4.5+ years building scalable web apps in fintech, e-commerce, and
-            enterprise; strong React, Next.js, and TypeScript; performance and production systems focus.
+            <span className="font-semibold text-zinc-100">Frontend Engineer II at Cashfree Payments</span>{' '}
+            (Bengaluru). Frontend engineer with ~4.5+ years building scalable web apps in fintech, e-commerce,
+            and enterprise; strong React, Next.js, and TypeScript; performance and production systems focus.
         </p>
     </section>
 );
