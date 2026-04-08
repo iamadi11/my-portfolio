@@ -22,6 +22,7 @@ import {
     SiRedux,
     SiSemanticuireact,
     SiTestinglibrary,
+    SiTurborepo,
     SiWebpack,
 } from 'react-icons/si';
 import { TbBrandTypescript, TbBrandVite } from 'react-icons/tb';
@@ -54,6 +55,7 @@ const techStack: TechItem[] = [
     { name: 'Node.js', icon: <RiNodejsLine size={ICON_SIZE} />, color: '#7BBF49' },
     { name: 'Express', icon: <SiExpress size={ICON_SIZE} />, color: '#FFFFFF' },
     { name: 'Webpack', icon: <SiWebpack size={ICON_SIZE} />, color: '#4B93FF' },
+    { name: 'Turborepo', icon: <SiTurborepo size={ICON_SIZE} />, color: '#EF4444' },
     { name: 'Jest', icon: <SiJest size={ICON_SIZE} />, color: '#C21325' },
     {
         name: 'React Testing Library',
