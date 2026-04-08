@@ -17,6 +17,7 @@ import {
 } from 'react-icons/ri';
 import {
     SiExpress,
+    SiGithubactions,
     SiGooglemaps,
     SiJest,
     SiMongodb,
@@ -79,6 +80,7 @@ const techStack: TechItem[] = [
     { name: 'PWA', icon: <SiPwa size={ICON_SIZE} />, color: '#5A0FC8' },
     { name: 'AWS', icon: <FaAws size={ICON_SIZE} />, color: '#FF8C00' },
     { name: 'Git', icon: <FaGitSquare size={ICON_SIZE} />, color: '#D64937' },
+    { name: 'GitHub Actions', icon: <SiGithubactions size={ICON_SIZE} />, color: '#2088FF' },
 ];
 
 type TechStackCardProps = {
