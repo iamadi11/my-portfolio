@@ -63,8 +63,9 @@ const DetailsCard: React.FC = () => {
                     <span className="text-gray-400"> — React, Next.js, TypeScript</span>
                 </motion.div>
                 <motion.div variants={item} className="mt-4 max-w-xl text-sm leading-relaxed text-gray-500">
-                    Production web apps in fintech and enterprise: performance, clear architecture, and
-                    shipping reliably at scale.
+                    Frontend engineer with ~4.5+ years building scalable web apps in fintech, e-commerce, and
+                    enterprise; strong React, Next.js, and TypeScript; performance and production systems
+                    focus.
                 </motion.div>
                 <motion.div
                     variants={item}
