@@ -26,6 +26,25 @@ const defaultDescription =
 /** GitHub profile image (https://github.com/iamadi11) — used for link previews without shipping a separate asset. */
 const openGraphImage = 'https://avatars.githubusercontent.com/u/34628188?v=4&s=512';
 
+/** schema.org Person — aligned to resume + public profiles (SOURCE_OF_TRUTH.md). */
+const personJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Aditya Raj',
+    url: siteUrl,
+    image: openGraphImage,
+    jobTitle: 'Senior Frontend Engineer',
+    email: 'adityaraj92.20@gmail.com',
+    telephone: '+917257807070',
+    sameAs: ['https://github.com/iamadi11', 'https://www.linkedin.com/in/adityaraj11/'],
+    address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Bengaluru',
+        addressRegion: 'Karnataka',
+        addressCountry: 'IN',
+    },
+} as const;
+
 export const metadata: Metadata = {
     metadataBase: new URL(siteUrl),
     title: {
@@ -71,7 +90,13 @@ export default function RootLayout({
 }>): JSX.Element {
     return (
         <html lang="en">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+                />
+                {children}
+            </body>
         </html>
     );
 }
