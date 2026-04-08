@@ -2,7 +2,7 @@ import React from 'react';
 
 import clsx from 'clsx';
 import Link from 'next/link';
-import { FaLinkedin, FaPhoneAlt } from 'react-icons/fa';
+import { FaEnvelope, FaLinkedin, FaPhoneAlt } from 'react-icons/fa';
 import { FaGithub } from 'react-icons/fa6';
 
 const SocialLinks: React.FC = () => (
@@ -13,6 +13,13 @@ const SocialLinks: React.FC = () => (
             className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/5 hover:text-cyan-200"
         >
             <FaPhoneAlt className="size-4" aria-hidden />
+        </Link>
+        <Link
+            href="/contact"
+            aria-label="Contact"
+            className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/5 hover:text-amber-200/90"
+        >
+            <FaEnvelope className="size-4" aria-hidden />
         </Link>
         <Link
             href="https://github.com/iamadi11"
