@@ -93,6 +93,7 @@ public/           — static assets
 ### Projects (portfolio-safe)
 
 - **mouse-follow** — https://github.com/iamadi11/mouse-follow — demo: https://mouse-follow-demo.vercel.app/ (GitHub description: “Mouse Follow Component”)
+- **mcp-ui-poc** — https://github.com/iamadi11/mcp-ui-poc — “Dynamic MCP UI Generator”; copy on site from repo README (full-stack MCP UI demo, React + Vite + Node/Express).
 - Additional public repos (AIUI, spatial, Oompa-Loompas, my-portfolio, …) — add only with short, honest descriptions from repo/README.
 
 ### Experience narrative
