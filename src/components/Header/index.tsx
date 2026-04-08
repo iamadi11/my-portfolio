@@ -86,7 +86,7 @@ const headerJson = {
                 {
                     tag: 'Link',
                     visible: true,
-                    href: 'tel:+919667967979',
+                    href: 'tel:+917257807070',
                     children: <FaPhoneAlt />,
                     className: 'text-sm text-gray-300 transition-colors hover:text-white',
                 },

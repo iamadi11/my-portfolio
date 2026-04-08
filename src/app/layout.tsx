@@ -18,8 +18,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: 'Aditya',
-    description: 'My Portfolio',
+    title: 'Aditya Raj — Senior Frontend Engineer',
+    description:
+        'Senior Frontend Engineer (React, Next.js, TypeScript). Fintech and enterprise web apps—Bengaluru, India.',
 };
 
 export default function RootLayout({

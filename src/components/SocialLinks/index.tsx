@@ -7,7 +7,7 @@ import { FaGithub } from 'react-icons/fa6';
 
 const SocialLinks: React.FC = () => (
     <div className={clsx('flex flex-row items-center justify-end gap-4')}>
-        <Link href="tel:+919667967979" className="text-md text-gray-300 transition-colors hover:text-white">
+        <Link href="tel:+917257807070" className="text-md text-gray-300 transition-colors hover:text-white">
             <FaPhoneAlt />
         </Link>
         <Link

@@ -16,13 +16,13 @@ const Contact: React.FC = () => (
         </div>
         <div className={clsx('flex flex-row items-center justify-center gap-8')}>
             <Link
-                href="tel:+919667967979"
+                href="tel:+917257807070"
                 className="text-2xl text-green-300 transition-transform duration-200 hover:scale-150 hover:text-green-400"
             >
                 <FaPhoneAlt />
             </Link>
             <Link
-                href="mailto:adityaiiitl@gmail.com"
+                href="mailto:adityaraj92.20@gmail.com"
                 className="text-2xl text-orange-200 transition-transform duration-200 hover:scale-150 hover:text-orange-300"
             >
                 <FaMailBulk />
