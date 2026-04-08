@@ -30,6 +30,7 @@ const ImageCard = ({
             alt={alt ?? 'Image'}
             fill={fill}
             priority={priority}
+            fetchPriority={priority ? 'high' : 'low'}
             sizes={sizes}
             className="object-cover"
         />
