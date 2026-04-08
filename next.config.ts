@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
         ];
     },
     images: {
+        /** GitHub repo OG images are stable; longer TTL improves repeat visits (Lighthouse / CDN). */
+        minimumCacheTTL: 60 * 60 * 24 * 7,
         remotePatterns: [
             {
                 protocol: 'https',
