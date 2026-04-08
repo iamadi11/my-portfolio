@@ -1,12 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-/** Mirrors root layout: production should set NEXT_PUBLIC_SITE_URL; Vercel provides VERCEL_URL. */
-function getSiteOrigin(): string {
-    const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-    if (fromEnv) return fromEnv.replace(/\/$/, '');
-    if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL.replace(/\/$/, '')}`;
-    return 'http://localhost:3000';
-}
+import { getSiteOrigin } from '@/lib/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
     const base = getSiteOrigin();
