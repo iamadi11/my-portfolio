@@ -142,6 +142,7 @@ const DetailsCard: React.FC = () => {
                         alt="Aditya Raj — Frontend Engineer II, Bengaluru"
                         fill
                         priority
+                        fetchPriority="high"
                         className="object-cover"
                         sizes="(max-width: 1024px) 192px, 224px"
                     />
