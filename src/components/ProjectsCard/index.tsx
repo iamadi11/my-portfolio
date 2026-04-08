@@ -37,6 +37,15 @@ const projectsData: ProjectItem[] = [
         imageUrl: 'https://placehold.co/640x360/171717/737373/png?text=spatial',
         githubLink: 'https://github.com/iamadi11/spatial',
     },
+    /** Intro + stack from https://github.com/iamadi11/mcp-ui-poc/blob/main/README.md */
+    {
+        title: 'Dynamic MCP UI Generator',
+        description:
+            'Full-stack MCP UI demo: dynamic form, dashboard, and chart generation; React + Vite client, Node.js + Express server, @mcp-ui/server.',
+        techStack: 'React 18, Vite, Node.js, Express.js, CSS3, MCP UI',
+        imageUrl: 'https://placehold.co/640x360/171717/737373/png?text=mcp-ui-poc',
+        githubLink: 'https://github.com/iamadi11/mcp-ui-poc',
+    },
 ];
 
 const ProjectsCard: React.FC = () => {
