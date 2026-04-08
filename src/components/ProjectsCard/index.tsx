@@ -12,11 +12,18 @@ type ProjectItem = {
     title: string;
     description: string;
     techStack: string;
-    imageUrl: string;
     githubLink: string;
     /** Public demo URL only when it exists (e.g. repo homepage on GitHub). */
     liveLink?: string;
 };
+
+/** GitHub-generated Open Graph preview for a public repo (owner/repo from link). */
+function githubRepoOpenGraphImage(githubLink: string): string {
+    const match = /github\.com\/([^/]+)\/([^/#?]+)/.exec(githubLink);
+    if (!match) return '';
+    const [, owner, repo] = match;
+    return `https://opengraph.githubassets.com/1/${owner}/${repo}`;
+}
 
 /** Copy for spatial from https://github.com/iamadi11/spatial/blob/main/README.md (intro). */
 const projectsData: ProjectItem[] = [
@@ -25,7 +32,6 @@ const projectsData: ProjectItem[] = [
         description:
             'Small React + Vite demo: cursor-follow interaction (public repo and live demo on GitHub).',
         techStack: 'React, Vite, TypeScript, Tailwind CSS',
-        imageUrl: 'https://placehold.co/640x360/171717/737373/png?text=mouse-follow',
         liveLink: 'https://mouse-follow-demo.vercel.app/',
         githubLink: 'https://github.com/iamadi11/mouse-follow',
     },
@@ -34,7 +40,6 @@ const projectsData: ProjectItem[] = [
         description:
             'A deterministic, development-time UI performance detection engine that identifies potential performance bottlenecks before code ships.',
         techStack: 'TypeScript (strict), Vitest',
-        imageUrl: 'https://placehold.co/640x360/171717/737373/png?text=spatial',
         githubLink: 'https://github.com/iamadi11/spatial',
     },
     /** Intro + stack from https://github.com/iamadi11/mcp-ui-poc/blob/main/README.md */
@@ -43,7 +48,6 @@ const projectsData: ProjectItem[] = [
         description:
             'Full-stack MCP UI demo: dynamic form, dashboard, and chart generation; React + Vite client, Node.js + Express server, @mcp-ui/server.',
         techStack: 'React 18, Vite, Node.js, Express.js, CSS3, MCP UI',
-        imageUrl: 'https://placehold.co/640x360/171717/737373/png?text=mcp-ui-poc',
         githubLink: 'https://github.com/iamadi11/mcp-ui-poc',
     },
 ];
@@ -76,7 +80,7 @@ const ProjectsCard: React.FC = () => {
                         <Card className="flex min-w-64 max-w-64 flex-col rounded-xl bg-neutral-900 text-center shadow-custom">
                             <Card.ImageCard
                                 className="overflow-hidden rounded-t-xl"
-                                src={project.imageUrl}
+                                src={githubRepoOpenGraphImage(project.githubLink) || '/profile_pic.png'}
                                 alt={project.title}
                             />
                             <Card.Main className="flex size-full flex-col justify-between gap-2">
