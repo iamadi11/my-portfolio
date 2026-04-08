@@ -95,7 +95,7 @@ const DetailsCard: React.FC = () => {
                 }
             >
                 <Image
-                    src="/profile_pic.jpg"
+                    src="/profile_pic.png"
                     alt="Aditya Raj"
                     fill
                     priority
