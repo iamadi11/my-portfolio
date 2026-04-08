@@ -70,9 +70,13 @@ const DetailsCard: React.FC = () => {
                         <span className="text-zinc-500"> — React, Next.js, TypeScript</span>
                     </motion.p>
 
+                    <motion.p variants={item} className="mt-2 text-sm text-zinc-500 sm:text-base">
+                        Bengaluru, Karnataka
+                    </motion.p>
+
                     <motion.p
                         variants={item}
-                        className="mt-5 max-w-xl text-pretty text-sm leading-relaxed text-zinc-400 sm:text-base"
+                        className="mt-4 max-w-xl text-pretty text-sm leading-relaxed text-zinc-400 sm:text-base"
                     >
                         Frontend engineer with ~4.5+ years building scalable web apps in fintech, e-commerce,
                         and enterprise; strong React, Next.js, and TypeScript; performance and production
