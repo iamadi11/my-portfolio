@@ -120,6 +120,8 @@ export const metadata: Metadata = {
         template: '%s · Aditya Raj',
     },
     description: defaultDescription,
+    authors: [{ name: 'Aditya Raj', url: siteUrl }],
+    creator: 'Aditya Raj',
     /** Resume-backed terms for search / discovery (subset of SOURCE_OF_TRUTH.md). */
     keywords: [
         'Aditya Raj',
@@ -165,6 +167,13 @@ export const metadata: Metadata = {
         index: true,
         follow: true,
     },
+    ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+        ? {
+              verification: {
+                  google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+              },
+          }
+        : {}),
 };
 
 export default function RootLayout({
