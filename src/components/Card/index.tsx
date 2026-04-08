@@ -12,7 +12,7 @@ const ImageCard = ({
     src,
     alt,
     fill = true,
-    priority = true,
+    priority = false,
     className = '',
 }: {
     src: string;
