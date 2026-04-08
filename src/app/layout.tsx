@@ -23,6 +23,9 @@ const siteUrl =
 const defaultDescription =
     'Senior Frontend Engineer (React, Next.js, TypeScript). Fintech and enterprise web apps—Bengaluru, India.';
 
+/** GitHub profile image (https://github.com/iamadi11) — used for link previews without shipping a separate asset. */
+const openGraphImage = 'https://avatars.githubusercontent.com/u/34628188?v=4&s=512';
+
 export const metadata: Metadata = {
     metadataBase: new URL(siteUrl),
     title: {
@@ -40,11 +43,20 @@ export const metadata: Metadata = {
         siteName: 'Aditya Raj',
         locale: 'en_IN',
         type: 'website',
+        images: [
+            {
+                url: openGraphImage,
+                width: 512,
+                height: 512,
+                alt: 'Aditya Raj',
+            },
+        ],
     },
     twitter: {
-        card: 'summary',
+        card: 'summary_large_image',
         title: 'Aditya Raj — Senior Frontend Engineer',
         description: defaultDescription,
+        images: [openGraphImage],
     },
     robots: {
         index: true,
