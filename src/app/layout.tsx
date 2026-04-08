@@ -27,64 +27,82 @@ const defaultDescription =
 /** GitHub profile image (https://github.com/iamadi11) — used for link previews without shipping a separate asset. */
 const openGraphImage = 'https://avatars.githubusercontent.com/u/34628188?v=4&s=512';
 
-/** schema.org Person — aligned to resume + public profiles (SOURCE_OF_TRUTH.md). */
-const personJsonLd = {
+/**
+ * Single @graph: linked Person / org / site / home WebPage (resume-backed).
+ * Note: Google Rich Results Test lists only a subset of types (FAQ, JobPosting, etc.);
+ * Person/WebSite/WebPage are still valid and used for general understanding.
+ */
+const structuredDataJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Person',
-    name: 'Aditya Raj',
-    url: siteUrl,
-    image: openGraphImage,
-    jobTitle: 'Frontend Engineer II',
-    email: 'adityaraj92.20@gmail.com',
-    telephone: '+917257807070',
-    sameAs: ['https://github.com/iamadi11', 'https://www.linkedin.com/in/adityaraj11/'],
-    address: {
-        '@type': 'PostalAddress',
-        addressLocality: 'Bengaluru',
-        addressRegion: 'Karnataka',
-        addressCountry: 'IN',
-    },
-    worksFor: {
-        '@type': 'Organization',
-        name: 'Cashfree Payments',
-    },
-    alumniOf: {
-        '@type': 'EducationalOrganization',
-        name: 'IIIT Lucknow',
-    },
-    knowsAbout: [
-        'React',
-        'Next.js',
-        'TypeScript',
-        'JavaScript',
-        'Node.js',
-        'Web performance',
-        'Progressive web apps',
-        'REST APIs',
-        'Frontend engineering',
-        'Semantic UI',
-        'Google Maps API',
-        'Redis',
-        'MongoDB',
-        'MySQL',
-        'Turborepo',
-        'AWS',
-        'CI/CD',
+    '@graph': [
+        {
+            '@type': 'Person',
+            '@id': `${siteUrl}#person`,
+            name: 'Aditya Raj',
+            url: siteUrl,
+            image: openGraphImage,
+            jobTitle: 'Frontend Engineer II',
+            email: 'adityaraj92.20@gmail.com',
+            telephone: '+917257807070',
+            sameAs: ['https://github.com/iamadi11', 'https://www.linkedin.com/in/adityaraj11/'],
+            address: {
+                '@type': 'PostalAddress',
+                addressLocality: 'Bengaluru',
+                addressRegion: 'Karnataka',
+                addressCountry: 'IN',
+            },
+            worksFor: { '@id': `${siteUrl}#organization-cashfree` },
+            alumniOf: { '@id': `${siteUrl}#education-iiit` },
+            knowsAbout: [
+                'React',
+                'Next.js',
+                'TypeScript',
+                'JavaScript',
+                'Node.js',
+                'Web performance',
+                'Progressive web apps',
+                'REST APIs',
+                'Frontend engineering',
+                'Semantic UI',
+                'Google Maps API',
+                'Redis',
+                'MongoDB',
+                'MySQL',
+                'Turborepo',
+                'AWS',
+                'CI/CD',
+            ],
+        },
+        {
+            '@type': 'Organization',
+            '@id': `${siteUrl}#organization-cashfree`,
+            name: 'Cashfree Payments',
+        },
+        {
+            '@type': 'EducationalOrganization',
+            '@id': `${siteUrl}#education-iiit`,
+            name: 'IIIT Lucknow',
+        },
+        {
+            '@type': 'WebSite',
+            '@id': `${siteUrl}#website`,
+            name: 'Aditya Raj',
+            url: siteUrl,
+            description: defaultDescription,
+            inLanguage: 'en-IN',
+            publisher: { '@id': `${siteUrl}#person` },
+        },
+        {
+            '@type': 'WebPage',
+            '@id': siteUrl,
+            url: siteUrl,
+            name: 'Aditya Raj — Frontend Engineer II',
+            description: defaultDescription,
+            isPartOf: { '@id': `${siteUrl}#website` },
+            about: { '@id': `${siteUrl}#person` },
+            mainEntity: { '@id': `${siteUrl}#person` },
+        },
     ],
-} as const;
-
-/** schema.org WebSite — complements Person; uses same canonical description as meta/OG. */
-const websiteJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: 'Aditya Raj',
-    url: siteUrl,
-    description: defaultDescription,
-    inLanguage: 'en-IN',
-    publisher: {
-        '@type': 'Person',
-        name: 'Aditya Raj',
-    },
 } as const;
 
 /** Mobile browser chrome + safe-area behavior; matches forced dark UI (`globals.css` / zinc-950). */
@@ -166,11 +184,7 @@ export default function RootLayout({
                 <div className="app-backdrop" aria-hidden="true" />
                 <script
                     type="application/ld+json"
-                    dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
-                />
-                <script
-                    type="application/ld+json"
-                    dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredDataJsonLd) }}
                 />
                 {children}
             </body>
