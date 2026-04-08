@@ -10,8 +10,8 @@ export default function Page(): React.JSX.Element {
     return (
         <div className="flex min-h-0 flex-col pb-10">
             <DetailsCard />
-            <TechStackCard titleAs="h2" />
             <ProjectsCard />
+            <TechStackCard titleAs="h2" />
         </div>
     );
 }
