@@ -1,9 +1,11 @@
-/* eslint-disable no-use-before-define */
+'use client';
+
 import React, { JSX } from 'react';
 
 import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { FaLinkedin, FaPhoneAlt } from 'react-icons/fa';
 import { FaGithub } from 'react-icons/fa6';
 
@@ -50,28 +52,28 @@ const headerJson = {
                     visible: true,
                     href: '/',
                     children: 'Home',
-                    className: 'text-gray-400',
+                    className: 'text-gray-400 transition-colors hover:text-white',
                 },
                 {
                     tag: 'Link',
                     visible: true,
                     href: '/about',
                     children: 'About',
-                    className: 'text-gray-400',
+                    className: 'text-gray-400 transition-colors hover:text-white',
                 },
                 {
                     tag: 'Link',
                     visible: true,
                     href: '/tech-stack',
                     children: 'Tech',
-                    className: 'text-gray-400',
+                    className: 'text-gray-400 transition-colors hover:text-white',
                 },
                 {
                     tag: 'Link',
                     visible: true,
                     href: '/contact',
                     children: 'Contact',
-                    className: 'text-gray-400',
+                    className: 'text-gray-400 transition-colors hover:text-white',
                 },
             ],
         },
@@ -127,56 +129,68 @@ interface Element {
     visible?: boolean;
 }
 
-const renderImage = (element: Element, key?: number) => (
-    <Image
-        key={key}
-        src={element.src || ''}
-        alt={element.alt || 'default alt text'}
-        width={element.width}
-        height={element.height}
-        className={element.className}
-    />
-);
+function isInternalNavMatch(href: string, pathname: string): boolean {
+    if (!href.startsWith('/')) return false;
+    if (href === '/') return pathname === '/';
+    return pathname === href;
+}
 
-const renderLink = (element: Element, key?: number) => (
-    <Link
-        key={key}
-        href={element.href || ''}
-        target={element.target}
-        rel={element.rel}
-        className={clsx(element.className)}
-    >
-        {renderChildren(element.children)}
-    </Link>
-);
+const Header: React.FC = () => {
+    const pathname = usePathname() ?? '';
 
-const renderChildren = (children?: Element[] | string | JSX.Element) => {
-    if (!children) return null;
-    if (Array.isArray(children)) {
-        return children.map((child, index) => renderElement(child, index));
-    }
-    return children;
-};
+    function renderTree(element: Element, key?: number): React.ReactNode {
+        function renderChildContent(children?: Element[] | string | JSX.Element) {
+            if (!children) return null;
+            if (Array.isArray(children)) {
+                return children.map((child, index) => renderTree(child, index));
+            }
+            return children;
+        }
 
-const renderElement = (element: Element, key?: number): React.ReactNode => {
-    if (!element.visible) return null;
+        if (!element.visible) return null;
 
-    switch (element.tag) {
-        case 'Image':
-            return renderImage(element, key);
-        case 'Link':
-            return renderLink(element, key);
-        default: {
-            const Tag = element.tag as keyof JSX.IntrinsicElements;
-            return (
-                <Tag key={key} className={clsx(element.className)}>
-                    {renderChildren(element.children)}
-                </Tag>
-            );
+        switch (element.tag) {
+            case 'Image':
+                return (
+                    <Image
+                        key={key}
+                        src={element.src || ''}
+                        alt={element.alt || 'default alt text'}
+                        width={element.width}
+                        height={element.height}
+                        className={element.className}
+                    />
+                );
+            case 'Link': {
+                const href = element.href || '';
+                const isTextNavItem = typeof element.children === 'string';
+                const navActive = isTextNavItem && isInternalNavMatch(href, pathname);
+
+                return (
+                    <Link
+                        key={key}
+                        href={href}
+                        target={element.target}
+                        rel={element.rel}
+                        className={clsx(element.className, navActive && 'font-semibold text-cyan-200')}
+                        aria-current={navActive ? 'page' : undefined}
+                    >
+                        {renderChildContent(element.children)}
+                    </Link>
+                );
+            }
+            default: {
+                const Tag = element.tag as keyof JSX.IntrinsicElements;
+                return (
+                    <Tag key={key} className={clsx(element.className)}>
+                        {renderChildContent(element.children)}
+                    </Tag>
+                );
+            }
         }
     }
-};
 
-const Header: React.FC = () => renderElement(headerJson);
+    return renderTree(headerJson);
+};
 
 export default Header;
