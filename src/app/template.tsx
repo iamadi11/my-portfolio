@@ -19,7 +19,7 @@ const Template: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </Layout.Header>
             <Layout.Main>
                 <motion.div
-                    className="size-full"
+                    className="flex min-h-0 min-w-0 flex-1 flex-col"
                     initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={
@@ -29,9 +29,11 @@ const Template: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     {children}
                 </motion.div>
             </Layout.Main>
-            <Layout.Footer className={clsx('px-2', 'size-full backdrop-blur-sm')}>
-                <div className="flex items-center justify-between px-6 py-3">
-                    <div>© 2026 Aditya Raj</div>
+            <Layout.Footer
+                className={clsx('size-full border-t border-white/5 bg-zinc-950/85 backdrop-blur-xl', 'px-2')}
+            >
+                <div className="flex items-center justify-between p-4 sm:px-8">
+                    <p className="text-sm text-zinc-500">© 2026 Aditya Raj</p>
                     <div className="md:hidden">
                         <SocialLinks />
                     </div>

@@ -2,6 +2,8 @@
 
 import React from 'react';
 
+import clsx from 'clsx';
+
 type Role = {
     title: string;
     company: string;
@@ -53,34 +55,44 @@ const roles: Role[] = [
 ];
 
 const WorkExperience: React.FC = () => (
-    <div className="size-full p-6 shadow-lg">
-        <div className="mb-8 text-3xl font-extrabold">Work experience</div>
-        <div className="flex flex-col gap-10">
+    <section
+        aria-labelledby="work-heading"
+        className={clsx(
+            'rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.75)]',
+            'backdrop-blur-sm sm:p-8'
+        )}
+    >
+        <h2 id="work-heading" className="mb-10 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            Work experience
+        </h2>
+        <div className="flex flex-col gap-12">
             {roles.map((role) => (
-                <section key={`${role.company}-${role.range}`}>
-                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-4">
+                <article
+                    key={`${role.company}-${role.range}`}
+                    className="border-b border-white/[0.06] pb-12 last:border-0 last:pb-0"
+                >
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-6">
                         <div>
-                            <div className="text-xl font-bold text-gray-400">{role.title}</div>
-                            <div className="text-lg font-semibold text-gray-500">{role.company}</div>
+                            <h3 className="text-xl font-semibold text-zinc-100">{role.title}</h3>
+                            <p className="mt-1 text-lg font-medium text-zinc-400">{role.company}</p>
                         </div>
                         <div>
-                            <div className="text-base text-gray-600 md:text-right">{role.range}</div>
-                            <div className="text-sm text-gray-600 md:text-right">{role.location}</div>
+                            <p className="text-base text-zinc-500 md:text-right">{role.range}</p>
+                            <p className="text-sm text-zinc-600 md:text-right">{role.location}</p>
                         </div>
                     </div>
-                    <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed text-gray-300">
+                    <ul className="mt-5 list-disc space-y-2.5 pl-5 text-sm leading-relaxed text-zinc-300 marker:text-cyan-500/80">
                         {role.bullets.map((b) => (
                             <li key={b}>{b}</li>
                         ))}
                     </ul>
-                    <p className="mt-3 text-xs text-gray-500">
-                        <span className="font-semibold text-gray-400">Tech:</span> {role.tech}
+                    <p className="mt-4 text-xs text-zinc-500">
+                        <span className="font-semibold text-zinc-400">Tech:</span> {role.tech}
                     </p>
-                    <div className="mt-6 h-px w-full bg-gray-600/80" />
-                </section>
+                </article>
             ))}
         </div>
-    </div>
+    </section>
 );
 
 export default WorkExperience;

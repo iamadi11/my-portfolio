@@ -3,25 +3,51 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #09090b;
+  --foreground: #fafafa;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-border: rgba(255, 255, 255, 0.08);
+  --accent-cyan: rgb(34 211 238);
+  --accent-violet: rgb(167 139 250);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #09090b;
+    --foreground: #fafafa;
   }
 }
 
-body {
-  color: var(--foreground);
-  /* background: var(--background); */
-  background: #0a0a0a; /* TODO Hack to force dark mode */
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  body {
+    @apply min-h-dvh bg-zinc-950 font-sans text-zinc-100 antialiased;
+  }
 }
 
-/* Keyboard navigation — skip mouse-only :focus to avoid noisy outlines on click */
+/* Ambient background — static gradient; motion users get subtle shine via template layer */
+.app-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 100% 80% at 50% -30%, rgba(34, 211, 238, 0.14), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 100% 20%, rgba(167, 139, 250, 0.1), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 0% 60%, rgba(59, 130, 246, 0.06), transparent 45%),
+    #09090b;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-backdrop {
+    background: radial-gradient(ellipse 100% 60% at 50% -20%, rgba(34, 211, 238, 0.08), #09090b);
+  }
+}
+
+::selection {
+  background: rgba(34, 211, 238, 0.25);
+  color: #fafafa;
+}
+
+/* Keyboard navigation — skip mouse-only :focus */
 a:focus-visible,
 button:focus-visible {
   outline: 2px solid rgb(34 211 238);
@@ -29,7 +55,7 @@ button:focus-visible {
   border-radius: 0.25rem;
 }
 
-/* Tailwind + project custom `animate-*` utilities — do not alter motion/react; targets CSS keyframes only. */
+/* Tailwind custom `animate-*` — respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .animate-pulse,
   .animate-spin,

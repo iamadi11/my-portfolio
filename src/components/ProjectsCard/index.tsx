@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import clsx from 'clsx';
 import { motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
 import { FaLink, FaGithub } from 'react-icons/fa';
@@ -57,95 +58,114 @@ const ProjectsCard: React.FC = () => {
     const reduce = prefersReducedMotion === true;
 
     return (
-        <motion.div
-            className="flex flex-col items-center justify-center p-6 text-center"
-            initial={reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+        <motion.section
+            aria-labelledby="projects-heading"
+            className="border-t border-white/5 px-4 py-16 sm:px-6 sm:py-20"
+            initial={reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={reduce ? { duration: 0 } : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={reduce ? { duration: 0 } : { duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         >
-            <h2 className="mb-4 text-2xl font-bold text-white">Projects</h2>
-            <p className="mb-6 text-sm text-gray-500">Public GitHub work</p>
-            <div className="flex flex-wrap justify-center gap-6">
-                {projectsData.map((project) => (
-                    <motion.div
-                        key={project.githubLink}
-                        whileHover={
-                            reduce
-                                ? { y: 0 }
-                                : { y: -4, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }
-                        }
-                        className="will-change-transform"
-                    >
-                        <Card className="flex min-w-64 max-w-64 flex-col rounded-xl bg-neutral-900 text-center shadow-custom">
-                            <Card.ImageCard
-                                className="overflow-hidden rounded-t-xl"
-                                src={githubRepoOpenGraphImage(project.githubLink) || '/profile_pic.png'}
-                                alt={project.title}
-                            />
-                            <Card.Main className="flex size-full flex-col justify-between gap-2">
-                                <div className="flex flex-col gap-4">
-                                    <Card.Header>
-                                        <div className="pt-4 text-xl text-gray-400">{project.title}</div>
-                                    </Card.Header>
-                                    <div>
-                                        <div className="px-6 text-left text-xs text-gray-400">
+            <div className="mx-auto max-w-6xl text-center">
+                <h2
+                    id="projects-heading"
+                    className="text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl"
+                >
+                    Projects
+                </h2>
+                <p className="mx-auto mt-3 max-w-md text-sm text-zinc-500 sm:text-base">Public GitHub work</p>
+                <div className="mt-12 flex flex-wrap justify-center gap-6 lg:gap-8">
+                    {projectsData.map((project, index) => (
+                        <motion.div
+                            key={project.githubLink}
+                            initial={reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: '-24px' }}
+                            transition={
+                                reduce
+                                    ? { duration: 0 }
+                                    : { delay: index * 0.06, duration: 0.38, ease: [0.22, 1, 0.36, 1] }
+                            }
+                            whileHover={
+                                reduce
+                                    ? { y: 0 }
+                                    : { y: -6, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }
+                            }
+                            className="will-change-transform"
+                        >
+                            <Card
+                                className={clsx(
+                                    'flex min-w-[17rem] max-w-[17rem] flex-col overflow-hidden rounded-2xl text-left',
+                                    'border border-white/[0.08] bg-white/[0.03] shadow-[0_24px_80px_-32px_rgba(0,0,0,0.85)]',
+                                    'backdrop-blur-md transition-shadow duration-300 hover:border-cyan-500/15',
+                                    'hover:shadow-[0_28px_90px_-28px_rgba(34,211,238,0.12)]'
+                                )}
+                            >
+                                <Card.ImageCard
+                                    className="overflow-hidden rounded-t-2xl"
+                                    src={githubRepoOpenGraphImage(project.githubLink) || '/profile_pic.png'}
+                                    alt={`GitHub Open Graph preview for ${project.title}`}
+                                />
+                                <Card.Main className="flex size-full flex-col justify-between gap-3">
+                                    <div className="flex flex-col gap-3 px-5 pt-5">
+                                        <Card.Header className="p-0">
+                                            <h3 className="text-lg font-semibold tracking-tight text-zinc-100">
+                                                {project.title}
+                                            </h3>
+                                        </Card.Header>
+                                        <p className="text-xs leading-relaxed text-zinc-400">
                                             {project.description}
-                                        </div>
-                                        <div className="px-6 text-left text-xs text-gray-400">
-                                            {project.techStack}
-                                        </div>
+                                        </p>
+                                        <p className="text-xs text-zinc-500">{project.techStack}</p>
                                     </div>
-                                </div>
-                                <Card.Footer
-                                    className={
-                                        project.liveLink
-                                            ? 'flex flex-row justify-between px-8 pb-4 text-xs'
-                                            : 'flex flex-row justify-center px-8 pb-4 text-xs'
-                                    }
-                                >
-                                    {project.liveLink ? (
-                                        <>
-                                            <div className="flex flex-row items-center gap-2">
-                                                <FaLink />
+                                    <Card.Footer
+                                        className={clsx(
+                                            'border-t border-white/[0.06] px-5 py-4 text-xs',
+                                            project.liveLink
+                                                ? 'flex flex-row justify-between'
+                                                : 'flex justify-center'
+                                        )}
+                                    >
+                                        {project.liveLink ? (
+                                            <>
                                                 <Link
                                                     href={project.liveLink}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 text-cyan-300/90 transition-colors hover:text-cyan-200"
                                                 >
+                                                    <FaLink className="size-3.5" aria-hidden />
                                                     Live
                                                 </Link>
-                                            </div>
-                                            <div className="flex flex-row items-center gap-2">
-                                                <FaGithub />
                                                 <Link
                                                     href={project.githubLink}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 text-zinc-400 transition-colors hover:text-white"
                                                 >
+                                                    <FaGithub className="size-3.5" aria-hidden />
                                                     Code
                                                 </Link>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="flex flex-row items-center gap-2">
-                                            <FaGithub />
+                                            </>
+                                        ) : (
                                             <Link
                                                 href={project.githubLink}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 text-zinc-400 transition-colors hover:text-white"
                                             >
+                                                <FaGithub className="size-3.5" aria-hidden />
                                                 Repository
                                             </Link>
-                                        </div>
-                                    )}
-                                </Card.Footer>
-                            </Card.Main>
-                        </Card>
-                    </motion.div>
-                ))}
+                                        )}
+                                    </Card.Footer>
+                                </Card.Main>
+                            </Card>
+                        </motion.div>
+                    ))}
+                </div>
             </div>
-        </motion.div>
+        </motion.section>
     );
 };
 

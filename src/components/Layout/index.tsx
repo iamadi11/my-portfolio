@@ -26,7 +26,9 @@ const Header = ({ children, className }: Props) => {
     );
 };
 
-const Main = ({ children, className }: Props) => <main className={clsx(className)}>{children}</main>;
+const Main = ({ children, className }: Props) => (
+    <main className={clsx('min-h-0 overflow-y-auto overscroll-y-contain', className)}>{children}</main>
+);
 
 const Sidebar = ({ children, className }: Props) => <aside className={clsx(className)}>{children}</aside>;
 

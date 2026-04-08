@@ -24,7 +24,7 @@ type TechItem = {
     color: string;
 };
 
-const ICON_SIZE = 60;
+const ICON_SIZE = 52;
 
 /** Subset aligned to resume technical skills + GitHub-backed tooling (e.g. Vite on public repos). */
 const techStack: TechItem[] = [
@@ -46,40 +46,72 @@ const techStack: TechItem[] = [
     { name: 'Git', icon: <FaGitSquare size={ICON_SIZE} />, color: '#D64937' },
 ];
 
-const TechStackCard: React.FC = () => {
+type TechStackCardProps = {
+    /** Use `h1` on the dedicated /tech-stack page for a single top-level heading. */
+    titleAs?: 'h1' | 'h2';
+};
+
+const TechStackCard: React.FC<TechStackCardProps> = ({ titleAs = 'h2' }) => {
     const prefersReducedMotion = useReducedMotion();
     const reduce = prefersReducedMotion === true;
+    const TitleTag = titleAs;
 
     return (
-        <motion.div
-            className="flex flex-col items-center justify-center p-6 text-center"
-            initial={reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+        <motion.section
+            aria-labelledby="tech-stack-heading"
+            className="border-t border-white/5 px-4 py-16 sm:px-6 sm:py-20"
+            initial={reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={reduce ? { duration: 0 } : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={reduce ? { duration: 0 } : { duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         >
-            <h2 className="mb-4 text-2xl font-bold text-white">Tech stack</h2>
-            <p className="mb-6 text-sm text-gray-500">From resume and production work</p>
-            <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:grid-cols-6">
-                {techStack.map((tech) => (
-                    <motion.div
-                        key={tech.name}
-                        className={clsx('flex flex-col items-center')}
-                        whileHover={reduce ? { scale: 1 } : { scale: 1.06, transition: { duration: 0.22 } }}
-                    >
-                        <div
-                            style={{
-                                filter: `drop-shadow(0px 0px 60px ${tech.color})`,
-                                color: tech.color,
-                            }}
+            <div className="mx-auto max-w-6xl text-center">
+                <TitleTag
+                    id="tech-stack-heading"
+                    className={clsx(
+                        'text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl',
+                        titleAs === 'h1' && 'lg:text-5xl'
+                    )}
+                >
+                    Tech stack
+                </TitleTag>
+                <p className="mx-auto mt-3 max-w-lg text-sm text-zinc-500 sm:text-base">
+                    From resume and production work
+                </p>
+                <div className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6">
+                    {techStack.map((tech, index) => (
+                        <motion.div
+                            key={tech.name}
+                            className={clsx(
+                                'flex flex-col items-center rounded-2xl border border-white/[0.07]',
+                                'bg-white/[0.03] px-3 py-5 backdrop-blur-sm transition-colors',
+                                'hover:border-cyan-500/20 hover:bg-white/[0.05]'
+                            )}
+                            initial={reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: '-20px' }}
+                            transition={
+                                reduce
+                                    ? { duration: 0 }
+                                    : { delay: index * 0.02, duration: 0.35, ease: [0.22, 1, 0.36, 1] }
+                            }
+                            whileHover={reduce ? { y: 0 } : { y: -3, transition: { duration: 0.2 } }}
                         >
-                            {tech.icon}
-                        </div>
-                        <span className="mt-2 text-xs text-gray-300">{tech.name}</span>
-                    </motion.div>
-                ))}
+                            <div
+                                className="flex size-14 items-center justify-center rounded-xl bg-zinc-900/80"
+                                style={{
+                                    color: tech.color,
+                                    filter: `drop-shadow(0 0 20px ${tech.color}55)`,
+                                }}
+                            >
+                                {tech.icon}
+                            </div>
+                            <span className="mt-3 text-xs font-medium text-zinc-300">{tech.name}</span>
+                        </motion.div>
+                    ))}
+                </div>
             </div>
-        </motion.div>
+        </motion.section>
     );
 };
 

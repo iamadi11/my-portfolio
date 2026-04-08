@@ -94,8 +94,9 @@ export default function RootLayout({
     children: React.ReactNode;
 }>): JSX.Element {
     return (
-        <html lang="en">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <html lang="en" className="scroll-smooth">
+            <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+                <div className="app-backdrop" aria-hidden="true" />
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}

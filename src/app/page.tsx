@@ -8,9 +8,9 @@ import TechStackCard from '@/components/TechStackCard';
 
 export default function Page(): React.JSX.Element {
     return (
-        <div className="size-full">
+        <div className="flex min-h-0 flex-col pb-10">
             <DetailsCard />
-            <TechStackCard />
+            <TechStackCard titleAs="h2" />
             <ProjectsCard />
         </div>
     );

@@ -13,8 +13,8 @@ const headerJson = {
     tag: 'div',
     visible: true,
     className: clsx(
-        'backdrop-blur-sm',
-        'flex flex-row justify-between px-4 pb-2 pt-4 md:grid md:grid-cols-6 md:gap-12 md:px-12 md:py-4'
+        'border-b border-white/5 bg-zinc-950/75 backdrop-blur-xl',
+        'flex flex-row justify-between px-4 pb-3 pt-4 md:grid md:grid-cols-6 md:gap-12 md:px-10 md:py-4'
     ),
     children: [
         {
@@ -26,15 +26,16 @@ const headerJson = {
                     tag: 'Link',
                     href: '/',
                     visible: true,
+                    ariaLabel: 'Aditya Raj — home',
                     children: [
                         {
                             tag: 'Image',
                             visible: true,
                             src: '/favicon-32x32.png',
-                            alt: 'Logo',
+                            alt: '',
                             width: 24,
                             height: 24,
-                            className: 'animate-pulse drop-shadow-custom',
+                            className: 'drop-shadow-[0_0_14px_rgba(34,211,238,0.35)]',
                         },
                     ],
                 },
@@ -52,28 +53,32 @@ const headerJson = {
                     visible: true,
                     href: '/',
                     children: 'Home',
-                    className: 'text-gray-400 transition-colors hover:text-white',
+                    className:
+                        'rounded-full px-3 py-1.5 text-sm text-zinc-400 transition-colors duration-200 hover:bg-white/5 hover:text-white',
                 },
                 {
                     tag: 'Link',
                     visible: true,
                     href: '/about',
                     children: 'About',
-                    className: 'text-gray-400 transition-colors hover:text-white',
+                    className:
+                        'rounded-full px-3 py-1.5 text-sm text-zinc-400 transition-colors duration-200 hover:bg-white/5 hover:text-white',
                 },
                 {
                     tag: 'Link',
                     visible: true,
                     href: '/tech-stack',
                     children: 'Tech',
-                    className: 'text-gray-400 transition-colors hover:text-white',
+                    className:
+                        'rounded-full px-3 py-1.5 text-sm text-zinc-400 transition-colors duration-200 hover:bg-white/5 hover:text-white',
                 },
                 {
                     tag: 'Link',
                     visible: true,
                     href: '/contact',
                     children: 'Contact',
-                    className: 'text-gray-400 transition-colors hover:text-white',
+                    className:
+                        'rounded-full px-3 py-1.5 text-sm text-zinc-400 transition-colors duration-200 hover:bg-white/5 hover:text-white',
                 },
             ],
         },
@@ -89,8 +94,10 @@ const headerJson = {
                     tag: 'Link',
                     visible: true,
                     href: 'tel:+917257807070',
+                    ariaLabel: 'Call +91 72578 07070',
                     children: <FaPhoneAlt />,
-                    className: 'text-sm text-gray-300 transition-colors hover:text-white',
+                    className:
+                        'rounded-lg p-2 text-sm text-zinc-400 transition-colors hover:bg-white/5 hover:text-cyan-200',
                 },
                 {
                     tag: 'Link',
@@ -98,8 +105,10 @@ const headerJson = {
                     href: 'https://github.com/iamadi11',
                     target: '_blank',
                     rel: 'noopener noreferrer',
+                    ariaLabel: 'GitHub profile',
                     children: <FaGithub />,
-                    className: 'text-lg text-gray-300 transition-colors hover:text-white',
+                    className:
+                        'rounded-lg p-2 text-lg text-zinc-400 transition-colors hover:bg-white/5 hover:text-white',
                 },
                 {
                     tag: 'Link',
@@ -107,8 +116,10 @@ const headerJson = {
                     href: 'https://www.linkedin.com/in/adityaraj11/',
                     target: '_blank',
                     rel: 'noopener noreferrer',
+                    ariaLabel: 'LinkedIn profile',
                     children: <FaLinkedin />,
-                    className: 'text-lg text-gray-300 transition-colors hover:text-white',
+                    className:
+                        'rounded-lg p-2 text-lg text-zinc-400 transition-colors hover:bg-white/5 hover:text-sky-300',
                 },
             ],
         },
@@ -125,6 +136,7 @@ interface Element {
     href?: string;
     target?: string;
     rel?: string;
+    ariaLabel?: string;
     children?: Element[] | string | JSX.Element;
     visible?: boolean;
 }
@@ -172,8 +184,12 @@ const Header: React.FC = () => {
                         href={href}
                         target={element.target}
                         rel={element.rel}
-                        className={clsx(element.className, navActive && 'font-semibold text-cyan-200')}
+                        className={clsx(
+                            element.className,
+                            navActive && 'bg-cyan-500/10 font-semibold text-cyan-200'
+                        )}
                         aria-current={navActive ? 'page' : undefined}
+                        aria-label={element.ariaLabel}
                     >
                         {renderChildContent(element.children)}
                     </Link>

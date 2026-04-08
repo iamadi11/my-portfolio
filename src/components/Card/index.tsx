@@ -25,7 +25,14 @@ const ImageCard = ({
     sizes?: string;
 }) => (
     <div className={clsx('relative min-h-40 min-w-40', className)}>
-        <Image src={src} alt={alt || 'Image'} fill={fill} priority={priority} sizes={sizes} />
+        <Image
+            src={src}
+            alt={alt || 'Image'}
+            fill={fill}
+            priority={priority}
+            sizes={sizes}
+            className="object-cover"
+        />
     </div>
 );
 
