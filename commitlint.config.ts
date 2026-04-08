@@ -38,6 +38,7 @@ const Configuration: UserConfig = {
                 'build', // Build scripts or configuration
                 'ci', // Continuous integration
                 'release', // Release related changes
+                'portfolio', // Portfolio site and content
                 'other', // Other changes
             ],
         ],
