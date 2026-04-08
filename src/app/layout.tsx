@@ -22,7 +22,7 @@ const siteUrl = getSiteOrigin();
 
 /** Same resume-backed tagline as About + SOURCE_OF_TRUTH.md (search / OG / Twitter). */
 const defaultDescription =
-    'Frontend engineer with ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise; strong React, Next.js, and TypeScript; performance and production systems focus.';
+    'Frontend Engineer II at Cashfree Payments, Bengaluru. ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise; strong React, Next.js, and TypeScript; performance and production systems focus.';
 
 /** GitHub profile image (https://github.com/iamadi11) — used for link previews without shipping a separate asset. */
 const openGraphImage = 'https://avatars.githubusercontent.com/u/34628188?v=4&s=512';

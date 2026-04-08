@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 
 /** Same resume-backed tagline as root `layout.tsx` metadata + SOURCE_OF_TRUTH.md. */
 const description =
-    'Frontend engineer with ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise; strong React, Next.js, and TypeScript; performance and production systems focus.';
+    'Frontend Engineer II at Cashfree Payments, Bengaluru. ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise; strong React, Next.js, and TypeScript; performance and production systems focus.';
 
 /** Icons derived from https://github.com/iamadi11 profile image (same asset as OG preview). */
 export default function manifest(): MetadataRoute.Manifest {
