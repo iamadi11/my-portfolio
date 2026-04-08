@@ -25,7 +25,7 @@ const projectsData: ProjectItem[] = [
         description:
             'Small React + Vite demo: cursor-follow interaction (public repo and live demo on GitHub).',
         techStack: 'React, Vite, TypeScript, Tailwind CSS',
-        imageUrl: '/project.jpg',
+        imageUrl: 'https://placehold.co/640x360/171717/737373/png?text=mouse-follow',
         liveLink: 'https://mouse-follow-demo.vercel.app/',
         githubLink: 'https://github.com/iamadi11/mouse-follow',
     },
@@ -34,7 +34,7 @@ const projectsData: ProjectItem[] = [
         description:
             'A deterministic, development-time UI performance detection engine that identifies potential performance bottlenecks before code ships.',
         techStack: 'TypeScript (strict), Vitest',
-        imageUrl: '/project.jpg',
+        imageUrl: 'https://placehold.co/640x360/171717/737373/png?text=spatial',
         githubLink: 'https://github.com/iamadi11/spatial',
     },
 ];
