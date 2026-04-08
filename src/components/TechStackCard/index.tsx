@@ -17,6 +17,7 @@ import {
 } from 'react-icons/ri';
 import {
     SiExpress,
+    SiGooglemaps,
     SiJest,
     SiMongodb,
     SiMysql,
@@ -57,6 +58,11 @@ const techStack: TechItem[] = [
     },
     { name: 'Node.js', icon: <RiNodejsLine size={ICON_SIZE} />, color: '#7BBF49' },
     { name: 'Express', icon: <SiExpress size={ICON_SIZE} />, color: '#FFFFFF' },
+    {
+        name: 'Google Maps',
+        icon: <SiGooglemaps size={ICON_SIZE} />,
+        color: '#4285F4',
+    },
     { name: 'Redis', icon: <SiRedis size={ICON_SIZE} />, color: '#DC382D' },
     { name: 'MongoDB', icon: <SiMongodb size={ICON_SIZE} />, color: '#47A248' },
     { name: 'MySQL', icon: <SiMysql size={ICON_SIZE} />, color: '#4479A1' },
