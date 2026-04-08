@@ -62,6 +62,14 @@ const personJsonLd = {
         'Progressive web apps',
         'REST APIs',
         'Frontend engineering',
+        'Semantic UI',
+        'Google Maps API',
+        'Redis',
+        'MongoDB',
+        'MySQL',
+        'Turborepo',
+        'AWS',
+        'CI/CD',
     ],
 } as const;
 
