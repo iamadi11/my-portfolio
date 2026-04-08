@@ -167,7 +167,7 @@ const Header: React.FC = () => {
                     <Image
                         key={key}
                         src={element.src || ''}
-                        alt={element.alt || 'default alt text'}
+                        alt={element.alt ?? 'default alt text'}
                         width={element.width}
                         height={element.height}
                         className={element.className}
