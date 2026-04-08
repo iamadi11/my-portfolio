@@ -27,6 +27,10 @@ const defaultDescription =
 /** GitHub profile image (https://github.com/iamadi11) — used for link previews without shipping a separate asset. */
 const openGraphImage = 'https://avatars.githubusercontent.com/u/34628188?v=4&s=512';
 
+/** Google Search Console HTML tag; set `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` in Vercel to override. */
+const googleSiteVerification =
+    process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ?? 'eM2svU8p9XvFqeLLYk0a__eoFh452FmBXepRgsVef9g';
+
 /**
  * Single @graph: linked Person / org / site / home WebPage (resume-backed).
  * Note: Google Rich Results Test lists only a subset of types (FAQ, JobPosting, etc.);
@@ -44,7 +48,8 @@ const structuredDataJsonLd = {
             jobTitle: 'Frontend Engineer II',
             email: 'adityaraj92.20@gmail.com',
             telephone: '+917257807070',
-            sameAs: ['https://github.com/iamadi11', 'https://www.linkedin.com/in/adityaraj11/'],
+            /** Portfolio + public profiles (SOURCE_OF_TRUTH.md) — helps crawlers link entities. */
+            sameAs: [siteUrl, 'https://github.com/iamadi11', 'https://www.linkedin.com/in/adityaraj11/'],
             address: {
                 '@type': 'PostalAddress',
                 addressLocality: 'Bengaluru',
@@ -167,13 +172,9 @@ export const metadata: Metadata = {
         index: true,
         follow: true,
     },
-    ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
-        ? {
-              verification: {
-                  google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
-              },
-          }
-        : {}),
+    verification: {
+        google: googleSiteVerification,
+    },
 };
 
 export default function RootLayout({
