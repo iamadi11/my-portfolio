@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 
 import clsx from 'clsx';
 
@@ -26,19 +26,36 @@ const Header = ({ children, className }: Props) => {
     );
 };
 
-const Main = ({ children, className }: Props) => (
-    <main
-        id="main-content"
-        tabIndex={-1}
-        className={clsx(
-            'min-h-0 overflow-y-auto overscroll-y-contain outline-none focus-visible:ring-2',
-            'focus-visible:ring-cyan-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950',
-            className
-        )}
-    >
-        {children}
-    </main>
-);
+const Main = ({ children, className }: Props) => {
+    const mainRef = useRef<HTMLElement>(null);
+
+    useEffect(() => {
+        /** Match skip-link behavior when opening a shared URL like /#main-content (a11y). */
+        const focusMainIfHash = () => {
+            if (window.location.hash === '#main-content') {
+                mainRef.current?.focus({ preventScroll: true });
+            }
+        };
+        focusMainIfHash();
+        window.addEventListener('hashchange', focusMainIfHash);
+        return () => window.removeEventListener('hashchange', focusMainIfHash);
+    }, []);
+
+    return (
+        <main
+            ref={mainRef}
+            id="main-content"
+            tabIndex={-1}
+            className={clsx(
+                'min-h-0 overflow-y-auto overscroll-y-contain outline-none focus-visible:ring-2',
+                'focus-visible:ring-cyan-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950',
+                className
+            )}
+        >
+            {children}
+        </main>
+    );
+};
 
 const Sidebar = ({ children, className }: Props) => <aside className={clsx(className)}>{children}</aside>;
 
