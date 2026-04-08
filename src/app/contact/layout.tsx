@@ -2,14 +2,22 @@ import type { ReactNode } from 'react';
 
 import type { Metadata } from 'next';
 
+const contactDescription = 'Phone, email, GitHub, and LinkedIn — Aditya Raj, Bengaluru, India.';
+
 export const metadata: Metadata = {
     title: 'Contact',
-    description: 'Phone, email, GitHub, and LinkedIn — Aditya Raj, Bengaluru, India.',
+    description: contactDescription,
     alternates: {
         canonical: '/contact',
     },
     openGraph: {
         url: '/contact',
+        title: 'Contact · Aditya Raj',
+        description: contactDescription,
+    },
+    twitter: {
+        title: 'Contact · Aditya Raj',
+        description: contactDescription,
     },
 };
 
