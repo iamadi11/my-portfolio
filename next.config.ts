@@ -1,6 +1,8 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+    /** Avoid advertising stack in response headers (production hygiene). */
+    poweredByHeader: false,
     reactStrictMode: false,
     async redirects() {
         return [
