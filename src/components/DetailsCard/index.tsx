@@ -66,7 +66,7 @@ const DetailsCard: React.FC = () => {
                     </motion.h1>
 
                     <motion.p variants={item} className="mt-4 text-lg text-zinc-300 sm:text-xl">
-                        <span className="font-semibold text-white">Senior Frontend Engineer</span>
+                        <span className="font-semibold text-white">Frontend Engineer II</span>
                         <span className="text-zinc-500"> — React, Next.js, TypeScript</span>
                     </motion.p>
 
@@ -123,7 +123,7 @@ const DetailsCard: React.FC = () => {
                 >
                     <Image
                         src="/profile_pic.png"
-                        alt="Aditya Raj — Senior Frontend Engineer, Bengaluru"
+                        alt="Aditya Raj — Frontend Engineer II, Bengaluru"
                         fill
                         priority
                         className="object-cover"

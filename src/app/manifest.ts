@@ -7,7 +7,7 @@ const description =
 /** Icons derived from https://github.com/iamadi11 profile image (same asset as OG preview). */
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'Aditya Raj — Senior Frontend Engineer',
+        name: 'Aditya Raj — Frontend Engineer II',
         short_name: 'Aditya Raj',
         description,
         start_url: '/',

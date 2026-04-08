@@ -34,7 +34,7 @@ const personJsonLd = {
     name: 'Aditya Raj',
     url: siteUrl,
     image: openGraphImage,
-    jobTitle: 'Senior Frontend Engineer',
+    jobTitle: 'Frontend Engineer II',
     email: 'adityaraj92.20@gmail.com',
     telephone: '+917257807070',
     sameAs: ['https://github.com/iamadi11', 'https://www.linkedin.com/in/adityaraj11/'],
@@ -71,7 +71,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
     metadataBase: new URL(siteUrl),
     title: {
-        default: 'Aditya Raj — Senior Frontend Engineer',
+        default: 'Aditya Raj — Frontend Engineer II',
         template: '%s · Aditya Raj',
     },
     description: defaultDescription,
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
         canonical: '/',
     },
     openGraph: {
-        title: 'Aditya Raj — Senior Frontend Engineer',
+        title: 'Aditya Raj — Frontend Engineer II',
         description: defaultDescription,
         url: '/',
         siteName: 'Aditya Raj',
@@ -96,7 +96,7 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Aditya Raj — Senior Frontend Engineer',
+        title: 'Aditya Raj — Frontend Engineer II',
         description: defaultDescription,
         images: [openGraphImage],
     },
