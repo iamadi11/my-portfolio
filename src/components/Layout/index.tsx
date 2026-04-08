@@ -27,7 +27,17 @@ const Header = ({ children, className }: Props) => {
 };
 
 const Main = ({ children, className }: Props) => (
-    <main className={clsx('min-h-0 overflow-y-auto overscroll-y-contain', className)}>{children}</main>
+    <main
+        id="main-content"
+        tabIndex={-1}
+        className={clsx(
+            'min-h-0 overflow-y-auto overscroll-y-contain outline-none focus-visible:ring-2',
+            'focus-visible:ring-cyan-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950',
+            className
+        )}
+    >
+        {children}
+    </main>
 );
 
 const Sidebar = ({ children, className }: Props) => <aside className={clsx(className)}>{children}</aside>;

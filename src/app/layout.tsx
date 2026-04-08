@@ -96,6 +96,12 @@ export default function RootLayout({
     return (
         <html lang="en" className="scroll-smooth">
             <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+                <a
+                    href="#main-content"
+                    className="fixed left-4 top-4 z-[100] translate-y-[-120%] rounded-lg bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-zinc-950 shadow-lg transition-transform duration-200 focus:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+                >
+                    Skip to main content
+                </a>
                 <div className="app-backdrop" aria-hidden="true" />
                 <script
                     type="application/ld+json"
