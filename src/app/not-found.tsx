@@ -4,7 +4,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-    title: 'Page not found',
+    title: {
+        absolute: 'Page not found · Aditya Raj',
+    },
+    description: 'This URL is not part of the portfolio. Use the links below to go home or get in touch.',
     robots: { index: false, follow: true },
 };
 
