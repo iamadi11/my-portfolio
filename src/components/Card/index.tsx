@@ -14,15 +14,18 @@ const ImageCard = ({
     fill = true,
     priority = false,
     className = '',
+    /** Card grid uses max-w-64 (16rem); avoids oversized OG downloads on narrow viewports. */
+    sizes = '(max-width: 640px) min(100vw, 16rem), 16rem',
 }: {
     src: string;
     alt: string;
     fill?: boolean;
     priority?: boolean;
     className?: string;
+    sizes?: string;
 }) => (
     <div className={clsx('relative min-h-40 min-w-40', className)}>
-        <Image src={src} alt={alt || 'Image'} fill={fill} priority={priority} />
+        <Image src={src} alt={alt || 'Image'} fill={fill} priority={priority} sizes={sizes} />
     </div>
 );
 
