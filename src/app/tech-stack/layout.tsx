@@ -6,6 +6,12 @@ export const metadata: Metadata = {
     title: 'Tech stack',
     description:
         'Technologies from my resume and production work — React, Next.js, TypeScript, Node.js, and related tooling.',
+    alternates: {
+        canonical: '/tech-stack',
+    },
+    openGraph: {
+        url: '/tech-stack',
+    },
 };
 
 export default function TechStackLayout({ children }: { children: ReactNode }): ReactNode {
