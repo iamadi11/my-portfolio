@@ -21,6 +21,14 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Keyboard navigation — skip mouse-only :focus to avoid noisy outlines on click */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid rgb(34 211 238);
+  outline-offset: 3px;
+  border-radius: 0.25rem;
+}
+
 /* Tailwind + project custom `animate-*` utilities — do not alter motion/react; targets CSS keyframes only. */
 @media (prefers-reduced-motion: reduce) {
   .animate-pulse,
