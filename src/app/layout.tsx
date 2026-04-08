@@ -46,6 +46,20 @@ const personJsonLd = {
     },
 } as const;
 
+/** schema.org WebSite — complements Person; uses same canonical description as meta/OG. */
+const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Aditya Raj',
+    url: siteUrl,
+    description: defaultDescription,
+    inLanguage: 'en-IN',
+    publisher: {
+        '@type': 'Person',
+        name: 'Aditya Raj',
+    },
+} as const;
+
 /** Mobile browser chrome + safe-area behavior; matches forced dark UI (`globals.css` / zinc-950). */
 export const viewport: Viewport = {
     width: 'device-width',
@@ -114,6 +128,10 @@ export default function RootLayout({
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+                />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
                 />
                 {children}
             </body>
