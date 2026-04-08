@@ -20,8 +20,6 @@
         "baseUrl": ".",
         "paths": {
             "@/*": ["./src/*"],
-            "@/apiService": ["./src/utils/axios/apiClient"],
-            "@/logger": ["./src/utils/logger"],
             "@/components/*": ["./src/components/*"]
         },
         "strict": true

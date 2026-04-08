@@ -3,8 +3,6 @@ import React, { JSX } from 'react';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
-import ClientProvider from '@/components/ClientProvider';
-
 import './globals.css';
 
 const geistSans = Geist({
@@ -30,9 +28,7 @@ export default function RootLayout({
 }>): JSX.Element {
     return (
         <html lang="en">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-                <ClientProvider>{children}</ClientProvider>
-            </body>
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
         </html>
     );
 }
