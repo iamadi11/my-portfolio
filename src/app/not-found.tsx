@@ -33,6 +33,36 @@ export default function NotFound(): React.JSX.Element {
                         Contact
                     </Link>
                 </div>
+                <nav aria-label="Primary pages" className="mt-8 border-t border-white/[0.06] pt-6">
+                    <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm">
+                        <li>
+                            <Link href="/" className="text-zinc-400 transition-colors hover:text-white">
+                                Home
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/about" className="text-zinc-400 transition-colors hover:text-white">
+                                About
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                href="/tech-stack"
+                                className="text-zinc-400 transition-colors hover:text-white"
+                            >
+                                Tech
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                href="/contact"
+                                className="text-zinc-400 transition-colors hover:text-white"
+                            >
+                                Contact
+                            </Link>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
     );
