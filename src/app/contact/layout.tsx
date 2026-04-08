@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 
 import type { Metadata } from 'next';
 
-const contactDescription = 'Phone, email, GitHub, and LinkedIn — Aditya Raj, Bengaluru, India.';
+const contactDescription =
+    'Phone, email, GitHub, and LinkedIn — same details as on my resume. Aditya Raj, Frontend Engineer II, Bengaluru, India.';
 
 export const metadata: Metadata = {
     title: 'Contact',
