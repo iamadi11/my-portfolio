@@ -15,7 +15,15 @@ import {
     RiJavascriptLine,
     RiNodejsLine,
 } from 'react-icons/ri';
-import { SiExpress, SiJest, SiRedux, SiReactquery, SiTestinglibrary, SiWebpack } from 'react-icons/si';
+import {
+    SiExpress,
+    SiJest,
+    SiReactquery,
+    SiRedux,
+    SiSemanticuireact,
+    SiTestinglibrary,
+    SiWebpack,
+} from 'react-icons/si';
 import { TbBrandTypescript, TbBrandVite } from 'react-icons/tb';
 
 type TechItem = {
@@ -38,6 +46,11 @@ const techStack: TechItem[] = [
     { name: 'Zustand', icon: <BiCube size={ICON_SIZE} />, color: '#E59B3D' },
     { name: 'React Query', icon: <SiReactquery size={ICON_SIZE} />, color: '#FF4C4C' },
     { name: 'Tailwind', icon: <RiTailwindCssFill size={ICON_SIZE} />, color: '#0EA5E9' },
+    {
+        name: 'Semantic UI',
+        icon: <SiSemanticuireact size={ICON_SIZE} />,
+        color: '#00B5AD',
+    },
     { name: 'Node.js', icon: <RiNodejsLine size={ICON_SIZE} />, color: '#7BBF49' },
     { name: 'Express', icon: <SiExpress size={ICON_SIZE} />, color: '#FFFFFF' },
     { name: 'Webpack', icon: <SiWebpack size={ICON_SIZE} />, color: '#4B93FF' },
