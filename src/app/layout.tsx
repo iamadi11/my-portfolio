@@ -44,6 +44,25 @@ const personJsonLd = {
         addressRegion: 'Karnataka',
         addressCountry: 'IN',
     },
+    worksFor: {
+        '@type': 'Organization',
+        name: 'Cashfree Payments',
+    },
+    alumniOf: {
+        '@type': 'EducationalOrganization',
+        name: 'IIIT Lucknow',
+    },
+    knowsAbout: [
+        'React',
+        'Next.js',
+        'TypeScript',
+        'JavaScript',
+        'Node.js',
+        'Web performance',
+        'Progressive web apps',
+        'REST APIs',
+        'Frontend engineering',
+    ],
 } as const;
 
 /** schema.org WebSite — complements Person; uses same canonical description as meta/OG. */
@@ -75,6 +94,18 @@ export const metadata: Metadata = {
         template: '%s · Aditya Raj',
     },
     description: defaultDescription,
+    /** Resume-backed terms for search / discovery (subset of SOURCE_OF_TRUTH.md). */
+    keywords: [
+        'Aditya Raj',
+        'Frontend Engineer',
+        'React',
+        'Next.js',
+        'TypeScript',
+        'Bengaluru',
+        'Cashfree Payments',
+        'fintech',
+        'web performance',
+    ],
     alternates: {
         canonical: '/',
     },
