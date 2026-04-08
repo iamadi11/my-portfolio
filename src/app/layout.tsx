@@ -174,6 +174,9 @@ export default function RootLayout({
 }>): JSX.Element {
     return (
         <html lang="en-IN" className="scroll-smooth">
+            <head>
+                <link rel="preconnect" href="https://opengraph.githubassets.com" crossOrigin="anonymous" />
+            </head>
             <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
                 <a
                     href="#main-content"
