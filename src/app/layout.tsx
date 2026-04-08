@@ -1,6 +1,6 @@
 import React, { JSX } from 'react';
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
 import './globals.css';
@@ -45,6 +45,14 @@ const personJsonLd = {
         addressCountry: 'IN',
     },
 } as const;
+
+/** Mobile browser chrome + safe-area behavior; matches forced dark UI (`globals.css` / zinc-950). */
+export const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    themeColor: '#09090b',
+    colorScheme: 'dark',
+};
 
 export const metadata: Metadata = {
     metadataBase: new URL(siteUrl),
