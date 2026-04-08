@@ -17,7 +17,11 @@ export default function Error({ error, reset }: ErrorProps): React.JSX.Element {
 
     return (
         <div className="flex min-h-dvh flex-col items-center justify-center px-4 py-20 text-center">
-            <div className="max-w-md rounded-2xl border border-white/[0.08] bg-white/[0.03] px-8 py-10 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.75)] backdrop-blur-md">
+            <div
+                className="max-w-md rounded-2xl border border-white/[0.08] bg-white/[0.03] px-8 py-10 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.75)] backdrop-blur-md"
+                role="alert"
+                aria-live="assertive"
+            >
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400/90">Error</p>
                 <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
                     Something went wrong
