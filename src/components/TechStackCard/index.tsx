@@ -21,6 +21,7 @@ import {
     SiJest,
     SiMongodb,
     SiMysql,
+    SiPwa,
     SiReactquery,
     SiRedis,
     SiRedux,
@@ -75,6 +76,7 @@ const techStack: TechItem[] = [
         color: '#E33332',
     },
     { name: 'Vite', icon: <TbBrandVite size={ICON_SIZE} />, color: '#6A4CFF' },
+    { name: 'PWA', icon: <SiPwa size={ICON_SIZE} />, color: '#5A0FC8' },
     { name: 'AWS', icon: <FaAws size={ICON_SIZE} />, color: '#FF8C00' },
     { name: 'Git', icon: <FaGitSquare size={ICON_SIZE} />, color: '#D64937' },
 ];
