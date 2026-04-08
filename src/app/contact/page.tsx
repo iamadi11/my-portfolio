@@ -4,7 +4,7 @@ import React from 'react';
 
 import clsx from 'clsx';
 import Link from 'next/link';
-import { FaLinkedin, FaMailBulk, FaPhoneAlt } from 'react-icons/fa';
+import { FaEnvelope, FaLinkedin, FaPhoneAlt } from 'react-icons/fa';
 import { FaGithub } from 'react-icons/fa6';
 
 const Contact: React.FC = () => (
@@ -37,7 +37,7 @@ const Contact: React.FC = () => (
                     href="mailto:adityaraj92.20@gmail.com"
                     className="flex items-center gap-4 rounded-xl py-2 text-amber-200/90 transition-colors hover:bg-white/[0.04] hover:text-amber-100"
                 >
-                    <FaMailBulk className="size-5 shrink-0" aria-hidden />
+                    <FaEnvelope className="size-5 shrink-0" aria-hidden />
                     <span className="break-all text-base font-medium text-zinc-200">
                         adityaraj92.20@gmail.com
                     </span>
