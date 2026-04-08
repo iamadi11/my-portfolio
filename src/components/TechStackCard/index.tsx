@@ -3,7 +3,7 @@
 import React from 'react';
 
 import clsx from 'clsx';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { BiCube } from 'react-icons/bi';
 import { FaAws, FaGitSquare } from 'react-icons/fa';
 import {
@@ -46,36 +46,41 @@ const techStack: TechItem[] = [
     { name: 'Git', icon: <FaGitSquare size={ICON_SIZE} />, color: '#D64937' },
 ];
 
-const TechStackCard: React.FC = () => (
-    <motion.div
-        className="flex flex-col items-center justify-center p-6 text-center"
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-40px' }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-    >
-        <h2 className="mb-4 text-2xl font-bold text-white">Tech stack</h2>
-        <p className="mb-6 text-sm text-gray-500">From resume and production work</p>
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:grid-cols-6">
-            {techStack.map((tech) => (
-                <motion.div
-                    key={tech.name}
-                    className={clsx('flex flex-col items-center')}
-                    whileHover={{ scale: 1.06, transition: { duration: 0.22 } }}
-                >
-                    <div
-                        style={{
-                            filter: `drop-shadow(0px 0px 60px ${tech.color})`,
-                            color: tech.color,
-                        }}
+const TechStackCard: React.FC = () => {
+    const prefersReducedMotion = useReducedMotion();
+    const reduce = prefersReducedMotion === true;
+
+    return (
+        <motion.div
+            className="flex flex-col items-center justify-center p-6 text-center"
+            initial={reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={reduce ? { duration: 0 } : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        >
+            <h2 className="mb-4 text-2xl font-bold text-white">Tech stack</h2>
+            <p className="mb-6 text-sm text-gray-500">From resume and production work</p>
+            <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:grid-cols-6">
+                {techStack.map((tech) => (
+                    <motion.div
+                        key={tech.name}
+                        className={clsx('flex flex-col items-center')}
+                        whileHover={reduce ? { scale: 1 } : { scale: 1.06, transition: { duration: 0.22 } }}
                     >
-                        {tech.icon}
-                    </div>
-                    <span className="mt-2 text-xs text-gray-300">{tech.name}</span>
-                </motion.div>
-            ))}
-        </div>
-    </motion.div>
-);
+                        <div
+                            style={{
+                                filter: `drop-shadow(0px 0px 60px ${tech.color})`,
+                                color: tech.color,
+                            }}
+                        >
+                            {tech.icon}
+                        </div>
+                        <span className="mt-2 text-xs text-gray-300">{tech.name}</span>
+                    </motion.div>
+                ))}
+            </div>
+        </motion.div>
+    );
+};
 
 export default TechStackCard;
