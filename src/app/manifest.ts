@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next';
 const description =
     'Senior Frontend Engineer (React, Next.js, TypeScript). Fintech and enterprise web apps—Bengaluru, India.';
 
-/** Dark UI matches globals.css; icon PNGs omitted until added under /public (avoid 404 install icons). */
+/** Icons derived from https://github.com/iamadi11 profile image (same asset as OG preview). */
 export default function manifest(): MetadataRoute.Manifest {
     return {
         name: 'Aditya Raj — Senior Frontend Engineer',
@@ -13,5 +13,19 @@ export default function manifest(): MetadataRoute.Manifest {
         display: 'standalone',
         background_color: '#0a0a0a',
         theme_color: '#0a0a0a',
+        icons: [
+            {
+                src: '/icon-192x192.png',
+                sizes: '192x192',
+                type: 'image/png',
+                purpose: 'any',
+            },
+            {
+                src: '/icon-512x512.png',
+                sizes: '512x512',
+                type: 'image/png',
+                purpose: 'any',
+            },
+        ],
     };
 }
