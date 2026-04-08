@@ -15,7 +15,7 @@ import {
     RiJavascriptLine,
     RiNodejsLine,
 } from 'react-icons/ri';
-import { SiExpress, SiRedux, SiReactquery, SiWebpack } from 'react-icons/si';
+import { SiExpress, SiJest, SiRedux, SiReactquery, SiTestinglibrary, SiWebpack } from 'react-icons/si';
 import { TbBrandTypescript, TbBrandVite } from 'react-icons/tb';
 
 type TechItem = {
@@ -41,6 +41,12 @@ const techStack: TechItem[] = [
     { name: 'Node.js', icon: <RiNodejsLine size={ICON_SIZE} />, color: '#7BBF49' },
     { name: 'Express', icon: <SiExpress size={ICON_SIZE} />, color: '#FFFFFF' },
     { name: 'Webpack', icon: <SiWebpack size={ICON_SIZE} />, color: '#4B93FF' },
+    { name: 'Jest', icon: <SiJest size={ICON_SIZE} />, color: '#C21325' },
+    {
+        name: 'React Testing Library',
+        icon: <SiTestinglibrary size={ICON_SIZE} />,
+        color: '#E33332',
+    },
     { name: 'Vite', icon: <TbBrandVite size={ICON_SIZE} />, color: '#6A4CFF' },
     { name: 'AWS', icon: <FaAws size={ICON_SIZE} />, color: '#FF8C00' },
     { name: 'Git', icon: <FaGitSquare size={ICON_SIZE} />, color: '#D64937' },
