@@ -6,7 +6,20 @@ import { motion } from 'motion/react';
 import Link from 'next/link';
 import { FaLink, FaGithub } from 'react-icons/fa';
 
-const projectsData = [
+import Card from '@/components/Card';
+
+type ProjectItem = {
+    title: string;
+    description: string;
+    techStack: string;
+    imageUrl: string;
+    githubLink: string;
+    /** Public demo URL only when it exists (e.g. repo homepage on GitHub). */
+    liveLink?: string;
+};
+
+/** Copy for spatial from https://github.com/iamadi11/spatial/blob/main/README.md (intro). */
+const projectsData: ProjectItem[] = [
     {
         title: 'Mouse Follow',
         description:
@@ -16,9 +29,15 @@ const projectsData = [
         liveLink: 'https://mouse-follow-demo.vercel.app/',
         githubLink: 'https://github.com/iamadi11/mouse-follow',
     },
+    {
+        title: 'Client-Side UI Performance Optimizer',
+        description:
+            'A deterministic, development-time UI performance detection engine that identifies potential performance bottlenecks before code ships.',
+        techStack: 'TypeScript (strict), Vitest',
+        imageUrl: '/project.jpg',
+        githubLink: 'https://github.com/iamadi11/spatial',
+    },
 ];
-
-import Card from '@/components/Card';
 
 const ProjectsCard: React.FC = () => (
     <motion.div
@@ -33,7 +52,7 @@ const ProjectsCard: React.FC = () => (
         <div className="flex flex-wrap justify-center gap-6">
             {projectsData.map((project) => (
                 <motion.div
-                    key={project.title}
+                    key={project.githubLink}
                     whileHover={{ y: -4, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
                     className="will-change-transform"
                 >
@@ -57,19 +76,48 @@ const ProjectsCard: React.FC = () => (
                                     </div>
                                 </div>
                             </div>
-                            <Card.Footer className="flex flex-row justify-between px-8 pb-4 text-xs">
-                                <div className="flex flex-row items-center gap-2">
-                                    <FaLink />
-                                    <Link href={project.liveLink} target="_blank" rel="noopener noreferrer">
-                                        Live
-                                    </Link>
-                                </div>
-                                <div className="flex flex-row items-center gap-2">
-                                    <FaGithub />
-                                    <Link href={project.githubLink} target="_blank" rel="noopener noreferrer">
-                                        Code
-                                    </Link>
-                                </div>
+                            <Card.Footer
+                                className={
+                                    project.liveLink
+                                        ? 'flex flex-row justify-between px-8 pb-4 text-xs'
+                                        : 'flex flex-row justify-center px-8 pb-4 text-xs'
+                                }
+                            >
+                                {project.liveLink ? (
+                                    <>
+                                        <div className="flex flex-row items-center gap-2">
+                                            <FaLink />
+                                            <Link
+                                                href={project.liveLink}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                Live
+                                            </Link>
+                                        </div>
+                                        <div className="flex flex-row items-center gap-2">
+                                            <FaGithub />
+                                            <Link
+                                                href={project.githubLink}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                Code
+                                            </Link>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="flex flex-row items-center gap-2">
+                                        <FaGithub />
+                                        <Link
+                                            href={project.githubLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Repository
+                                        </Link>
+                                    </div>
+                                )}
                             </Card.Footer>
                         </Card.Main>
                     </Card>
