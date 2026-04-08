@@ -29,7 +29,7 @@ export default function Error({ error, reset }: ErrorProps): React.JSX.Element {
                 <p className="mt-4 text-sm leading-relaxed text-zinc-400">
                     A client-side error interrupted this page. You can try again or return home.
                 </p>
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
                     <button
                         type="button"
                         onClick={() => reset()}
@@ -42,6 +42,12 @@ export default function Error({ error, reset }: ErrorProps): React.JSX.Element {
                         className="border-white/12 inline-flex items-center justify-center rounded-xl border bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-zinc-200 transition-colors hover:border-white/20 hover:bg-white/[0.07]"
                     >
                         Back to home
+                    </Link>
+                    <Link
+                        href="/contact"
+                        className="border-white/12 inline-flex items-center justify-center rounded-xl border bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-zinc-200 transition-colors hover:border-white/20 hover:bg-white/[0.07]"
+                    >
+                        Contact
                     </Link>
                 </div>
             </div>
