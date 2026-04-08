@@ -1,7 +1,17 @@
-import type { JSX } from 'react';
+'use client';
 
-import Home from './home/page';
+import React from 'react';
 
-export default function Page(): JSX.Element {
-    return <Home />;
+import DetailsCard from '@/components/DetailsCard';
+import ProjectsCard from '@/components/ProjectsCard';
+import TechStackCard from '@/components/TechStackCard';
+
+export default function Page(): React.JSX.Element {
+    return (
+        <div className="size-full">
+            <DetailsCard />
+            <TechStackCard />
+            <ProjectsCard />
+        </div>
+    );
 }
