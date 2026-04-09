@@ -66,6 +66,24 @@ export default function NotFound(): React.JSX.Element {
                         </li>
                     </ul>
                 </nav>
+                <nav
+                    aria-label="Site utilities"
+                    className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 border-t border-white/[0.06] pt-6 text-xs"
+                >
+                    <Link
+                        href="/sitemap.xml"
+                        className="text-zinc-500 underline-offset-4 transition-colors hover:text-zinc-300 hover:underline"
+                    >
+                        Sitemap
+                    </Link>
+                    <Link
+                        href="/llms.txt"
+                        title="Summary for AI and research crawlers"
+                        className="text-zinc-500 underline-offset-4 transition-colors hover:text-zinc-300 hover:underline"
+                    >
+                        llms.txt
+                    </Link>
+                </nav>
             </div>
         </div>
     );
