@@ -49,6 +49,7 @@ const projectsData: ProjectItem[] = [
         description:
             'Full-stack MCP UI demo: dynamic form, dashboard, and chart generation; React + Vite client, Node.js + Express server, @mcp-ui/server.',
         techStack: 'React 18, Vite, Node.js, Express.js, CSS3, MCP UI',
+        liveLink: 'https://mcp-ui-poc.vercel.app/',
         githubLink: 'https://github.com/iamadi11/mcp-ui-poc',
     },
 ];
