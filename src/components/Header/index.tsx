@@ -104,7 +104,7 @@ const headerJson = {
                     visible: true,
                     href: 'https://github.com/iamadi11',
                     target: '_blank',
-                    rel: 'noopener noreferrer',
+                    rel: 'noopener noreferrer me',
                     ariaLabel: 'GitHub profile',
                     children: <FaGithub />,
                     className:
@@ -115,7 +115,7 @@ const headerJson = {
                     visible: true,
                     href: 'https://www.linkedin.com/in/adityaraj11/',
                     target: '_blank',
-                    rel: 'noopener noreferrer',
+                    rel: 'noopener noreferrer me',
                     ariaLabel: 'LinkedIn profile',
                     children: <FaLinkedin />,
                     className:

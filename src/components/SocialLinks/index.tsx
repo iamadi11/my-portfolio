@@ -24,7 +24,7 @@ const SocialLinks: React.FC = () => (
         <Link
             href="https://github.com/iamadi11"
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener noreferrer me"
             aria-label="GitHub profile"
             className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/5 hover:text-white"
         >
@@ -33,7 +33,7 @@ const SocialLinks: React.FC = () => (
         <Link
             href="https://www.linkedin.com/in/adityaraj11/"
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener noreferrer me"
             aria-label="LinkedIn profile"
             className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/5 hover:text-sky-300"
         >

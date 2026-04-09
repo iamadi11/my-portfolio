@@ -47,7 +47,7 @@ const Contact: React.FC = () => (
                 <Link
                     href="https://github.com/iamadi11"
                     target="_blank"
-                    rel="noopener noreferrer"
+                    rel="noopener noreferrer me"
                     className="flex items-center gap-4 rounded-xl py-2 text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-white"
                 >
                     <FaGithub className="size-6 shrink-0" aria-hidden />
@@ -58,7 +58,7 @@ const Contact: React.FC = () => (
                 <Link
                     href="https://www.linkedin.com/in/adityaraj11/"
                     target="_blank"
-                    rel="noopener noreferrer"
+                    rel="noopener noreferrer me"
                     className="flex items-center gap-4 rounded-xl py-2 text-sky-400/90 transition-colors hover:bg-white/[0.04] hover:text-sky-300"
                 >
                     <FaLinkedin className="size-6 shrink-0" aria-hidden />

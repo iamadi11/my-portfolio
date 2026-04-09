@@ -103,7 +103,7 @@ const DetailsCard: React.FC = () => {
                         <Link
                             href="https://github.com/iamadi11"
                             target="_blank"
-                            rel="noopener noreferrer"
+                            rel="noopener noreferrer me"
                             className={clsx(
                                 'border-white/12 inline-flex items-center justify-center rounded-xl border',
                                 'bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-zinc-200',
@@ -115,7 +115,7 @@ const DetailsCard: React.FC = () => {
                         <Link
                             href="https://www.linkedin.com/in/adityaraj11/"
                             target="_blank"
-                            rel="noopener noreferrer"
+                            rel="noopener noreferrer me"
                             className={clsx(
                                 'border-white/12 inline-flex items-center justify-center rounded-xl border',
                                 'bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-zinc-200',
