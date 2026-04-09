@@ -180,9 +180,9 @@ export default function RootLayout({
                 <link rel="preconnect" href="https://opengraph.githubassets.com" crossOrigin="anonymous" />
                 <link
                     rel="alternate"
-                    type="text/markdown; charset=utf-8"
+                    type="text/plain; charset=utf-8"
                     href="/llms.txt"
-                    title="Machine-readable site summary (Aditya Raj)"
+                    title="Plain-text site index for AI and tools (Aditya Raj)"
                 />
             </head>
             <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
