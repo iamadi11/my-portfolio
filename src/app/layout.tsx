@@ -186,7 +186,10 @@ export default function RootLayout({
                 />
             </head>
             <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
-                <a href="#main-content" className="sr-only">
+                <a
+                    href="#main-content"
+                    className="fixed left-4 top-0 z-[200] -translate-y-full rounded-b-md border border-t-0 border-white/10 bg-zinc-950 px-4 py-2.5 text-sm font-medium text-zinc-100 shadow-lg outline-none transition-transform duration-200 ease-out focus:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none"
+                >
                     Skip to main content
                 </a>
                 <div className="app-backdrop" aria-hidden="true" />

@@ -46,12 +46,7 @@ const Main = ({ children, className }: Props) => {
             ref={mainRef}
             id="main-content"
             tabIndex={-1}
-            className={clsx(
-                'min-h-0 overflow-y-auto overscroll-y-contain outline-none',
-                /** Inset ring: outer ring + offset drew above the top edge and overlapped the sticky header. */
-                'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-400/50',
-                className
-            )}
+            className={clsx('min-h-0 overflow-y-auto overscroll-y-contain outline-none', className)}
         >
             {children}
         </main>
