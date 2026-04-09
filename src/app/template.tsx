@@ -4,6 +4,7 @@ import React from 'react';
 
 import clsx from 'clsx';
 import { motion, useReducedMotion } from 'motion/react';
+import Link from 'next/link';
 
 import Header from '@/components/Header';
 import Layout from '@/components/Layout';
@@ -32,10 +33,27 @@ const Template: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <Layout.Footer
                 className={clsx('size-full border-t border-white/5 bg-zinc-950/85 backdrop-blur-xl', 'px-2')}
             >
-                <div className="flex items-center justify-between p-4 sm:px-8">
+                <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:px-8">
                     <p className="text-sm text-zinc-500">© 2026 Aditya Raj</p>
-                    <div className="md:hidden">
-                        <SocialLinks />
+                    <div className="flex flex-wrap items-center gap-4">
+                        <nav aria-label="Site utilities" className="flex items-center gap-4 text-xs">
+                            <Link
+                                href="/sitemap.xml"
+                                className="text-zinc-500 underline-offset-4 transition-colors hover:text-zinc-300 hover:underline"
+                            >
+                                Sitemap
+                            </Link>
+                            <Link
+                                href="/llms.txt"
+                                className="text-zinc-500 underline-offset-4 transition-colors hover:text-zinc-300 hover:underline"
+                                title="Summary for AI and research crawlers"
+                            >
+                                llms.txt
+                            </Link>
+                        </nav>
+                        <div className="md:hidden">
+                            <SocialLinks />
+                        </div>
                     </div>
                 </div>
             </Layout.Footer>
