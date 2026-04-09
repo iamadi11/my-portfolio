@@ -1,9 +1,11 @@
 import type { MetadataRoute } from 'next';
 
-import { getSiteOrigin } from '@/lib/site';
+import { getRequestSiteOrigin } from '@/lib/site-request-origin';
 
-export default function robots(): MetadataRoute.Robots {
-    const base = getSiteOrigin();
+export const dynamic = 'force-dynamic';
+
+export default async function robots(): Promise<MetadataRoute.Robots> {
+    const base = await getRequestSiteOrigin();
     return {
         rules: {
             userAgent: '*',

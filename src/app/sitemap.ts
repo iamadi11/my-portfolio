@@ -1,9 +1,12 @@
 import type { MetadataRoute } from 'next';
 
-import { getSiteOrigin } from '@/lib/site';
+import { getRequestSiteOrigin } from '@/lib/site-request-origin';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-    const base = getSiteOrigin();
+/** Resolve sitemap URL host from the incoming request so GSC and crawlers match the live domain. */
+export const dynamic = 'force-dynamic';
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+    const base = await getRequestSiteOrigin();
     const paths = ['/', '/about', '/contact', '/tech-stack'] as const;
 
     return paths.map((path) => ({
