@@ -41,6 +41,7 @@ const projectsData: ProjectItem[] = [
         description:
             'A deterministic, development-time UI performance detection engine that identifies potential performance bottlenecks before code ships.',
         techStack: 'TypeScript (strict), Vitest',
+        liveLink: 'https://spatial-zeta.vercel.app/',
         githubLink: 'https://github.com/iamadi11/spatial',
     },
     /** Intro + stack from https://github.com/iamadi11/mcp-ui-poc/blob/main/README.md */
