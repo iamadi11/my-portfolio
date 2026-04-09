@@ -178,6 +178,12 @@ export default function RootLayout({
         <html lang="en-IN" className="scroll-smooth">
             <head>
                 <link rel="preconnect" href="https://opengraph.githubassets.com" crossOrigin="anonymous" />
+                <link
+                    rel="alternate"
+                    type="text/markdown; charset=utf-8"
+                    href="/llms.txt"
+                    title="Machine-readable site summary (Aditya Raj)"
+                />
             </head>
             <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
                 <a href="#main-content" className="sr-only">
