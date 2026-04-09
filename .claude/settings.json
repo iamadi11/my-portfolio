@@ -1,0 +1,32 @@
+{
+    "hooks": {
+        "PostToolUse": [
+            {
+                "matcher": "Edit|Write",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "cd $CLAUDE_PROJECT_DIR && npx tsc --noEmit 2>&1 | head -20 || true"
+                    }
+                ]
+            }
+        ],
+        "PreToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "echo '[reminder] Keep changes small and atomic. One section/component at a time.'"
+                    }
+                ]
+            }
+        ],
+        "SessionStart": [
+            {
+                "type": "command",
+                "command": "echo '=== Portfolio Status ===' && echo 'SOT: SOURCE_OF_TRUTH.md' && echo 'Resume: Aditya_SDE_5_years.pdf' && echo 'LinkedIn: https://www.linkedin.com/in/adityaraj11/' && echo 'Skills: /ship (improve), /sync-resume (align with resume)' && echo '========================'"
+            }
+        ]
+    }
+}

@@ -56,13 +56,57 @@
 
 ---
 
-## Folder structure (high level)
+## Folder structure
 
 ```
-src/app/          — routes (home, about, tech-stack, contact)
-src/components/   — UI sections (DetailsCard, WorkExperience, …)
-public/           — static assets
+my-portfolio/
+├── src/
+│   ├── app/
+│   │   ├── page.tsx              # Home: DetailsCard + ProjectsCard + TechStackCard
+│   │   ├── about/page.tsx        # About: Description + WorkExperience + Education
+│   │   ├── tech-stack/page.tsx   # Tech: TechStackCard (standalone h1)
+│   │   ├── contact/page.tsx      # Contact: email, phone, LinkedIn, GitHub
+│   │   ├── layout.tsx            # Root layout: metadata, JSON-LD, fonts
+│   │   ├── globals.css
+│   │   ├── manifest.ts
+│   │   ├── robots.ts
+│   │   ├── sitemap.ts
+│   │   └── llms.txt/route.ts
+│   ├── components/
+│   │   ├── Card/                 # Base card primitive
+│   │   ├── DetailsCard/          # Hero section (name, title, tagline, CTAs)
+│   │   ├── Description/          # About intro paragraph
+│   │   ├── Education/            # Education card
+│   │   ├── Header/               # Top nav (data-driven tree renderer)
+│   │   ├── Layout/               # Page layout wrapper
+│   │   ├── ProjectsCard/         # GitHub projects grid
+│   │   ├── SocialLinks/          # Social icon links
+│   │   ├── TechStackCard/        # Skills/tech icon grid
+│   │   └── WorkExperience/       # Work history timeline
+│   └── lib/
+│       ├── site.ts               # getSiteOrigin() helper
+│       └── site-request-origin.ts
+├── public/                       # Static assets (logo, favicons, profile pic)
+├── SOURCE_OF_TRUTH.md            # This file
+├── CLAUDE.md                     # AI rules
+└── Aditya_SDE_5_years.pdf        # Resume (gitignored — contains private contact info)
 ```
+
+## Portfolio project tech stack
+
+| Layer      | Technology                                             |
+| ---------- | ------------------------------------------------------ |
+| Framework  | Next.js 15 (App Router)                                |
+| UI library | React 19                                               |
+| Language   | TypeScript 5 (strict)                                  |
+| Styling    | Tailwind CSS 3                                         |
+| Animation  | Motion (motion/react)                                  |
+| Icons      | react-icons 5                                          |
+| Utility    | clsx                                                   |
+| Linting    | ESLint 9 + eslint-config-next + eslint-plugin-prettier |
+| Formatting | Prettier 3 with prettier-plugin-tailwindcss            |
+| Git hooks  | commitlint + commitizen + husky + lint-staged          |
+| Deployment | Vercel                                                 |
 
 ---
 

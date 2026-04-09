@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# resume — contains private contact details (phone, email); cached snapshot is in SOURCE_OF_TRUTH.md
+*.pdf
