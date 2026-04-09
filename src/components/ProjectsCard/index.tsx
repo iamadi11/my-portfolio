@@ -76,7 +76,7 @@ const ProjectsCard: React.FC = () => {
                     Projects
                 </h2>
                 <p className="mx-auto mt-3 max-w-md text-sm text-zinc-500 sm:text-base">Public GitHub work</p>
-                <div className="mt-12 flex flex-wrap justify-center gap-6 lg:gap-8">
+                <div className="mt-12 flex flex-wrap items-stretch justify-center gap-6 lg:gap-8">
                     {projectsData.map((project, index) => (
                         <motion.div
                             key={project.githubLink}
@@ -93,23 +93,23 @@ const ProjectsCard: React.FC = () => {
                                     ? { y: 0 }
                                     : { y: -6, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }
                             }
-                            className="will-change-transform"
+                            className="flex h-full min-w-[17rem] max-w-[17rem] will-change-transform"
                         >
                             <Card
                                 className={clsx(
-                                    'flex min-w-[17rem] max-w-[17rem] flex-col overflow-hidden rounded-2xl text-left',
+                                    'flex h-full min-h-0 min-w-[17rem] max-w-[17rem] flex-col overflow-hidden rounded-2xl text-left',
                                     'border border-white/[0.08] bg-white/[0.03] shadow-[0_24px_80px_-32px_rgba(0,0,0,0.85)]',
                                     'backdrop-blur-md transition-shadow duration-300 hover:border-cyan-500/15',
                                     'hover:shadow-[0_28px_90px_-28px_rgba(34,211,238,0.12)]'
                                 )}
                             >
                                 <Card.ImageCard
-                                    className="overflow-hidden rounded-t-2xl"
+                                    className="shrink-0 overflow-hidden rounded-t-2xl"
                                     src={githubRepoOpenGraphImage(project.githubLink) || '/profile_pic.png'}
                                     alt=""
                                 />
-                                <Card.Main className="flex size-full flex-col justify-between gap-3">
-                                    <div className="flex flex-col gap-3 px-5 pt-5">
+                                <Card.Main className="flex min-h-0 flex-1 flex-col justify-between gap-3">
+                                    <div className="flex flex-1 flex-col gap-3 px-5 pt-5">
                                         <Card.Header className="p-0">
                                             <h3 className="text-lg font-semibold tracking-tight text-zinc-100">
                                                 {project.title}
