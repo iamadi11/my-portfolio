@@ -34,7 +34,8 @@ const googleSiteVerification =
 /**
  * Single @graph: linked Person / org / site / home WebPage (resume-backed).
  * Note: Google Rich Results Test lists only a subset of types (FAQ, JobPosting, etc.);
- * Person/WebSite/WebPage are still valid and used for general understanding.
+ * Person/WebSite are still valid for general understanding. Omit route-specific WebPage here so
+ * inner URLs (/about, etc.) are not all labeled as the home URL in the same graph.
  */
 const structuredDataJsonLd = {
     '@context': 'https://schema.org',
@@ -96,15 +97,6 @@ const structuredDataJsonLd = {
             description: defaultDescription,
             inLanguage: 'en-IN',
             publisher: { '@id': `${siteUrl}#person` },
-        },
-        {
-            '@type': 'WebPage',
-            '@id': siteUrl,
-            url: siteUrl,
-            name: 'Aditya Raj — Frontend Engineer II',
-            description: defaultDescription,
-            isPartOf: { '@id': `${siteUrl}#website` },
-            about: { '@id': `${siteUrl}#person` },
             mainEntity: { '@id': `${siteUrl}#person` },
         },
     ],
