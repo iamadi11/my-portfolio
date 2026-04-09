@@ -138,7 +138,7 @@ my-portfolio/
 
 - **mouse-follow** — https://github.com/iamadi11/mouse-follow — demo: https://mouse-follow-demo.vercel.app/ (GitHub description: “Mouse Follow Component”)
 - **mcp-ui-poc** — https://github.com/iamadi11/mcp-ui-poc — demo: https://mcp-ui-poc.vercel.app/ — “Dynamic MCP UI Generator”; copy on site from repo README (full-stack MCP UI demo, React + Vite + Node/Express).
-- **spatial** — https://github.com/iamadi11/spatial — “Client-Side UI Performance Optimizer”; copy on site from repo README (TypeScript strict, Vitest, dev-time UI performance detection).
+- **spatial** — https://github.com/iamadi11/spatial — demo: https://spatial-zeta.vercel.app/ — “Client-Side UI Performance Optimizer”; copy on site from repo README (TypeScript strict, Vitest, dev-time UI performance detection).
 - Additional public repos (AIUI, Oompa-Loompas, my-portfolio, …) — add only with short, honest descriptions from repo/README.
 
 ### Experience narrative
