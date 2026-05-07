@@ -50,7 +50,7 @@ export default function V2Page() {
 
                 {/* Footer */}
                 <footer className="v2-footer">
-                    © 2026 ADITYA RAJ · BUILT WITH REACT &amp; A LOT OF COFFEE
+                    © 2026 ADITYA RAJ · BUILT WITH REACT, AGENT-LOVE &amp; A LOT OF COFFEE
                 </footer>
             </div>
         </div>

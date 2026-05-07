@@ -143,7 +143,7 @@ export const PROJECTS: Project[] = [
         summary:
             'Realtime notifications for ops, riders, and CX — driving SLA breach signals from 70% to 15%.',
         metrics: [
-            { v: '70→15%', k: 'SLA breaches' },
+            { v: '70 → 15%', k: 'SLA breaches' },
             { v: '<2s', k: 'signal latency' },
             { v: '4 ch.', k: 'WebPush · SSE · Redis · Email' },
         ],
@@ -260,7 +260,7 @@ export const PROJECTS: Project[] = [
         summary:
             'PWA for inventory ops + Webpack/Turborepo work that took the dev build from 15 → 3 minutes.',
         metrics: [
-            { v: '15→3m', k: 'build time' },
+            { v: '15 → 3m', k: 'build time' },
             { v: '45%', k: 'fewer errors' },
             { v: '30%', k: 'faster deploys' },
         ],
