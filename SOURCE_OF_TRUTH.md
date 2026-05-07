@@ -127,7 +127,7 @@ my-portfolio/
 
 ### Prior roles (resume)
 
-- **Software Engineer III** — Moresand Technologies — Aug 2024 – Mar 2025 — Bengaluru
+- **Software Engineer** — Moresand Technologies — Aug 2024 – Mar 2025 — Bengaluru
 - **Software Development Engineer I–II** — Tata 1mg — Dec 2021 – Jul 2024 — Gurugram
 
 ### Top skills (resume + GitHub)

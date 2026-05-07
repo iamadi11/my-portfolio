@@ -27,7 +27,7 @@ const roles: Role[] = [
         tech: 'React, TypeScript, Zustand, Semantic UI, REST APIs',
     },
     {
-        title: 'Software Engineer III',
+        title: 'Software Engineer',
         company: 'Moresand Technologies',
         range: 'Aug 2024 – Mar 2025',
         location: 'Bengaluru, Karnataka',
