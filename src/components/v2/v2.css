@@ -1064,6 +1064,24 @@
 .v2-ps-cta {
   display: flex; gap: 8px; margin-top: 22px; flex-wrap: wrap;
 }
+
+/* Architecture diagram — floated on the opposite side from text */
+.v2-ps-diagram {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(260px, 34vw, 420px);
+  pointer-events: none;
+  opacity: 0.92;
+}
+.v2-ps-left .v2-ps-diagram  { right: max(24px, 4vw); }
+.v2-ps-right .v2-ps-diagram { left:  max(24px, 4vw); }
+.v2-ps-diagram svg { width: 100%; height: auto; display: block; }
+
+@media (max-width: 1024px) {
+  .v2-ps-diagram { width: clamp(200px, 28vw, 320px); }
+}
 @media (max-width: 768px) {
   .v2-ps-left .v2-ps-inner,
   .v2-ps-right .v2-ps-inner {
@@ -1071,6 +1089,7 @@
   }
   .v2-ps-glyph { font-size: 100px; opacity: 0.025; }
   .v2-ps-glyph-left { left: auto; right: 4%; }
+  .v2-ps-diagram { display: none; }
 }
 /* Work page scenes wrapper */
 .v2-work-scenes { padding-bottom: 80px; }

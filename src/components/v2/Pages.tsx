@@ -5,6 +5,14 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 
+import {
+    RiskEngineDiagram,
+    MapsDiagram,
+    RealtimeDiagram,
+    SpatialDiagram,
+    MCPDiagram,
+    PWADiagram,
+} from './ArchDiagrams';
 import { navigate } from './Chrome';
 import {
     MorphingCanvas,
@@ -692,6 +700,15 @@ function buildSceneTimeline(tl: gsap.core.Timeline, q: (selector: string) => Ele
     }
 }
 
+const DIAGRAMS = [
+    (p: (typeof PROJECTS)[0]) => <RiskEngineDiagram accent={p.accent} />,
+    (p: (typeof PROJECTS)[0]) => <MapsDiagram accent={p.accent} accent2={p.accent2} />,
+    (p: (typeof PROJECTS)[0]) => <RealtimeDiagram accent={p.accent} accent2={p.accent2} />,
+    (p: (typeof PROJECTS)[0]) => <SpatialDiagram accent={p.accent} accent2={p.accent2} />,
+    (p: (typeof PROJECTS)[0]) => <MCPDiagram accent={p.accent} accent2={p.accent2} />,
+    (p: (typeof PROJECTS)[0]) => <PWADiagram accent={p.accent} accent2={p.accent2} />,
+];
+
 function ProjectScene({
     project,
     index,
@@ -786,6 +803,11 @@ function ProjectScene({
             {/* Ghost section number — deeper parallax layer */}
             <div className="v2-ps-ghost v2-display" aria-hidden="true" style={{ opacity: 0 }}>
                 {String(index + 1).padStart(2, '0')}
+            </div>
+
+            {/* Architecture diagram — floated on the opposite side */}
+            <div className="v2-ps-diagram" aria-hidden="true">
+                {DIAGRAMS[index % DIAGRAMS.length](project)}
             </div>
 
             {/* Content */}
