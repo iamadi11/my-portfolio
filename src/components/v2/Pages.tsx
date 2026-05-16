@@ -25,6 +25,7 @@ import {
     SectionHeader,
     TechOrbit,
 } from './Cinema';
+import { CinematicUniverse } from './CinematicUniverse';
 import { IDENTITY, PROJECTS, EXPERIENCE, SKILLS, EDUCATION } from './data';
 import { ProjectPOC } from './POCs';
 
@@ -881,6 +882,7 @@ function ProjectScene({
 export function PageWork(): JSX.Element {
     return (
         <div className="v2-page-enter v2-work-scenes">
+            <CinematicUniverse />
             {/* Header */}
             <div className="v2-work-scenes-header">
                 <div className="v2-sec-label-line">Work · Case Studies</div>
