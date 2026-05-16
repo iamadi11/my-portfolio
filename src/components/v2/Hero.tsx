@@ -10,7 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 const HeroCanvas = dynamic(() => import('./HeroCanvas'), { ssr: false });
 
-export default function Hero() {
+export default function Hero(): JSX.Element {
     const sectionRef = useRef<HTMLElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
     const cueRef = useRef<HTMLDivElement>(null);
@@ -18,7 +18,7 @@ export default function Hero() {
     useEffect(() => {
         const section = sectionRef.current;
         const content = contentRef.current;
-        if (!section || !content) return;
+        if (!section || !content) return () => {};
 
         const delay = sessionStorage.getItem('v2_visited') ? 0.1 : 1.3;
         const items = content.querySelectorAll<HTMLElement>('[data-hero]');

@@ -36,7 +36,7 @@ function RiskEnginePOC() {
     const idRef = useRef(0);
 
     useEffect(() => {
-        if (paused) return;
+        if (paused) return () => {};
         const countries = ['IN', 'US', 'GB', 'DE', 'NG', 'BR', 'SG', 'JP'];
         const interval = setInterval(() => {
             const tx: Omit<Tx, 'action' | 'rule'> = {
@@ -435,6 +435,7 @@ function MapsPOC() {
                         [200, 140],
                         [330, 180],
                     ].map((h, i) => (
+                        // eslint-disable-next-line react/no-array-index-key
                         <g key={i}>
                             <circle cx={h[0]} cy={h[1]} r="20" fill="rgba(255,255,255,0.05)">
                                 <animate
@@ -484,7 +485,7 @@ function PulsePOC() {
     const idRef = useRef(0);
 
     useEffect(() => {
-        if (!connected) return;
+        if (!connected) return () => {};
         const events = [
             { type: 'order.placed', ch: 'sse', sev: 'info' },
             { type: 'rider.assigned', ch: 'webpush', sev: 'info' },
@@ -596,7 +597,7 @@ function SpatialPOC() {
     const nRef = useRef(0);
 
     useEffect(() => {
-        if (!running) return;
+        if (!running) return () => {};
         const interval = setInterval(() => {
             const n = ++nRef.current;
             const base = 8 + Math.sin(n * 0.3) * 2;
@@ -653,6 +654,7 @@ function SpatialPOC() {
                 style={{ height: 160, padding: 12, position: 'relative', minHeight: 0 }}
             >
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: '100%' }}>
+                    {/* eslint-disable react/no-array-index-key */}
                     {frames.map((f, i) => {
                         const over = f > budget;
                         const height = Math.min(100, (f / 35) * 100);
@@ -671,6 +673,7 @@ function SpatialPOC() {
                             />
                         );
                     })}
+                    {/* eslint-enable react/no-array-index-key */}
                 </div>
                 <div
                     style={{
@@ -731,6 +734,138 @@ function SpatialPOC() {
    5. MCP UI — schema-driven dynamic UI generator
    ============================================================ */
 type SchemaKey = 'form' | 'chart' | 'grid' | 'table';
+
+function McpRender({ schema }: { schema: Record<string, unknown> }) {
+    if (schema.kind === 'form') {
+        const fields = schema.fields as { name: string; type: string; label: string; options?: string[] }[];
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {fields.map((f) => (
+                    <label key={f.name} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <span className="v2-mono" style={{ fontSize: 10, color: 'var(--v2-ink-3)' }}>
+                            {f.label}
+                        </span>
+                        {f.type === 'select' ? (
+                            <select className="v2-poc-select">
+                                {(f.options || []).map((o) => (
+                                    <option key={o}>{o}</option>
+                                ))}
+                            </select>
+                        ) : (
+                            <input type={f.type} className="v2-poc-input-sm" placeholder={f.label} />
+                        )}
+                    </label>
+                ))}
+                <button
+                    className="v2-btn v2-btn-primary"
+                    style={{ marginTop: 6, fontSize: 12, padding: '8px 12px' }}
+                >
+                    submit
+                </button>
+            </div>
+        );
+    }
+    if (schema.kind === 'chart') {
+        const data = schema.data as number[];
+        return (
+            <div>
+                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>{schema.title as string}</div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 140 }}>
+                    {/* eslint-disable react/no-array-index-key */}
+                    {data.map((v, i) => (
+                        <div
+                            key={i}
+                            style={{
+                                flex: 1,
+                                height: v * 100 + '%',
+                                background: 'linear-gradient(180deg, var(--v2-accent), var(--v2-accent-2))',
+                                borderRadius: 2,
+                                opacity: 0.7,
+                            }}
+                        />
+                    ))}
+                    {/* eslint-enable react/no-array-index-key */}
+                </div>
+            </div>
+        );
+    }
+    if (schema.kind === 'grid') {
+        const tiles = schema.tiles as { l: string; v: string }[];
+        return (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
+                {/* eslint-disable react/no-array-index-key */}
+                {tiles.map((t, i) => (
+                    <div
+                        key={i}
+                        style={{
+                            padding: 12,
+                            background: 'rgba(255,255,255,0.04)',
+                            border: '1px solid var(--v2-line)',
+                            borderRadius: 8,
+                        }}
+                    >
+                        <div className="v2-mono" style={{ fontSize: 10, color: 'var(--v2-ink-3)' }}>
+                            {t.l}
+                        </div>
+                        <div
+                            className="v2-display"
+                            style={{ fontSize: 22, fontWeight: 600, color: 'var(--v2-accent)' }}
+                        >
+                            {t.v}
+                        </div>
+                    </div>
+                ))}
+                {/* eslint-enable react/no-array-index-key */}
+            </div>
+        );
+    }
+    if (schema.kind === 'table') {
+        const headers = schema.headers as string[];
+        const rows = schema.rows as string[][];
+        return (
+            <table className="v2-mono" style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
+                <thead>
+                    <tr>
+                        {headers.map((h) => (
+                            <th
+                                key={h}
+                                style={{
+                                    textAlign: 'left',
+                                    padding: '6px 8px',
+                                    color: 'var(--v2-ink-3)',
+                                    borderBottom: '1px solid var(--v2-line)',
+                                }}
+                            >
+                                {h}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {/* eslint-disable react/no-array-index-key */}
+                    {rows.map((r, i) => (
+                        <tr key={i}>
+                            {r.map((c, j) => (
+                                <td
+                                    key={j}
+                                    style={{
+                                        padding: '6px 8px',
+                                        color: 'var(--v2-ink-2)',
+                                        borderBottom: '1px solid var(--v2-line)',
+                                    }}
+                                >
+                                    {c}
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                    {/* eslint-enable react/no-array-index-key */}
+                </tbody>
+            </table>
+        );
+    }
+    return null;
+}
 
 function McpPOC() {
     const [schema, setSchema] = useState<SchemaKey>('chart');
@@ -806,132 +941,6 @@ function McpPOC() {
             </div>
         </div>
     );
-}
-
-function McpRender({ schema }: { schema: Record<string, unknown> }) {
-    if (schema.kind === 'form') {
-        const fields = schema.fields as { name: string; type: string; label: string; options?: string[] }[];
-        return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {fields.map((f) => (
-                    <label key={f.name} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <span className="v2-mono" style={{ fontSize: 10, color: 'var(--v2-ink-3)' }}>
-                            {f.label}
-                        </span>
-                        {f.type === 'select' ? (
-                            <select className="v2-poc-select">
-                                {(f.options || []).map((o) => (
-                                    <option key={o}>{o}</option>
-                                ))}
-                            </select>
-                        ) : (
-                            <input type={f.type} className="v2-poc-input-sm" placeholder={f.label} />
-                        )}
-                    </label>
-                ))}
-                <button
-                    className="v2-btn v2-btn-primary"
-                    style={{ marginTop: 6, fontSize: 12, padding: '8px 12px' }}
-                >
-                    submit
-                </button>
-            </div>
-        );
-    }
-    if (schema.kind === 'chart') {
-        const data = schema.data as number[];
-        return (
-            <div>
-                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>{schema.title as string}</div>
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 140 }}>
-                    {data.map((v, i) => (
-                        <div
-                            key={i}
-                            style={{
-                                flex: 1,
-                                height: v * 100 + '%',
-                                background: 'linear-gradient(180deg, var(--v2-accent), var(--v2-accent-2))',
-                                borderRadius: 2,
-                                opacity: 0.7,
-                            }}
-                        />
-                    ))}
-                </div>
-            </div>
-        );
-    }
-    if (schema.kind === 'grid') {
-        const tiles = schema.tiles as { l: string; v: string }[];
-        return (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
-                {tiles.map((t, i) => (
-                    <div
-                        key={i}
-                        style={{
-                            padding: 12,
-                            background: 'rgba(255,255,255,0.04)',
-                            border: '1px solid var(--v2-line)',
-                            borderRadius: 8,
-                        }}
-                    >
-                        <div className="v2-mono" style={{ fontSize: 10, color: 'var(--v2-ink-3)' }}>
-                            {t.l}
-                        </div>
-                        <div
-                            className="v2-display"
-                            style={{ fontSize: 22, fontWeight: 600, color: 'var(--v2-accent)' }}
-                        >
-                            {t.v}
-                        </div>
-                    </div>
-                ))}
-            </div>
-        );
-    }
-    if (schema.kind === 'table') {
-        const headers = schema.headers as string[];
-        const rows = schema.rows as string[][];
-        return (
-            <table className="v2-mono" style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
-                <thead>
-                    <tr>
-                        {headers.map((h) => (
-                            <th
-                                key={h}
-                                style={{
-                                    textAlign: 'left',
-                                    padding: '6px 8px',
-                                    color: 'var(--v2-ink-3)',
-                                    borderBottom: '1px solid var(--v2-line)',
-                                }}
-                            >
-                                {h}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.map((r, i) => (
-                        <tr key={i}>
-                            {r.map((c, j) => (
-                                <td
-                                    key={j}
-                                    style={{
-                                        padding: '6px 8px',
-                                        color: 'var(--v2-ink-2)',
-                                        borderBottom: '1px solid var(--v2-line)',
-                                    }}
-                                >
-                                    {c}
-                                </td>
-                            ))}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        );
-    }
-    return null;
 }
 
 /* ============================================================
@@ -1043,6 +1052,7 @@ function PipelinePOC() {
                 </span>
             </div>
             <div className="v2-poc-stream" style={{ minHeight: 0, padding: 14 }}>
+                {/* eslint-disable react/no-array-index-key */}
                 {stages.map((s, idx) => {
                     const max = cacheMode === 'cold' ? 100 : 30;
                     const pct = Math.min(100, (s.dur / max) * 100);
@@ -1098,6 +1108,7 @@ function PipelinePOC() {
                         </div>
                     );
                 })}
+                {/* eslint-enable react/no-array-index-key */}
             </div>
         </div>
     );
@@ -1115,7 +1126,7 @@ const POC_MAP: Record<string, React.FC> = {
     pipeline: PipelinePOC,
 };
 
-export function ProjectPOC({ pocKey }: { pocKey: string }) {
+export function ProjectPOC({ pocKey }: { pocKey: string }): JSX.Element | null {
     const C = POC_MAP[pocKey];
     if (!C) return null;
     return <C />;

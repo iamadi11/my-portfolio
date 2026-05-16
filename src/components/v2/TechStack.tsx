@@ -39,7 +39,7 @@ const GROUPS = [
     },
 ];
 
-export default function TechStack() {
+export default function TechStack(): JSX.Element {
     const headerRef = useReveal('.v2-tech-header-reveal', { threshold: 0.15 });
     const pillsRef = useRevealScale('.v2-tech-pill', 28);
 

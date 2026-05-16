@@ -5,8 +5,9 @@ import { useEffect, useState } from 'react';
 
 import { useRoute, TopNav, FloatingDock, CommandPalette } from '@/components/v2/Chrome';
 import { PageHome, PageWork, PageProject, PageAbout, PageContact } from '@/components/v2/Pages';
+import ScrollSetup from '@/components/v2/ScrollSetup';
 
-export default function V2Page() {
+export default function V2Page(): JSX.Element {
     const route = useRoute();
     const [cmdOpen, setCmdOpen] = useState(false);
 
@@ -34,6 +35,9 @@ export default function V2Page() {
 
     return (
         <div className="v2-root">
+            {/* GSAP scroller proxy for .v2-root */}
+            <ScrollSetup />
+
             {/* Ambient background */}
             <div className="v2-bg-stage" />
             <div className="v2-bg-grid" />

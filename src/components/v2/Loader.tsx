@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-export default function Loader() {
+export default function Loader(): JSX.Element | null {
     const [visible, setVisible] = useState(true);
     const [ready, setReady] = useState(false);
     const progRef = useRef<HTMLDivElement>(null);
@@ -12,7 +12,7 @@ export default function Loader() {
         // Skip loader if already visited this session
         if (sessionStorage.getItem('v2_visited')) {
             setVisible(false);
-            return;
+            return () => {};
         }
 
         // Trigger monogram appear

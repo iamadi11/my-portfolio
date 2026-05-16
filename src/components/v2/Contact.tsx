@@ -45,7 +45,7 @@ const SOCIAL = [
     },
 ];
 
-export default function Contact() {
+export default function Contact(): JSX.Element {
     const ref = useReveal('.v2-contact-animate', { threshold: 0.12, stagger: 100 });
 
     return (

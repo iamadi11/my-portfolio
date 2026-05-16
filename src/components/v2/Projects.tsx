@@ -52,7 +52,7 @@ const GithubIcon = () => (
     </svg>
 );
 
-export default function Projects() {
+export default function Projects(): JSX.Element {
     const ref = useReveal('.v2-proj-reveal', { threshold: 0.08, stagger: 100 });
 
     return (

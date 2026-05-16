@@ -1,15 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Section {
     id: string;
     label: string;
 }
 
-export default function SideNav({ sections }: { sections: Section[] }) {
+export default function SideNav({ sections }: { sections: Section[] }): JSX.Element {
     const [active, setActive] = useState(sections[0]?.id ?? '');
-    const rafRef = useRef<number | null>(null);
 
     useEffect(() => {
         const root = document.querySelector('.v2-root') ?? undefined;
@@ -28,7 +27,6 @@ export default function SideNav({ sections }: { sections: Section[] }) {
 
         return () => {
             observers.forEach((o) => o?.disconnect());
-            if (rafRef.current) cancelAnimationFrame(rafRef.current);
         };
     }, [sections]);
 

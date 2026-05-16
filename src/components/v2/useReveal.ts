@@ -1,22 +1,25 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 
 /* Uses IntersectionObserver with .v2-root as the scroll root — works
    reliably with the fixed overflow container without needing GSAP scrollerProxy. */
-export function useReveal(selector: string, options?: { threshold?: number; stagger?: number }) {
+export function useReveal(
+    selector: string,
+    options?: { threshold?: number; stagger?: number }
+): RefObject<HTMLElement | null> {
     const ref = useRef<HTMLElement>(null);
 
     useEffect(() => {
         const section = ref.current;
-        if (!section) return;
+        if (!section) return () => {};
 
         const root = document.querySelector('.v2-root') as Element | null;
         const threshold = options?.threshold ?? 0.15;
         const stagger = options?.stagger ?? 0;
 
         const targets = section.querySelectorAll<HTMLElement>(selector);
-        if (!targets.length) return;
+        if (!targets.length) return () => {};
 
         // Set initial invisible state via inline style (CSS handles static layout)
         targets.forEach((el) => {
@@ -60,16 +63,16 @@ export function useReveal(selector: string, options?: { threshold?: number; stag
 }
 
 /* Scale-in variant for pills/chips */
-export function useRevealScale(selector: string, staggerMs = 30) {
+export function useRevealScale(selector: string, staggerMs = 30): RefObject<HTMLElement | null> {
     const ref = useRef<HTMLElement>(null);
 
     useEffect(() => {
         const section = ref.current;
-        if (!section) return;
+        if (!section) return () => {};
 
         const root = document.querySelector('.v2-root') as Element | null;
         const targets = section.querySelectorAll<HTMLElement>(selector);
-        if (!targets.length) return;
+        if (!targets.length) return () => {};
 
         targets.forEach((el) => {
             el.style.opacity = '0';

@@ -5,14 +5,14 @@ import { useEffect, useRef } from 'react';
 /* Three.js particle network — lazy-loaded, client-only.
    Uses a single LineSegments geometry with dynamic Float32Array updates
    to avoid GC pressure from repeated geometry creation. */
-export default function HeroCanvas() {
+export default function HeroCanvas(): JSX.Element {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        if (!canvas) return;
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        if (window.innerWidth < 768) return; // skip on mobile — CSS gradient only
+        if (!canvas) return () => {};
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return () => {};
+        if (window.innerWidth < 768) return () => {}; // skip on mobile — CSS gradient only
 
         let running = true;
         let frameId: number;

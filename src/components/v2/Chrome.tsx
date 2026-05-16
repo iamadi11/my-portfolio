@@ -18,7 +18,7 @@ function parseHash(): Route {
     return { route: 'home' };
 }
 
-export function navigate(path: string) {
+export function navigate(path: string): void {
     if (typeof window === 'undefined') return;
     const next = '#' + path;
     if (window.location.hash === next) return;
@@ -39,13 +39,30 @@ export function useRoute(): Route {
         return () => window.removeEventListener('hashchange', onChange);
     }, []);
 
+    // After each route change, nudge ScrollTrigger so in-viewport Reveal
+    // components fire immediately. Double-rAF ensures all useEffects (from
+    // newly-mounted Reveal components) have run before we update.
+    useEffect(() => {
+        let id2: number;
+        const id1 = requestAnimationFrame(() => {
+            id2 = requestAnimationFrame(() => {
+                const root = document.querySelector('.v2-root');
+                if (root) root.dispatchEvent(new Event('scroll'));
+            });
+        });
+        return () => {
+            cancelAnimationFrame(id1);
+            cancelAnimationFrame(id2);
+        };
+    }, [r]);
+
     return r;
 }
 
 /* ============================================================
    Top nav
    ============================================================ */
-export function TopNav({ route }: { route: Route['route'] }) {
+export function TopNav({ route }: { route: Route['route'] }): JSX.Element {
     return (
         <nav className="v2-topnav">
             <div className="v2-topnav-inner">
@@ -79,19 +96,6 @@ export function TopNav({ route }: { route: Route['route'] }) {
 /* ============================================================
    Floating dock
    ============================================================ */
-export function FloatingDock({ onCmd }: { onCmd: () => void }) {
-    return (
-        <div className="v2-dock">
-            <DockBtn label="Home" icon="◐" onClick={() => navigate('/')} />
-            <DockBtn label="Work" icon="▦" onClick={() => navigate('/work')} />
-            <DockBtn label="About" icon="○" onClick={() => navigate('/about')} />
-            <DockBtn label="Contact" icon="✉" onClick={() => navigate('/contact')} />
-            <div className="v2-dock-sep" />
-            <DockBtn label="⌘K" icon="⌕" onClick={onCmd} wide />
-        </div>
-    );
-}
-
 function DockBtn({
     label,
     icon,
@@ -102,7 +106,7 @@ function DockBtn({
     icon: string;
     onClick: () => void;
     wide?: boolean;
-}) {
+}): JSX.Element {
     return (
         <button
             onClick={onClick}
@@ -113,6 +117,19 @@ function DockBtn({
             <span style={{ fontSize: 14 }}>{icon}</span>
             {wide && <span style={{ fontSize: 11, color: 'var(--v2-ink-2)' }}>search</span>}
         </button>
+    );
+}
+
+export function FloatingDock({ onCmd }: { onCmd: () => void }): JSX.Element {
+    return (
+        <div className="v2-dock">
+            <DockBtn label="Home" icon="◐" onClick={() => navigate('/')} />
+            <DockBtn label="Work" icon="▦" onClick={() => navigate('/work')} />
+            <DockBtn label="About" icon="○" onClick={() => navigate('/about')} />
+            <DockBtn label="Contact" icon="✉" onClick={() => navigate('/contact')} />
+            <div className="v2-dock-sep" />
+            <DockBtn label="⌘K" icon="⌕" onClick={onCmd} wide />
+        </div>
     );
 }
 
@@ -127,7 +144,13 @@ interface CmdItem {
     go: () => void;
 }
 
-export function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function CommandPalette({
+    open,
+    onClose,
+}: {
+    open: boolean;
+    onClose: () => void;
+}): JSX.Element | null {
     const [q, setQ] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-export default function TopBar() {
+export default function TopBar(): JSX.Element {
     const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {

@@ -10,10 +10,10 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function ScrollSetup() {
+export default function ScrollSetup(): null {
     useLayoutEffect(() => {
         const el = document.querySelector('.v2-root') as HTMLElement;
-        if (!el) return;
+        if (!el) return () => {};
 
         ScrollTrigger.scrollerProxy(el, {
             scrollTop(value?: number) {

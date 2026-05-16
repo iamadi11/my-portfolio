@@ -9,7 +9,7 @@ const STATS = [
     { n: 'B.Tech', l: 'IIIT Lucknow' },
 ];
 
-export default function About() {
+export default function About(): JSX.Element {
     const ref = useReveal('.v2-about-animate', { threshold: 0.12, stagger: 90 });
 
     return (

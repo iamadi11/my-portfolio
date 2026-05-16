@@ -40,7 +40,7 @@ const ROLES = [
     },
 ];
 
-export default function Experience() {
+export default function Experience(): JSX.Element {
     const ref = useReveal('.v2-exp-reveal', { threshold: 0.08, stagger: 120 });
 
     return (

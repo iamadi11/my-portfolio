@@ -1,87 +1,238 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
+
+import gsap from 'gsap';
+import ScrollTrigger from 'gsap/ScrollTrigger';
 
 import { navigate } from './Chrome';
-import { CinematicHero, Marquee, Counter, Reveal, SectionHeader } from './Cinema';
+import {
+    MorphingCanvas,
+    MagBtn,
+    KineticTitle,
+    KineticLine,
+    Marquee,
+    Counter,
+    Reveal,
+    SectionHeader,
+    TechOrbit,
+} from './Cinema';
 import { IDENTITY, PROJECTS, EXPERIENCE, SKILLS, EDUCATION } from './data';
 import { ProjectPOC } from './POCs';
 
+gsap.registerPlugin(ScrollTrigger);
+
 /* ============================================================
-   HOME PAGE
+   Helper components
    ============================================================ */
-export function PageHome() {
+function FeatureCard({
+    project,
+    index: _index,
+}: {
+    project: (typeof PROJECTS)[0];
+    index: number;
+}): JSX.Element {
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    const onEnter = () => {
+        const el = cardRef.current;
+        if (!el) return;
+        gsap.to(el, { y: -8, duration: 0.4, ease: 'power2.out' });
+        gsap.to(el, {
+            boxShadow: `0 40px 80px -20px ${project.accent}66`,
+            duration: 0.4,
+            ease: 'power2.out',
+        });
+    };
+    const onLeave = () => {
+        const el = cardRef.current;
+        if (!el) return;
+        gsap.to(el, {
+            y: 0,
+            boxShadow: '0 4px 20px -8px rgba(0,0,0,0.6)',
+            duration: 0.5,
+            ease: 'power3.out',
+        });
+    };
+
     return (
-        <div className="v2-page-enter">
-            {/* Hero */}
-            <div className="v2-hero">
-                <div className="v2-hero-canvas-wrap">
-                    <CinematicHero />
+        <div
+            ref={cardRef}
+            className="v2-feat-card"
+            onClick={() => navigate('/work/' + project.id)}
+            onMouseEnter={onEnter}
+            onMouseLeave={onLeave}
+            style={{ cursor: 'pointer' }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && navigate('/work/' + project.id)}
+            aria-label={`View ${project.title}`}
+        >
+            {/* Thumbnail */}
+            <div className="v2-feat-thumb">
+                <div
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: `linear-gradient(135deg,${project.accent}2a,${project.accent2}18)`,
+                    }}
+                />
+                <div
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        backgroundImage: `radial-gradient(ellipse at 28% 32%,${project.accent}66,transparent 55%),radial-gradient(ellipse at 74% 72%,${project.accent2}55,transparent 55%)`,
+                    }}
+                />
+                <div className="v2-feat-glyph" style={{ textShadow: `0 8px 40px ${project.accent}88` }}>
+                    {project.glyph}
                 </div>
-                <div className="v2-hero-vignette" />
-                <div className="v2-hero-content">
-                    <div
+                <div className="v2-feat-meta">
+                    <span className="v2-mono" style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>
+                        {project.year}
+                    </span>
+                    <span
                         className="v2-mono"
                         style={{
-                            fontSize: 11,
-                            letterSpacing: '0.2em',
-                            color: 'var(--v2-ink-3)',
-                            marginBottom: 18,
+                            fontSize: 10,
+                            padding: '2px 7px',
+                            borderRadius: 4,
+                            background: project.accent + '22',
+                            color: project.accent,
+                            border: `1px solid ${project.accent}44`,
                         }}
                     >
-                        <span style={{ color: 'var(--v2-good)' }}>● AVAILABLE</span> &nbsp;·&nbsp; PORTFOLIO
-                        2026 &nbsp;·&nbsp; v2.0
-                    </div>
-                    <h1
-                        className="v2-display"
-                        style={{
-                            fontSize: 'clamp(40px,9vw,96px)',
-                            fontWeight: 700,
-                            lineHeight: 0.95,
-                            letterSpacing: '-0.04em',
-                            margin: 0,
-                            color: '#fff',
-                        }}
-                    >
-                        {IDENTITY.name}.
-                    </h1>
-                    <h2
-                        className="v2-display"
-                        style={{
-                            fontSize: 'clamp(22px,4vw,40px)',
-                            fontWeight: 500,
-                            lineHeight: 1.1,
-                            letterSpacing: '-0.02em',
-                            margin: '8px 0 0',
-                            color: 'var(--v2-ink-2)',
-                        }}
-                    >
-                        {IDENTITY.title}{' '}
-                        <span style={{ color: 'var(--v2-ink-3)' }}>· {IDENTITY.company}</span>
-                    </h2>
-                    <p
-                        style={{
-                            fontSize: 'clamp(15px,2vw,18px)',
-                            color: 'var(--v2-ink-2)',
-                            marginTop: 22,
-                            maxWidth: 600,
-                            lineHeight: 1.55,
-                        }}
-                    >
-                        {IDENTITY.bio}
-                    </p>
-                    <div style={{ display: 'flex', gap: 10, marginTop: 28, flexWrap: 'wrap' }}>
-                        <button className="v2-btn v2-btn-primary" onClick={() => navigate('/work')}>
-                            ▶ Explore work
-                        </button>
-                        <button className="v2-btn" onClick={() => navigate('/about')}>
-                            About
-                        </button>
-                        <button className="v2-btn v2-btn-ghost" onClick={() => navigate('/contact')}>
-                            Contact
-                        </button>
-                    </div>
+                        {project.runtime}
+                    </span>
+                </div>
+                {/* Accent line */}
+                <div
+                    className="v2-feat-accent-bar"
+                    style={{ background: `linear-gradient(90deg,${project.accent},${project.accent2})` }}
+                />
+            </div>
 
+            {/* Body */}
+            <div className="v2-feat-body">
+                <div className="v2-feat-company v2-mono">{project.company}</div>
+                <div className="v2-feat-title v2-display">{project.title}</div>
+                <div className="v2-feat-subtitle">{project.subtitle}</div>
+                <div className="v2-feat-chips">
+                    {project.stack.slice(0, 4).map((s) => (
+                        <span key={s} className="v2-chip">
+                            {s}
+                        </span>
+                    ))}
+                </div>
+                <div className="v2-feat-cta v2-mono" style={{ color: project.accent }} aria-hidden="true">
+                    Case study + live POC →
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ============================================================
+   HOME PAGE  — cinematic scroll chapters
+   ============================================================ */
+export function PageHome(): JSX.Element {
+    const heroRef = useRef<HTMLDivElement>(null);
+    const heroContentRef = useRef<HTMLDivElement>(null);
+    const scrollCueRef = useRef<HTMLDivElement>(null);
+
+    const isReturning = typeof window !== 'undefined' && !!sessionStorage.getItem('v2_visited');
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') sessionStorage.setItem('v2_visited', '1');
+
+        const hero = heroRef.current;
+        const content = heroContentRef.current;
+        if (!hero || !content) return () => {};
+
+        const ctx = gsap.context(() => {
+            // Scroll cue fade in
+            gsap.fromTo(
+                scrollCueRef.current,
+                { opacity: 0 },
+                { opacity: 1, duration: 0.8, delay: isReturning ? 0.4 : 2.2 }
+            );
+
+            // Hero content fades out and rises as user scrolls
+            gsap.to(content, {
+                opacity: 0,
+                y: -60,
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: hero,
+                    start: 'top top',
+                    end: '50% top',
+                    scrub: 1.5,
+                },
+            });
+        });
+
+        return () => ctx.revert();
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const enterDelay = isReturning ? 0.05 : 0.6;
+
+    return (
+        <div className="v2-page-enter">
+            {/* ── Chapter 1: Hero ── */}
+            <div ref={heroRef} className="v2-hero">
+                <div className="v2-hero-canvas-wrap" aria-hidden="true">
+                    <MorphingCanvas speed="slow" accentRGB={[122, 162, 255]} />
+                </div>
+                <div className="v2-hero-vignette" aria-hidden="true" />
+
+                <div ref={heroContentRef} className="v2-hero-content">
+                    {/* Status pill */}
+                    <KineticLine delay={enterDelay} className="v2-mono">
+                        <span className="v2-hero-status v2-mono">
+                            <span className="v2-hero-status-dot" />
+                            AVAILABLE &nbsp;·&nbsp; PORTFOLIO 2026 &nbsp;·&nbsp; v2.0
+                        </span>
+                    </KineticLine>
+
+                    {/* Name */}
+                    <h1 className="v2-hero-name v2-display" aria-label={IDENTITY.name}>
+                        <KineticTitle
+                            text={IDENTITY.name + '.'}
+                            delay={enterDelay + 0.1}
+                            stagger={0.04}
+                            duration={0.9}
+                        />
+                    </h1>
+
+                    {/* Title */}
+                    <KineticLine delay={enterDelay + 0.5}>
+                        <p className="v2-hero-role v2-display">
+                            {IDENTITY.title}
+                            <span className="v2-hero-company"> · {IDENTITY.company}</span>
+                        </p>
+                    </KineticLine>
+
+                    {/* Bio */}
+                    <KineticLine delay={enterDelay + 0.7}>
+                        <p className="v2-hero-bio">{IDENTITY.bio}</p>
+                    </KineticLine>
+
+                    {/* CTAs */}
+                    <KineticLine delay={enterDelay + 0.9}>
+                        <div className="v2-hero-actions">
+                            <MagBtn className="v2-btn v2-btn-primary" onClick={() => navigate('/work')}>
+                                View Work ↓
+                            </MagBtn>
+                            <MagBtn className="v2-btn" onClick={() => navigate('/about')}>
+                                About
+                            </MagBtn>
+                            <MagBtn className="v2-btn v2-btn-ghost" onClick={() => navigate('/contact')}>
+                                Contact
+                            </MagBtn>
+                        </div>
+                    </KineticLine>
+
+                    {/* Stats */}
                     <div className="v2-hero-stats">
                         {[
                             { to: IDENTITY.yearsExp, suf: '+ yrs', k: 'shipping' },
@@ -89,23 +240,27 @@ export function PageHome() {
                             { to: 80, suf: '%', k: 'faster builds' },
                             { to: 99.97, suf: '%', k: 'risk uptime', dec: 2 },
                         ].map((m, i) => (
-                            <div key={i} className="v2-hero-stat">
-                                <span className="v2-hero-stat-n v2-display">
-                                    <Counter to={m.to} suffix={m.suf} decimals={m.dec || 0} />
-                                </span>
-                                <span className="v2-hero-stat-k v2-mono">{m.k}</span>
-                            </div>
+                            // eslint-disable-next-line react/no-array-index-key
+                            <Reveal key={i} delay={(enterDelay + 1.1 + i * 0.08) * 1000}>
+                                <div className="v2-hero-stat">
+                                    <span className="v2-hero-stat-n v2-display">
+                                        <Counter to={m.to} suffix={m.suf} decimals={m.dec || 0} />
+                                    </span>
+                                    <span className="v2-hero-stat-k v2-mono">{m.k}</span>
+                                </div>
+                            </Reveal>
                         ))}
                     </div>
                 </div>
 
-                <div className="v2-hero-scroll">
-                    SCROLL
-                    <span>↓</span>
+                {/* Scroll cue */}
+                <div ref={scrollCueRef} className="v2-hero-scroll" aria-hidden="true" style={{ opacity: 0 }}>
+                    <div className="v2-scroll-line" />
+                    <span className="v2-mono">SCROLL</span>
                 </div>
             </div>
 
-            {/* Marquee */}
+            {/* ── Chapter 2: Marquee ── */}
             <Marquee
                 items={[
                     'React',
@@ -123,35 +278,75 @@ export function PageHome() {
                 ]}
             />
 
-            {/* Featured projects */}
-            <div className="v2-container" style={{ paddingTop: 64, paddingBottom: 48 }}>
+            {/* ── Chapter 3: Featured work ── */}
+            <div className="v2-container v2-chapter">
                 <Reveal>
                     <SectionHeader
-                        kicker="01 / FEATURED"
-                        title="Selected work"
-                        subtitle="Production systems and open source. Each ships with an interactive POC."
+                        kicker="01 / SELECTED WORK"
+                        title="Projects that shipped."
+                        subtitle="Production systems powering fintech, e-commerce, and OSS — each with a working POC."
                         right={
                             <button
                                 className="v2-btn v2-btn-ghost"
                                 onClick={() => navigate('/work')}
-                                style={{ fontSize: 12 }}
+                                style={{ fontSize: 12, flexShrink: 0 }}
                             >
-                                view all →
+                                all projects →
                             </button>
                         }
                     />
                 </Reveal>
+
                 <div className="v2-feat-grid">
                     {PROJECTS.slice(0, 3).map((p, i) => (
-                        <Reveal key={p.id} delay={i * 80}>
-                            <FeatureCard project={p} />
+                        <Reveal key={p.id} delay={i * 100}>
+                            <FeatureCard project={p} index={i} />
                         </Reveal>
                     ))}
                 </div>
             </div>
 
-            {/* CTA */}
-            <div className="v2-container" style={{ paddingTop: 24, paddingBottom: 80 }}>
+            {/* ── Chapter 4: Tech ecosystem ── */}
+            <div className="v2-tech-chapter">
+                <div className="v2-container v2-tech-chapter-inner">
+                    <div className="v2-tech-chapter-text">
+                        <Reveal>
+                            <SectionHeader
+                                kicker="02 / STACK"
+                                title="The ecosystem."
+                                subtitle="Deep specialization in React and its orbit — from UI to build tooling, realtime infrastructure, and performance engineering."
+                            />
+                        </Reveal>
+                        <Reveal delay={120}>
+                            <div className="v2-tech-pills">
+                                {[
+                                    { label: 'Frontend', color: '#7aa2ff' },
+                                    { label: 'Performance', color: '#6ee7a7' },
+                                    { label: 'Realtime', color: '#7ee5ff' },
+                                    { label: 'Build Tooling', color: '#ffb070' },
+                                    { label: 'OSS', color: '#b690ff' },
+                                ].map((tag) => (
+                                    <span
+                                        key={tag.label}
+                                        className="v2-tech-pill v2-mono"
+                                        style={{ '--pill-color': tag.color } as React.CSSProperties}
+                                    >
+                                        {tag.label}
+                                    </span>
+                                ))}
+                            </div>
+                        </Reveal>
+                    </div>
+                    <Reveal delay={60}>
+                        <div className="v2-orbit-wrap" aria-label="Technology orbit">
+                            <TechOrbit />
+                        </div>
+                    </Reveal>
+                </div>
+            </div>
+
+            {/* ── Chapter 5: CTA ── */}
+            <div className="v2-container v2-chapter">
                 <Reveal>
                     <div className="v2-cta-banner">
                         <div>
@@ -164,12 +359,12 @@ export function PageHome() {
                                     marginBottom: 8,
                                 }}
                             >
-                                NEXT
+                                WHAT&apos;S NEXT
                             </div>
                             <h3
                                 className="v2-display"
                                 style={{
-                                    fontSize: 'clamp(28px,4vw,40px)',
+                                    fontSize: 'clamp(26px,4vw,40px)',
                                     fontWeight: 700,
                                     margin: 0,
                                     letterSpacing: '-0.025em',
@@ -179,7 +374,7 @@ export function PageHome() {
                                 Let&apos;s build something.
                             </h3>
                             <p style={{ color: 'var(--v2-ink-2)', marginTop: 8, fontSize: 14 }}>
-                                Open to senior frontend roles, contracts, complex frontend systems.
+                                Open to senior frontend roles, contracts, and complex UI systems.
                             </p>
                         </div>
                         <button className="v2-btn v2-btn-primary" onClick={() => navigate('/contact')}>
@@ -192,181 +387,510 @@ export function PageHome() {
     );
 }
 
-function FeatureCard({ project }: { project: (typeof PROJECTS)[0] }) {
-    return (
-        <div
-            className="v2-feat-card"
-            onClick={() => navigate('/work/' + project.id)}
-            style={{ boxShadow: `0 4px 20px -8px rgba(0,0,0,0.6)` }}
-            onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.boxShadow = `0 30px 70px -20px ${project.accent}55`;
-            }}
-            onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px -8px rgba(0,0,0,0.6)`;
-            }}
-        >
-            <div style={{ aspectRatio: '16/10', position: 'relative', overflow: 'hidden' }}>
-                <div
-                    style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: `linear-gradient(135deg,${project.accent}33,${project.accent2}22)`,
-                    }}
-                />
-                <div
-                    style={{
-                        position: 'absolute',
-                        inset: 0,
-                        backgroundImage: `radial-gradient(circle at 30% 30%,${project.accent}66,transparent 50%),radial-gradient(circle at 75% 70%,${project.accent2}55,transparent 50%)`,
-                    }}
-                />
-                <div
-                    className="v2-display"
-                    style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%,-50%)',
-                        fontSize: 'clamp(48px,8vw,96px)',
-                        fontWeight: 700,
-                        letterSpacing: '-0.04em',
-                        color: 'rgba(255,255,255,0.92)',
-                        textShadow: `0 8px 30px ${project.accent}88`,
-                    }}
-                >
-                    {project.glyph}
-                </div>
-                <div
-                    className="v2-mono"
-                    style={{
-                        position: 'absolute',
-                        top: 12,
-                        left: 12,
-                        fontSize: 10,
-                        color: 'rgba(255,255,255,0.7)',
-                    }}
-                >
-                    {project.year} · {project.runtime}
-                </div>
-            </div>
-            <div style={{ padding: 16 }}>
-                <div
-                    className="v2-display"
-                    style={{
-                        fontSize: 20,
-                        fontWeight: 600,
-                        letterSpacing: '-0.015em',
-                        color: 'var(--v2-ink)',
-                    }}
-                >
-                    {project.title}
-                </div>
-                <div style={{ fontSize: 13, color: 'var(--v2-ink-2)', marginTop: 4 }}>{project.subtitle}</div>
-                <div className="v2-mono" style={{ fontSize: 11, color: 'var(--v2-ink-3)', marginTop: 10 }}>
-                    {project.company} →
-                </div>
-            </div>
-        </div>
-    );
-}
-
 /* ============================================================
-   WORK PAGE
+   WORK PAGE — cinematic full-viewport project scenes
    ============================================================ */
-export function PageWork() {
-    const [filter, setFilter] = useState<'all' | 'work' | 'oss'>('all');
-    const filtered =
-        filter === 'all'
-            ? PROJECTS
-            : filter === 'oss'
-              ? PROJECTS.filter((p) => p.company.startsWith('OSS'))
-              : PROJECTS.filter((p) => !p.company.startsWith('OSS'));
 
-    return (
-        <div className="v2-page-enter v2-container" style={{ paddingBottom: 80 }}>
-            <SectionHeader
-                kicker="WORK · CASE STUDIES"
-                title="Selected projects"
-                subtitle="Each project ships with a working POC — interact with the actual system below the case study."
-                right={
-                    <div style={{ display: 'flex', gap: 6 }}>
-                        {(
-                            [
-                                ['all', 'All'],
-                                ['work', 'Work'],
-                                ['oss', 'OSS'],
-                            ] as [string, string][]
-                        ).map(([k, l]) => (
-                            <button
-                                key={k}
-                                className="v2-btn v2-btn-ghost"
-                                onClick={() => setFilter(k as typeof filter)}
-                                style={{
-                                    padding: '6px 12px',
-                                    fontSize: 12,
-                                    borderColor: filter === k ? 'var(--v2-accent)' : 'var(--v2-line)',
-                                    background: filter === k ? 'rgba(122,162,255,0.1)' : 'transparent',
-                                    color: filter === k ? 'var(--v2-accent)' : 'var(--v2-ink-2)',
-                                }}
-                            >
-                                {l}
-                            </button>
-                        ))}
-                    </div>
-                }
-            />
-            <div className="v2-work-grid">
-                {filtered.map((p, i) => (
-                    <Reveal key={p.id} delay={i * 60}>
-                        <ProjectCard project={p} />
-                    </Reveal>
-                ))}
-            </div>
-        </div>
-    );
+/* Per-project GSAP choreography — each scene has a distinct motion personality */
+function buildSceneTimeline(tl: gsap.core.Timeline, q: (selector: string) => Element[], idx: number): void {
+    /* Shared: scene atmosphere materialises */
+    tl.fromTo(q('.v2-ps-bg'), { opacity: 0 }, { opacity: 1, duration: 1.6, ease: 'power2.out' }, 0);
+
+    switch (idx % 6) {
+        case 0: {
+            /* Risk Engine — authority, precision wipe.
+               Kicker clips in L→R, title rises with rotateX depth,
+               metrics pop with spring, summary descends as curtain. */
+            tl.fromTo(
+                q('.v2-ps-kicker'),
+                { clipPath: 'inset(0 100% 0 0)', opacity: 1 },
+                { clipPath: 'inset(0 0% 0 0)', duration: 0.65, ease: 'power4.out' },
+                0.1
+            )
+                .fromTo(
+                    q('.v2-ps-title'),
+                    { y: 56, rotateX: -18, opacity: 0, transformPerspective: 900 },
+                    { y: 0, rotateX: 0, opacity: 1, duration: 1.0, ease: 'power4.out' },
+                    0.35
+                )
+                .fromTo(
+                    q('.v2-ps-subtitle'),
+                    { x: -28, opacity: 0 },
+                    { x: 0, opacity: 1, duration: 0.65, ease: 'power3.out' },
+                    0.7
+                )
+                .fromTo(
+                    q('.v2-ps-metric'),
+                    { y: 28, opacity: 0, scale: 0.88 },
+                    { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.6)', stagger: 0.1 },
+                    0.9
+                )
+                .fromTo(
+                    q('.v2-ps-summary'),
+                    { clipPath: 'inset(0 0 100% 0)', opacity: 1 },
+                    { clipPath: 'inset(0 0 0% 0)', duration: 0.8, ease: 'power3.out' },
+                    1.15
+                )
+                .fromTo(
+                    q('.v2-ps-chip'),
+                    { y: 14, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.42, ease: 'power2.out', stagger: 0.05 },
+                    1.4
+                )
+                .fromTo(
+                    q('.v2-ps-cta-btn'),
+                    { y: 20, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' },
+                    1.62
+                );
+            break;
+        }
+        case 1: {
+            /* Serviceability Maps — spatial, expansive.
+               Everything slides in from far right — directional motion
+               matching the glyph side. Letter-spacing collapses on title. */
+            tl.fromTo(
+                q('.v2-ps-kicker'),
+                { x: 48, opacity: 0 },
+                { x: 0, opacity: 1, duration: 0.55, ease: 'power3.out' },
+                0.1
+            )
+                .fromTo(
+                    q('.v2-ps-title'),
+                    { x: 80, opacity: 0 },
+                    { x: 0, opacity: 1, duration: 1.1, ease: 'expo.out' },
+                    0.28
+                )
+                .fromTo(
+                    q('.v2-ps-subtitle'),
+                    { x: 40, opacity: 0 },
+                    { x: 0, opacity: 1, duration: 0.7, ease: 'power3.out' },
+                    0.65
+                )
+                .fromTo(
+                    q('.v2-ps-metric'),
+                    { x: 28, opacity: 0 },
+                    { x: 0, opacity: 1, duration: 0.55, ease: 'power3.out', stagger: 0.1 },
+                    0.9
+                )
+                .fromTo(
+                    q('.v2-ps-summary'),
+                    { y: 22, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.75, ease: 'power3.out' },
+                    1.15
+                )
+                .fromTo(
+                    q('.v2-ps-chip'),
+                    { scale: 0.82, opacity: 0 },
+                    { scale: 1, opacity: 1, duration: 0.38, ease: 'back.out(1.7)', stagger: 0.055 },
+                    1.38
+                )
+                .fromTo(
+                    q('.v2-ps-cta-btn'),
+                    { x: 28, opacity: 0 },
+                    { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out' },
+                    1.6
+                );
+            break;
+        }
+        case 2: {
+            /* Realtime Notifications — urgency, snappy.
+               Title skews in with overshoot. Metrics pop simultaneously
+               (not staggered — they all arrive at once like a signal burst). */
+            tl.fromTo(
+                q('.v2-ps-kicker'),
+                { y: -24, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' },
+                0.05
+            )
+                .fromTo(
+                    q('.v2-ps-title'),
+                    { y: 42, skewX: 3, opacity: 0 },
+                    { y: 0, skewX: 0, opacity: 1, duration: 0.72, ease: 'back.out(1.3)' },
+                    0.22
+                )
+                .fromTo(
+                    q('.v2-ps-subtitle'),
+                    { y: 20, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.4, ease: 'power3.out' },
+                    0.56
+                )
+                /* All metrics at once — urgency, not a slow reveal */
+                .fromTo(
+                    q('.v2-ps-metric'),
+                    { scale: 1.1, opacity: 0 },
+                    { scale: 1, opacity: 1, duration: 0.36, ease: 'power2.out', stagger: 0.06 },
+                    0.72
+                )
+                .fromTo(
+                    q('.v2-ps-summary'),
+                    { y: 18, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.48, ease: 'power3.out' },
+                    0.92
+                )
+                .fromTo(
+                    q('.v2-ps-chip'),
+                    { y: 12, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.32, ease: 'power2.out', stagger: 0.04 },
+                    1.1
+                )
+                .fromTo(
+                    q('.v2-ps-cta-btn'),
+                    { y: 18, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.4, ease: 'power3.out' },
+                    1.28
+                );
+            break;
+        }
+        case 3: {
+            /* Spatial — deliberate, measured precision.
+               Slow long durations. Each layer settles before the next arrives.
+               Feels like a tool loading, not performing. */
+            tl.fromTo(
+                q('.v2-ps-kicker'),
+                { opacity: 0 },
+                { opacity: 1, duration: 0.55, ease: 'power1.inOut' },
+                0.2
+            )
+                .fromTo(
+                    q('.v2-ps-title'),
+                    { y: 36, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 1.3, ease: 'power2.out' },
+                    0.4
+                )
+                .fromTo(
+                    q('.v2-ps-subtitle'),
+                    { y: 20, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.9, ease: 'power2.out' },
+                    0.9
+                )
+                /* Wide stagger — each metric arrives individually */
+                .fromTo(
+                    q('.v2-ps-metric'),
+                    { y: 24, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.7, ease: 'power2.out', stagger: 0.2 },
+                    1.05
+                )
+                .fromTo(
+                    q('.v2-ps-summary'),
+                    { y: 18, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.85, ease: 'power2.out' },
+                    1.6
+                )
+                .fromTo(
+                    q('.v2-ps-chip'),
+                    { opacity: 0 },
+                    { opacity: 1, duration: 0.55, ease: 'power1.out', stagger: 0.09 },
+                    1.88
+                )
+                .fromTo(
+                    q('.v2-ps-cta-btn'),
+                    { opacity: 0, y: 12 },
+                    { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' },
+                    2.1
+                );
+            break;
+        }
+        case 4: {
+            /* MCP UI — modular, constructed.
+               Everything builds from the bottom in blocks.
+               Chips appear one by one like protocol packets. */
+            tl.fromTo(
+                q('.v2-ps-kicker'),
+                { y: 20, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.44, ease: 'power3.out' },
+                0.08
+            )
+                .fromTo(
+                    q('.v2-ps-title'),
+                    { y: 64, rotateX: -10, opacity: 0, transformPerspective: 700 },
+                    { y: 0, rotateX: 0, opacity: 1, duration: 0.9, ease: 'power4.out' },
+                    0.26
+                )
+                .fromTo(
+                    q('.v2-ps-subtitle'),
+                    { y: 28, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' },
+                    0.68
+                )
+                .fromTo(
+                    q('.v2-ps-metric'),
+                    { y: 36, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.58, ease: 'power3.out', stagger: 0.13 },
+                    0.86
+                )
+                .fromTo(
+                    q('.v2-ps-summary'),
+                    { y: 24, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.65, ease: 'power3.out' },
+                    1.18
+                )
+                /* Chips protocol-style: one by one with longer stagger */
+                .fromTo(
+                    q('.v2-ps-chip'),
+                    { y: 18, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.38, ease: 'back.out(1.4)', stagger: 0.08 },
+                    1.38
+                )
+                .fromTo(
+                    q('.v2-ps-cta-btn'),
+                    { y: 24, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.55, ease: 'power3.out' },
+                    1.72
+                );
+            break;
+        }
+        case 5: {
+            /* PWA & Build — performance, one fast sweep.
+               Kicker and title arrive together in a single compressed burst.
+               Secondary content settles at normal pace — fast then slow. */
+            tl.fromTo(
+                q('.v2-ps-kicker'),
+                { x: -32, opacity: 0 },
+                { x: 0, opacity: 1, duration: 0.38, ease: 'power3.out' },
+                0
+            )
+                .fromTo(
+                    q('.v2-ps-title'),
+                    { y: 52, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.72, ease: 'power4.inOut' },
+                    0.1
+                )
+                .fromTo(
+                    q('.v2-ps-subtitle'),
+                    { y: 22, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.42, ease: 'power3.out' },
+                    0.46
+                )
+                .fromTo(
+                    q('.v2-ps-metric'),
+                    { y: 20, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.36, ease: 'power3.out', stagger: 0.06 },
+                    0.62
+                )
+                /* Settle — slower than the burst */
+                .fromTo(
+                    q('.v2-ps-summary'),
+                    { y: 20, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.65, ease: 'power3.out' },
+                    0.88
+                )
+                .fromTo(
+                    q('.v2-ps-chip'),
+                    { y: 14, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.34, ease: 'power2.out', stagger: 0.045 },
+                    1.06
+                )
+                .fromTo(
+                    q('.v2-ps-cta-btn'),
+                    { y: 18, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.46, ease: 'power3.out' },
+                    1.28
+                );
+            break;
+        }
+    }
 }
 
-function ProjectCard({ project }: { project: (typeof PROJECTS)[0] }) {
+function ProjectScene({
+    project,
+    index,
+    total,
+}: {
+    project: (typeof PROJECTS)[0];
+    index: number;
+    total: number;
+}): JSX.Element {
+    const sceneRef = useRef<HTMLElement>(null);
+    const isLeft = index % 2 === 0;
+    const num = `${String(index + 1).padStart(2, '0')}/${String(total).padStart(2, '0')}`;
+
+    useEffect(() => {
+        const scene = sceneRef.current;
+        if (!scene) return () => {};
+
+        const ctx = gsap.context(() => {
+            const q = gsap.utils.selector(scene);
+
+            /* ── Depth parallax: backdrop glyph moves at 0.4× scroll speed ── */
+            gsap.fromTo(
+                q('.v2-ps-glyph'),
+                { y: 70 },
+                {
+                    y: -70,
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: scene,
+                        start: 'top bottom',
+                        end: 'bottom top',
+                        scrub: 2.8,
+                    },
+                }
+            );
+
+            /* ── Ghost number parallax: faster layer, subtle opacity shift ── */
+            gsap.fromTo(
+                q('.v2-ps-ghost'),
+                { y: 40, opacity: 0 },
+                {
+                    y: -50,
+                    opacity: 0.028,
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: scene,
+                        start: 'top bottom',
+                        end: 'bottom top',
+                        scrub: 1.6,
+                    },
+                }
+            );
+
+            /* ── Cinematic entry timeline ── */
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: scene,
+                    start: 'top 78%',
+                    toggleActions: 'play none none none',
+                },
+            });
+
+            buildSceneTimeline(tl, q, index);
+        }, scene);
+
+        return () => ctx.revert();
+    }, [index]);
+
     return (
-        <div
-            className="v2-proj-card"
-            onClick={() => navigate('/work/' + project.id)}
-            onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.boxShadow = `0 30px 60px -20px ${project.accent}55`;
-            }}
-            onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-            }}
+        <section
+            ref={sceneRef}
+            className={`v2-project-scene ${isLeft ? 'v2-ps-left' : 'v2-ps-right'}`}
+            id={`scene-${project.id}`}
         >
+            {/* Accent atmosphere */}
             <div
-                className="v2-proj-thumb"
-                style={{ background: `linear-gradient(135deg,${project.accent}22,${project.accent2}22)` }}
+                className="v2-ps-bg"
+                style={{
+                    background: `radial-gradient(ellipse 65% 55% at ${isLeft ? '78% 32%' : '22% 32%'}, ${project.accent}14, transparent),radial-gradient(ellipse 50% 45% at ${isLeft ? '25% 78%' : '75% 78%'}, ${project.accent2}0a, transparent)`,
+                }}
+            />
+
+            {/* Parallax backdrop glyph */}
+            <div
+                className={`v2-ps-glyph v2-display ${isLeft ? 'v2-ps-glyph-right' : 'v2-ps-glyph-left'}`}
+                aria-hidden="true"
+                style={{ color: project.accent }}
             >
-                <div
-                    style={{
-                        position: 'absolute',
-                        inset: 0,
-                        backgroundImage: `radial-gradient(circle at 30% 30%,${project.accent}55,transparent 60%),radial-gradient(circle at 75% 70%,${project.accent2}44,transparent 60%)`,
-                    }}
-                />
-                <div className="v2-proj-glyph" style={{ textShadow: `0 8px 30px ${project.accent}88` }}>
-                    {project.glyph}
-                </div>
-                <div className="v2-proj-year-tag">
-                    {project.year} · {project.runtime}
-                </div>
+                {project.glyph}
             </div>
-            <div className="v2-proj-body">
-                <div className="v2-proj-title">{project.title}</div>
-                <div className="v2-proj-subtitle">{project.subtitle}</div>
-                <div className="v2-proj-chips">
-                    {project.stack.slice(0, 4).map((s) => (
-                        <span key={s} className="v2-chip">
+
+            {/* Ghost section number — deeper parallax layer */}
+            <div className="v2-ps-ghost v2-display" aria-hidden="true" style={{ opacity: 0 }}>
+                {String(index + 1).padStart(2, '0')}
+            </div>
+
+            {/* Content */}
+            <div className="v2-ps-inner">
+                <p className="v2-ps-kicker v2-mono">
+                    <span style={{ color: project.accent }}>{num}</span>
+                    {' · '}
+                    {project.company}
+                    {' · '}
+                    {project.year}
+                </p>
+
+                <h2 className="v2-ps-title">{project.title}</h2>
+                <p className="v2-ps-subtitle">{project.subtitle}</p>
+
+                <div className="v2-ps-metrics">
+                    {project.metrics.map((m) => (
+                        <div key={m.k} className="v2-ps-metric">
+                            <div className="v2-ps-metric-v" style={{ color: project.accent }}>
+                                {m.v}
+                            </div>
+                            <div className="v2-ps-metric-k">{m.k}</div>
+                        </div>
+                    ))}
+                </div>
+
+                <p className="v2-ps-summary">{project.summary}</p>
+
+                <div className="v2-ps-chips">
+                    {project.stack.map((s) => (
+                        <span key={s} className="v2-chip v2-ps-chip">
                             {s}
                         </span>
                     ))}
+                    {project.github && (
+                        <a
+                            href={project.github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="v2-chip v2-ps-chip-link v2-ps-chip"
+                        >
+                            GitHub ↗
+                        </a>
+                    )}
+                    {project.demo && (
+                        <a
+                            href={project.demo}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="v2-chip v2-ps-chip-link v2-ps-chip"
+                        >
+                            Demo ↗
+                        </a>
+                    )}
+                </div>
+
+                <div className="v2-ps-cta">
+                    <MagBtn
+                        className="v2-btn v2-btn-primary v2-ps-cta-btn"
+                        onClick={() => navigate('/work/' + project.id)}
+                        style={{ fontSize: 13 }}
+                    >
+                        Case study + live POC →
+                    </MagBtn>
                 </div>
             </div>
+        </section>
+    );
+}
+
+export function PageWork(): JSX.Element {
+    return (
+        <div className="v2-page-enter v2-work-scenes">
+            {/* Header */}
+            <div className="v2-work-scenes-header">
+                <div className="v2-sec-label-line">Work · Case Studies</div>
+                <h1
+                    className="v2-display"
+                    style={{
+                        fontSize: 'clamp(34px,6vw,60px)',
+                        fontWeight: 700,
+                        letterSpacing: '-0.03em',
+                        lineHeight: 1.05,
+                        color: 'var(--v2-ink)',
+                    }}
+                >
+                    Selected projects.
+                </h1>
+                <p
+                    style={{
+                        fontSize: 15,
+                        color: 'var(--v2-ink-2)',
+                        marginTop: 8,
+                        maxWidth: 440,
+                        lineHeight: 1.55,
+                    }}
+                >
+                    Each ships with a working POC — interact with the actual system inside the case study.
+                </p>
+            </div>
+
+            {/* Cinematic scenes */}
+            {PROJECTS.map((p, i) => (
+                <ProjectScene key={p.id} project={p} index={i} total={PROJECTS.length} />
+            ))}
         </div>
     );
 }
@@ -374,8 +898,23 @@ function ProjectCard({ project }: { project: (typeof PROJECTS)[0] }) {
 /* ============================================================
    PROJECT DETAIL PAGE
    ============================================================ */
-export function PageProject({ id }: { id?: string }) {
+export function PageProject({ id }: { id?: string }): JSX.Element {
     const project = PROJECTS.find((p) => p.id === id);
+    const bandRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const band = bandRef.current;
+        if (!band) return () => {};
+        const ctx = gsap.context(() => {
+            const items = band.querySelectorAll('[data-band-item]');
+            gsap.fromTo(
+                items,
+                { opacity: 0, y: 32 },
+                { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.09, delay: 0.1 }
+            );
+        }, band);
+        return () => ctx.revert();
+    }, [id]);
 
     if (!project) {
         return (
@@ -395,25 +934,40 @@ export function PageProject({ id }: { id?: string }) {
         <div className="v2-page-enter">
             {/* Hero band */}
             <div
+                ref={bandRef}
                 className="v2-project-band"
-                style={{ background: `linear-gradient(135deg,${project.accent}22,${project.accent2}18)` }}
+                style={{ background: `linear-gradient(135deg,${project.accent}1e,${project.accent2}14)` }}
             >
                 <div
                     style={{
                         position: 'absolute',
                         inset: 0,
-                        backgroundImage: `radial-gradient(circle at 20% 30%,${project.accent}33,transparent 50%),radial-gradient(circle at 80% 70%,${project.accent2}33,transparent 50%)`,
+                        backgroundImage: `radial-gradient(ellipse at 18% 28%,${project.accent}33,transparent 55%),radial-gradient(ellipse at 82% 72%,${project.accent2}2a,transparent 55%)`,
                     }}
+                    aria-hidden="true"
                 />
+
+                {/* Glyph backdrop */}
+                <div
+                    className="v2-project-glyph-bg v2-display"
+                    aria-hidden="true"
+                    style={{ color: project.accent + '12' }}
+                >
+                    {project.glyph}
+                </div>
+
                 <div className="v2-project-band-content">
                     <button
+                        data-band-item
                         className="v2-btn v2-btn-ghost"
                         onClick={() => navigate('/work')}
                         style={{ marginBottom: 22, fontSize: 12 }}
                     >
                         ← work
                     </button>
+
                     <div
+                        data-band-item
                         className="v2-mono"
                         style={{
                             fontSize: 11,
@@ -424,10 +978,15 @@ export function PageProject({ id }: { id?: string }) {
                     >
                         {project.glyph} · {project.year} · {project.runtime}
                     </div>
-                    <h1 className="v2-project-h1">{project.title}</h1>
+
+                    <h1 data-band-item className="v2-project-h1">
+                        {project.title}
+                    </h1>
+
                     <div
+                        data-band-item
                         style={{
-                            fontSize: 'clamp(16px,2.4vw,22px)',
+                            fontSize: 'clamp(15px,2.2vw,20px)',
                             color: 'var(--v2-ink-2)',
                             marginTop: 12,
                         }}
@@ -435,30 +994,62 @@ export function PageProject({ id }: { id?: string }) {
                         {project.subtitle}{' '}
                         <span style={{ color: 'var(--v2-ink-3)' }}>· {project.company}</span>
                     </div>
+
                     <p
+                        data-band-item
                         style={{
                             maxWidth: 680,
                             marginTop: 18,
                             color: 'var(--v2-ink-2)',
                             fontSize: 15,
-                            lineHeight: 1.55,
+                            lineHeight: 1.6,
                         }}
                     >
                         {project.summary}
                     </p>
-                    <div style={{ display: 'flex', gap: 6, marginTop: 18, flexWrap: 'wrap' }}>
+
+                    <div data-band-item style={{ display: 'flex', gap: 6, marginTop: 18, flexWrap: 'wrap' }}>
                         {project.stack.map((s) => (
                             <span key={s} className="v2-chip">
                                 {s}
                             </span>
                         ))}
                     </div>
+
+                    {/* External links */}
+                    {(project.github || project.demo) && (
+                        <div data-band-item style={{ display: 'flex', gap: 8, marginTop: 20 }}>
+                            {project.github && (
+                                <a
+                                    href={project.github}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="v2-btn v2-btn-ghost"
+                                    style={{ fontSize: 12 }}
+                                >
+                                    ↗ GitHub
+                                </a>
+                            )}
+                            {project.demo && (
+                                <a
+                                    href={project.demo}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="v2-btn v2-btn-primary"
+                                    style={{ fontSize: 12 }}
+                                >
+                                    ↗ Live demo
+                                </a>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Metrics */}
             <div className="v2-metrics-grid">
                 {project.metrics.map((m, i) => (
+                    // eslint-disable-next-line react/no-array-index-key
                     <Reveal key={i} delay={i * 100}>
                         <div className="v2-metric-card">
                             <div className="v2-metric-v" style={{ color: project.accent }}>
@@ -487,6 +1078,7 @@ export function PageProject({ id }: { id?: string }) {
                 <SectionHeader kicker="CASE STUDY" title="From problem to impact" />
                 <div style={{ marginTop: 12 }}>
                     {project.timeline.map((tl, i) => (
+                        // eslint-disable-next-line react/no-array-index-key
                         <Reveal key={i} delay={i * 80}>
                             <div className="v2-timeline-row">
                                 <div className="v2-timeline-num v2-mono" style={{ color: project.accent }}>
@@ -505,14 +1097,21 @@ export function PageProject({ id }: { id?: string }) {
                 <Reveal>
                     <div
                         className="v2-next-proj"
-                        style={{ background: `linear-gradient(135deg,${next.accent}18,${next.accent2}18)` }}
+                        style={{ background: `linear-gradient(135deg,${next.accent}14,${next.accent2}14)` }}
                         onClick={() => navigate('/work/' + next.id)}
+                        onKeyDown={(e) => e.key === 'Enter' && navigate('/work/' + next.id)}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Next project: ${next.title}`}
                         onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLElement).style.boxShadow =
-                                `0 20px 60px -20px ${next.accent}55`;
+                            gsap.to(e.currentTarget, {
+                                x: 6,
+                                boxShadow: `0 24px 60px -20px ${next.accent}55`,
+                                duration: 0.4,
+                            });
                         }}
                         onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                            gsap.to(e.currentTarget, { x: 0, boxShadow: 'none', duration: 0.5 });
                         }}
                     >
                         <div>
@@ -545,6 +1144,7 @@ export function PageProject({ id }: { id?: string }) {
                         <div
                             className="v2-display"
                             style={{ fontSize: 56, fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}
+                            aria-hidden="true"
                         >
                             {next.glyph}
                         </div>
@@ -558,77 +1158,61 @@ export function PageProject({ id }: { id?: string }) {
 /* ============================================================
    ABOUT PAGE
    ============================================================ */
-export function PageAbout() {
+export function PageAbout(): JSX.Element {
     return (
         <div className="v2-page-enter v2-container" style={{ paddingBottom: 80 }}>
             <SectionHeader kicker="ABOUT" title="A frontend engineer who ships." subtitle={IDENTITY.bio} />
 
-            {/* Experience timeline */}
+            {/* Experience — editorial grid layout */}
             <div style={{ marginTop: 48 }}>
-                <div
-                    className="v2-mono"
+                <div className="v2-sec-label-line">Experience · {IDENTITY.yearsExp}+ Years</div>
+                <h2
+                    className="v2-display"
                     style={{
-                        fontSize: 11,
-                        color: 'var(--v2-ink-3)',
-                        letterSpacing: '0.18em',
-                        marginBottom: 18,
+                        fontSize: 'clamp(34px,6vw,60px)',
+                        fontWeight: 700,
+                        letterSpacing: '-0.03em',
+                        lineHeight: 1.05,
+                        color: 'var(--v2-ink)',
                     }}
                 >
-                    EXPERIENCE · {IDENTITY.yearsExp}+ YEARS
-                </div>
-                <div className="v2-exp-timeline">
-                    <div className="v2-exp-spine" />
+                    Where I&apos;ve worked.
+                </h2>
+                <div className="v2-exp-grid">
                     {EXPERIENCE.map((e, i) => (
-                        <Reveal key={i} delay={i * 100}>
-                            <div style={{ position: 'relative', paddingBottom: 32 }}>
-                                <div
-                                    className="v2-exp-dot"
-                                    style={{ background: e.color, boxShadow: `0 0 16px ${e.color}88` }}
-                                >
-                                    {e.current && (
-                                        <div className="v2-exp-dot-ring" style={{ borderColor: e.color }} />
-                                    )}
+                        // eslint-disable-next-line react/no-array-index-key
+                        <Reveal key={i} delay={i * 60}>
+                            <div className={`v2-exp-grid-item${e.current ? 'v2-exp-grid-item-current' : ''}`}>
+                                <div className="v2-exp-grid-left">
+                                    <div className="v2-exp-grid-date">{e.range}</div>
+                                    <div className="v2-exp-grid-loc">{e.location}</div>
                                 </div>
-                                <div
-                                    className="v2-mono"
-                                    style={{ fontSize: 11, color: e.color, letterSpacing: '0.1em' }}
-                                >
-                                    {e.range} · {e.location}
-                                </div>
-                                <div
-                                    className="v2-display"
-                                    style={{
-                                        fontSize: 22,
-                                        fontWeight: 600,
-                                        letterSpacing: '-0.015em',
-                                        marginTop: 4,
-                                        color: 'var(--v2-ink)',
-                                    }}
-                                >
-                                    {e.role}
-                                </div>
-                                <div style={{ fontSize: 14, color: 'var(--v2-ink-2)' }}>{e.company}</div>
-                                <ul
-                                    style={{
-                                        marginTop: 12,
-                                        paddingLeft: 18,
-                                        color: 'var(--v2-ink-2)',
-                                        fontSize: 14,
-                                        lineHeight: 1.65,
-                                    }}
-                                >
-                                    {e.bullets.map((b, j) => (
-                                        <li key={j} style={{ marginBottom: 4 }}>
-                                            {b}
-                                        </li>
-                                    ))}
-                                </ul>
-                                <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
-                                    {e.tech.map((t) => (
-                                        <span key={t} className="v2-chip">
-                                            {t}
-                                        </span>
-                                    ))}
+                                <div className="v2-exp-grid-right">
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 8,
+                                            flexWrap: 'wrap',
+                                        }}
+                                    >
+                                        <div className="v2-exp-grid-role">{e.role}</div>
+                                        {e.current && <span className="v2-exp-current-badge">● current</span>}
+                                    </div>
+                                    <div className="v2-exp-grid-company">{e.company}</div>
+                                    <ul className="v2-exp-grid-bullets">
+                                        {e.bullets.map((b, j) => (
+                                            // eslint-disable-next-line react/no-array-index-key
+                                            <li key={j}>{b}</li>
+                                        ))}
+                                    </ul>
+                                    <div className="v2-exp-grid-tech">
+                                        {e.tech.map((t) => (
+                                            <span key={t} className="v2-chip">
+                                                {t}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </Reveal>
@@ -641,50 +1225,45 @@ export function PageAbout() {
                 <SectionHeader kicker="STACK" title="The tools I reach for" />
                 <div className="v2-skill-grid">
                     {SKILLS.map((g) => (
-                        <div key={g.group} className="v2-skill-card">
-                            <div
-                                className="v2-mono"
-                                style={{
-                                    fontSize: 10,
-                                    color: 'var(--v2-ink-3)',
-                                    letterSpacing: '0.16em',
-                                    marginBottom: 10,
-                                }}
-                            >
-                                {g.group.toUpperCase()}
-                            </div>
-                            {g.items.map(([n, lvl]) => (
+                        <Reveal key={g.group}>
+                            <div className="v2-skill-card">
                                 <div
-                                    key={n}
+                                    className="v2-mono"
                                     style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: '1fr 80px',
-                                        gap: 10,
-                                        alignItems: 'center',
-                                        padding: '4px 0',
+                                        fontSize: 10,
+                                        color: 'var(--v2-ink-3)',
+                                        letterSpacing: '0.16em',
+                                        marginBottom: 10,
                                     }}
                                 >
-                                    <span style={{ fontSize: 13, color: 'var(--v2-ink)' }}>{n}</span>
-                                    <div style={{ display: 'flex', gap: 3 }}>
-                                        {[1, 2, 3, 4, 5].map((i) => (
-                                            <div
-                                                key={i}
-                                                style={{
-                                                    width: 12,
-                                                    height: 4,
-                                                    borderRadius: 2,
-                                                    background:
-                                                        i <= lvl
-                                                            ? 'var(--v2-accent)'
-                                                            : 'rgba(255,255,255,0.08)',
-                                                    boxShadow: i <= lvl ? '0 0 6px var(--v2-accent)' : 'none',
-                                                }}
-                                            />
-                                        ))}
-                                    </div>
+                                    {g.group.toUpperCase()}
                                 </div>
-                            ))}
-                        </div>
+                                {g.items.map(([n, lvl]) => (
+                                    <div key={n} className="v2-skill-bar-row">
+                                        <span style={{ fontSize: 13, color: 'var(--v2-ink)' }}>{n}</span>
+                                        <div style={{ display: 'flex', gap: 3 }}>
+                                            {[1, 2, 3, 4, 5].map((i) => (
+                                                <div
+                                                    key={i}
+                                                    style={{
+                                                        width: 12,
+                                                        height: 4,
+                                                        borderRadius: 2,
+                                                        background:
+                                                            i <= lvl
+                                                                ? 'var(--v2-accent)'
+                                                                : 'rgba(255,255,255,0.07)',
+                                                        boxShadow:
+                                                            i <= lvl ? '0 0 6px var(--v2-accent)' : 'none',
+                                                        transition: 'background 0.3s, box-shadow 0.3s',
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </Reveal>
                     ))}
                 </div>
             </div>
@@ -692,196 +1271,107 @@ export function PageAbout() {
             {/* Education */}
             <div style={{ marginTop: 56 }}>
                 <SectionHeader kicker="EDUCATION" title="Where it started" />
-                <div className="v2-edu-card">
-                    <div
-                        className="v2-display"
-                        style={{ fontSize: 22, fontWeight: 600, color: 'var(--v2-ink)' }}
-                    >
-                        {EDUCATION.school}
+                <Reveal>
+                    <div className="v2-edu-card">
+                        <div
+                            className="v2-display"
+                            style={{ fontSize: 22, fontWeight: 600, color: 'var(--v2-ink)' }}
+                        >
+                            {EDUCATION.school}
+                        </div>
+                        <div style={{ color: 'var(--v2-ink-2)', fontSize: 14, marginTop: 4 }}>
+                            {EDUCATION.degree}
+                        </div>
+                        <div
+                            className="v2-mono"
+                            style={{ fontSize: 11, color: 'var(--v2-ink-3)', marginTop: 8 }}
+                        >
+                            {EDUCATION.range} · CGPA {EDUCATION.cgpa}
+                        </div>
                     </div>
-                    <div style={{ color: 'var(--v2-ink-2)', fontSize: 14, marginTop: 4 }}>
-                        {EDUCATION.degree}
-                    </div>
-                    <div className="v2-mono" style={{ fontSize: 11, color: 'var(--v2-ink-3)', marginTop: 8 }}>
-                        {EDUCATION.range} · CGPA {EDUCATION.cgpa}
-                    </div>
-                </div>
+                </Reveal>
             </div>
         </div>
     );
 }
 
 /* ============================================================
-   CONTACT PAGE
+   CONTACT PAGE — big email + card grid
    ============================================================ */
-export function PageContact() {
-    const [form, setForm] = useState({ name: '', email: '', msg: '' });
-    const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
-
-    const submit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!form.name || !form.email || !form.msg) return;
-        setStatus('sending');
-        setTimeout(() => setStatus('sent'), 1200);
-    };
-
-    if (status === 'sent') {
-        return (
-            <div
-                className="v2-page-enter v2-container"
-                style={{ paddingTop: 40, paddingBottom: 100, maxWidth: 600 }}
-            >
-                <div
-                    className="v2-display"
-                    style={{ fontSize: 64, marginBottom: 16, color: 'var(--v2-ink)' }}
-                >
-                    ✓
-                </div>
-                <h2
-                    className="v2-display"
-                    style={{
-                        fontSize: 36,
-                        fontWeight: 700,
-                        letterSpacing: '-0.02em',
-                        color: 'var(--v2-ink)',
-                    }}
-                >
-                    Message sent.
-                </h2>
-                <p style={{ color: 'var(--v2-ink-2)', fontSize: 15, marginTop: 12, lineHeight: 1.6 }}>
-                    Got it — I&apos;ll get back to you within 48 hours via {form.email}.
-                </p>
-                <button
-                    className="v2-btn"
-                    onClick={() => {
-                        setStatus('idle');
-                        setForm({ name: '', email: '', msg: '' });
-                    }}
-                    style={{ marginTop: 24 }}
-                >
-                    ← back
-                </button>
-            </div>
-        );
-    }
+export function PageContact(): JSX.Element {
+    const links = [
+        { label: 'Email', value: IDENTITY.email, href: 'mailto:' + IDENTITY.email },
+        { label: 'LinkedIn', value: 'linkedin.com/in/adityaraj11', href: IDENTITY.linkedin },
+        { label: 'GitHub', value: 'github.com/' + IDENTITY.handle, href: IDENTITY.github },
+        { label: 'Phone', value: IDENTITY.phone, href: 'tel:' + IDENTITY.phone.replace(/\s/g, '') },
+    ];
 
     return (
         <div className="v2-page-enter v2-container" style={{ paddingBottom: 80 }}>
-            <SectionHeader
-                kicker="CONTACT"
-                title="Let's talk."
-                subtitle="Senior frontend roles, contracts, or interesting frontend systems."
-            />
+            <Reveal>
+                <div className="v2-sec-label-line">Contact</div>
+                <h1
+                    className="v2-display"
+                    style={{
+                        fontSize: 'clamp(36px,6vw,56px)',
+                        fontWeight: 700,
+                        letterSpacing: '-0.03em',
+                        lineHeight: 1.05,
+                        color: 'var(--v2-ink)',
+                    }}
+                >
+                    Let&apos;s build
+                    <br />
+                    something.
+                </h1>
+                <p
+                    style={{
+                        fontSize: 15,
+                        color: 'var(--v2-ink-2)',
+                        marginTop: 12,
+                        maxWidth: 420,
+                        lineHeight: 1.55,
+                    }}
+                >
+                    Open to senior frontend roles, contracts, and complex frontend systems. Bengaluru —
+                    remote-friendly.
+                </p>
+            </Reveal>
 
-            <div style={{ marginTop: 32 }}>
-                <div className="v2-contact-links-grid">
-                    {[
-                        { label: 'Email', value: IDENTITY.email, href: 'mailto:' + IDENTITY.email },
-                        { label: 'LinkedIn', value: 'linkedin.com/in/adityaraj11', href: IDENTITY.linkedin },
-                        { label: 'GitHub', value: 'github.com/' + IDENTITY.handle, href: IDENTITY.github },
-                        {
-                            label: 'Phone',
-                            value: IDENTITY.phone,
-                            href: 'tel:' + IDENTITY.phone.replace(/\s/g, ''),
-                        },
-                    ].map((c) => (
+            <Reveal delay={100}>
+                <a href={'mailto:' + IDENTITY.email} className="v2-contact-email-big v2-mono">
+                    {IDENTITY.email}
+                </a>
+            </Reveal>
+
+            <div className="v2-contact-card-grid">
+                {links.map((c, i) => (
+                    <Reveal key={c.label} delay={150 + i * 40}>
                         <a
-                            key={c.label}
                             href={c.href}
-                            target="_blank"
+                            target={
+                                c.href.startsWith('mailto') || c.href.startsWith('tel') ? undefined : '_blank'
+                            }
                             rel="noopener noreferrer"
-                            className="v2-contact-link-card"
+                            className="v2-contact-info-card"
                         >
-                            <div
-                                className="v2-mono"
-                                style={{ fontSize: 10, color: 'var(--v2-ink-3)', letterSpacing: '0.14em' }}
-                            >
-                                {c.label.toUpperCase()}
-                            </div>
-                            <div style={{ fontSize: 14, marginTop: 4 }}>{c.value}</div>
+                            <div className="v2-contact-info-label">{c.label}</div>
+                            <div className="v2-contact-info-value">{c.value}</div>
                         </a>
-                    ))}
-                </div>
+                    </Reveal>
+                ))}
+            </div>
 
-                <form onSubmit={submit} className="v2-form-wrap">
+            <Reveal delay={350}>
+                <div className="v2-contact-footer-line">
                     <div
                         className="v2-mono"
-                        style={{
-                            fontSize: 11,
-                            color: 'var(--v2-accent)',
-                            letterSpacing: '0.16em',
-                            marginBottom: 16,
-                        }}
+                        style={{ fontSize: 10, color: 'var(--v2-ink-4)', letterSpacing: '0.18em' }}
                     >
-                        SEND A MESSAGE
+                        © 2026 ADITYA RAJ · BUILT WITH INTENT
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                        <Field label="Your name">
-                            <input
-                                value={form.name}
-                                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                required
-                                className="v2-field-input"
-                                placeholder="Jane Doe"
-                            />
-                        </Field>
-                        <Field label="Email">
-                            <input
-                                type="email"
-                                value={form.email}
-                                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                                required
-                                className="v2-field-input"
-                                placeholder="jane@company.com"
-                            />
-                        </Field>
-                        <Field label="Message">
-                            <textarea
-                                value={form.msg}
-                                onChange={(e) => setForm({ ...form, msg: e.target.value })}
-                                required
-                                rows={5}
-                                className="v2-field-input"
-                                style={{ resize: 'vertical', fontFamily: 'Inter, sans-serif' }}
-                                placeholder="What are you building?"
-                            />
-                        </Field>
-                        <button
-                            type="submit"
-                            className="v2-btn v2-btn-primary"
-                            disabled={status === 'sending'}
-                            style={{ marginTop: 8, fontSize: 13 }}
-                        >
-                            {status === 'sending' ? '⟳ sending…' : 'Send message →'}
-                        </button>
-                        <div
-                            className="v2-mono"
-                            style={{
-                                fontSize: 10,
-                                color: 'var(--v2-ink-3)',
-                                textAlign: 'center',
-                                marginTop: 4,
-                            }}
-                        >
-                            response within 48h
-                        </div>
-                    </div>
-                </form>
-            </div>
+                </div>
+            </Reveal>
         </div>
-    );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-    return (
-        <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <span
-                className="v2-mono"
-                style={{ fontSize: 10, color: 'var(--v2-ink-3)', letterSpacing: '0.14em' }}
-            >
-                {label.toUpperCase()}
-            </span>
-            {children}
-        </label>
     );
 }

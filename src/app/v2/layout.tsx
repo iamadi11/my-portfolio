@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     alternates: { canonical: '/v2' },
 };
 
-export default function V2Layout({ children }: { children: React.ReactNode }) {
+export default function V2Layout({ children }: { children: React.ReactNode }): JSX.Element {
     return (
         <div
             className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable}`}
