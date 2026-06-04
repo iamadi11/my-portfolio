@@ -1,7 +1,10 @@
 'use client';
 
-import '@/components/v2/v2.css';
 import { useEffect, useState } from 'react';
+
+import Link from 'next/link';
+
+import '@/components/v2/v2.css';
 
 import { useRoute, TopNav, FloatingDock, CommandPalette } from '@/components/v2/Chrome';
 import { PageHome, PageWork, PageProject, PageAbout, PageContact } from '@/components/v2/Pages';
@@ -54,7 +57,25 @@ export default function V2Page(): JSX.Element {
 
                 {/* Footer */}
                 <footer className="v2-footer">
-                    © 2026 ADITYA RAJ · BUILT WITH REACT, AGENT-LOVE &amp; A LOT OF COFFEE
+                    <span>© 2026 ADITYA RAJ · FRONTEND ENGINEER II · BENGALURU</span>
+                    <span style={{ margin: '0 16px', opacity: 0.3 }}>·</span>
+                    <Link
+                        href="/"
+                        style={{
+                            color: 'var(--v2-ink-3)',
+                            textDecoration: 'none',
+                            letterSpacing: '0.14em',
+                            transition: 'color 0.2s',
+                        }}
+                        onMouseEnter={(e) =>
+                            ((e.target as HTMLAnchorElement).style.color = 'var(--v2-ink-2)')
+                        }
+                        onMouseLeave={(e) =>
+                            ((e.target as HTMLAnchorElement).style.color = 'var(--v2-ink-3)')
+                        }
+                    >
+                        ← V1
+                    </Link>
                 </footer>
             </div>
         </div>

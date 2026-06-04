@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable consistent-return */
+/* eslint-disable react/no-array-index-key */
 'use client';
 
 import { useEffect, useRef, useState } from 'react';

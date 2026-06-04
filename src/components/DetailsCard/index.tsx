@@ -44,22 +44,28 @@ const DetailsCard: React.FC = () => {
                     initial="hidden"
                     animate="show"
                 >
-                    <motion.p variants={item} className="text-lg font-medium text-zinc-400 sm:text-xl">
-                        Hello{' '}
+                    {/* Availability badge */}
+                    <motion.div
+                        variants={item}
+                        className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5"
+                    >
                         <span
-                            className={clsx('inline-block origin-[70%_70%]', !reduce && 'animate-wave')}
+                            className={clsx(
+                                'size-1.5 rounded-full bg-emerald-400',
+                                !reduce && 'animate-pulse'
+                            )}
                             aria-hidden
-                        >
-                            👋
+                        />
+                        <span className="text-xs font-medium tracking-wide text-emerald-300">
+                            Available for opportunities
                         </span>
-                    </motion.p>
+                    </motion.div>
 
                     <motion.h1
                         id="hero-title"
                         variants={item}
-                        className="mt-3 text-balance font-extrabold tracking-tight"
+                        className="mt-1 text-balance font-extrabold tracking-tight"
                     >
-                        <span className="block text-2xl text-zinc-500 sm:text-3xl">I&apos;m</span>
                         <span className="mt-2 block bg-gradient-to-r from-cyan-300 via-sky-400 to-violet-400 bg-clip-text text-4xl text-transparent sm:text-5xl lg:text-6xl">
                             Aditya Raj
                         </span>
@@ -69,21 +75,35 @@ const DetailsCard: React.FC = () => {
                         <span className="font-semibold text-white">Frontend Engineer II</span>{' '}
                         <span className="text-zinc-400">at</span>{' '}
                         <span className="font-medium text-zinc-200">Cashfree Payments</span>
-                        <span className="text-zinc-500"> — React, Next.js, TypeScript</span>
-                    </motion.p>
-
-                    <motion.p variants={item} className="mt-2 text-sm text-zinc-500 sm:text-base">
-                        Bengaluru, Karnataka
+                        <span className="text-zinc-500"> · Bengaluru</span>
                     </motion.p>
 
                     <motion.p
                         variants={item}
                         className="mt-4 max-w-xl text-pretty text-sm leading-relaxed text-zinc-400 sm:text-base"
                     >
-                        Frontend engineer with ~4.5+ years building scalable web apps in fintech, e-commerce,
-                        and enterprise; strong React, Next.js, and TypeScript; performance and production
-                        systems focus.
+                        4.5+ years shipping production-grade React apps in fintech, e-commerce, and
+                        enterprise. Cut build times 80%, reduced SLA breaches from 70% to 15%, and built
+                        systems processing millions of transactions monthly.
                     </motion.p>
+
+                    {/* Impact stats strip */}
+                    <motion.div
+                        variants={item}
+                        className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 lg:justify-start"
+                    >
+                        {[
+                            { val: '4.5+', label: 'yrs exp' },
+                            { val: '80%', label: 'faster builds' },
+                            { val: '70→15%', label: 'SLA breaches' },
+                            { val: '~M/mo', label: 'txn volume' },
+                        ].map(({ val, label }) => (
+                            <span key={label} className="text-xs text-zinc-500">
+                                <span className="font-semibold text-zinc-200">{val}</span>{' '}
+                                <span>{label}</span>
+                            </span>
+                        ))}
+                    </motion.div>
 
                     <motion.div
                         variants={item}
@@ -98,7 +118,7 @@ const DetailsCard: React.FC = () => {
                                 'hover:border-cyan-300/50 hover:from-cyan-500/25 hover:to-sky-500/15'
                             )}
                         >
-                            Contact
+                            Get in touch
                         </Link>
                         <Link
                             href="https://github.com/iamadi11"

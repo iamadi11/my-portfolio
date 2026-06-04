@@ -82,7 +82,7 @@ export function TopNav({ route }: { route: Route['route'] }): JSX.Element {
                         <button
                             key={path}
                             onClick={() => navigate(path)}
-                            className={`v2-topnav-link${route === key || (route === 'project' && key === 'work') ? 'active' : ''}`}
+                            className={`v2-topnav-link ${route === key || (route === 'project' && key === 'work') ? 'active' : ''}`}
                         >
                             {label}
                         </button>

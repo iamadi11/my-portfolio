@@ -16,6 +16,8 @@ type ProjectItem = {
     githubLink: string;
     /** Public demo URL only when it exists (e.g. repo homepage on GitHub). */
     liveLink?: string;
+    /** 2-3 key impact metrics shown on the card */
+    metrics?: { val: string; label: string }[];
 };
 
 /** GitHub-generated Open Graph preview for a public repo (owner/repo from link). */
@@ -30,28 +32,39 @@ function githubRepoOpenGraphImage(githubLink: string): string {
 const projectsData: ProjectItem[] = [
     {
         title: 'Mouse Follow',
-        description:
-            'Small React + Vite demo: cursor-follow interaction (public repo and live demo on GitHub).',
+        description: 'Cursor-follow interaction demo built with React + Vite. Live on Vercel.',
         techStack: 'React, Vite, TypeScript, Tailwind CSS',
         liveLink: 'https://mouse-follow-demo.vercel.app/',
         githubLink: 'https://github.com/iamadi11/mouse-follow',
+        metrics: [
+            { val: 'React', label: 'Vite' },
+            { val: 'Live', label: 'demo' },
+        ],
     },
     {
-        title: 'Client-Side UI Performance Optimizer',
+        title: 'Spatial — UI Perf Optimizer',
         description:
-            'A deterministic, development-time UI performance detection engine that identifies potential performance bottlenecks before code ships.',
+            'Deterministic dev-time performance detection engine. Catches layout thrash and render hot-paths before code ships to production.',
         techStack: 'TypeScript (strict), Vitest',
         liveLink: 'https://spatial-zeta.vercel.app/',
         githubLink: 'https://github.com/iamadi11/spatial',
+        metrics: [
+            { val: 'Zero', label: 'prod overhead' },
+            { val: 'CI', label: 'compatible' },
+            { val: 'MIT', label: 'OSS' },
+        ],
     },
-    /** Intro + stack from https://github.com/iamadi11/mcp-ui-poc/blob/main/README.md */
     {
         title: 'Dynamic MCP UI Generator',
         description:
-            'Full-stack MCP UI demo: dynamic form, dashboard, and chart generation; React + Vite client, Node.js + Express server, @mcp-ui/server.',
-        techStack: 'React 18, Vite, Node.js, Express.js, CSS3, MCP UI',
+            'Full-stack MCP UI demo: dynamic forms, dashboards, and charts generated from an MCP server. Schema-first, type-safe.',
+        techStack: 'React 18, Vite, Node.js, Express.js, MCP UI',
         liveLink: 'https://mcp-ui-poc.vercel.app/',
         githubLink: 'https://github.com/iamadi11/mcp-ui-poc',
+        metrics: [
+            { val: 'Full-stack', label: 'client + server' },
+            { val: 'MCP', label: 'protocol' },
+        ],
     },
 ];
 
@@ -118,7 +131,19 @@ const ProjectsCard: React.FC = () => {
                                         <p className="text-xs leading-relaxed text-zinc-400">
                                             {project.description}
                                         </p>
-                                        <p className="text-xs text-zinc-500">{project.techStack}</p>
+                                        {project.metrics && project.metrics.length > 0 && (
+                                            <div className="flex flex-wrap gap-3">
+                                                {project.metrics.map(({ val, label }) => (
+                                                    <span key={label} className="text-xs text-zinc-500">
+                                                        <span className="font-semibold text-zinc-300">
+                                                            {val}
+                                                        </span>{' '}
+                                                        {label}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <p className="text-xs text-zinc-600">{project.techStack}</p>
                                     </div>
                                     <Card.Footer
                                         className={clsx(

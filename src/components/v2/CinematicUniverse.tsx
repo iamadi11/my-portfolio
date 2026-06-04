@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable consistent-return */
 'use client';
 
 import { useEffect, useRef } from 'react';

@@ -1206,7 +1206,9 @@ export function PageAbout(): JSX.Element {
                     {EXPERIENCE.map((e, i) => (
                         // eslint-disable-next-line react/no-array-index-key
                         <Reveal key={i} delay={i * 60}>
-                            <div className={`v2-exp-grid-item${e.current ? 'v2-exp-grid-item-current' : ''}`}>
+                            <div
+                                className={`v2-exp-grid-item ${e.current ? 'v2-exp-grid-item-current' : ''}`}
+                            >
                                 <div className="v2-exp-grid-left">
                                     <div className="v2-exp-grid-date">{e.range}</div>
                                     <div className="v2-exp-grid-loc">{e.location}</div>
