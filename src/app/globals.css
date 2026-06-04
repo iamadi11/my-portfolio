@@ -55,6 +55,251 @@ button:focus-visible {
   border-radius: 0.25rem;
 }
 
+/* ─── Prime Universe Easter Egg ─────────────────────────────────── */
+@keyframes prime-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes prime-slidein {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.prime-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000008;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: prime-fadein 0.5s ease forwards;
+}
+
+.prime-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  cursor: grab;
+}
+
+.prime-canvas:active {
+  cursor: grabbing;
+}
+
+.prime-hud {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  max-width: calc(100% - 100px);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  animation: prime-slidein 0.6s 0.2s ease both;
+}
+
+.prime-hud-title {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #00e5ff;
+  text-shadow: 0 0 14px rgba(0, 229, 255, 0.7);
+}
+
+.prime-hud-sub {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: rgba(0, 229, 255, 0.45);
+}
+
+.prime-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  color: rgba(0, 229, 255, 0.7);
+  font-size: 1rem;
+  line-height: 1;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  animation: prime-slidein 0.5s 0.1s ease both;
+}
+
+.prime-close:hover {
+  background: rgba(0, 229, 255, 0.18);
+  color: #00e5ff;
+}
+
+.prime-close:focus-visible {
+  outline: 2px solid rgb(34 211 238);
+  outline-offset: 3px;
+}
+
+.prime-controls {
+  position: absolute;
+  bottom: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: prime-slidein 0.5s 0.3s ease both;
+}
+
+.prime-count-display {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.prime-count-num {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #00e5ff;
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
+  transition: color 0.2s;
+}
+
+.prime-count-label {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(0, 229, 255, 0.45);
+}
+
+.prime-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 240px;
+  height: 3px;
+  background: linear-gradient(
+    to right,
+    rgba(0, 229, 255, 0.75) 0%,
+    rgba(0, 229, 255, 0.75) var(--prime-progress, 100%),
+    rgba(255, 255, 255, 0.1) var(--prime-progress, 100%),
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.prime-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.7), 0 0 20px rgba(0, 229, 255, 0.3);
+  cursor: pointer;
+  transition: transform 0.12s;
+}
+
+.prime-range::-webkit-slider-thumb:active {
+  transform: scale(1.35);
+}
+
+.prime-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.7);
+  cursor: pointer;
+}
+
+.prime-range:focus-visible {
+  outline: 2px solid rgba(0, 229, 255, 0.6);
+  outline-offset: 6px;
+  border-radius: 4px;
+}
+
+.prime-range-ends {
+  display: flex;
+  justify-content: space-between;
+  width: 240px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: rgba(0, 229, 255, 0.3);
+}
+
+.prime-hint {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.2);
+  animation: prime-slidein 0.5s 0.4s ease both;
+  pointer-events: none;
+}
+
+.prime-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  color: rgba(0, 229, 255, 0.65);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+@keyframes prime-spin {
+  to { transform: rotate(360deg); }
+}
+
+.prime-spinner {
+  width: 44px;
+  height: 44px;
+  border: 2px solid rgba(0, 229, 255, 0.12);
+  border-top-color: rgba(0, 229, 255, 0.75);
+  border-radius: 50%;
+  animation: prime-spin 0.75s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prime-overlay,
+  .prime-hud,
+  .prime-close,
+  .prime-hint {
+    animation: none;
+  }
+  .prime-spinner {
+    animation: none;
+    border-color: rgba(0, 229, 255, 0.5);
+  }
+}
+/* ─────────────────────────────────────────────────────────────────── */
+
 /* Tailwind custom `animate-*` — respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .animate-pulse,
