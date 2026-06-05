@@ -15,13 +15,10 @@ import {
 } from './ArchDiagrams';
 import { navigate } from './Chrome';
 import { MagBtn, Marquee, Reveal, SectionHeader, TechOrbit } from './Cinema';
+import CinematicHome from './CinematicHome';
 import { CinematicUniverse } from './CinematicUniverse';
 import { IDENTITY, PROJECTS, EXPERIENCE, SKILLS, EDUCATION } from './data';
-import Hero from './Hero';
-import HorizontalTimeline from './HorizontalTimeline';
-import ImpactOpening from './ImpactOpening';
 import { ProjectPOC } from './POCs';
-import StackedProjects from './StackedProjects';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -214,76 +211,12 @@ function PhilosophyR(): JSX.Element {
     );
 }
 
+/**
+ * PageHome — The cinematic journey.
+ * Visitor travels through space, not through sections.
+ */
 export function PageHome(): JSX.Element {
-    return (
-        <div className="v2-page-enter">
-            {/* 0: IMPACT FIRST — numbers before identity */}
-            <ImpactOpening />
-
-            {/* 1: Identity hero — 3D morphing blob + editorial statement */}
-            <Hero />
-
-            {/* 2: Tech marquee strip */}
-            <Marquee
-                items={[
-                    'React',
-                    'Next.js',
-                    'TypeScript',
-                    'PWA',
-                    'Performance',
-                    'Realtime',
-                    'Zustand',
-                    'Redis',
-                    'Webpack',
-                    'Turborepo',
-                    'Google Maps',
-                    'Node.js',
-                ]}
-            />
-
-            {/* 3: Career journey — horizontal scroll timeline */}
-            <HorizontalTimeline />
-
-            {/* 5: Selected work — GSAP stacked project panels */}
-            <StackedProjects />
-
-            {/* 6: Engineering philosophy */}
-            <PhilosophyR />
-
-            {/* 7: Contact — dramatic full-width closer */}
-            <Reveal>
-                <section id="gm-contact" className="gm-closer" aria-label="Contact">
-                    <p className="gm-closer-label v2-mono">Open to work</p>
-                    <a
-                        href={`mailto:${IDENTITY.email}`}
-                        className="gm-closer-email v2-display"
-                        aria-label={`Email ${IDENTITY.email}`}
-                    >
-                        {IDENTITY.email}
-                    </a>
-                    <div className="gm-closer-links">
-                        <a
-                            href={IDENTITY.linkedin}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="gm-closer-link v2-mono"
-                        >
-                            LinkedIn ↗
-                        </a>
-                        <a
-                            href={IDENTITY.github}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="gm-closer-link v2-mono"
-                        >
-                            GitHub ↗
-                        </a>
-                    </div>
-                    <div className="gm-closer-footer v2-mono">© 2026 Aditya Raj · Bengaluru</div>
-                </section>
-            </Reveal>
-        </div>
-    );
+    return <CinematicHome />;
 }
 
 /* ============================================================

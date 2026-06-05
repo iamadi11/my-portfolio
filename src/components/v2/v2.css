@@ -2556,3 +2556,201 @@
   .gm-io-accent-circle { display: none; }
   .gm-io-grid { display: none; }
 }
+
+/* ============================================================
+   CINEMATIC HOME (gm-ct)
+   A journey through space, not a portfolio.
+   ============================================================ */
+
+.gm-ct-root {
+  position: relative;
+  /* Takes up full space — canvas is fixed behind */
+}
+
+/* Full-screen canvas — behind all overlay content */
+.gm-ct-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: #010108; /* Deep space black */
+}
+.gm-ct-canvas canvas { width: 100% !important; height: 100% !important; }
+
+/* Transparent scroll space — provides scroll height */
+.gm-ct-scroll-space {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+  /* background: transparent — canvas shows through */
+}
+
+/* Hidden trigger pacing divs */
+.gm-ct-trigger {
+  display: block;
+  width: 100%;
+  pointer-events: none;
+}
+
+/* ── TEXT OVERLAYS ── */
+/* ── LETTERBOX BARS — cinematic framing ── */
+.gm-ct-letterbox-top,
+.gm-ct-letterbox-bottom {
+  position: fixed;
+  left: 0; right: 0;
+  z-index: 20;
+  pointer-events: none;
+  background: #000;
+  height: clamp(24px, 3.5vh, 52px);
+}
+.gm-ct-letterbox-top  { top: 0; }
+.gm-ct-letterbox-bottom { bottom: 0; }
+
+/* ── SCENE PROGRESS BAR ── */
+.gm-ct-progress-track {
+  position: fixed;
+  right: 18px;
+  top: clamp(28px, 4.5vh, 60px);
+  bottom: clamp(28px, 4.5vh, 60px);
+  width: 2px;
+  z-index: 15;
+  pointer-events: none;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+}
+.gm-ct-progress-fill {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 0%;
+  background: linear-gradient(to bottom, var(--v2-accent), var(--v2-accent-2));
+  border-radius: 2px;
+  transition: height 0.1s linear;
+  box-shadow: 0 0 6px var(--v2-accent);
+}
+
+/* Fixed, centered — GSAP controls opacity/transform */
+.gm-ct-text {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 0 max(44px, 7.5vw) clamp(80px, 14vh, 140px);
+  pointer-events: none;
+  opacity: 0; /* GSAP controls */
+  will-change: opacity, transform;
+}
+.gm-ct-text--center { align-items: center; text-align: center; }
+
+.gm-ct-headline {
+  font-size: clamp(44px, 8.5vw, 112px);
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  line-height: 0.92;
+  color: var(--v2-ink);
+  margin: 0 0 18px;
+  max-width: 14ch;
+  text-shadow:
+    0 0 120px rgba(6,7,12,0.9),
+    0 2px 40px rgba(6,7,12,0.6);
+}
+
+/* Each line of a multi-line headline as a block */
+.gm-ct-headline-line {
+  display: block;
+}
+
+.gm-ct-sub {
+  font-size: clamp(10px, 1.4vw, 14px);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--v2-ink-3);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── FINAL CTA ── */
+.gm-ct-cta {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  pointer-events: none;
+  opacity: 0; /* GSAP controls */
+  text-align: center;
+  padding: 0 max(32px, 6vw);
+}
+
+.gm-ct-cta-label {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--v2-accent);
+  margin: 0;
+}
+
+.gm-ct-cta-email {
+  display: block;
+  font-size: clamp(20px, 4vw, 60px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--v2-ink);
+  text-decoration: none;
+  transition: color 0.3s;
+  text-shadow: 0 0 60px rgba(85,120,255,0.3);
+}
+.gm-ct-cta-email:hover { color: var(--v2-accent); }
+
+.gm-ct-cta-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Enable pointer events when visible (GSAP sets opacity > 0) */
+.gm-ct-cta:not([style*="opacity: 0"]) {
+  pointer-events: auto;
+}
+.gm-ct-cta-btn { font-size: 13px; }
+
+/* ── SCROLL HINT ── */
+.gm-ct-scroll-hint {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+  pointer-events: none;
+  animation: gm-ct-pulse 3s ease-in-out infinite;
+}
+@keyframes gm-ct-pulse {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.7; }
+}
+
+/* On home route, remove the top padding from v2-content so canvas fills from 0 */
+.gm-home #v2-content { padding-top: 0 !important; }
+
+/* ── REDUCED MOTION ── */
+@media (prefers-reduced-motion: reduce) {
+  .gm-ct-canvas { display: none; }
+  .gm-ct-letterbox-top,
+  .gm-ct-letterbox-bottom { display: none; }
+  .gm-ct-progress-track { display: none; }
+  .gm-ct-root { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .gm-ct-text { position: static; opacity: 1 !important; transform: none !important; }
+  .gm-ct-cta { position: static; opacity: 1 !important; pointer-events: auto; }
+  .gm-ct-scroll-hint { display: none; }
+}
