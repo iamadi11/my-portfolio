@@ -13,35 +13,58 @@ import {
     MCPDiagram,
     PWADiagram,
 } from './ArchDiagrams';
+import CareerTimeline from './CareerTimeline';
 import { navigate } from './Chrome';
-import { MagBtn, KineticLine, Marquee, Reveal, SectionHeader, TechOrbit } from './Cinema';
+import { MagBtn, Marquee, Reveal, SectionHeader, TechOrbit } from './Cinema';
 import { CinematicUniverse } from './CinematicUniverse';
 import { IDENTITY, PROJECTS, EXPERIENCE, SKILLS, EDUCATION } from './data';
+import Hero from './Hero';
 import { ProjectPOC } from './POCs';
 
 gsap.registerPlugin(ScrollTrigger);
 
 /* ============================================================
-   REIMAGINED HOME — editorial, impact-first, no canvas noise
+   ANIMATED COUNTER — scroll-triggered number reveal
    ============================================================ */
+function AnimatedNumber({ target, accent }: { target: string; accent?: string }): JSX.Element {
+    const ref = useRef<HTMLSpanElement>(null);
 
-/* Static data for home page sections */
-const HERO_PANEL_METRICS = [
-    { val: '80%', label: 'faster builds', detail: 'Tata 1mg · Webpack + Turborepo', color: 'var(--v2-good)' },
-    {
-        val: '70→15%',
-        label: 'SLA breach rate',
-        detail: 'Tata 1mg · WebPush + Redis + SSE',
-        color: 'var(--v2-accent)',
-    },
-    { val: '~M/mo', label: 'txn processed', detail: 'Cashfree · Risk Engine', color: 'var(--v2-gold)' },
-    {
-        val: '30%',
-        label: 'KYC drop reduction',
-        detail: 'Cashfree · Video KYC reconnect',
-        color: 'var(--v2-accent-2)',
-    },
-] as const;
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return () => {};
+        // Skip complex strings (arrows / slashes)
+        if (target.includes('→') || target.includes('/')) {
+            el.textContent = target;
+            return () => {};
+        }
+        const num = parseFloat(target.replace(/[^0-9.]/g, ''));
+        const suffix = target.replace(/[0-9.]/g, '').trim();
+        if (isNaN(num)) {
+            el.textContent = target;
+            return () => {};
+        }
+
+        const obj = { val: 0 };
+        const ctx = gsap.context(() => {
+            gsap.to(obj, {
+                val: num,
+                duration: 2.0,
+                ease: 'power2.out',
+                onUpdate() {
+                    el.textContent = Math.round(obj.val) + suffix;
+                },
+                scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+            });
+        });
+        return () => ctx.revert();
+    }, [target]);
+
+    return (
+        <span ref={ref} className="v2-impact-num v2-display" style={accent ? { color: accent } : undefined}>
+            {target}
+        </span>
+    );
+}
 
 const IMPACT_ITEMS = [
     {
@@ -89,98 +112,11 @@ const PRINCIPLES = [
     },
 ];
 
-function HeroR(): JSX.Element {
-    const isReturning = typeof window !== 'undefined' && !!sessionStorage.getItem('v2_visited');
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') sessionStorage.setItem('v2_visited', '1');
-    }, []);
-
-    const d = isReturning ? 0 : 0.5;
-
-    return (
-        <section className="v2-hero-r" aria-label="Introduction">
-            <div className="v2-container v2-hero-r-inner">
-                {/* Left: editorial text */}
-                <div className="v2-hero-r-content">
-                    <KineticLine delay={d}>
-                        <p className="v2-hero-r-eyebrow v2-mono">
-                            Frontend Engineer · {IDENTITY.yearsExp}+ years · Bengaluru
-                        </p>
-                    </KineticLine>
-
-                    <h1 className="v2-hero-r-heading v2-display" aria-label="Frontend systems that scale">
-                        <KineticLine delay={d + 0.12}>
-                            <span className="v2-hero-r-heading-line">Frontend</span>
-                        </KineticLine>
-                        <KineticLine delay={d + 0.22}>
-                            <span className="v2-hero-r-heading-line">systems</span>
-                        </KineticLine>
-                        <KineticLine delay={d + 0.32}>
-                            <span className="v2-hero-r-heading-line v2-hero-r-heading-accent">
-                                that scale.
-                            </span>
-                        </KineticLine>
-                    </h1>
-
-                    <KineticLine delay={d + 0.52}>
-                        <p className="v2-hero-r-sub">
-                            Production-grade React, Next.js, and TypeScript across fintech, e-commerce, and
-                            enterprise. Currently{' '}
-                            <span style={{ color: 'var(--v2-ink)', fontWeight: 600 }}>{IDENTITY.title}</span>{' '}
-                            at{' '}
-                            <span style={{ color: 'var(--v2-ink)', fontWeight: 600 }}>
-                                {IDENTITY.company}
-                            </span>
-                            .
-                        </p>
-                    </KineticLine>
-
-                    <KineticLine delay={d + 0.72}>
-                        <div className="v2-hero-r-actions">
-                            <MagBtn className="v2-btn v2-btn-primary" onClick={() => navigate('/work')}>
-                                See the work ↓
-                            </MagBtn>
-                            <MagBtn className="v2-btn" onClick={() => navigate('/about')}>
-                                About
-                            </MagBtn>
-                            <MagBtn className="v2-btn v2-btn-ghost" onClick={() => navigate('/contact')}>
-                                Get in touch
-                            </MagBtn>
-                        </div>
-                    </KineticLine>
-                </div>
-
-                {/* Right: impact panel — desktop only */}
-                <div className="v2-hero-r-panel" aria-hidden="true">
-                    {HERO_PANEL_METRICS.map((m, i) => (
-                        <Reveal key={m.label} delay={(d + 0.8 + i * 0.1) * 1000}>
-                            <div className="v2-hero-r-panel-card">
-                                <div className="v2-hero-r-panel-num v2-display" style={{ color: m.color }}>
-                                    {m.val}
-                                </div>
-                                <div>
-                                    <div className="v2-hero-r-panel-label">{m.label}</div>
-                                    <div className="v2-hero-r-panel-detail v2-mono">{m.detail}</div>
-                                </div>
-                            </div>
-                        </Reveal>
-                    ))}
-                </div>
-            </div>
-
-            {/* Scroll cue */}
-            <div className="v2-scroll-cue" aria-hidden="true">
-                <div className="v2-scroll-line" />
-                <span className="v2-mono">SCROLL</span>
-            </div>
-        </section>
-    );
-}
+/* HeroR replaced by Hero (./Hero.tsx) — imported above */
 
 function ImpactR(): JSX.Element {
     return (
-        <section className="v2-impact-section" aria-labelledby="impact-heading">
+        <section id="gm-impact" className="v2-impact-section" aria-labelledby="impact-heading">
             <div className="v2-container">
                 <Reveal>
                     <SectionHeader
@@ -193,9 +129,7 @@ function ImpactR(): JSX.Element {
                     {IMPACT_ITEMS.map((item, i) => (
                         <Reveal key={item.num + item.attr} delay={i * 75}>
                             <div className="v2-impact-cell">
-                                <span className="v2-impact-num v2-display" style={{ color: item.accent }}>
-                                    {item.num}
-                                </span>
+                                <AnimatedNumber target={item.num} accent={item.accent} />
                                 <span className="v2-impact-label">{item.label}</span>
                                 <span className="v2-impact-attr v2-mono">{item.attr}</span>
                                 <p
@@ -258,7 +192,7 @@ function CaseStudyCard({ project, index }: { project: (typeof PROJECTS)[0]; inde
 
 function PhilosophyR(): JSX.Element {
     return (
-        <section className="v2-philosophy-section" aria-labelledby="philosophy-heading">
+        <section id="gm-philosophy" className="v2-philosophy-section" aria-labelledby="philosophy-heading">
             <div className="v2-container">
                 <Reveal>
                     <SectionHeader
@@ -293,8 +227,8 @@ function PhilosophyR(): JSX.Element {
 export function PageHome(): JSX.Element {
     return (
         <div className="v2-page-enter">
-            {/* 1: Editorial hero — no canvas */}
-            <HeroR />
+            {/* 1: God Mode hero — R3F particle network + editorial text */}
+            <Hero />
 
             {/* 2: Tech marquee strip */}
             <Marquee
@@ -314,14 +248,17 @@ export function PageHome(): JSX.Element {
                 ]}
             />
 
-            {/* 3: Engineering impact — numbers first */}
+            {/* 3: Engineering impact — animated counter numbers */}
             <ImpactR />
 
-            {/* 4: Selected work — case study cards */}
-            <div className="v2-container v2-chapter">
+            {/* 4: Career journey — scroll-driven horizontal timeline */}
+            <CareerTimeline />
+
+            {/* 5: Selected work — case study cards */}
+            <div id="gm-work" className="v2-container v2-chapter">
                 <Reveal>
                     <SectionHeader
-                        kicker="02 / SELECTED WORK"
+                        kicker="04 / SELECTED WORK"
                         title="Systems that shipped."
                         subtitle="Each includes a working POC — interact with the actual system inside the case study."
                         right={
@@ -344,16 +281,16 @@ export function PageHome(): JSX.Element {
                 </div>
             </div>
 
-            {/* 5: Engineering philosophy */}
+            {/* 6: Engineering philosophy */}
             <PhilosophyR />
 
-            {/* 6: Tech ecosystem */}
+            {/* 7: Tech ecosystem */}
             <div className="v2-tech-chapter">
                 <div className="v2-container v2-tech-chapter-inner">
                     <div className="v2-tech-chapter-text">
                         <Reveal>
                             <SectionHeader
-                                kicker="04 / STACK"
+                                kicker="05 / STACK"
                                 title="The ecosystem."
                                 subtitle="Deep specialization in React and its orbit — from UI to build tooling, realtime, and performance."
                             />
@@ -386,8 +323,8 @@ export function PageHome(): JSX.Element {
                 </div>
             </div>
 
-            {/* 7: CTA */}
-            <div className="v2-container v2-chapter">
+            {/* 8: CTA */}
+            <div id="gm-contact" className="v2-container v2-chapter">
                 <Reveal>
                     <div className="v2-cta-banner">
                         <div>
@@ -400,7 +337,7 @@ export function PageHome(): JSX.Element {
                                     marginBottom: 8,
                                 }}
                             >
-                                05 / CONTACT
+                                06 / CONTACT
                             </div>
                             <h3
                                 className="v2-display"

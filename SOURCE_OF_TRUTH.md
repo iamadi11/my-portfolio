@@ -1,7 +1,8 @@
 # Source of truth — Aditya Raj portfolio
 
-**Last reviewed:** 2026-04-09  
-**Hierarchy (strict):** `Aditya_SDE_5_years.pdf` → LinkedIn → GitHub. On conflict, **resume wins**.
+**Last reviewed:** 2026-06-05  
+**Source PDF:** `Aditya_Raj_SDE.pdf` (updated June 2026)  
+**Hierarchy (strict):** `Aditya_Raj_SDE.pdf` → LinkedIn → GitHub. On conflict, **resume wins**.
 
 ---
 
@@ -50,7 +51,13 @@
 
 ## Tech stack (validated)
 
-**Resume (explicit):** React, Next.js, JavaScript, TypeScript, HTML5, CSS3, Tailwind CSS, Redux, React Query, Zustand, Node.js, Express.js, REST, microservices, Webpack, PWA, Turborepo, code splitting, caching, performance work, Google Maps API, Jest, React Testing Library, Git, CI/CD, AWS, MySQL, MongoDB, Redis, SSIS; **Cashfree:** Semantic UI.
+**Resume (explicit, from Aditya_Raj_SDE.pdf):**
+
+- Languages: JavaScript (ES2022+), TypeScript
+- Frontend: React, Next.js, Zustand, React Query, Tailwind CSS, Radix UI, PWA, Storybook, Micro-frontends
+- Performance: Webpack 5, Code Splitting, Tree Shaking, Core Web Vitals, Lighthouse, Service Workers
+- Backend & Infra: Python, Node.js, Express.js, Redis, SSE, WebPush, PostgreSQL, Turborepo, Docker
+- Testing & Tooling: Jest, React Testing Library, Playwright, Git, GitHub Actions, Figma, pnpm workspaces
 
 **GitHub (proof of stack / activity):** Public repos include e.g. `my-portfolio` (this site), `mouse-follow`, `Oompa-Loompas`, `spatial`, `AIUI`, profile README `iamadi11/iamadi11`, etc. Use languages/topics from the repo, not invented labels.
 
@@ -121,14 +128,15 @@ my-portfolio/
 
 ## Cached snapshot (2026-04-09)
 
-### Current role (resume)
+### Most recent role (resume)
 
-- **Frontend Engineer II** — Cashfree Payments — Mar 2025 – Present — Bengaluru
+- **Frontend Engineer II** — Cashfree Payments — Mar 2025 – May 2026 — Bengaluru
 
 ### Prior roles (resume)
 
 - **Software Engineer** — Moresand Technologies — Aug 2024 – Mar 2025 — Bengaluru
-- **Software Development Engineer I–II** — Tata 1mg — Dec 2021 – Jul 2024 — Gurugram
+- **Software Development Engineer II** — Tata 1mg — Apr 2023 – Jul 2024 — Gurugram
+- **Software Development Engineer I** — Tata 1mg — Dec 2021 – Mar 2023 — Gurugram
 
 ### Top skills (resume + GitHub)
 

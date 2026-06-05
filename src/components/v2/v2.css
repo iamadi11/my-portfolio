@@ -1460,3 +1460,388 @@
 .v2-philosophy-body {
   font-size: 15px; color: var(--v2-ink-2); line-height: 1.75; max-width: 620px;
 }
+
+/* ============================================================
+   GOD MODE — Hero (gm-hero)
+   ============================================================ */
+.gm-hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* 3D canvas — full bleed, behind content */
+.gm-hero-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+/* Hide canvas on mobile to avoid perf issues */
+@media (max-width: 639px) { .gm-hero-canvas { display: none; } }
+
+/* Radial gradient so text stays legible over canvas */
+.gm-hero-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse 80% 70% at 30% 50%, rgba(6,7,12,0.82) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 60% at 100% 100%, rgba(6,7,12,0.55) 0%, transparent 60%),
+    linear-gradient(to bottom, rgba(6,7,12,0) 60%, rgba(6,7,12,0.9) 100%);
+}
+
+/* Two-column layout: text left, metrics right */
+.gm-hero-layout {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+  padding-top: 96px;
+  padding-bottom: 96px;
+}
+@media (min-width: 900px) {
+  .gm-hero-layout {
+    grid-template-columns: 1fr 380px;
+    align-items: center;
+    gap: 64px;
+  }
+}
+
+/* Text column */
+.gm-hero-text { display: flex; flex-direction: column; gap: 20px; }
+
+.gm-hero-eyebrow {
+  font-size: 11.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--v2-accent);
+  opacity: 0;
+}
+
+.gm-hero-h1 {
+  font-size: clamp(46px, 7vw, 92px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  color: var(--v2-ink);
+  margin: 0;
+  opacity: 0;
+}
+.gm-hero-h1-accent {
+  background: linear-gradient(135deg, var(--v2-accent) 0%, var(--v2-accent-2) 60%, var(--v2-accent-3) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gm-hero-desc {
+  font-size: clamp(15px, 1.8vw, 18px);
+  color: var(--v2-ink-2);
+  line-height: 1.65;
+  max-width: 520px;
+  opacity: 0;
+}
+.gm-hero-desc strong { color: var(--v2-ink); font-weight: 600; }
+
+.gm-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; opacity: 0; }
+
+/* Metrics panel — desktop only */
+.gm-hero-metrics {
+  display: none;
+  opacity: 0;
+}
+@media (min-width: 900px) {
+  .gm-hero-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+}
+
+.gm-hero-metric {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--v2-line-2);
+  border-radius: 14px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.25s, background 0.25s;
+}
+.gm-hero-metric:hover {
+  border-color: var(--v2-line-3);
+  background: rgba(255,255,255,0.055);
+}
+.gm-hero-metric-val {
+  font-size: clamp(22px, 2.8vw, 32px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.gm-hero-metric-label {
+  font-size: 12px;
+  color: var(--v2-ink-2);
+  font-weight: 500;
+}
+.gm-hero-metric-ctx {
+  font-size: 10px;
+  color: var(--v2-ink-3);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   GOD MODE — Section shared styles
+   ============================================================ */
+.gm-section-kicker {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--v2-accent);
+  margin: 0 0 12px;
+}
+.gm-section-title {
+  font-size: clamp(32px, 5vw, 58px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.0;
+  color: var(--v2-ink);
+  margin: 0 0 16px;
+}
+.gm-section-sub {
+  font-size: 15px;
+  color: var(--v2-ink-2);
+  max-width: 560px;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ============================================================
+   GOD MODE — Career Timeline (gm-journey)
+   ============================================================ */
+.gm-timeline-section {
+  position: relative;
+  padding: 100px 0;
+  overflow: hidden;
+}
+
+.gm-timeline-section .v2-container {
+  margin-bottom: 64px;
+}
+
+.gm-timeline-body {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+@media (min-width: 640px) { .gm-timeline-body { padding: 0 48px; } }
+
+/* Vertical spine */
+.gm-tl-spine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--v2-line-2) 10%, var(--v2-line-2) 90%, transparent);
+  transform: scaleY(0);
+  transform-origin: top;
+}
+@media (max-width: 639px) {
+  .gm-tl-spine { left: 20px; }
+}
+
+/* Timeline node row */
+.gm-tl-node {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 24px 1fr;
+  gap: 0 24px;
+  align-items: start;
+  margin-bottom: 60px;
+  opacity: 0;
+}
+.gm-tl-node .gm-tl-card { grid-column: 1; text-align: right; }
+.gm-tl-node .gm-tl-dot  { grid-column: 2; margin-top: 10px; }
+.gm-tl-node .gm-tl-card + .gm-tl-dot { /* handled by grid */ }
+
+/* Right-side nodes: card on right */
+.gm-tl-node-right .gm-tl-card { grid-column: 3; grid-row: 1; text-align: left; }
+.gm-tl-node-right .gm-tl-dot  { grid-column: 2; grid-row: 1; }
+
+/* Mobile: all left */
+@media (max-width: 639px) {
+  .gm-tl-node,
+  .gm-tl-node-right {
+    grid-template-columns: 32px 1fr;
+    gap: 0 16px;
+  }
+  .gm-tl-node .gm-tl-card,
+  .gm-tl-node-right .gm-tl-card {
+    grid-column: 2;
+    grid-row: 1;
+    text-align: left;
+  }
+  .gm-tl-node .gm-tl-dot,
+  .gm-tl-node-right .gm-tl-dot {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: center;
+  }
+}
+
+/* Dot connector */
+.gm-tl-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  flex-shrink: 0;
+  transition: box-shadow 0.3s;
+}
+
+/* Card content */
+.gm-tl-card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--v2-line);
+  border-radius: 14px;
+  padding: 20px 22px;
+  transition: border-color 0.25s, background 0.25s;
+}
+.gm-tl-card:hover {
+  border-color: var(--v2-line-2);
+  background: rgba(255,255,255,0.04);
+}
+.gm-tl-year {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.gm-tl-now-badge {
+  color: var(--v2-good);
+}
+.gm-tl-company {
+  font-size: clamp(17px, 2.2vw, 22px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--v2-ink);
+  margin: 0 0 4px;
+}
+.gm-tl-role {
+  font-size: 13px;
+  color: var(--v2-ink-2);
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+.gm-tl-detail {
+  font-size: 13px;
+  color: var(--v2-ink-3);
+  line-height: 1.6;
+  margin: 0 0 8px;
+}
+.gm-tl-current-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--v2-good);
+  background: rgba(93, 216, 158, 0.08);
+  border: 1px solid rgba(93, 216, 158, 0.2);
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-top: 8px;
+}
+
+/* ============================================================
+   GOD MODE — Floating dot nav (gm-floatnav)
+   ============================================================ */
+.gm-floatnav {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  pointer-events: auto;
+}
+/* Hide on narrow screens */
+@media (max-width: 1023px) { .gm-floatnav { display: none; } }
+
+.gm-floatnav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  outline: none;
+}
+.gm-floatnav-item:focus-visible .gm-floatnav-pip {
+  outline: 2px solid var(--v2-accent);
+  outline-offset: 3px;
+}
+
+/* Label — hidden by default, visible on hover */
+.gm-floatnav-label {
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--v2-ink-3);
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 0.2s, transform 0.2s, color 0.2s;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.gm-floatnav-item:hover .gm-floatnav-label,
+.gm-floatnav-item.is-active .gm-floatnav-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+.gm-floatnav-item.is-active .gm-floatnav-label { color: var(--v2-ink-2); }
+
+/* Dot */
+.gm-floatnav-pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--v2-ink-4);
+  transition: background 0.25s, box-shadow 0.25s, transform 0.25s;
+  flex-shrink: 0;
+}
+.gm-floatnav-item:hover .gm-floatnav-pip {
+  background: var(--v2-ink-2);
+  transform: scale(1.3);
+}
+.gm-floatnav-item.is-active .gm-floatnav-pip {
+  background: var(--v2-accent);
+  box-shadow: 0 0 8px rgba(85,120,255,0.6);
+  transform: scale(1.5);
+}
+
+/* ============================================================
+   GOD MODE — Reduced motion overrides
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .gm-hero-canvas { display: none; }
+  .gm-tl-spine { transform: none; }
+  .gm-tl-node { opacity: 1; transform: none; }
+  .gm-floatnav-label { transition: none; }
+  .gm-floatnav-pip { transition: none; }
+}

@@ -1,20 +1,29 @@
 'use client';
 
-/* GSAP ScrollTrigger requires scrollerProxy() for non-window scrollers.
-   v2-root is position:fixed;overflow-y:auto — we must proxy its scroll
-   so ScrollTrigger can correctly compute trigger positions. */
+/* GSAP ScrollTrigger proxy for .v2-root (position:fixed; overflow-y:auto).
+   Lenis drives smooth wheel interpolation; GSAP ticker syncs via raf. */
+
 import { useLayoutEffect } from 'react';
 
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function ScrollSetup(): null {
     useLayoutEffect(() => {
-        const el = document.querySelector('.v2-root') as HTMLElement;
+        const el = document.querySelector<HTMLElement>('.v2-root');
         if (!el) return () => {};
 
+        /* Smooth scroll driver for .v2-root */
+        const lenis = new Lenis({
+            wrapper: el,
+            lerp: 0.09,
+            smoothWheel: true,
+        });
+
+        /* Tell GSAP how to read/set scroll on the custom container */
         ScrollTrigger.scrollerProxy(el, {
             scrollTop(value?: number) {
                 if (arguments.length && value !== undefined) {
@@ -29,11 +38,15 @@ export default function ScrollSetup(): null {
 
         ScrollTrigger.defaults({ scroller: el });
 
-        const onScroll = () => ScrollTrigger.update();
-        el.addEventListener('scroll', onScroll, { passive: true });
+        /* Lenis → GSAP ticker sync */
+        lenis.on('scroll', ScrollTrigger.update);
+        const rafCb = (time: number) => lenis.raf(time * 1000);
+        gsap.ticker.add(rafCb);
+        gsap.ticker.lagSmoothing(0);
 
         return () => {
-            el.removeEventListener('scroll', onScroll);
+            gsap.ticker.remove(rafCb);
+            lenis.destroy();
             ScrollTrigger.defaults({ scroller: undefined });
             ScrollTrigger.killAll();
             ScrollTrigger.clearScrollMemory();

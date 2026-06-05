@@ -7,6 +7,7 @@ import Link from 'next/link';
 import '@/components/v2/v2.css';
 
 import { useRoute, TopNav, FloatingDock, CommandPalette } from '@/components/v2/Chrome';
+import FloatingNav from '@/components/v2/FloatingNav';
 import { PageHome, PageWork, PageProject, PageAbout, PageContact } from '@/components/v2/Pages';
 import ScrollSetup from '@/components/v2/ScrollSetup';
 
@@ -50,6 +51,8 @@ export default function V2Page(): JSX.Element {
             <TopNav route={route.route} />
             <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
             <FloatingDock onCmd={() => setCmdOpen(true)} />
+            {/* Vertical dot nav — home route only */}
+            {route.route === 'home' && <FloatingNav />}
 
             {/* Page content */}
             <div id="v2-content">

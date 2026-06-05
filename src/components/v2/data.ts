@@ -392,7 +392,8 @@ export const SKILLS: SkillGroup[] = [
             ['Node.js', 4],
             ['Express', 3],
             ['Redis', 3],
-            ['MongoDB', 2],
+            ['PostgreSQL', 2],
+            ['Docker', 2],
         ],
     },
     {
@@ -401,6 +402,7 @@ export const SKILLS: SkillGroup[] = [
             ['Jest', 3],
             ['RTL', 3],
             ['Vitest', 3],
+            ['Playwright', 2],
         ],
     },
 ];

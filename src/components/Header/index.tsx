@@ -197,10 +197,12 @@ const Header: React.FC = () => {
             }
             default: {
                 const Tag = element.tag as keyof JSX.IntrinsicElements;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const DynTag = Tag as any;
                 return (
-                    <Tag key={key} className={clsx(element.className)}>
+                    <DynTag key={key} className={clsx(element.className)}>
                         {renderChildContent(element.children)}
-                    </Tag>
+                    </DynTag>
                 );
             }
         }
