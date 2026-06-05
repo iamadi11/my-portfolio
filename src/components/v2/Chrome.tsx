@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 
+import Link from 'next/link';
+
 import { PROJECTS, IDENTITY } from './data';
 
 type Route = { route: 'home' | 'work' | 'project' | 'about' | 'contact'; id?: string };
@@ -87,6 +89,22 @@ export function TopNav({ route }: { route: Route['route'] }): JSX.Element {
                             {label}
                         </button>
                     ))}
+                    <div
+                        style={{
+                            width: 1,
+                            height: 18,
+                            background: 'var(--v2-line-2)',
+                            margin: '0 6px',
+                            alignSelf: 'center',
+                        }}
+                    />
+                    <Link
+                        href="/"
+                        className="v2-topnav-link"
+                        style={{ fontSize: 12, letterSpacing: '0.04em', opacity: 0.6 }}
+                    >
+                        ← V1
+                    </Link>
                 </div>
             </div>
         </nav>

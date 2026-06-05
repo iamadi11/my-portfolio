@@ -14,17 +14,7 @@ import {
     PWADiagram,
 } from './ArchDiagrams';
 import { navigate } from './Chrome';
-import {
-    MorphingCanvas,
-    MagBtn,
-    KineticTitle,
-    KineticLine,
-    Marquee,
-    Counter,
-    Reveal,
-    SectionHeader,
-    TechOrbit,
-} from './Cinema';
+import { MagBtn, KineticLine, Marquee, Reveal, SectionHeader, TechOrbit } from './Cinema';
 import { CinematicUniverse } from './CinematicUniverse';
 import { IDENTITY, PROJECTS, EXPERIENCE, SKILLS, EDUCATION } from './data';
 import { ProjectPOC } from './POCs';
@@ -32,244 +22,281 @@ import { ProjectPOC } from './POCs';
 gsap.registerPlugin(ScrollTrigger);
 
 /* ============================================================
-   Helper components
+   REIMAGINED HOME — editorial, impact-first, no canvas noise
    ============================================================ */
-function FeatureCard({
-    project,
-    index: _index,
-}: {
-    project: (typeof PROJECTS)[0];
-    index: number;
-}): JSX.Element {
-    const cardRef = useRef<HTMLDivElement>(null);
 
-    const onEnter = () => {
-        const el = cardRef.current;
-        if (!el) return;
-        gsap.to(el, { y: -8, duration: 0.4, ease: 'power2.out' });
-        gsap.to(el, {
-            boxShadow: `0 40px 80px -20px ${project.accent}66`,
-            duration: 0.4,
-            ease: 'power2.out',
-        });
-    };
-    const onLeave = () => {
-        const el = cardRef.current;
-        if (!el) return;
-        gsap.to(el, {
-            y: 0,
-            boxShadow: '0 4px 20px -8px rgba(0,0,0,0.6)',
-            duration: 0.5,
-            ease: 'power3.out',
-        });
-    };
+/* Static data for home page sections */
+const HERO_PANEL_METRICS = [
+    { val: '80%', label: 'faster builds', detail: 'Tata 1mg · Webpack + Turborepo', color: 'var(--v2-good)' },
+    {
+        val: '70→15%',
+        label: 'SLA breach rate',
+        detail: 'Tata 1mg · WebPush + Redis + SSE',
+        color: 'var(--v2-accent)',
+    },
+    { val: '~M/mo', label: 'txn processed', detail: 'Cashfree · Risk Engine', color: 'var(--v2-gold)' },
+    {
+        val: '30%',
+        label: 'KYC drop reduction',
+        detail: 'Cashfree · Video KYC reconnect',
+        color: 'var(--v2-accent-2)',
+    },
+] as const;
+
+const IMPACT_ITEMS = [
+    {
+        num: '80%',
+        label: 'Build time reduction',
+        attr: 'TATA 1MG · 2023',
+        accent: 'var(--v2-good)',
+        detail: 'Webpack 5 persistent cache + Turborepo remote: 15 min → 3 min',
+    },
+    {
+        num: '70→15%',
+        label: 'SLA breach rate',
+        attr: 'TATA 1MG · 2023',
+        accent: 'var(--v2-accent)',
+        detail: 'Redis pub/sub fanout → SSE dashboards + WebPush mobile. Median alert: 4 min → 8 s',
+    },
+    {
+        num: '~M/mo',
+        label: 'Transactions processed',
+        attr: 'CASHFREE · 2025',
+        accent: 'var(--v2-gold)',
+        detail: 'Configurable fraud rule engine · <120 ms p99 decision latency',
+    },
+    {
+        num: '50%',
+        label: 'Faster repeat visits',
+        attr: 'MORESAND · 2024',
+        accent: 'var(--v2-accent-2)',
+        detail: 'PWA service-worker pre-cache + React Query stale-while-revalidate',
+    },
+] as const;
+
+const PRINCIPLES = [
+    {
+        title: 'Performance is observable.',
+        body: "I don't optimize blindly. I instrument, measure, then fix. Every win has a before and after number attached. At Tata 1mg that number was build time: 15 minutes to 3. The measurement came first.",
+    },
+    {
+        title: 'Systems outlast solutions.',
+        body: 'Point fixes become tech debt the moment requirements change. At Cashfree, I built a rule engine so merchants could configure transaction blocking without touching code — zero frontend deploys for new rules.',
+    },
+    {
+        title: 'Ship first. Sharpen always.',
+        body: 'Perfect is the enemy of shipped. I bias toward delivery: get it in front of users, measure impact, iterate. The Video KYC reconnection flow shipped in a week. Three iterations later it had 30% fewer session drops.',
+    },
+];
+
+function HeroR(): JSX.Element {
+    const isReturning = typeof window !== 'undefined' && !!sessionStorage.getItem('v2_visited');
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') sessionStorage.setItem('v2_visited', '1');
+    }, []);
+
+    const d = isReturning ? 0 : 0.5;
+
+    return (
+        <section className="v2-hero-r" aria-label="Introduction">
+            <div className="v2-container v2-hero-r-inner">
+                {/* Left: editorial text */}
+                <div className="v2-hero-r-content">
+                    <KineticLine delay={d}>
+                        <p className="v2-hero-r-eyebrow v2-mono">
+                            Frontend Engineer · {IDENTITY.yearsExp}+ years · Bengaluru
+                        </p>
+                    </KineticLine>
+
+                    <h1 className="v2-hero-r-heading v2-display" aria-label="Frontend systems that scale">
+                        <KineticLine delay={d + 0.12}>
+                            <span className="v2-hero-r-heading-line">Frontend</span>
+                        </KineticLine>
+                        <KineticLine delay={d + 0.22}>
+                            <span className="v2-hero-r-heading-line">systems</span>
+                        </KineticLine>
+                        <KineticLine delay={d + 0.32}>
+                            <span className="v2-hero-r-heading-line v2-hero-r-heading-accent">
+                                that scale.
+                            </span>
+                        </KineticLine>
+                    </h1>
+
+                    <KineticLine delay={d + 0.52}>
+                        <p className="v2-hero-r-sub">
+                            Production-grade React, Next.js, and TypeScript across fintech, e-commerce, and
+                            enterprise. Currently{' '}
+                            <span style={{ color: 'var(--v2-ink)', fontWeight: 600 }}>{IDENTITY.title}</span>{' '}
+                            at{' '}
+                            <span style={{ color: 'var(--v2-ink)', fontWeight: 600 }}>
+                                {IDENTITY.company}
+                            </span>
+                            .
+                        </p>
+                    </KineticLine>
+
+                    <KineticLine delay={d + 0.72}>
+                        <div className="v2-hero-r-actions">
+                            <MagBtn className="v2-btn v2-btn-primary" onClick={() => navigate('/work')}>
+                                See the work ↓
+                            </MagBtn>
+                            <MagBtn className="v2-btn" onClick={() => navigate('/about')}>
+                                About
+                            </MagBtn>
+                            <MagBtn className="v2-btn v2-btn-ghost" onClick={() => navigate('/contact')}>
+                                Get in touch
+                            </MagBtn>
+                        </div>
+                    </KineticLine>
+                </div>
+
+                {/* Right: impact panel — desktop only */}
+                <div className="v2-hero-r-panel" aria-hidden="true">
+                    {HERO_PANEL_METRICS.map((m, i) => (
+                        <Reveal key={m.label} delay={(d + 0.8 + i * 0.1) * 1000}>
+                            <div className="v2-hero-r-panel-card">
+                                <div className="v2-hero-r-panel-num v2-display" style={{ color: m.color }}>
+                                    {m.val}
+                                </div>
+                                <div>
+                                    <div className="v2-hero-r-panel-label">{m.label}</div>
+                                    <div className="v2-hero-r-panel-detail v2-mono">{m.detail}</div>
+                                </div>
+                            </div>
+                        </Reveal>
+                    ))}
+                </div>
+            </div>
+
+            {/* Scroll cue */}
+            <div className="v2-scroll-cue" aria-hidden="true">
+                <div className="v2-scroll-line" />
+                <span className="v2-mono">SCROLL</span>
+            </div>
+        </section>
+    );
+}
+
+function ImpactR(): JSX.Element {
+    return (
+        <section className="v2-impact-section" aria-labelledby="impact-heading">
+            <div className="v2-container">
+                <Reveal>
+                    <SectionHeader
+                        kicker="01 / ENGINEERING IMPACT"
+                        title="Outcomes first."
+                        subtitle="Every metric was earned by shipping, measuring, and iterating — not reported."
+                    />
+                </Reveal>
+                <div className="v2-impact-grid">
+                    {IMPACT_ITEMS.map((item, i) => (
+                        <Reveal key={item.num + item.attr} delay={i * 75}>
+                            <div className="v2-impact-cell">
+                                <span className="v2-impact-num v2-display" style={{ color: item.accent }}>
+                                    {item.num}
+                                </span>
+                                <span className="v2-impact-label">{item.label}</span>
+                                <span className="v2-impact-attr v2-mono">{item.attr}</span>
+                                <p
+                                    style={{
+                                        fontSize: 12,
+                                        color: 'var(--v2-ink-3)',
+                                        marginTop: 8,
+                                        lineHeight: 1.55,
+                                    }}
+                                >
+                                    {item.detail}
+                                </p>
+                            </div>
+                        </Reveal>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function CaseStudyCard({ project, index }: { project: (typeof PROJECTS)[0]; index: number }): JSX.Element {
+    const num = String(index + 1).padStart(2, '0');
+    const metric = project.metrics[0];
 
     return (
         <div
-            ref={cardRef}
-            className="v2-feat-card"
+            className="v2-case-card"
             onClick={() => navigate('/work/' + project.id)}
-            onMouseEnter={onEnter}
-            onMouseLeave={onLeave}
-            style={{ cursor: 'pointer' }}
+            onKeyDown={(e) => e.key === 'Enter' && navigate('/work/' + project.id)}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && navigate('/work/' + project.id)}
-            aria-label={`View ${project.title}`}
+            aria-label={`Case study: ${project.title}`}
         >
-            {/* Thumbnail */}
-            <div className="v2-feat-thumb">
-                <div
-                    style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: `linear-gradient(135deg,${project.accent}2a,${project.accent2}18)`,
-                    }}
-                />
-                <div
-                    style={{
-                        position: 'absolute',
-                        inset: 0,
-                        backgroundImage: `radial-gradient(ellipse at 28% 32%,${project.accent}66,transparent 55%),radial-gradient(ellipse at 74% 72%,${project.accent2}55,transparent 55%)`,
-                    }}
-                />
-                <div className="v2-feat-glyph" style={{ textShadow: `0 8px 40px ${project.accent}88` }}>
-                    {project.glyph}
-                </div>
-                <div className="v2-feat-meta">
-                    <span className="v2-mono" style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>
-                        {project.year}
-                    </span>
-                    <span
-                        className="v2-mono"
-                        style={{
-                            fontSize: 10,
-                            padding: '2px 7px',
-                            borderRadius: 4,
-                            background: project.accent + '22',
-                            color: project.accent,
-                            border: `1px solid ${project.accent}44`,
-                        }}
-                    >
-                        {project.runtime}
-                    </span>
-                </div>
-                {/* Accent line */}
-                <div
-                    className="v2-feat-accent-bar"
-                    style={{ background: `linear-gradient(90deg,${project.accent},${project.accent2})` }}
-                />
-            </div>
-
-            {/* Body */}
-            <div className="v2-feat-body">
-                <div className="v2-feat-company v2-mono">{project.company}</div>
-                <div className="v2-feat-title v2-display">{project.title}</div>
-                <div className="v2-feat-subtitle">{project.subtitle}</div>
-                <div className="v2-feat-chips">
+            <div className="v2-case-num v2-mono">{num}</div>
+            <div className="v2-case-body">
+                <p className="v2-case-kicker v2-mono">
+                    {project.company} · {project.year}
+                </p>
+                <h3 className="v2-case-title v2-display">{project.title}</h3>
+                <p className="v2-case-desc">{project.summary}</p>
+                <div className="v2-case-chips">
                     {project.stack.slice(0, 4).map((s) => (
                         <span key={s} className="v2-chip">
                             {s}
                         </span>
                     ))}
                 </div>
-                <div className="v2-feat-cta v2-mono" style={{ color: project.accent }} aria-hidden="true">
-                    Case study + live POC →
-                </div>
+            </div>
+            <div className="v2-case-metric">
+                <span className="v2-case-metric-v v2-display" style={{ color: project.accent }}>
+                    {metric.v}
+                </span>
+                <span className="v2-case-metric-k v2-mono">{metric.k}</span>
+                <span className="v2-case-cta v2-mono">case study + poc →</span>
             </div>
         </div>
     );
 }
 
-/* ============================================================
-   HOME PAGE  — cinematic scroll chapters
-   ============================================================ */
-export function PageHome(): JSX.Element {
-    const heroRef = useRef<HTMLDivElement>(null);
-    const heroContentRef = useRef<HTMLDivElement>(null);
-    const scrollCueRef = useRef<HTMLDivElement>(null);
-
-    const isReturning = typeof window !== 'undefined' && !!sessionStorage.getItem('v2_visited');
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') sessionStorage.setItem('v2_visited', '1');
-
-        const hero = heroRef.current;
-        const content = heroContentRef.current;
-        if (!hero || !content) return () => {};
-
-        const ctx = gsap.context(() => {
-            // Scroll cue fade in
-            gsap.fromTo(
-                scrollCueRef.current,
-                { opacity: 0 },
-                { opacity: 1, duration: 0.8, delay: isReturning ? 0.4 : 2.2 }
-            );
-
-            // Hero content fades out and rises as user scrolls
-            gsap.to(content, {
-                opacity: 0,
-                y: -60,
-                ease: 'none',
-                scrollTrigger: {
-                    trigger: hero,
-                    start: 'top top',
-                    end: '50% top',
-                    scrub: 1.5,
-                },
-            });
-        });
-
-        return () => ctx.revert();
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-    const enterDelay = isReturning ? 0.05 : 0.6;
-
+function PhilosophyR(): JSX.Element {
     return (
-        <div className="v2-page-enter">
-            {/* ── Chapter 1: Hero ── */}
-            <div ref={heroRef} className="v2-hero">
-                <div className="v2-hero-canvas-wrap" aria-hidden="true">
-                    <MorphingCanvas speed="slow" accentRGB={[122, 162, 255]} />
-                </div>
-                <div className="v2-hero-vignette" aria-hidden="true" />
-
-                <div ref={heroContentRef} className="v2-hero-content">
-                    {/* Status pill */}
-                    <KineticLine delay={enterDelay} className="v2-mono">
-                        <span className="v2-hero-status v2-mono">
-                            <span className="v2-hero-status-dot" />
-                            AVAILABLE &nbsp;·&nbsp; PORTFOLIO 2026 &nbsp;·&nbsp; v2.0
-                        </span>
-                    </KineticLine>
-
-                    {/* Name */}
-                    <h1 className="v2-hero-name v2-display" aria-label={IDENTITY.name}>
-                        <KineticTitle
-                            text={IDENTITY.name + '.'}
-                            delay={enterDelay + 0.1}
-                            stagger={0.04}
-                            duration={0.9}
-                        />
-                    </h1>
-
-                    {/* Title */}
-                    <KineticLine delay={enterDelay + 0.5}>
-                        <p className="v2-hero-role v2-display">
-                            {IDENTITY.title}
-                            <span className="v2-hero-company"> · {IDENTITY.company}</span>
-                        </p>
-                    </KineticLine>
-
-                    {/* Bio */}
-                    <KineticLine delay={enterDelay + 0.7}>
-                        <p className="v2-hero-bio">{IDENTITY.bio}</p>
-                    </KineticLine>
-
-                    {/* CTAs */}
-                    <KineticLine delay={enterDelay + 0.9}>
-                        <div className="v2-hero-actions">
-                            <MagBtn className="v2-btn v2-btn-primary" onClick={() => navigate('/work')}>
-                                View Work ↓
-                            </MagBtn>
-                            <MagBtn className="v2-btn" onClick={() => navigate('/about')}>
-                                About
-                            </MagBtn>
-                            <MagBtn className="v2-btn v2-btn-ghost" onClick={() => navigate('/contact')}>
-                                Contact
-                            </MagBtn>
-                        </div>
-                    </KineticLine>
-
-                    {/* Stats */}
-                    <div className="v2-hero-stats">
-                        {[
-                            { to: IDENTITY.yearsExp, suf: '+ yrs', k: 'shipping' },
-                            { to: PROJECTS.length, suf: '', k: 'case studies' },
-                            { to: 80, suf: '%', k: 'faster builds' },
-                            { to: 99.97, suf: '%', k: 'risk uptime', dec: 2 },
-                        ].map((m, i) => (
-                            // eslint-disable-next-line react/no-array-index-key
-                            <Reveal key={i} delay={(enterDelay + 1.1 + i * 0.08) * 1000}>
-                                <div className="v2-hero-stat">
-                                    <span className="v2-hero-stat-n v2-display">
-                                        <Counter to={m.to} suffix={m.suf} decimals={m.dec || 0} />
-                                    </span>
-                                    <span className="v2-hero-stat-k v2-mono">{m.k}</span>
+        <section className="v2-philosophy-section" aria-labelledby="philosophy-heading">
+            <div className="v2-container">
+                <Reveal>
+                    <SectionHeader
+                        kicker="03 / HOW I THINK"
+                        title="Engineering principles."
+                        subtitle="Not values. Actual decision frameworks from production systems."
+                    />
+                </Reveal>
+                <div className="v2-philosophy-list">
+                    {PRINCIPLES.map((p, i) => (
+                        <Reveal key={p.title} delay={i * 80}>
+                            <div className="v2-philosophy-item">
+                                <div
+                                    className="v2-philosophy-num v2-mono"
+                                    style={{ color: 'var(--v2-accent)' }}
+                                >
+                                    0{i + 1}
                                 </div>
-                            </Reveal>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Scroll cue */}
-                <div ref={scrollCueRef} className="v2-hero-scroll" aria-hidden="true" style={{ opacity: 0 }}>
-                    <div className="v2-scroll-line" />
-                    <span className="v2-mono">SCROLL</span>
+                                <div>
+                                    <h3 className="v2-philosophy-title v2-display">{p.title}</h3>
+                                    <p className="v2-philosophy-body">{p.body}</p>
+                                </div>
+                            </div>
+                        </Reveal>
+                    ))}
                 </div>
             </div>
+        </section>
+    );
+}
 
-            {/* ── Chapter 2: Marquee ── */}
+export function PageHome(): JSX.Element {
+    return (
+        <div className="v2-page-enter">
+            {/* 1: Editorial hero — no canvas */}
+            <HeroR />
+
+            {/* 2: Tech marquee strip */}
             <Marquee
                 items={[
                     'React',
@@ -287,13 +314,16 @@ export function PageHome(): JSX.Element {
                 ]}
             />
 
-            {/* ── Chapter 3: Featured work ── */}
+            {/* 3: Engineering impact — numbers first */}
+            <ImpactR />
+
+            {/* 4: Selected work — case study cards */}
             <div className="v2-container v2-chapter">
                 <Reveal>
                     <SectionHeader
-                        kicker="01 / SELECTED WORK"
-                        title="Projects that shipped."
-                        subtitle="Production systems powering fintech, e-commerce, and OSS — each with a working POC."
+                        kicker="02 / SELECTED WORK"
+                        title="Systems that shipped."
+                        subtitle="Each includes a working POC — interact with the actual system inside the case study."
                         right={
                             <button
                                 className="v2-btn v2-btn-ghost"
@@ -305,35 +335,37 @@ export function PageHome(): JSX.Element {
                         }
                     />
                 </Reveal>
-
-                <div className="v2-feat-grid">
+                <div className="v2-case-grid">
                     {PROJECTS.slice(0, 3).map((p, i) => (
-                        <Reveal key={p.id} delay={i * 100}>
-                            <FeatureCard project={p} index={i} />
+                        <Reveal key={p.id} delay={i * 70}>
+                            <CaseStudyCard project={p} index={i} />
                         </Reveal>
                     ))}
                 </div>
             </div>
 
-            {/* ── Chapter 4: Tech ecosystem ── */}
+            {/* 5: Engineering philosophy */}
+            <PhilosophyR />
+
+            {/* 6: Tech ecosystem */}
             <div className="v2-tech-chapter">
                 <div className="v2-container v2-tech-chapter-inner">
                     <div className="v2-tech-chapter-text">
                         <Reveal>
                             <SectionHeader
-                                kicker="02 / STACK"
+                                kicker="04 / STACK"
                                 title="The ecosystem."
-                                subtitle="Deep specialization in React and its orbit — from UI to build tooling, realtime infrastructure, and performance engineering."
+                                subtitle="Deep specialization in React and its orbit — from UI to build tooling, realtime, and performance."
                             />
                         </Reveal>
-                        <Reveal delay={120}>
+                        <Reveal delay={100}>
                             <div className="v2-tech-pills">
                                 {[
-                                    { label: 'Frontend', color: '#7aa2ff' },
-                                    { label: 'Performance', color: '#6ee7a7' },
-                                    { label: 'Realtime', color: '#7ee5ff' },
-                                    { label: 'Build Tooling', color: '#ffb070' },
-                                    { label: 'OSS', color: '#b690ff' },
+                                    { label: 'Frontend', color: 'var(--v2-accent)' },
+                                    { label: 'Performance', color: 'var(--v2-good)' },
+                                    { label: 'Realtime', color: 'var(--v2-accent-3)' },
+                                    { label: 'Build', color: 'var(--v2-gold)' },
+                                    { label: 'OSS', color: 'var(--v2-accent-2)' },
                                 ].map((tag) => (
                                     <span
                                         key={tag.label}
@@ -354,7 +386,7 @@ export function PageHome(): JSX.Element {
                 </div>
             </div>
 
-            {/* ── Chapter 5: CTA ── */}
+            {/* 7: CTA */}
             <div className="v2-container v2-chapter">
                 <Reveal>
                     <div className="v2-cta-banner">
@@ -368,7 +400,7 @@ export function PageHome(): JSX.Element {
                                     marginBottom: 8,
                                 }}
                             >
-                                WHAT&apos;S NEXT
+                                05 / CONTACT
                             </div>
                             <h3
                                 className="v2-display"
