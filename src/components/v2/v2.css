@@ -1845,3 +1845,520 @@
   .gm-floatnav-label { transition: none; }
   .gm-floatnav-pip { transition: none; }
 }
+
+/* ============================================================
+   HORIZONTAL TIMELINE (gm-htl)
+   ============================================================ */
+
+/* Section is tall enough for the horizontal scroll distance */
+.gm-htl-section {
+  position: relative;
+  /* height set via JS: track.scrollWidth - container.width + 100vh */
+  height: 500vh;
+}
+
+/* Sticky viewport container */
+.gm-htl-sticky {
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 0 20px;
+}
+
+/* Header — fades out once scrolling starts via GSAP if desired */
+.gm-htl-header {
+  padding: 0 48px;
+  margin-bottom: 28px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gm-htl-hint {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--v2-ink-4);
+  margin-top: 4px;
+}
+
+/* Horizontal track */
+.gm-htl-track {
+  display: flex;
+  gap: 20px;
+  padding: 0 48px 32px;
+  height: 100%;
+  align-items: stretch;
+  will-change: transform;
+}
+
+/* Individual chapter card */
+.gm-htl-card {
+  position: relative;
+  flex-shrink: 0;
+  width: min(440px, 85vw);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--v2-line-2);
+  border-radius: 20px;
+  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  transition: border-color 0.3s, background 0.3s;
+}
+.gm-htl-card:hover {
+  border-color: var(--v2-line-3);
+  background: rgba(255,255,255,0.05);
+}
+
+/* Accent line at top of card */
+.gm-htl-accent-line {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+}
+
+.gm-htl-num {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.gm-htl-year {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.gm-htl-now {
+  color: var(--v2-good);
+  font-size: 10px;
+}
+
+.gm-htl-company {
+  font-size: clamp(20px, 2.6vw, 26px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--v2-ink);
+  margin: 2px 0 0;
+  line-height: 1.1;
+}
+
+.gm-htl-meta {
+  font-size: 12.5px;
+  color: var(--v2-ink-2);
+  margin-top: 2px;
+}
+
+.gm-htl-role { font-weight: 500; }
+.gm-htl-sep { color: var(--v2-ink-4); }
+.gm-htl-loc { font-size: 11px; letter-spacing: 0.1em; color: var(--v2-ink-3); }
+
+.gm-htl-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.gm-htl-bullets li {
+  font-size: 12.5px;
+  color: var(--v2-ink-3);
+  line-height: 1.55;
+  padding-left: 14px;
+  position: relative;
+}
+
+.gm-htl-bullets li::before {
+  content: '·';
+  position: absolute;
+  left: 0;
+  color: var(--v2-ink-4);
+}
+
+.gm-htl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--v2-good);
+  background: rgba(93,216,158,0.08);
+  border: 1px solid rgba(93,216,158,0.2);
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-top: auto;
+  width: fit-content;
+}
+
+@media (max-width: 639px) {
+  .gm-htl-header { padding: 0 20px; }
+  .gm-htl-track { padding: 0 16px 24px; }
+  .gm-htl-card { width: 84vw; padding: 20px; }
+}
+
+/* ============================================================
+   STACKED PROJECTS (gm-sp)
+   ============================================================ */
+
+.gm-sp-section {
+  position: relative;
+}
+
+.gm-sp-header {
+  padding-top: 80px;
+  padding-bottom: 48px;
+}
+
+/* Stack wrapper — provides the total scroll height */
+.gm-sp-stack {
+  position: relative;
+}
+
+/* Each project card — CSS sticky creates the stacking effect */
+.gm-sp-card {
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow: hidden;
+  background: var(--v2-bg-1);
+  border-top: 1px solid var(--v2-line);
+  display: flex;
+  flex-direction: column;
+  transform-origin: top center;
+  will-change: transform;
+}
+
+/* Accent background atmosphere */
+.gm-sp-atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Large decorative glyph */
+.gm-sp-glyph {
+  position: absolute;
+  right: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: clamp(160px, 22vw, 280px);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+}
+
+/* Inner layout: content + diagram */
+.gm-sp-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  height: 100%;
+  padding: 32px max(24px, 4vw) 48px;
+  overflow: hidden;
+}
+
+@media (min-width: 900px) {
+  .gm-sp-inner {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 48px;
+    padding: 40px 48px;
+  }
+}
+
+/* Content column */
+.gm-sp-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 560px;
+}
+
+.gm-sp-kicker {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--v2-ink-3);
+  margin: 0;
+}
+
+.gm-sp-title {
+  font-size: clamp(28px, 4.5vw, 52px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.0;
+  color: var(--v2-ink);
+  margin: 0;
+}
+
+.gm-sp-subtitle {
+  font-size: clamp(13px, 1.6vw, 16px);
+  color: var(--v2-ink-2);
+  margin: 0;
+  font-weight: 500;
+}
+
+.gm-sp-summary {
+  font-size: 13.5px;
+  color: var(--v2-ink-3);
+  line-height: 1.65;
+  margin: 0;
+  max-width: 480px;
+}
+
+/* Metrics row */
+.gm-sp-metrics {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.gm-sp-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gm-sp-metric-v {
+  font-size: clamp(20px, 2.4vw, 28px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.gm-sp-metric-k {
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--v2-ink-3);
+}
+
+/* Stack chips */
+.gm-sp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gm-sp-chip-link {
+  color: var(--v2-accent) !important;
+  border-color: rgba(85,120,255,0.25) !important;
+}
+.gm-sp-chip-link:hover {
+  background: rgba(85,120,255,0.1) !important;
+}
+
+.gm-sp-cta {
+  width: fit-content;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* Architecture diagram column */
+.gm-sp-diagram {
+  display: none;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 900px) {
+  .gm-sp-diagram {
+    display: flex;
+  }
+}
+
+/* Bottom progress bar */
+.gm-sp-progress {
+  position: absolute;
+  bottom: 16px;
+  right: max(24px, 4vw);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--v2-ink-4);
+  z-index: 2;
+}
+
+/* View all button area */
+.gm-sp-viewall {
+  padding: 40px 0 24px;
+  display: flex;
+}
+
+/* ============================================================
+   REDUCED MOTION additions
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .gm-htl-track { transition: none; }
+  .gm-sp-card { will-change: auto; }
+}
+
+/* ============================================================
+   IMPACT OPENING (gm-io)
+   The first experience: numbers before identity.
+   ============================================================ */
+
+/* Outer container — total scroll height = numBeats * trigger height */
+.gm-io-outer {
+  position: relative;
+  /* 4 triggers × ~100vh each = 400vh scroll to page through all beats */
+}
+
+/* Hidden scroll trigger pacing divs */
+.gm-io-trigger {
+  height: 80vh;
+  pointer-events: none;
+  /* padding-top pushes the sticky visual past the nav */
+}
+
+/* Sticky visual — stays in view while triggers scroll past */
+.gm-io-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Dark full-bleed background — completely separate from hero */
+  background: var(--v2-bg);
+}
+
+/* Subtle dot-grid overlay */
+.gm-io-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 30%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 30%, transparent 90%);
+}
+
+/* All beats: stacked in the same position, GSAP controls opacity */
+.gm-io-beat {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 max(48px, 8vw);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gm-io-beat-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 900px;
+}
+
+/* THE NUMBER — fills visual attention */
+.gm-io-num {
+  font-size: clamp(96px, 18vw, 220px);
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 0.9;
+  /* color set inline per beat */
+}
+
+/* THE VERB — what the number means */
+.gm-io-verb {
+  font-size: clamp(32px, 5.5vw, 72px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.0;
+  color: var(--v2-ink);
+  margin-top: -8px;
+}
+
+/* Detail — the "how" */
+.gm-io-detail {
+  font-size: clamp(12px, 1.4vw, 16px);
+  color: var(--v2-ink-3);
+  letter-spacing: 0.08em;
+  max-width: 560px;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+
+/* Attribution — company · year */
+.gm-io-attr {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--v2-ink-4);
+  margin-top: 4px;
+}
+
+/* Radial accent circle behind the number */
+.gm-io-accent-circle {
+  position: absolute;
+  width: clamp(300px, 50vw, 600px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  opacity: 0.05;
+  right: -10vw;
+  top: 50%;
+  transform: translateY(-50%);
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+/* Scroll hint at bottom */
+.gm-io-scroll-hint {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--v2-ink-4);
+  animation: gm-io-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes gm-io-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Horizontal timeline height override — needs enough room for GSAP scroll */
+.gm-htl-section {
+  height: 350vh;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .gm-io-beat { opacity: 1 !important; transform: none !important; }
+  .gm-io-outer { height: auto !important; }
+  .gm-io-sticky { position: relative; height: auto; padding: 80px max(48px, 8vw); }
+  .gm-io-beat { position: relative; display: flex; }
+  .gm-io-scroll-hint { display: none; }
+  .gm-io-trigger { display: none; }
+  .gm-io-accent-circle { display: none; }
+  .gm-io-grid { display: none; }
+}

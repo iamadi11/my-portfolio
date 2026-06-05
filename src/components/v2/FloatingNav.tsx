@@ -58,7 +58,7 @@ export default function FloatingNav(): JSX.Element {
             {dots.map(({ id, label }) => (
                 <button
                     key={id}
-                    className={`gm-floatnav-item${active === id ? 'is-active' : ''}`}
+                    className={active === id ? 'gm-floatnav-item is-active' : 'gm-floatnav-item'}
                     onClick={() => scrollTo(id)}
                     aria-label={`Go to ${label}`}
                     aria-current={active === id ? 'true' : undefined}

@@ -8,8 +8,9 @@ import dynamic from 'next/dynamic';
 import { navigate } from './Chrome';
 import { MagBtn } from './Cinema';
 import { IDENTITY } from './data';
+import TextScramble from './TextScramble';
 
-const HeroR3F = dynamic(() => import('./HeroR3F'), { ssr: false });
+const HeroScene3D = dynamic(() => import('./HeroScene3D'), { ssr: false });
 
 const IMPACT = [
     { val: '80%', label: 'Build time saved', ctx: 'TATA 1MG', color: 'var(--v2-good)' },
@@ -44,9 +45,9 @@ export default function Hero(): JSX.Element {
 
     return (
         <section id="gm-hero" className="gm-hero" aria-label="Introduction">
-            {/* R3F particle network — desktop only via CSS */}
+            {/* 3D morphing blob — meaningful: represents interconnected systems */}
             <div className="gm-hero-canvas" aria-hidden="true">
-                <HeroR3F />
+                <HeroScene3D />
             </div>
 
             {/* Radial vignette so text is readable over canvas */}
@@ -61,9 +62,19 @@ export default function Hero(): JSX.Element {
                     </p>
 
                     <h1 className="gm-hero-h1 v2-display" data-hero aria-label="Build systems that scale">
-                        <span className="gm-hero-h1-line">Build systems</span>
+                        <TextScramble
+                            text="Build systems"
+                            className="gm-hero-h1-line"
+                            delay={600}
+                            duration={900}
+                        />
                         <br />
-                        <span className="gm-hero-h1-line gm-hero-h1-accent">that scale.</span>
+                        <TextScramble
+                            text="that scale."
+                            className="gm-hero-h1-line gm-hero-h1-accent"
+                            delay={900}
+                            duration={700}
+                        />
                     </h1>
 
                     <p className="gm-hero-desc" data-hero>

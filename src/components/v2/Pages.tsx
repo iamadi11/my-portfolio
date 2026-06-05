@@ -13,13 +13,15 @@ import {
     MCPDiagram,
     PWADiagram,
 } from './ArchDiagrams';
-import CareerTimeline from './CareerTimeline';
 import { navigate } from './Chrome';
 import { MagBtn, Marquee, Reveal, SectionHeader, TechOrbit } from './Cinema';
 import { CinematicUniverse } from './CinematicUniverse';
 import { IDENTITY, PROJECTS, EXPERIENCE, SKILLS, EDUCATION } from './data';
 import Hero from './Hero';
+import HorizontalTimeline from './HorizontalTimeline';
+import ImpactOpening from './ImpactOpening';
 import { ProjectPOC } from './POCs';
+import StackedProjects from './StackedProjects';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -227,7 +229,10 @@ function PhilosophyR(): JSX.Element {
 export function PageHome(): JSX.Element {
     return (
         <div className="v2-page-enter">
-            {/* 1: God Mode hero — R3F particle network + editorial text */}
+            {/* 0: IMPACT FIRST — numbers before identity */}
+            <ImpactOpening />
+
+            {/* 1: Identity hero — 3D morphing blob + editorial statement */}
             <Hero />
 
             {/* 2: Tech marquee strip */}
@@ -248,38 +253,11 @@ export function PageHome(): JSX.Element {
                 ]}
             />
 
-            {/* 3: Engineering impact — animated counter numbers */}
-            <ImpactR />
+            {/* 3: Career journey — horizontal scroll timeline */}
+            <HorizontalTimeline />
 
-            {/* 4: Career journey — scroll-driven horizontal timeline */}
-            <CareerTimeline />
-
-            {/* 5: Selected work — case study cards */}
-            <div id="gm-work" className="v2-container v2-chapter">
-                <Reveal>
-                    <SectionHeader
-                        kicker="04 / SELECTED WORK"
-                        title="Systems that shipped."
-                        subtitle="Each includes a working POC — interact with the actual system inside the case study."
-                        right={
-                            <button
-                                className="v2-btn v2-btn-ghost"
-                                onClick={() => navigate('/work')}
-                                style={{ fontSize: 12, flexShrink: 0 }}
-                            >
-                                all projects →
-                            </button>
-                        }
-                    />
-                </Reveal>
-                <div className="v2-case-grid">
-                    {PROJECTS.slice(0, 3).map((p, i) => (
-                        <Reveal key={p.id} delay={i * 70}>
-                            <CaseStudyCard project={p} index={i} />
-                        </Reveal>
-                    ))}
-                </div>
-            </div>
+            {/* 5: Selected work — GSAP stacked project panels */}
+            <StackedProjects />
 
             {/* 6: Engineering philosophy */}
             <PhilosophyR />
@@ -290,7 +268,7 @@ export function PageHome(): JSX.Element {
                     <div className="v2-tech-chapter-text">
                         <Reveal>
                             <SectionHeader
-                                kicker="05 / STACK"
+                                kicker="06 / STACK"
                                 title="The ecosystem."
                                 subtitle="Deep specialization in React and its orbit — from UI to build tooling, realtime, and performance."
                             />
