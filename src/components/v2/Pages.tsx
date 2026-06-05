@@ -192,36 +192,24 @@ function CaseStudyCard({ project, index }: { project: (typeof PROJECTS)[0]; inde
     );
 }
 
+/**
+ * PhilosophyR — full-width editorial quotes.
+ * Award-winning sites don't list principles. They make you feel them.
+ * Big typography, minimal prose, lots of air.
+ */
 function PhilosophyR(): JSX.Element {
     return (
-        <section id="gm-philosophy" className="v2-philosophy-section" aria-labelledby="philosophy-heading">
-            <div className="v2-container">
-                <Reveal>
-                    <SectionHeader
-                        kicker="03 / HOW I THINK"
-                        title="Engineering principles."
-                        subtitle="Not values. Actual decision frameworks from production systems."
-                    />
+        <section id="gm-philosophy" className="gm-philo-section" aria-label="Engineering philosophy">
+            <div className="gm-philo-kicker v2-mono">How I think</div>
+            {PRINCIPLES.map((p, i) => (
+                <Reveal key={p.title} delay={i * 60}>
+                    <div className="gm-philo-item">
+                        <span className="gm-philo-num v2-mono">0{i + 1}</span>
+                        <blockquote className="gm-philo-quote v2-display">{p.title}</blockquote>
+                        <p className="gm-philo-body">{p.body}</p>
+                    </div>
                 </Reveal>
-                <div className="v2-philosophy-list">
-                    {PRINCIPLES.map((p, i) => (
-                        <Reveal key={p.title} delay={i * 80}>
-                            <div className="v2-philosophy-item">
-                                <div
-                                    className="v2-philosophy-num v2-mono"
-                                    style={{ color: 'var(--v2-accent)' }}
-                                >
-                                    0{i + 1}
-                                </div>
-                                <div>
-                                    <h3 className="v2-philosophy-title v2-display">{p.title}</h3>
-                                    <p className="v2-philosophy-body">{p.body}</p>
-                                </div>
-                            </div>
-                        </Reveal>
-                    ))}
-                </div>
-            </div>
+            ))}
         </section>
     );
 }
@@ -262,83 +250,38 @@ export function PageHome(): JSX.Element {
             {/* 6: Engineering philosophy */}
             <PhilosophyR />
 
-            {/* 7: Tech ecosystem */}
-            <div className="v2-tech-chapter">
-                <div className="v2-container v2-tech-chapter-inner">
-                    <div className="v2-tech-chapter-text">
-                        <Reveal>
-                            <SectionHeader
-                                kicker="06 / STACK"
-                                title="The ecosystem."
-                                subtitle="Deep specialization in React and its orbit — from UI to build tooling, realtime, and performance."
-                            />
-                        </Reveal>
-                        <Reveal delay={100}>
-                            <div className="v2-tech-pills">
-                                {[
-                                    { label: 'Frontend', color: 'var(--v2-accent)' },
-                                    { label: 'Performance', color: 'var(--v2-good)' },
-                                    { label: 'Realtime', color: 'var(--v2-accent-3)' },
-                                    { label: 'Build', color: 'var(--v2-gold)' },
-                                    { label: 'OSS', color: 'var(--v2-accent-2)' },
-                                ].map((tag) => (
-                                    <span
-                                        key={tag.label}
-                                        className="v2-tech-pill v2-mono"
-                                        style={{ '--pill-color': tag.color } as React.CSSProperties}
-                                    >
-                                        {tag.label}
-                                    </span>
-                                ))}
-                            </div>
-                        </Reveal>
+            {/* 7: Contact — dramatic full-width closer */}
+            <Reveal>
+                <section id="gm-contact" className="gm-closer" aria-label="Contact">
+                    <p className="gm-closer-label v2-mono">Open to work</p>
+                    <a
+                        href={`mailto:${IDENTITY.email}`}
+                        className="gm-closer-email v2-display"
+                        aria-label={`Email ${IDENTITY.email}`}
+                    >
+                        {IDENTITY.email}
+                    </a>
+                    <div className="gm-closer-links">
+                        <a
+                            href={IDENTITY.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="gm-closer-link v2-mono"
+                        >
+                            LinkedIn ↗
+                        </a>
+                        <a
+                            href={IDENTITY.github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="gm-closer-link v2-mono"
+                        >
+                            GitHub ↗
+                        </a>
                     </div>
-                    <Reveal delay={60}>
-                        <div className="v2-orbit-wrap" aria-label="Technology orbit">
-                            <TechOrbit />
-                        </div>
-                    </Reveal>
-                </div>
-            </div>
-
-            {/* 8: CTA */}
-            <div id="gm-contact" className="v2-container v2-chapter">
-                <Reveal>
-                    <div className="v2-cta-banner">
-                        <div>
-                            <div
-                                className="v2-mono"
-                                style={{
-                                    fontSize: 11,
-                                    color: 'var(--v2-accent)',
-                                    letterSpacing: '0.18em',
-                                    marginBottom: 8,
-                                }}
-                            >
-                                06 / CONTACT
-                            </div>
-                            <h3
-                                className="v2-display"
-                                style={{
-                                    fontSize: 'clamp(26px,4vw,40px)',
-                                    fontWeight: 700,
-                                    margin: 0,
-                                    letterSpacing: '-0.025em',
-                                    color: 'var(--v2-ink)',
-                                }}
-                            >
-                                Let&apos;s build something.
-                            </h3>
-                            <p style={{ color: 'var(--v2-ink-2)', marginTop: 8, fontSize: 14 }}>
-                                Open to senior frontend roles, contracts, and complex UI systems.
-                            </p>
-                        </div>
-                        <button className="v2-btn v2-btn-primary" onClick={() => navigate('/contact')}>
-                            Get in touch →
-                        </button>
-                    </div>
-                </Reveal>
-            </div>
+                    <div className="gm-closer-footer v2-mono">© 2026 Aditya Raj · Bengaluru</div>
+                </section>
+            </Reveal>
         </div>
     );
 }

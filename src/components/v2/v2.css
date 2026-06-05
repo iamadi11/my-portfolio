@@ -2216,6 +2216,200 @@
 }
 
 /* ============================================================
+   HOME ROUTE — ghost nav, no dock, full immersion
+   ============================================================ */
+
+/* Make nav transparent on home so hero bleeds full-screen */
+.gm-home .v2-topnav {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-bottom-color: transparent !important;
+}
+/* Hide nav links on home — dot nav handles section jumping */
+.gm-home .v2-topnav-links { opacity: 0; pointer-events: none; }
+/* Logo dims slightly to not fight the 3D */
+.gm-home .v2-topnav-logo { opacity: 0.6; }
+/* Remove top padding — hero goes full screen from 0 */
+.gm-home #v2-content { padding-top: 0; }
+
+/* ============================================================
+   HERO — full-screen 3D with minimal text overlay
+   ============================================================ */
+
+/* Override gm-hero-layout — remove the two-column metrics grid */
+.gm-hero-layout { display: block !important; }
+.gm-hero-metrics { display: none !important; }
+
+/* Text overlay — anchored bottom-left over 3D */
+.gm-hero-overlay {
+  position: absolute;
+  bottom: 96px;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  padding: 0 max(32px, 6vw);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 800px;
+}
+
+/* Eyebrow above headline */
+.gm-hero-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--v2-ink-2);
+  opacity: 0;
+}
+
+/* Bigger headline — hero has room now */
+.gm-hero-h1 {
+  font-size: clamp(52px, 9vw, 120px) !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.05em !important;
+  line-height: 0.95 !important;
+}
+
+.gm-hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  opacity: 0;
+}
+
+/* Vignette — stronger at bottom left where text lives */
+.gm-hero-vignette {
+  background:
+    radial-gradient(ellipse 100% 60% at 0% 100%, rgba(6,7,12,0.92) 0%, transparent 65%),
+    linear-gradient(to top, rgba(6,7,12,0.7) 0%, transparent 50%) !important;
+}
+
+/* Canvas takes full hero now */
+.gm-hero-canvas { display: block !important; }
+
+/* ============================================================
+   SECTION STITCHING — remove hard borders between sections
+   ============================================================ */
+
+/* Remove the stacked card top border — scale difference creates separation */
+.gm-sp-card { border-top: none !important; }
+
+/* Tighter spacing — sections breathe but don't gap */
+.gm-sp-header { padding-top: 48px !important; padding-bottom: 32px !important; }
+.gm-htl-section { margin-top: -2px; }
+
+/* ============================================================
+   EDITORIAL PHILOSOPHY (gm-philo)
+   ============================================================ */
+
+.gm-philo-section {
+  padding: 80px max(32px, 6vw) 100px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.gm-philo-kicker {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--v2-accent);
+  margin: 0 0 48px;
+}
+
+.gm-philo-item {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  grid-template-rows: auto auto;
+  gap: 0 32px;
+  padding: 40px 0;
+  border-bottom: 1px solid var(--v2-line);
+}
+
+.gm-philo-num {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--v2-accent);
+  padding-top: 10px;
+  grid-row: span 2;
+}
+
+.gm-philo-quote {
+  font-size: clamp(24px, 3.5vw, 48px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: var(--v2-ink);
+  margin: 0 0 14px;
+  font-style: normal;
+}
+
+.gm-philo-body {
+  font-size: 14px;
+  color: var(--v2-ink-3);
+  line-height: 1.7;
+  max-width: 620px;
+  margin: 0;
+}
+
+/* ============================================================
+   DRAMATIC CONTACT CLOSER (gm-closer)
+   ============================================================ */
+
+.gm-closer {
+  padding: 120px max(32px, 6vw) 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gm-closer-label {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--v2-accent);
+  margin: 0;
+}
+
+.gm-closer-email {
+  display: block;
+  font-size: clamp(22px, 4.5vw, 64px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.0;
+  color: var(--v2-ink);
+  text-decoration: none;
+  transition: color 0.3s;
+  margin: 8px 0;
+}
+.gm-closer-email:hover { color: var(--v2-accent); }
+
+.gm-closer-links {
+  display: flex;
+  gap: 24px;
+  margin-top: 8px;
+}
+
+.gm-closer-link {
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--v2-ink-3);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.gm-closer-link:hover { color: var(--v2-ink); }
+
+.gm-closer-footer {
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--v2-ink-4);
+  margin-top: 48px;
+}
+
+/* ============================================================
    IMPACT OPENING (gm-io)
    The first experience: numbers before identity.
    ============================================================ */
