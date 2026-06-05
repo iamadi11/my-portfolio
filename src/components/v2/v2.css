@@ -1,32 +1,51 @@
 /* ============================================================
-   v2 Design System — cinematic dark SPA
+   v2 Design System — TVA / Loki cinematic dark SPA
+   Google Fonts: Bebas Neue (display) + Space Grotesk (body)
    ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
-  --v2-bg: #06070c;
-  --v2-bg-1: #0b0d15;
-  --v2-bg-2: #101220;
-  --v2-bg-3: #161928;
-  --v2-surface: rgba(16, 18, 32, 0.75);
-  --v2-line: rgba(255, 255, 255, 0.065);
-  --v2-line-2: rgba(255, 255, 255, 0.12);
-  --v2-line-3: rgba(255, 255, 255, 0.22);
-  /* Ink — editorial off-white, not pure white */
-  --v2-ink: #eceef5;
-  --v2-ink-2: #8792ab;
-  --v2-ink-3: #4d5472;
-  --v2-ink-4: #2c3042;
-  /* Accent — confident indigo (not cyan) */
-  --v2-accent: #5578ff;
-  --v2-accent-2: #a898ff;
-  --v2-accent-3: #6ec8e8;
-  /* New: editorial gold for key highlights */
-  --v2-gold: #e8a03a;
-  --v2-gold-2: #f5c468;
-  /* Semantic */
-  --v2-good: #5dd89e;
-  --v2-warn: #e8a03a;
-  --v2-bad: #e05562;
+  /* ── TVA Void backgrounds ── */
+  --v2-bg: #06040c;
+  --v2-bg-1: #0a0710;
+  --v2-bg-2: #0e0b18;
+  --v2-bg-3: #130f1f;
+  --v2-surface: rgba(14, 11, 24, 0.82);
+
+  /* ── TVA Border lines ── */
+  --v2-line: rgba(201, 162, 39, 0.12);
+  --v2-line-2: rgba(201, 162, 39, 0.22);
+  --v2-line-3: rgba(201, 162, 39, 0.38);
+
+  /* ── TVA Ink — warm parchment, not pure white ── */
+  --v2-ink: #f0e6c8;
+  --v2-ink-2: #a89060;
+  --v2-ink-3: #5c4d30;
+  --v2-ink-4: #2e2518;
+
+  /* ── TVA Signature Gold ── */
+  --v2-accent: #c9a227;
+  --v2-accent-2: #e8b730;
+  --v2-accent-3: #f5d56e;
+
+  /* ── TVA Portal Teal ── */
+  --tva-teal: #00c9c9;
+  --tva-teal-2: #00ffff;
+  --tva-teal-glow: rgba(0, 201, 201, 0.35);
+
+  /* ── TVA Gold System ── */
+  --v2-gold: #c9a227;
+  --v2-gold-2: #e8b730;
+
+  /* ── Semantic ── */
+  --v2-good: #39ff14;
+  --v2-warn: #ff8c00;
+  --v2-bad: #ff2247;
+
+  /* ── TVA specific ── */
+  --tva-scan: rgba(201, 162, 39, 0.04);
+  --tva-glow: 0 0 40px rgba(201, 162, 39, 0.4);
+  --tva-glow-teal: 0 0 40px rgba(0, 201, 201, 0.4);
 }
 
 /* Overlay root — covers root template OS chrome */
@@ -51,13 +70,13 @@
 
 ::selection { background: rgba(122,162,255,0.35); color: white; }
 
-/* Ambient background layers */
+/* Ambient background layers — TVA void nebula */
 .v2-bg-stage {
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  /* Subdued — accent surfaces the content, not the background */
   background:
-    radial-gradient(800px 500px at 10% -8%, rgba(85,120,255,0.09), transparent 60%),
-    radial-gradient(600px 500px at 92% 108%, rgba(168,148,255,0.09), transparent 60%),
+    radial-gradient(900px 600px at 8% -5%, rgba(201,162,39,0.07), transparent 55%),
+    radial-gradient(700px 500px at 95% 110%, rgba(0,201,201,0.06), transparent 55%),
+    radial-gradient(500px 400px at 50% 50%, rgba(80,20,120,0.05), transparent 65%),
     var(--v2-bg);
 }
 .v2-bg-grid {
@@ -319,9 +338,9 @@
 }
 .v2-sec-kicker::before { content: ''; width: 24px; height: 1px; background: currentColor; }
 .v2-sec-h2 {
-  font-family: var(--font-space-grotesk, 'Space Grotesk'), sans-serif;
-  font-size: clamp(28px, 4.5vw, 44px); font-weight: 700;
-  letter-spacing: -0.03em; margin: 0; line-height: 1.05; color: var(--v2-ink);
+  font-family: 'Bebas Neue', var(--font-space-grotesk, 'Space Grotesk'), sans-serif;
+  font-size: clamp(38px, 5.5vw, 64px); font-weight: 400;
+  letter-spacing: 0.02em; margin: 0; line-height: 0.92; color: var(--v2-ink);
 }
 .v2-sec-sub { color: var(--v2-ink-2); font-size: 15px; margin-top: 8px; max-width: 560px; line-height: 1.5; }
 
@@ -559,7 +578,7 @@
    Hero — ensure text is visible with a subtle text-shadow
    ============================================================ */
 .v2-hero-name {
-  text-shadow: 0 2px 40px rgba(122,162,255,0.3);
+  text-shadow: 0 2px 40px rgba(201,162,39,0.35);
 }
 
 /* ============================================================
@@ -693,12 +712,13 @@
   flex-shrink: 0; animation: v2Pulse 2s infinite;
 }
 .v2-hero-name {
-  font-size: clamp(52px, 11vw, 120px);
-  font-weight: 700; line-height: 0.92;
-  letter-spacing: -0.04em;
+  font-family: 'Bebas Neue', var(--font-space-grotesk, 'Space Grotesk'), sans-serif;
+  font-size: clamp(72px, 15vw, 160px);
+  font-weight: 400; line-height: 0.88;
+  letter-spacing: 0.02em;
   margin: 0 0 16px;
-  color: #fff;
-  text-shadow: 0 4px 60px rgba(122,162,255,0.25);
+  color: var(--v2-ink);
+  text-shadow: 0 4px 80px rgba(201,162,39,0.3);
 }
 .v2-hero-role {
   font-size: clamp(18px, 3.2vw, 30px);
@@ -2753,4 +2773,562 @@
   .gm-ct-text { position: static; opacity: 1 !important; transform: none !important; }
   .gm-ct-cta { position: static; opacity: 1 !important; pointer-events: auto; }
   .gm-ct-scroll-hint { display: none; }
+}
+
+/* ============================================================
+   TVA / Loki Design System — Award Edition
+   ============================================================ */
+
+/* ── TVA Custom cursor ── */
+*, *::before, *::after { cursor: none !important; }
+.tva-cursor {
+  position: fixed; top: 0; left: 0; z-index: 99999;
+  width: 36px; height: 36px; margin: -18px 0 0 -18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--v2-accent);
+  pointer-events: none;
+  transition: transform 0.15s ease, border-color 0.2s;
+  mix-blend-mode: normal;
+  will-change: transform;
+}
+.tva-cursor-dot {
+  position: fixed; top: 0; left: 0; z-index: 99999;
+  width: 6px; height: 6px; margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--v2-accent);
+  pointer-events: none;
+  box-shadow: 0 0 8px var(--v2-accent);
+  will-change: transform;
+}
+.tva-cursor.tva-cursor-hover {
+  transform: scale(1.7);
+  border-color: var(--tva-teal);
+  background: rgba(0,201,201,0.06);
+}
+
+/* ── TVA Scan-line overlay ── */
+.tva-scanlines {
+  position: absolute; inset: 0; z-index: 3;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0px, transparent 2px,
+    var(--tva-scan) 2px, var(--tva-scan) 4px
+  );
+  opacity: 0.5;
+}
+
+/* ── Film grain ── */
+.tva-grain {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  animation: tva-grain-shift 0.4s steps(1) infinite;
+}
+@keyframes tva-grain-shift {
+  0% { transform: translate(0,0); }
+  25% { transform: translate(-2px, 1px); }
+  50% { transform: translate(1px, -2px); }
+  75% { transform: translate(-1px, 2px); }
+}
+
+/* ── TVA Clearance Badge ── */
+.tva-badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 6px 14px 6px 8px; border-radius: 4px;
+  background: rgba(201,162,39,0.08);
+  border: 1px solid var(--v2-line-2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.14em; color: var(--v2-accent);
+  text-transform: uppercase; margin-bottom: 28px;
+  white-space: nowrap; max-width: 100%; overflow: hidden;
+}
+.tva-badge-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--v2-good);
+  box-shadow: 0 0 8px var(--v2-good);
+  flex-shrink: 0;
+  animation: v2Pulse 2s infinite;
+}
+
+/* ── TVA Hero name — Bebas Neue ── */
+.tva-hero-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(80px, 17vw, 180px);
+  line-height: 0.88; letter-spacing: 0.01em;
+  color: var(--v2-ink);
+  margin: 0;
+  position: relative;
+  background: linear-gradient(
+    170deg,
+    var(--v2-ink) 0%,
+    var(--v2-accent-3) 45%,
+    var(--v2-accent) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 60px rgba(201,162,39,0.25));
+}
+
+/* ── TVA Role line ── */
+.tva-hero-role {
+  display: flex; align-items: center; gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(11px, 1.4vw, 14px);
+  letter-spacing: 0.22em; color: var(--v2-ink-2);
+  text-transform: uppercase; margin-top: 20px;
+}
+.tva-hero-role::before {
+  content: ''; width: 32px; height: 1px;
+  background: linear-gradient(90deg, var(--v2-accent), transparent);
+  flex-shrink: 0;
+}
+
+/* ── TVA Hero layout ── */
+.tva-hero-root {
+  position: relative; min-height: 100vh;
+  display: flex; align-items: center;
+  overflow: hidden;
+}
+.tva-hero-canvas {
+  position: absolute; inset: 0; z-index: 0;
+}
+.tva-hero-vignette {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 70% 50%, transparent 30%, rgba(6,4,12,0.85) 80%),
+    linear-gradient(180deg, rgba(6,4,12,0.4) 0%, transparent 30%, transparent 70%, rgba(6,4,12,0.8) 100%);
+}
+.tva-hero-content {
+  position: relative; z-index: 4;
+  padding: clamp(80px, 10vw, 120px) 16px 80px;
+  max-width: 720px;
+}
+@media (min-width: 640px) { .tva-hero-content { padding: clamp(80px, 10vw, 120px) 32px 80px; } }
+@media (min-width: 960px) { .tva-hero-content { padding: clamp(80px, 10vw, 120px) 48px 80px; } }
+
+/* ── TVA Stat cards ── */
+.tva-stats {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 1px;
+  margin-top: 36px;
+  max-width: 460px;
+  border: 1px solid var(--v2-line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--v2-line);
+}
+.tva-stat {
+  background: rgba(10,7,16,0.85);
+  padding: 14px 18px;
+  backdrop-filter: blur(12px);
+}
+.tva-stat-n {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px; letter-spacing: 0.02em;
+  color: var(--v2-accent);
+  display: block;
+}
+.tva-stat-k {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.16em;
+  color: var(--v2-ink-3); text-transform: uppercase;
+  display: block; margin-top: 2px;
+}
+
+/* ── TVA Action buttons ── */
+.tva-actions {
+  display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap;
+}
+.tva-btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 24px; border-radius: 6px; min-height: 44px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  font-weight: 700; color: #06040c;
+  background: linear-gradient(135deg, var(--v2-accent-2), var(--v2-accent));
+  border: none; cursor: pointer;
+  box-shadow: 0 0 40px rgba(201,162,39,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+  transition: all 0.25s;
+  text-decoration: none;
+}
+.tva-btn-primary:hover {
+  box-shadow: 0 0 60px rgba(201,162,39,0.55), inset 0 1px 0 rgba(255,255,255,0.15);
+  transform: translateY(-2px);
+}
+.tva-btn-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 22px; border-radius: 6px; min-height: 44px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--v2-ink-2);
+  background: transparent;
+  border: 1px solid var(--v2-line-2); cursor: pointer;
+  transition: all 0.25s; text-decoration: none;
+}
+.tva-btn-ghost:hover {
+  border-color: var(--tva-teal);
+  color: var(--tva-teal);
+  box-shadow: 0 0 20px var(--tva-teal-glow);
+}
+
+/* ── TVA Scroll hint ── */
+.tva-scroll-hint {
+  position: absolute; bottom: 24px; left: 50%;
+  transform: translateX(-50%); z-index: 5;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.28em; color: var(--v2-ink-4);
+  text-transform: uppercase; animation: v2Pulse 2.2s infinite;
+}
+.tva-scroll-line {
+  width: 1px; height: 44px;
+  background: linear-gradient(180deg, var(--v2-accent), transparent);
+}
+
+/* ── Sacred Timeline ── */
+.tva-sacred-timeline {
+  position: relative;
+  padding: 0;
+}
+.tva-timeline-header {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 48px;
+}
+.tva-timeline-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.22em;
+  color: var(--v2-accent); text-transform: uppercase;
+}
+.tva-timeline-label::before {
+  content: '──── ';
+}
+.tva-timeline-svg-wrap {
+  width: 100%; overflow: visible;
+}
+.tva-timeline-track {
+  display: flex; flex-direction: column; gap: 0;
+  position: relative;
+}
+.tva-timeline-spine {
+  position: absolute; left: 16px; top: 0; bottom: 0; width: 2px;
+  background: linear-gradient(
+    180deg,
+    var(--v2-accent) 0%,
+    var(--tva-teal) 50%,
+    rgba(201,162,39,0.15) 100%
+  );
+}
+.tva-tl-node {
+  position: relative;
+  padding: 0 0 44px 52px;
+}
+.tva-tl-node-dot {
+  position: absolute; left: 7px; top: 4px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--v2-bg);
+  border: 2px solid var(--v2-accent);
+  box-shadow: 0 0 12px rgba(201,162,39,0.5), 0 0 24px rgba(201,162,39,0.2);
+  z-index: 1;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.tva-tl-node:hover .tva-tl-node-dot {
+  border-color: var(--tva-teal);
+  box-shadow: 0 0 16px var(--tva-teal-glow), 0 0 32px var(--tva-teal-glow);
+}
+.tva-tl-node-dot-inner {
+  position: absolute; inset: 3px; border-radius: 50%;
+  background: var(--v2-accent);
+  transition: background 0.3s;
+}
+.tva-tl-node:hover .tva-tl-node-dot-inner { background: var(--tva-teal); }
+
+.tva-tl-period {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.12em;
+  color: var(--v2-ink-3); margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.tva-tl-company {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(28px, 4vw, 42px); letter-spacing: 0.03em;
+  color: var(--v2-ink); line-height: 1;
+}
+.tva-tl-role {
+  font-size: 13px; color: var(--v2-accent);
+  letter-spacing: 0.06em; margin-top: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.tva-tl-bullets {
+  list-style: none; padding: 0; margin: 14px 0 0;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.tva-tl-bullets li {
+  font-size: 13.5px; color: var(--v2-ink-2); line-height: 1.5;
+  padding-left: 16px; position: relative;
+}
+.tva-tl-bullets li::before {
+  content: '→';
+  position: absolute; left: 0;
+  color: var(--v2-accent); font-size: 11px;
+}
+.tva-tl-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px;
+}
+.tva-tl-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 3px;
+  background: rgba(201,162,39,0.07);
+  border: 1px solid rgba(201,162,39,0.18);
+  color: var(--v2-ink-3);
+}
+
+/* ── TVA Portal Nav (top bar override) ── */
+.tva-topnav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  background: rgba(6,4,12,0.72);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid var(--v2-line);
+}
+.tva-topnav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 52px; padding: 0 16px;
+}
+@media (min-width: 640px) { .tva-topnav-inner { padding: 0 32px; } }
+@media (min-width: 960px) { .tva-topnav-inner { padding: 0 48px; } }
+.tva-topnav-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: 0.08em;
+  color: var(--v2-accent); text-decoration: none;
+  background: none; border: none; cursor: pointer;
+}
+.tva-topnav-logo-mark {
+  width: 28px; height: 28px; border-radius: 4px;
+  border: 1.5px solid var(--v2-accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: var(--v2-accent); font-weight: 700;
+  box-shadow: 0 0 10px rgba(201,162,39,0.3);
+  flex-shrink: 0;
+}
+.tva-topnav-links { display: none; gap: 2px; }
+@media (min-width: 600px) { .tva-topnav-links { display: flex; } }
+.tva-topnav-link {
+  padding: 6px 14px; font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  border: none; border-radius: 4px; cursor: pointer;
+  background: transparent; color: var(--v2-ink-3);
+  transition: all 0.2s;
+}
+.tva-topnav-link.active, .tva-topnav-link:hover {
+  color: var(--v2-accent);
+  background: rgba(201,162,39,0.07);
+}
+
+/* ── TVA Section kicker override ── */
+.v2-sec-kicker {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 10px !important; letter-spacing: 0.22em !important;
+  color: var(--v2-accent) !important;
+}
+.v2-sec-kicker::before { background: var(--v2-accent) !important; }
+
+/* ── TVA Project card thumb glyph ── */
+.v2-feat-glyph, .v2-proj-glyph {
+  font-family: 'Bebas Neue', sans-serif !important;
+  font-weight: 400 !important;
+}
+
+/* ── TVA Marquee dot ── */
+.v2-marquee-dot {
+  background: var(--v2-accent) !important;
+  box-shadow: 0 0 8px var(--v2-accent) !important;
+}
+
+/* ── TVA Dock override ── */
+.v2-dock {
+  background: rgba(10,7,16,0.9) !important;
+  border-color: var(--v2-line) !important;
+}
+.v2-dock-btn:hover { background: rgba(201,162,39,0.08) !important; }
+
+/* ── Tech chapter TVA override ── */
+.v2-tech-chapter {
+  background: linear-gradient(180deg, transparent, rgba(201,162,39,0.03) 30%, rgba(0,201,201,0.03) 70%, transparent) !important;
+}
+
+/* ── CTA banner TVA override ── */
+.v2-cta-banner {
+  background: linear-gradient(135deg, rgba(201,162,39,0.06), rgba(0,201,201,0.04)) !important;
+  border-color: var(--v2-line-2) !important;
+}
+
+/* ── Contact email TVA ── */
+.v2-contact-email-big {
+  font-family: 'Bebas Neue', sans-serif !important;
+  font-size: clamp(28px, 5vw, 56px) !important;
+  letter-spacing: 0.04em !important;
+  color: var(--v2-accent) !important;
+  text-decoration: none;
+  display: block; margin-top: 16px;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+.v2-contact-email-big:hover {
+  color: var(--tva-teal) !important;
+  text-shadow: 0 0 40px var(--tva-teal-glow);
+}
+
+/* ── Contact info card TVA ── */
+.v2-contact-info-card {
+  padding: 18px; background: var(--v2-bg-2);
+  border: 1px solid var(--v2-line); border-radius: 8px;
+  text-decoration: none; color: var(--v2-ink);
+  display: block; transition: border-color 0.25s, transform 0.25s;
+}
+.v2-contact-info-card:hover {
+  border-color: var(--v2-accent);
+  transform: translateY(-2px);
+}
+.v2-contact-info-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--v2-ink-3); margin-bottom: 6px;
+}
+.v2-contact-info-value { font-size: 13px; color: var(--v2-ink-2); }
+
+/* ── Impact / metric number TVA ── */
+.v2-impact-num {
+  font-family: 'Bebas Neue', sans-serif !important;
+  font-size: clamp(48px, 8vw, 80px) !important;
+  letter-spacing: 0.02em !important;
+  line-height: 0.9 !important;
+}
+
+/* ── Contact card grid ── */
+.v2-contact-card-grid {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 32px; max-width: 480px;
+}
+@media (min-width: 640px) { .v2-contact-card-grid { grid-template-columns: repeat(4, 1fr); max-width: 680px; } }
+
+/* ── Contact footer ── */
+.v2-contact-footer-line {
+  margin-top: 48px; padding-top: 24px;
+  border-top: 1px solid var(--v2-line);
+}
+
+/* ── Experience grid TVA ── */
+.v2-exp-grid { display: flex; flex-direction: column; gap: 0; margin-top: 24px; }
+.v2-exp-grid-item {
+  padding: 28px 0; border-bottom: 1px solid var(--v2-line);
+  display: grid; gap: 20px; grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .v2-exp-grid-item { grid-template-columns: 160px 1fr; }
+}
+.v2-exp-grid-item-current { border-color: var(--v2-accent); }
+.v2-exp-grid-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.1em; color: var(--v2-ink-3);
+  text-transform: uppercase; margin-bottom: 4px;
+}
+.v2-exp-grid-loc {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--v2-ink-4); letter-spacing: 0.08em;
+}
+.v2-exp-grid-role {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: 0.04em;
+  color: var(--v2-ink); line-height: 1;
+}
+.v2-exp-grid-company {
+  font-size: 13px; color: var(--v2-accent);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.1em; margin-top: 4px;
+}
+.v2-exp-grid-bullets {
+  list-style: none; padding: 0; margin: 12px 0 0;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.v2-exp-grid-bullets li {
+  font-size: 13px; color: var(--v2-ink-2); line-height: 1.5;
+  padding-left: 14px; position: relative;
+}
+.v2-exp-grid-bullets li::before {
+  content: '→'; position: absolute; left: 0;
+  color: var(--v2-accent); font-size: 10px;
+}
+.v2-exp-grid-tech { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 12px; }
+.v2-exp-current-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px; letter-spacing: 0.16em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 3px;
+  background: rgba(57,255,20,0.1);
+  border: 1px solid rgba(57,255,20,0.25);
+  color: var(--v2-good);
+}
+
+/* ── Glitch keyframes ── */
+@keyframes tva-glitch-1 {
+  0%, 92%, 100% { clip-path: none; transform: none; }
+  93% { clip-path: inset(40% 0 45% 0); transform: translate(-3px, 0); }
+  95% { clip-path: inset(15% 0 70% 0); transform: translate(3px, 0); }
+  97% { clip-path: inset(60% 0 20% 0); transform: translate(-2px, 0); }
+  99% { clip-path: inset(80% 0 5% 0); transform: translate(2px, 0); }
+}
+@keyframes tva-glitch-2 {
+  0%, 92%, 100% { clip-path: none; transform: none; opacity: 0; }
+  93% { clip-path: inset(55% 0 30% 0); transform: translate(3px, 0); opacity: 0.7; }
+  95% { clip-path: inset(25% 0 60% 0); transform: translate(-3px, 0); opacity: 0.7; }
+  97% { clip-path: inset(70% 0 10% 0); transform: translate(2px, 0); opacity: 0.7; }
+  99% { clip-path: inset(10% 0 80% 0); transform: translate(-2px, 0); opacity: 0.7; }
+}
+
+.tva-glitch-wrap { position: relative; display: inline-block; }
+.tva-glitch-wrap::before {
+  content: attr(data-text);
+  position: absolute; inset: 0;
+  font-family: inherit; font-size: inherit; line-height: inherit;
+  letter-spacing: inherit; color: var(--tva-teal);
+  animation: tva-glitch-2 6s ease-in-out infinite;
+  background: linear-gradient(170deg, var(--tva-teal), var(--v2-accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.tva-hero-name.tva-glitch-wrap { animation: tva-glitch-1 6s ease-in-out infinite; }
+
+/* ── Orbit ring tracks TVA override ── */
+.v2-orbit-ring-track { border-color: rgba(201,162,39,0.1) !important; }
+
+/* ── Sec label line ── */
+.v2-sec-label-line {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--v2-accent); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.v2-sec-label-line::before { content: ''; width: 24px; height: 1px; background: var(--v2-accent); }
+
+/* ── About page section title upgrade ── */
+.v2-about-h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(42px, 7vw, 72px);
+  letter-spacing: 0.02em; line-height: 0.92;
+  color: var(--v2-ink); margin: 0;
+}
+
+
+/* ── TVA Badge responsive text ── */
+.tva-badge-short { display: none; }
+.tva-badge-full { display: inline; }
+@media (max-width: 480px) {
+  .tva-badge-full { display: none; }
+  .tva-badge-short { display: inline; }
 }

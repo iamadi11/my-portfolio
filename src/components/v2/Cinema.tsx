@@ -21,7 +21,7 @@ function noise(x: number, y: number, t: number): number {
 
 export function MorphingCanvas({
     speed = 'slow',
-    accentRGB = [122, 162, 255],
+    accentRGB = [201, 162, 39],
 }: {
     speed?: 'normal' | 'slow' | 'off';
     accentRGB?: [number, number, number];

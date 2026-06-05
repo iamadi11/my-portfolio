@@ -66,13 +66,15 @@ export function useRoute(): Route {
    ============================================================ */
 export function TopNav({ route }: { route: Route['route'] }): JSX.Element {
     return (
-        <nav className="v2-topnav">
-            <div className="v2-topnav-inner">
-                <button className="v2-topnav-logo" onClick={() => navigate('/')}>
-                    <span className="v2-topnav-logo-mark">A</span>
-                    aditya.raj
+        <nav className="tva-topnav" aria-label="Primary navigation">
+            <div className="tva-topnav-inner">
+                <button className="tva-topnav-logo" onClick={() => navigate('/')} aria-label="Home">
+                    <span className="tva-topnav-logo-mark" aria-hidden="true">
+                        AR
+                    </span>
+                    TVA
                 </button>
-                <div className="v2-topnav-links">
+                <div className="tva-topnav-links">
                     {(
                         [
                             ['/', 'home', 'Home'],
@@ -84,7 +86,7 @@ export function TopNav({ route }: { route: Route['route'] }): JSX.Element {
                         <button
                             key={path}
                             onClick={() => navigate(path)}
-                            className={`v2-topnav-link ${route === key || (route === 'project' && key === 'work') ? 'active' : ''}`}
+                            className={`tva-topnav-link ${route === key || (route === 'project' && key === 'work') ? 'active' : ''}`}
                         >
                             {label}
                         </button>
@@ -92,17 +94,13 @@ export function TopNav({ route }: { route: Route['route'] }): JSX.Element {
                     <div
                         style={{
                             width: 1,
-                            height: 18,
-                            background: 'var(--v2-line-2)',
+                            height: 16,
+                            background: 'var(--v2-line)',
                             margin: '0 6px',
                             alignSelf: 'center',
                         }}
                     />
-                    <Link
-                        href="/"
-                        className="v2-topnav-link"
-                        style={{ fontSize: 12, letterSpacing: '0.04em', opacity: 0.6 }}
-                    >
+                    <Link href="/" className="tva-topnav-link" style={{ opacity: 0.45 }}>
                         ← V1
                     </Link>
                 </div>

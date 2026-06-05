@@ -710,13 +710,14 @@ export function PageWork(): JSX.Element {
             <div className="v2-work-scenes-header">
                 <div className="v2-sec-label-line">Work · Case Studies</div>
                 <h1
-                    className="v2-display"
                     style={{
-                        fontSize: 'clamp(34px,6vw,60px)',
-                        fontWeight: 700,
-                        letterSpacing: '-0.03em',
-                        lineHeight: 1.05,
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: 'clamp(48px, 8vw, 84px)',
+                        fontWeight: 400,
+                        letterSpacing: '0.02em',
+                        lineHeight: 0.92,
                         color: 'var(--v2-ink)',
+                        margin: 0,
                     }}
                 >
                     Selected projects.
@@ -1014,13 +1015,14 @@ export function PageAbout(): JSX.Element {
             <div style={{ marginTop: 48 }}>
                 <div className="v2-sec-label-line">Experience · {IDENTITY.yearsExp}+ Years</div>
                 <h2
-                    className="v2-display"
                     style={{
-                        fontSize: 'clamp(34px,6vw,60px)',
-                        fontWeight: 700,
-                        letterSpacing: '-0.03em',
-                        lineHeight: 1.05,
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: 'clamp(48px, 8vw, 84px)',
+                        fontWeight: 400,
+                        letterSpacing: '0.02em',
+                        lineHeight: 0.92,
                         color: 'var(--v2-ink)',
+                        margin: 0,
                     }}
                 >
                     Where I&apos;ve worked.
@@ -1160,13 +1162,14 @@ export function PageContact(): JSX.Element {
             <Reveal>
                 <div className="v2-sec-label-line">Contact</div>
                 <h1
-                    className="v2-display"
                     style={{
-                        fontSize: 'clamp(36px,6vw,56px)',
-                        fontWeight: 700,
-                        letterSpacing: '-0.03em',
-                        lineHeight: 1.05,
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: 'clamp(56px, 10vw, 100px)',
+                        fontWeight: 400,
+                        letterSpacing: '0.02em',
+                        lineHeight: 0.9,
                         color: 'var(--v2-ink)',
+                        margin: 0,
                     }}
                 >
                     Let&apos;s build

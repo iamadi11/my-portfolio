@@ -9,7 +9,7 @@ import { useEffect, useRef } from 'react';
 const SCENES = [
     // 0 Risk Engine — authority, precision, blue/purple financial data
     {
-        c1: [122, 162, 255] as [number, number, number],
+        c1: [201, 162, 39] as [number, number, number],
         c2: [182, 144, 255] as [number, number, number],
         b: [
             [0.15, 0.2],
@@ -24,7 +24,7 @@ const SCENES = [
     // 1 Serviceability Maps — spatial, open, cyan geographic scale
     {
         c1: [126, 229, 255] as [number, number, number],
-        c2: [122, 162, 255] as [number, number, number],
+        c2: [201, 162, 39] as [number, number, number],
         b: [
             [0.72, 0.28],
             [0.28, 0.72],
@@ -66,7 +66,7 @@ const SCENES = [
     // 4 MCP UI — connective, diagonal bridge, purple/blue
     {
         c1: [182, 144, 255] as [number, number, number],
-        c2: [122, 162, 255] as [number, number, number],
+        c2: [201, 162, 39] as [number, number, number],
         b: [
             [0.5, 0.22],
             [0.5, 0.78],
