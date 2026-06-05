@@ -37,7 +37,7 @@ export default function V2Page(): JSX.Element {
 
     return (
         /* gm-home class enables ghost nav + no dock */
-        <div className={`v2-root${isHome ? 'gm-home' : ''}`}>
+        <div className={isHome ? 'v2-root gm-home' : 'v2-root'}>
             <ScrollSetup />
 
             <div className="v2-bg-stage" />
