@@ -1,0 +1,74 @@
+{
+    "nodes": [
+        {
+            "id": "page",
+            "label": "page.tsx",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/contact/page.tsx",
+            "source_location": "L1"
+        },
+        {
+            "id": "page_contact",
+            "label": "Contact()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/contact/page.tsx",
+            "source_location": "L10"
+        }
+    ],
+    "edges": [
+        {
+            "source": "page",
+            "target": "react",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/contact/page.tsx",
+            "source_location": "L3",
+            "weight": 1.0
+        },
+        {
+            "source": "page",
+            "target": "clsx",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/contact/page.tsx",
+            "source_location": "L5",
+            "weight": 1.0
+        },
+        {
+            "source": "page",
+            "target": "link",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/contact/page.tsx",
+            "source_location": "L6",
+            "weight": 1.0
+        },
+        {
+            "source": "page",
+            "target": "fa",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/contact/page.tsx",
+            "source_location": "L7",
+            "weight": 1.0
+        },
+        {
+            "source": "page",
+            "target": "fa6",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/contact/page.tsx",
+            "source_location": "L8",
+            "weight": 1.0
+        },
+        {
+            "source": "page",
+            "target": "page_contact",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/contact/page.tsx",
+            "source_location": "L10",
+            "weight": 1.0
+        }
+    ]
+}

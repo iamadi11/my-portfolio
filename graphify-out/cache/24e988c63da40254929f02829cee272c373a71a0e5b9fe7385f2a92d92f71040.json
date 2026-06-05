@@ -1,0 +1,38 @@
+{
+    "nodes": [
+        {
+            "id": "sidenav",
+            "label": "SideNav.tsx",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/SideNav.tsx",
+            "source_location": "L1"
+        },
+        {
+            "id": "sidenav_sidenav",
+            "label": "SideNav()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/SideNav.tsx",
+            "source_location": "L10"
+        }
+    ],
+    "edges": [
+        {
+            "source": "sidenav",
+            "target": "react",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/SideNav.tsx",
+            "source_location": "L3",
+            "weight": 1.0
+        },
+        {
+            "source": "sidenav",
+            "target": "sidenav_sidenav",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/SideNav.tsx",
+            "source_location": "L10",
+            "weight": 1.0
+        }
+    ]
+}

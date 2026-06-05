@@ -1,0 +1,56 @@
+{
+    "nodes": [
+        {
+            "id": "heror3f",
+            "label": "HeroR3F.tsx",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/HeroR3F.tsx",
+            "source_location": "L1"
+        },
+        {
+            "id": "heror3f_networkscene",
+            "label": "NetworkScene()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/HeroR3F.tsx",
+            "source_location": "L12"
+        }
+    ],
+    "edges": [
+        {
+            "source": "heror3f",
+            "target": "react",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/HeroR3F.tsx",
+            "source_location": "L4",
+            "weight": 1.0
+        },
+        {
+            "source": "heror3f",
+            "target": "fiber",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/HeroR3F.tsx",
+            "source_location": "L6",
+            "weight": 1.0
+        },
+        {
+            "source": "heror3f",
+            "target": "three",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/HeroR3F.tsx",
+            "source_location": "L7",
+            "weight": 1.0
+        },
+        {
+            "source": "heror3f",
+            "target": "heror3f_networkscene",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/HeroR3F.tsx",
+            "source_location": "L12",
+            "weight": 1.0
+        }
+    ]
+}

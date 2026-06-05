@@ -1,0 +1,12 @@
+{
+    "nodes": [
+        {
+            "id": "data",
+            "label": "data.ts",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/data.ts",
+            "source_location": "L1"
+        }
+    ],
+    "edges": []
+}

@@ -1,0 +1,144 @@
+{
+    "nodes": [
+        {
+            "id": "cursor_rules_atomic",
+            "label": "Cursor Rule \u2014 Atomic Changes",
+            "file_type": "document",
+            "source_file": "CURSOR_RULES.md",
+            "source_location": "## 1. Atomic changes",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "cursor_rules_content",
+            "label": "Cursor Rule \u2014 Content Authority",
+            "file_type": "document",
+            "source_file": "CURSOR_RULES.md",
+            "source_location": "## 2. Content",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "cursor_rules_ux",
+            "label": "Cursor Rule \u2014 UX Mobile-first",
+            "file_type": "document",
+            "source_file": "CURSOR_RULES.md",
+            "source_location": "## 3. UX",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "cursor_rules_animation",
+            "label": "Cursor Rule \u2014 Animation (motion.dev)",
+            "file_type": "document",
+            "source_file": "CURSOR_RULES.md",
+            "source_location": "## 4. Animation",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "cursor_rules_performance",
+            "label": "Cursor Rule \u2014 Performance Lighthouse \u226590",
+            "file_type": "document",
+            "source_file": "CURSOR_RULES.md",
+            "source_location": "## 5. Performance",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "cursor_rules_before_commit",
+            "label": "Cursor Rule \u2014 Pre-Commit Checklist",
+            "file_type": "document",
+            "source_file": "CURSOR_RULES.md",
+            "source_location": "## 6. Before commit",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "cursor_rules_anti_patterns",
+            "label": "Cursor Anti-Patterns",
+            "file_type": "document",
+            "source_file": "CURSOR_RULES.md",
+            "source_location": "## 7. Anti-patterns",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        }
+    ],
+    "edges": [
+        {
+            "source": "cursor_rules_content",
+            "target": "pdf_resume",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CURSOR_RULES.md",
+            "source_location": "## 2. Content",
+            "weight": 1.0
+        },
+        {
+            "source": "cursor_rules_animation",
+            "target": "concept_motion",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CURSOR_RULES.md",
+            "source_location": "## 4. Animation",
+            "weight": 1.0
+        },
+        {
+            "source": "cursor_rules_performance",
+            "target": "concept_lighthouse",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CURSOR_RULES.md",
+            "source_location": "## 5. Performance",
+            "weight": 1.0
+        },
+        {
+            "source": "cursor_rules_atomic",
+            "target": "claude_md_workflow",
+            "relation": "semantically_similar_to",
+            "confidence": "INFERRED",
+            "confidence_score": 0.8,
+            "source_file": "CURSOR_RULES.md",
+            "source_location": "## 1. Atomic changes",
+            "weight": 0.8
+        },
+        {
+            "source": "cursor_rules_anti_patterns",
+            "target": "claude_md_anti_patterns",
+            "relation": "semantically_similar_to",
+            "confidence": "INFERRED",
+            "confidence_score": 0.85,
+            "source_file": "CURSOR_RULES.md",
+            "source_location": "## 7. Anti-patterns",
+            "weight": 0.85
+        },
+        {
+            "source": "cursor_rules_before_commit",
+            "target": "claude_md_release_gates",
+            "relation": "semantically_similar_to",
+            "confidence": "INFERRED",
+            "confidence_score": 0.85,
+            "source_file": "CURSOR_RULES.md",
+            "source_location": "## 6. Before commit",
+            "weight": 0.85
+        }
+    ],
+    "hyperedges": []
+}

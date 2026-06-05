@@ -1,0 +1,322 @@
+{
+    "nodes": [
+        {
+            "id": "cinematicuniverse",
+            "label": "CinematicUniverse.tsx",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L1"
+        },
+        {
+            "id": "cinematicuniverse_lerp",
+            "label": "lerp()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L109"
+        },
+        {
+            "id": "cinematicuniverse_clamp",
+            "label": "clamp()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L112"
+        },
+        {
+            "id": "cinematicuniverse_smooth",
+            "label": "smooth()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L115"
+        },
+        {
+            "id": "cinematicuniverse_lerprgb",
+            "label": "lerpRgb()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L119"
+        },
+        {
+            "id": "cinematicuniverse_resize",
+            "label": "resize()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L143"
+        },
+        {
+            "id": "cinematicuniverse_cachelayout",
+            "label": "cacheLayout()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L156"
+        },
+        {
+            "id": "cinematicuniverse_toscenefloat",
+            "label": "toSceneFloat()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L165"
+        },
+        {
+            "id": "cinematicuniverse_atmosphere",
+            "label": "atmosphere()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L178"
+        },
+        {
+            "id": "cinematicuniverse_blob",
+            "label": "blob()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L199"
+        },
+        {
+            "id": "cinematicuniverse_initparticles",
+            "label": "initParticles()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L211"
+        },
+        {
+            "id": "cinematicuniverse_render",
+            "label": "render()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L226"
+        },
+        {
+            "id": "cinematicuniverse_onscroll",
+            "label": "onScroll()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L343"
+        }
+    ],
+    "edges": [
+        {
+            "source": "cinematicuniverse",
+            "target": "react",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L5",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse",
+            "target": "cinematicuniverse_lerp",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L109",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse",
+            "target": "cinematicuniverse_clamp",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L112",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse",
+            "target": "cinematicuniverse_smooth",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L115",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse",
+            "target": "cinematicuniverse_lerprgb",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L119",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse",
+            "target": "cinematicuniverse_resize",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L143",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse",
+            "target": "cinematicuniverse_cachelayout",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L156",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse",
+            "target": "cinematicuniverse_toscenefloat",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L165",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse",
+            "target": "cinematicuniverse_atmosphere",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L178",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse",
+            "target": "cinematicuniverse_blob",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L199",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse",
+            "target": "cinematicuniverse_initparticles",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L211",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse",
+            "target": "cinematicuniverse_render",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L226",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse",
+            "target": "cinematicuniverse_onscroll",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L343",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse_smooth",
+            "target": "cinematicuniverse_clamp",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L116",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse_lerprgb",
+            "target": "cinematicuniverse_lerp",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L120",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse_toscenefloat",
+            "target": "cinematicuniverse_clamp",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L171",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse_atmosphere",
+            "target": "cinematicuniverse_clamp",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L179",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse_atmosphere",
+            "target": "cinematicuniverse_smooth",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L181",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse_atmosphere",
+            "target": "cinematicuniverse_lerprgb",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L185",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse_atmosphere",
+            "target": "cinematicuniverse_lerp",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L187",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse_render",
+            "target": "cinematicuniverse_clamp",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L228",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse_render",
+            "target": "cinematicuniverse_lerp",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L234",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse_render",
+            "target": "cinematicuniverse_atmosphere",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L237",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse_render",
+            "target": "cinematicuniverse_blob",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L245",
+            "weight": 1.0
+        },
+        {
+            "source": "cinematicuniverse_onscroll",
+            "target": "cinematicuniverse_toscenefloat",
+            "relation": "calls",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/CinematicUniverse.tsx",
+            "source_location": "L348",
+            "weight": 1.0
+        }
+    ]
+}

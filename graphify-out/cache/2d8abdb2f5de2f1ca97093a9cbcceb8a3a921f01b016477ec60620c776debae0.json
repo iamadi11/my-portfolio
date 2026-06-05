@@ -1,0 +1,91 @@
+{
+    "nodes": [
+        {
+            "id": "projectjpg_bokeh_background_image",
+            "label": "Project Bokeh Background Image",
+            "file_type": "image",
+            "source_file": "public/project.jpg",
+            "source_location": null,
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "projectjpg_abstract_lighting",
+            "label": "Abstract Colorful Bokeh Lighting",
+            "file_type": "image",
+            "source_file": "public/project.jpg",
+            "source_location": null,
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "projectjpg_portfolio_asset",
+            "label": "Portfolio Project Card Visual Asset",
+            "file_type": "image",
+            "source_file": "public/project.jpg",
+            "source_location": null,
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "portfolio_projects_section",
+            "label": "Portfolio Projects Section",
+            "file_type": "concept",
+            "source_file": "public/project.jpg",
+            "source_location": null,
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        }
+    ],
+    "edges": [
+        {
+            "source": "projectjpg_bokeh_background_image",
+            "target": "projectjpg_abstract_lighting",
+            "relation": "depicts",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "public/project.jpg",
+            "source_location": null,
+            "weight": 1.0
+        },
+        {
+            "source": "projectjpg_bokeh_background_image",
+            "target": "projectjpg_portfolio_asset",
+            "relation": "used_as",
+            "confidence": "INFERRED",
+            "confidence_score": 0.85,
+            "source_file": "public/project.jpg",
+            "source_location": null,
+            "weight": 1.0
+        },
+        {
+            "source": "projectjpg_portfolio_asset",
+            "target": "portfolio_projects_section",
+            "relation": "belongs_to",
+            "confidence": "INFERRED",
+            "confidence_score": 0.8,
+            "source_file": "public/project.jpg",
+            "source_location": null,
+            "weight": 1.0
+        },
+        {
+            "source": "projectjpg_abstract_lighting",
+            "target": "portfolio_projects_section",
+            "relation": "provides_visual_context_for",
+            "confidence": "INFERRED",
+            "confidence_score": 0.75,
+            "source_file": "public/project.jpg",
+            "source_location": null,
+            "weight": 1.0
+        }
+    ],
+    "hyperedges": []
+}

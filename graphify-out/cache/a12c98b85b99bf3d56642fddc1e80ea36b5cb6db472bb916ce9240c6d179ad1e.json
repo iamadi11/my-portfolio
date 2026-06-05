@@ -1,0 +1,355 @@
+{
+    "nodes": [
+        {
+            "id": "claude_md_authority",
+            "label": "CLAUDE.md \u2014 Authority Hierarchy",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 0. AUTHORITY",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "claude_md_workflow",
+            "label": "Mandatory Workflow (Research\u2192Plan\u2192Implement\u2192Validate\u2192Commit)",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 1. MANDATORY WORKFLOW",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "claude_md_build_filter",
+            "label": "Build Filter \u2014 Credibility, Grounded, Simplest",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 2. BUILD FILTER",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "claude_md_ux_rules",
+            "label": "UX Rules \u2014 Mobile-first, WCAG 2.2, Lighthouse \u226590",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 3. UX RULES",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "claude_md_release_gates",
+            "label": "Release Gates \u2014 TypeCheck, Lint, Browser, Lighthouse",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 4. RELEASE GATES",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "claude_md_anti_patterns",
+            "label": "Anti-Patterns \u2014 Forbidden Actions",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 5. ANTI-PATTERNS",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "claude_md_priority_order",
+            "label": "Priority Order \u2014 Accuracy > Speed > A11y > Polish",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 7. PRIORITY ORDER",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "claude_md_commit_format",
+            "label": "Commit Format Convention",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 8. COMMIT FORMAT",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "claude_md_skills",
+            "label": "AI Skills \u2014 /ship and /sync-resume",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 9. SKILLS",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "concept_wcag",
+            "label": "WCAG 2.2 Level AA Accessibility",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 3. UX RULES",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "concept_lighthouse",
+            "label": "Lighthouse \u226590 Score Target",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 3. UX RULES",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "concept_ssg",
+            "label": "Static Site Generation (SSG)",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 3. UX RULES",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "rationale_cached_snapshot",
+            "label": "Rationale: Use cached snapshot to avoid re-parsing PDF",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 1. MANDATORY WORKFLOW",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "rationale_build_filter",
+            "label": "Rationale: Build filter ensures only high-value changes ship",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 2. BUILD FILTER",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "rationale_no_invented_content",
+            "label": "Rationale: No invented content prevents credential misrepresentation",
+            "file_type": "document",
+            "source_file": "CLAUDE.md",
+            "source_location": "## 5. ANTI-PATTERNS",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        }
+    ],
+    "edges": [
+        {
+            "source": "claude_md_authority",
+            "target": "source_of_truth_adityaraj",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 0. AUTHORITY",
+            "weight": 1.0
+        },
+        {
+            "source": "claude_md_authority",
+            "target": "pdf_resume",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 0. AUTHORITY",
+            "weight": 1.0
+        },
+        {
+            "source": "claude_md_workflow",
+            "target": "source_of_truth_adityaraj",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 1. MANDATORY WORKFLOW",
+            "weight": 1.0
+        },
+        {
+            "source": "claude_md_build_filter",
+            "target": "claude_md_workflow",
+            "relation": "conceptually_related_to",
+            "confidence": "INFERRED",
+            "confidence_score": 0.85,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 2. BUILD FILTER",
+            "weight": 0.85
+        },
+        {
+            "source": "claude_md_ux_rules",
+            "target": "concept_wcag",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 3. UX RULES",
+            "weight": 1.0
+        },
+        {
+            "source": "claude_md_ux_rules",
+            "target": "concept_lighthouse",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 3. UX RULES",
+            "weight": 1.0
+        },
+        {
+            "source": "claude_md_ux_rules",
+            "target": "concept_ssg",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 3. UX RULES",
+            "weight": 1.0
+        },
+        {
+            "source": "claude_md_release_gates",
+            "target": "concept_eslint",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 4. RELEASE GATES",
+            "weight": 1.0
+        },
+        {
+            "source": "claude_md_release_gates",
+            "target": "concept_lighthouse",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 4. RELEASE GATES",
+            "weight": 1.0
+        },
+        {
+            "source": "claude_md_skills",
+            "target": "source_of_truth_adityaraj",
+            "relation": "references",
+            "confidence": "INFERRED",
+            "confidence_score": 0.8,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 9. SKILLS",
+            "weight": 0.8
+        },
+        {
+            "source": "claude_md_authority",
+            "target": "source_of_truth_adityaraj",
+            "relation": "conceptually_related_to",
+            "confidence": "INFERRED",
+            "confidence_score": 0.9,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 0. AUTHORITY",
+            "weight": 0.9
+        },
+        {
+            "source": "rationale_cached_snapshot",
+            "target": "pdf_resume",
+            "relation": "rationale_for",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 1. MANDATORY WORKFLOW",
+            "weight": 1.0
+        },
+        {
+            "source": "rationale_build_filter",
+            "target": "claude_md_build_filter",
+            "relation": "rationale_for",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 2. BUILD FILTER",
+            "weight": 1.0
+        },
+        {
+            "source": "rationale_no_invented_content",
+            "target": "claude_md_anti_patterns",
+            "relation": "rationale_for",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 5. ANTI-PATTERNS",
+            "weight": 1.0
+        },
+        {
+            "source": "claude_md_commit_format",
+            "target": "cursor_rules_before_commit",
+            "relation": "semantically_similar_to",
+            "confidence": "INFERRED",
+            "confidence_score": 0.8,
+            "source_file": "CLAUDE.md",
+            "source_location": "## 8. COMMIT FORMAT",
+            "weight": 0.8
+        }
+    ],
+    "hyperedges": [
+        {
+            "id": "portfolio_governance_system",
+            "label": "Portfolio Governance System",
+            "nodes": [
+                "claude_md_authority",
+                "source_of_truth_adityaraj",
+                "pdf_resume",
+                "claude_md_workflow",
+                "claude_md_build_filter",
+                "claude_md_release_gates",
+                "claude_md_anti_patterns"
+            ],
+            "relation": "participate_in",
+            "confidence": "INFERRED",
+            "confidence_score": 0.9,
+            "source_file": "CLAUDE.md"
+        },
+        {
+            "id": "quality_gates_set",
+            "label": "Quality Gates (Lighthouse, WCAG, TypeCheck, Lint)",
+            "nodes": [
+                "concept_lighthouse",
+                "concept_wcag",
+                "concept_eslint",
+                "claude_md_release_gates",
+                "cursor_rules_performance"
+            ],
+            "relation": "implement",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "CLAUDE.md"
+        }
+    ]
+}

@@ -1,0 +1,605 @@
+{
+    "nodes": [
+        {
+            "id": "source_of_truth_adityaraj",
+            "label": "Aditya Raj \u2014 Source of Truth",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": null,
+            "source_url": null,
+            "captured_at": "2026-06-05",
+            "author": "Aditya Raj",
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_identity",
+            "label": "Identity: Aditya Raj",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Identity",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_cashfree",
+            "label": "Frontend Engineer II \u2014 Cashfree Payments",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Cached snapshot \u2014 Most recent role",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_moresand",
+            "label": "Software Engineer \u2014 Moresand Technologies",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Cached snapshot \u2014 Prior roles",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_tata1mg_sde2",
+            "label": "Software Development Engineer II \u2014 Tata 1mg",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Cached snapshot \u2014 Prior roles",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_tata1mg_sde1",
+            "label": "Software Development Engineer I \u2014 Tata 1mg",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Cached snapshot \u2014 Prior roles",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_education",
+            "label": "IIIT Lucknow \u2014 B.Tech Information Technology",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "### Education",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_techstack",
+            "label": "Validated Tech Stack",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Tech stack (validated)",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_projects",
+            "label": "Portfolio-Safe Projects",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "### Projects (portfolio-safe)",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_mouse_follow",
+            "label": "Project: mouse-follow",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "### Projects",
+            "source_url": "https://github.com/iamadi11/mouse-follow",
+            "captured_at": null,
+            "author": "Aditya Raj",
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_mcp_ui_poc",
+            "label": "Project: mcp-ui-poc",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "### Projects",
+            "source_url": "https://github.com/iamadi11/mcp-ui-poc",
+            "captured_at": null,
+            "author": "Aditya Raj",
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_spatial",
+            "label": "Project: spatial",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "### Projects",
+            "source_url": "https://github.com/iamadi11/spatial",
+            "captured_at": null,
+            "author": "Aditya Raj",
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_portfolio_techstack",
+            "label": "Portfolio Tech Stack (Next.js 15, React 19, TS5, Tailwind)",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_folder_structure",
+            "label": "Portfolio Folder Structure",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Folder structure",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_content_authority",
+            "label": "Content Authority Rules",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Content authority rules",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_build_filter",
+            "label": "Build Filter Decision Rule",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Build filter",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_tone_rules",
+            "label": "Tone Rules \u2014 No Filler Copy",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Tone rules",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "source_of_truth_target_audience",
+            "label": "Target Audience (Recruiters, Engineers, Clients)",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Target audience",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "concept_nextjs",
+            "label": "Next.js 15 (App Router)",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "concept_react",
+            "label": "React 19",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "concept_typescript",
+            "label": "TypeScript 5 (strict)",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "concept_tailwind",
+            "label": "Tailwind CSS 3",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "concept_motion",
+            "label": "Motion (motion.dev / motion/react)",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "concept_vercel",
+            "label": "Vercel Deployment",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "concept_eslint",
+            "label": "ESLint 9 + Prettier 3",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "concept_husky",
+            "label": "Git Hooks \u2014 Husky + Commitlint",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        },
+        {
+            "id": "rationale_source_authority",
+            "label": "Rationale: Resume wins on conflicts for accuracy",
+            "file_type": "document",
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## 0. AUTHORITY",
+            "source_url": null,
+            "captured_at": null,
+            "author": null,
+            "contributor": null
+        }
+    ],
+    "edges": [
+        {
+            "source": "source_of_truth_identity",
+            "target": "source_of_truth_adityaraj",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Identity",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_cashfree",
+            "target": "source_of_truth_adityaraj",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "### Most recent role",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_moresand",
+            "target": "source_of_truth_adityaraj",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "### Prior roles",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_tata1mg_sde2",
+            "target": "source_of_truth_adityaraj",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "### Prior roles",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_tata1mg_sde1",
+            "target": "source_of_truth_adityaraj",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "### Prior roles",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_education",
+            "target": "source_of_truth_adityaraj",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "### Education",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_mouse_follow",
+            "target": "source_of_truth_projects",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "### Projects",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_mcp_ui_poc",
+            "target": "source_of_truth_projects",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "### Projects",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_spatial",
+            "target": "source_of_truth_projects",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "### Projects",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_portfolio_techstack",
+            "target": "concept_nextjs",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_portfolio_techstack",
+            "target": "concept_react",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_portfolio_techstack",
+            "target": "concept_typescript",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_portfolio_techstack",
+            "target": "concept_tailwind",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_portfolio_techstack",
+            "target": "concept_motion",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_portfolio_techstack",
+            "target": "concept_vercel",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_portfolio_techstack",
+            "target": "concept_eslint",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_portfolio_techstack",
+            "target": "concept_husky",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Portfolio project tech stack",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_adityaraj",
+            "target": "pdf_resume",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## 0. Hierarchy",
+            "weight": 1.0
+        },
+        {
+            "source": "rationale_source_authority",
+            "target": "pdf_resume",
+            "relation": "rationale_for",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Hierarchy",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_techstack",
+            "target": "concept_react",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Tech stack (validated)",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_techstack",
+            "target": "concept_nextjs",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Tech stack (validated)",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_techstack",
+            "target": "concept_typescript",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Tech stack (validated)",
+            "weight": 1.0
+        },
+        {
+            "source": "source_of_truth_folder_structure",
+            "target": "concept_nextjs",
+            "relation": "references",
+            "confidence": "INFERRED",
+            "confidence_score": 0.9,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Folder structure",
+            "weight": 0.9
+        },
+        {
+            "source": "source_of_truth_target_audience",
+            "target": "source_of_truth_adityaraj",
+            "relation": "references",
+            "confidence": "INFERRED",
+            "confidence_score": 0.85,
+            "source_file": "SOURCE_OF_TRUTH.md",
+            "source_location": "## Target audience",
+            "weight": 0.85
+        }
+    ],
+    "hyperedges": [
+        {
+            "id": "content_authority_hierarchy",
+            "label": "Content Authority Hierarchy (PDF > LinkedIn > GitHub)",
+            "nodes": [
+                "pdf_resume",
+                "source_of_truth_adityaraj",
+                "claude_md_authority",
+                "cursor_rules_content",
+                "rationale_source_authority"
+            ],
+            "relation": "implement",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md"
+        },
+        {
+            "id": "portfolio_tech_stack_set",
+            "label": "Portfolio Tech Stack Set",
+            "nodes": [
+                "concept_nextjs",
+                "concept_react",
+                "concept_typescript",
+                "concept_tailwind",
+                "concept_motion",
+                "concept_vercel",
+                "concept_eslint",
+                "concept_husky"
+            ],
+            "relation": "form",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md"
+        },
+        {
+            "id": "aditya_work_history",
+            "label": "Aditya Raj Work History",
+            "nodes": [
+                "source_of_truth_cashfree",
+                "source_of_truth_moresand",
+                "source_of_truth_tata1mg_sde2",
+                "source_of_truth_tata1mg_sde1"
+            ],
+            "relation": "form",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md"
+        },
+        {
+            "id": "portfolio_safe_projects",
+            "label": "Portfolio Safe Projects",
+            "nodes": [
+                "source_of_truth_mouse_follow",
+                "source_of_truth_mcp_ui_poc",
+                "source_of_truth_spatial"
+            ],
+            "relation": "form",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "SOURCE_OF_TRUTH.md"
+        }
+    ]
+}

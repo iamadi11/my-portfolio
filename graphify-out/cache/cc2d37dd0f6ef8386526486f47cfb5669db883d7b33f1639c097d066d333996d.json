@@ -1,0 +1,12 @@
+{
+    "nodes": [
+        {
+            "id": "next_env_d",
+            "label": "next-env.d.ts",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/next-env.d.ts",
+            "source_location": "L1"
+        }
+    ],
+    "edges": []
+}

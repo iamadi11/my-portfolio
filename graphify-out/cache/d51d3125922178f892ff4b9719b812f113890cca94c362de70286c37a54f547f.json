@@ -1,0 +1,29 @@
+{
+    "nodes": [
+        {
+            "id": "template",
+            "label": "template.tsx",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/v2/template.tsx",
+            "source_location": "L1"
+        },
+        {
+            "id": "template_v2template",
+            "label": "V2Template()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/v2/template.tsx",
+            "source_location": "L3"
+        }
+    ],
+    "edges": [
+        {
+            "source": "template",
+            "target": "template_v2template",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/v2/template.tsx",
+            "source_location": "L3",
+            "weight": 1.0
+        }
+    ]
+}

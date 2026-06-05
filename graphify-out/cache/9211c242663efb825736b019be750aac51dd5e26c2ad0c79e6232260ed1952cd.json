@@ -1,0 +1,38 @@
+{
+    "nodes": [
+        {
+            "id": "floatingnav",
+            "label": "FloatingNav.tsx",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/FloatingNav.tsx",
+            "source_location": "L1"
+        },
+        {
+            "id": "floatingnav_scrollto",
+            "label": "scrollTo()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/FloatingNav.tsx",
+            "source_location": "L47"
+        }
+    ],
+    "edges": [
+        {
+            "source": "floatingnav",
+            "target": "react",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/FloatingNav.tsx",
+            "source_location": "L3",
+            "weight": 1.0
+        },
+        {
+            "source": "floatingnav",
+            "target": "floatingnav_scrollto",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/FloatingNav.tsx",
+            "source_location": "L47",
+            "weight": 1.0
+        }
+    ]
+}

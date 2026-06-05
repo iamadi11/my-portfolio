@@ -1,0 +1,22 @@
+{
+    "nodes": [
+        {
+            "id": "jsx_d",
+            "label": "jsx.d.ts",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/types/jsx.d.ts",
+            "source_location": "L1"
+        }
+    ],
+    "edges": [
+        {
+            "source": "jsx_d",
+            "target": "react",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/types/jsx.d.ts",
+            "source_location": "L3",
+            "weight": 1.0
+        }
+    ]
+}

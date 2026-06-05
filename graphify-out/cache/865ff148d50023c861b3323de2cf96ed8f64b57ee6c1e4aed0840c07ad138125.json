@@ -1,0 +1,86 @@
+{
+    "nodes": [
+        {
+            "id": "pocs",
+            "label": "POCs.tsx",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/POCs.tsx",
+            "source_location": "L1"
+        },
+        {
+            "id": "pocs_riskenginepoc",
+            "label": "RiskEnginePOC()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/POCs.tsx",
+            "source_location": "L27"
+        },
+        {
+            "id": "pocs_pointinpoly",
+            "label": "pointInPoly()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/POCs.tsx",
+            "source_location": "L308"
+        },
+        {
+            "id": "pocs_onmove",
+            "label": "onMove()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/POCs.tsx",
+            "source_location": "L330"
+        },
+        {
+            "id": "pocs_run",
+            "label": "run()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/POCs.tsx",
+            "source_location": "L968"
+        }
+    ],
+    "edges": [
+        {
+            "source": "pocs",
+            "target": "react",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/POCs.tsx",
+            "source_location": "L3",
+            "weight": 1.0
+        },
+        {
+            "source": "pocs",
+            "target": "pocs_riskenginepoc",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/POCs.tsx",
+            "source_location": "L27",
+            "weight": 1.0
+        },
+        {
+            "source": "pocs",
+            "target": "pocs_pointinpoly",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/POCs.tsx",
+            "source_location": "L308",
+            "weight": 1.0
+        },
+        {
+            "source": "pocs",
+            "target": "pocs_onmove",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/POCs.tsx",
+            "source_location": "L330",
+            "weight": 1.0
+        },
+        {
+            "source": "pocs",
+            "target": "pocs_run",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/POCs.tsx",
+            "source_location": "L968",
+            "weight": 1.0
+        }
+    ]
+}

@@ -1,0 +1,38 @@
+{
+    "nodes": [
+        {
+            "id": "manifest",
+            "label": "manifest.ts",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/manifest.ts",
+            "source_location": "L1"
+        },
+        {
+            "id": "manifest_manifest",
+            "label": "manifest()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/manifest.ts",
+            "source_location": "L8"
+        }
+    ],
+    "edges": [
+        {
+            "source": "manifest",
+            "target": "next",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/manifest.ts",
+            "source_location": "L1",
+            "weight": 1.0
+        },
+        {
+            "source": "manifest",
+            "target": "manifest_manifest",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/app/manifest.ts",
+            "source_location": "L8",
+            "weight": 1.0
+        }
+    ]
+}

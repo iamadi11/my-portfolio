@@ -1,0 +1,88 @@
+{
+    "nodes": [
+        {
+            "id": "chrome",
+            "label": "Chrome.tsx",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/Chrome.tsx",
+            "source_location": "L1"
+        },
+        {
+            "id": "chrome_parsehash",
+            "label": "parseHash()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/Chrome.tsx",
+            "source_location": "L11"
+        },
+        {
+            "id": "chrome_navigate",
+            "label": "navigate()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/Chrome.tsx",
+            "source_location": "L23"
+        },
+        {
+            "id": "chrome_useroute",
+            "label": "useRoute()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/Chrome.tsx",
+            "source_location": "L30"
+        }
+    ],
+    "edges": [
+        {
+            "source": "chrome",
+            "target": "react",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/Chrome.tsx",
+            "source_location": "L3",
+            "weight": 1.0
+        },
+        {
+            "source": "chrome",
+            "target": "link",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/Chrome.tsx",
+            "source_location": "L5",
+            "weight": 1.0
+        },
+        {
+            "source": "chrome",
+            "target": "data",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/Chrome.tsx",
+            "source_location": "L7",
+            "weight": 1.0
+        },
+        {
+            "source": "chrome",
+            "target": "chrome_parsehash",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/Chrome.tsx",
+            "source_location": "L11",
+            "weight": 1.0
+        },
+        {
+            "source": "chrome",
+            "target": "chrome_navigate",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/Chrome.tsx",
+            "source_location": "L23",
+            "weight": 1.0
+        },
+        {
+            "source": "chrome",
+            "target": "chrome_useroute",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/Chrome.tsx",
+            "source_location": "L30",
+            "weight": 1.0
+        }
+    ]
+}

@@ -1,0 +1,38 @@
+{
+    "nodes": [
+        {
+            "id": "topbar",
+            "label": "TopBar.tsx",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/TopBar.tsx",
+            "source_location": "L1"
+        },
+        {
+            "id": "topbar_topbar",
+            "label": "TopBar()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/TopBar.tsx",
+            "source_location": "L5"
+        }
+    ],
+    "edges": [
+        {
+            "source": "topbar",
+            "target": "react",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/TopBar.tsx",
+            "source_location": "L3",
+            "weight": 1.0
+        },
+        {
+            "source": "topbar",
+            "target": "topbar_topbar",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/TopBar.tsx",
+            "source_location": "L5",
+            "weight": 1.0
+        }
+    ]
+}

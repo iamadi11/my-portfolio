@@ -1,0 +1,88 @@
+{
+    "nodes": [
+        {
+            "id": "archdiagrams",
+            "label": "ArchDiagrams.tsx",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/ArchDiagrams.tsx",
+            "source_location": "L1"
+        },
+        {
+            "id": "archdiagrams_pip",
+            "label": "Pip()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/ArchDiagrams.tsx",
+            "source_location": "L38"
+        },
+        {
+            "id": "archdiagrams_riskcolor",
+            "label": "riskColor()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/ArchDiagrams.tsx",
+            "source_location": "L110"
+        },
+        {
+            "id": "archdiagrams_chcolor",
+            "label": "chColor()",
+            "file_type": "code",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/ArchDiagrams.tsx",
+            "source_location": "L498"
+        }
+    ],
+    "edges": [
+        {
+            "source": "archdiagrams",
+            "target": "react",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/ArchDiagrams.tsx",
+            "source_location": "L6",
+            "weight": 1.0
+        },
+        {
+            "source": "archdiagrams",
+            "target": "gsap",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/ArchDiagrams.tsx",
+            "source_location": "L8",
+            "weight": 1.0
+        },
+        {
+            "source": "archdiagrams",
+            "target": "scrolltrigger",
+            "relation": "imports_from",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/ArchDiagrams.tsx",
+            "source_location": "L9",
+            "weight": 1.0
+        },
+        {
+            "source": "archdiagrams",
+            "target": "archdiagrams_pip",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/ArchDiagrams.tsx",
+            "source_location": "L38",
+            "weight": 1.0
+        },
+        {
+            "source": "archdiagrams",
+            "target": "archdiagrams_riskcolor",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/ArchDiagrams.tsx",
+            "source_location": "L110",
+            "weight": 1.0
+        },
+        {
+            "source": "archdiagrams",
+            "target": "archdiagrams_chcolor",
+            "relation": "contains",
+            "confidence": "EXTRACTED",
+            "source_file": "/Users/adityaraj/Desktop/My Projects/my-portfolio/src/components/v2/ArchDiagrams.tsx",
+            "source_location": "L498",
+            "weight": 1.0
+        }
+    ]
+}

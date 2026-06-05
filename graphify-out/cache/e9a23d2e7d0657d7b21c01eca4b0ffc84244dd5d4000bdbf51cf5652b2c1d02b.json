@@ -1,0 +1,38 @@
+{
+    "nodes": [
+        {
+            "id": "readme_nextjs_portfolio",
+            "label": "README \u2014 Next.js Portfolio",
+            "file_type": "document",
+            "source_file": "README.md",
+            "source_location": null,
+            "source_url": null,
+            "captured_at": null,
+            "author": "Aditya Raj",
+            "contributor": null
+        }
+    ],
+    "edges": [
+        {
+            "source": "readme_nextjs_portfolio",
+            "target": "concept_nextjs",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "README.md",
+            "source_location": null,
+            "weight": 1.0
+        },
+        {
+            "source": "readme_nextjs_portfolio",
+            "target": "concept_vercel",
+            "relation": "references",
+            "confidence": "EXTRACTED",
+            "confidence_score": 1.0,
+            "source_file": "README.md",
+            "source_location": null,
+            "weight": 1.0
+        }
+    ],
+    "hyperedges": []
+}
