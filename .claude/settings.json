@@ -1,4 +1,5 @@
 {
+    "$schema": "https://json.schemastore.org/claude-code-settings.json",
     "hooks": {
         "PostToolUse": [
             {
@@ -18,6 +19,10 @@
                     {
                         "type": "command",
                         "command": "echo '[reminder] Keep changes small and atomic. One section/component at a time.'"
+                    },
+                    {
+                        "type": "command",
+                        "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/fallow-gate.sh"
                     }
                 ]
             }
