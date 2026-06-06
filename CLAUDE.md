@@ -101,3 +101,21 @@ Examples:
 
 - `/ship` — find and implement the single highest-impact portfolio improvement
 - `/sync-resume` — diff portfolio against resume + LinkedIn, fix all gaps one by one
+
+---
+
+## 10. V2 CINEMATIC RULES
+
+V2 (`/v2`) is the Loki-themed 3D experience. When working on it:
+
+1. **Scene authority:** `SOURCE_OF_TRUTH.md § V2` defines all scene/component/narrative mapping.
+2. **3D changes:** edit `src/components/v2/CinematicHome.tsx` only. Sound-only changes → `SoundEngine.tsx`.
+3. **Data changes:** update `data.ts` (IDENTITY, PROJECTS, EXPERIENCE) then overlay copy in `CinematicHome.tsx`.
+4. **Performance gates:**
+    - `dpr` must stay `[1, 1.5]` max
+    - Bloom `luminanceThreshold` ≥ 0.06 (lower = more expensive)
+    - Total particles across all `EnergyFlow` instances ≤ 300
+    - Overlay RAF loops must stay consolidated in `useOverlayAnimator`
+5. **Narrative rule:** Loki event labels (TVA CLEARANCE, NEXUS VARIANT, etc.) are aesthetic framing — never replace actual career data underneath.
+6. **Sound rule:** Audio system is Web Audio API procedural only. No external audio files. Default state = muted. User must click to enable (browser policy).
+7. **Steps.md is the design spec** — all new features must trace to a requirement in `steps.md`.

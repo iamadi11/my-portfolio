@@ -170,6 +170,73 @@ my-portfolio/
 
 ---
 
+## V2 — Loki Cinematic Experience
+
+**Route:** `/v2`  
+**Architecture:** Fixed R3F canvas + 500vh GSAP ScrollTrigger scroll driver. Progress ref (0→1) drives camera + overlays.
+
+### Narrative mapping (Loki series → career)
+
+| Scroll % | Loki event                         | Career node              |
+| -------- | ---------------------------------- | ------------------------ |
+| 0–22%    | Tesseract acquired (Avengers 2012) | Identity / hero          |
+| 22–50%   | Captured by TVA                    | TVA portals → navigation |
+| 50–78%   | Sacred timeline / nexus events     | Career timeline tree     |
+| 78–100%  | End of time / The Void             | Contact / void scene     |
+
+### Loki node ↔ career mapping (in `CinematicHome.tsx` `LOKI_NODES`)
+
+1. `TESSERACT ACQUIRED` → IIIT Lucknow 2017–21
+2. `CAPTURED BY THE TVA` → Tata 1mg SDE I 2021
+3. `NEXUS EVENT DETECTED` → Tata 1mg SDE II 2023
+4. `TIMELINE BRANCHING` → Moresand Technologies 2024
+5. `GOD OF THE TIMELINE` → Cashfree Payments 2025 (current)
+
+### V2 component map
+
+```
+src/components/v2/
+  CinematicHome.tsx   — root: canvas + overlays + scroll driver
+  SoundEngine.tsx     — Web Audio API procedural ambient (CC0, no copyright)
+  data.ts             — IDENTITY, PROJECTS, EXPERIENCE, SKILLS, EDUCATION
+  Chrome.tsx          — navigate() helper
+  Pages.tsx           — assembles scenes
+```
+
+### Scene 3D components
+
+- `CrystalTesseract` — MeshPhysicalMaterial iridescence (iridescenceIOR 2.2), point light inside
+- `TVAPortal` — 4 concentric torus rings + inner disc + swirl particles
+- `SacredTimeline` — 7 branches (main trunk + 6), EnergyFlow particles, 11 nodes
+- `EnergyFlow` — pre-sampled CatmullRom curves, 28 particles/branch, single BufferGeometry
+- `VoidDebris` — 6 wireframe octahedrons drifting in void scene
+- `VoidDust` — 2800 ambient gold particles
+
+### Sound system (SoundEngine.tsx)
+
+Procedurally generated via Web Audio API — zero copyright:
+
+- Pink noise (Paul Kellet algorithm) filtered at 160 Hz
+- 3 sine drones: 40 Hz + 80 Hz + 160 Hz
+- Crystal shimmer oscillator (880 Hz), active only in tesseract scene (p < 0.28)
+- Master gain 0.16 when unmuted, fades to 0 when muted
+
+### Performance decisions
+
+- `dpr={[1, 1.5]}` — caps pixel ratio
+- Bloom: `intensity=2.8, luminanceThreshold=0.08` — reduced from default
+- Single RAF loop for all 4 HTML overlays (`useOverlayAnimator`)
+- `EnergyFlow` uses one shared `BufferGeometry` per color group
+- `VoidDebris` visible only when `progress > 0.82`
+
+### Rules for v2 content
+
+- All text in overlays must match `data.ts` and resume — never invent metrics
+- Loki event labels are narrative framing only — career data is ground truth
+- Adding new timeline nodes: update `LOKI_NODES` array + `SacredTimeline` branch curves + `data.ts` `EXPERIENCE`
+
+---
+
 ## Build filter (every change)
 
 Ship only if:
