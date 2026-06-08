@@ -35,6 +35,7 @@ const headerJson = {
                             alt: '',
                             width: 24,
                             height: 24,
+                            priority: true,
                             className: 'drop-shadow-[0_0_14px_rgba(34,211,238,0.35)]',
                         },
                     ],
@@ -133,6 +134,7 @@ interface Element {
     alt?: string;
     width?: number;
     height?: number;
+    priority?: boolean;
     href?: string;
     target?: string;
     rel?: string;
@@ -170,6 +172,7 @@ const Header: React.FC = () => {
                         alt={element.alt ?? 'default alt text'}
                         width={element.width}
                         height={element.height}
+                        priority={element.priority}
                         className={element.className}
                     />
                 );

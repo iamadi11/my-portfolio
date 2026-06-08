@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 import clsx from 'clsx';
-import { motion, useReducedMotion } from 'motion/react';
+import { motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
 import { BiCube } from 'react-icons/bi';
 import { FaAws, FaGitSquare } from 'react-icons/fa';
 import {
@@ -111,6 +111,24 @@ const TechStackCard: React.FC<TechStackCardProps> = ({ titleAs = 'h2' }) => {
     const reduce = prefersReducedMotion === true;
     const TitleTag = titleAs;
     const [hovered, setHovered] = useState<string | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [spotlightActive, setSpotlightActive] = useState(false);
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+    const spotlightBg = useTransform(
+        [mouseX, mouseY],
+        ([x, y]: number[]) =>
+            `radial-gradient(700px circle at ${x}px ${y}px, rgba(34,211,238,0.085), transparent 65%)`
+    );
+    const handleSpotlightMove = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>) => {
+            if (!containerRef.current) return;
+            const rect = containerRef.current.getBoundingClientRect();
+            mouseX.set(e.clientX - rect.left);
+            mouseY.set(e.clientY - rect.top);
+        },
+        [mouseX, mouseY]
+    );
 
     return (
         <motion.section
@@ -137,7 +155,24 @@ const TechStackCard: React.FC<TechStackCardProps> = ({ titleAs = 'h2' }) => {
                     </p>
                 </div>
 
-                <div className="mt-12 flex flex-col gap-10">
+                <div
+                    ref={containerRef}
+                    className="relative mt-12 flex flex-col gap-10"
+                    onMouseMove={!reduce ? handleSpotlightMove : undefined}
+                    onMouseEnter={!reduce ? () => setSpotlightActive(true) : undefined}
+                    onMouseLeave={!reduce ? () => setSpotlightActive(false) : undefined}
+                >
+                    {!reduce && (
+                        <motion.div
+                            aria-hidden
+                            className="pointer-events-none absolute inset-0"
+                            style={{
+                                background: spotlightBg,
+                                opacity: spotlightActive ? 1 : 0,
+                                transition: 'opacity 0.4s ease',
+                            }}
+                        />
+                    )}
                     {techGroups.map((group, gi) => (
                         <div key={group.label}>
                             {/* animated group label + rule */}
