@@ -1,4 +1,5 @@
 /* eslint-disable react/no-unknown-property */
+// v2-build: cache-bust
 'use client';
 
 /**
@@ -16,7 +17,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Environment, Sparkles, Stars } from '@react-three/drei';
+import { Stars } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import {
     Bloom,
@@ -247,7 +248,6 @@ function TouchOrigin({ progress }: { progress: React.MutableRefObject<number> })
 
     return (
         <group ref={root}>
-            <Sparkles count={18} size={0.7} speed={1.6} color="#90b0ff" noise={3} />
             <points geometry={particleGeo} material={particleMat} />
             <mesh ref={coreRef}>
                 <sphereGeometry args={[1.4, 32, 32]} />
@@ -613,18 +613,89 @@ function CityGrid({ progress }: { progress: React.MutableRefObject<number> }) {
         return towers;
     }, []);
 
+    // Custom GLSL tower material: animated scanlines + fresnel edge glow + window grid
     const hexMat = useMemo(
         () =>
-            new THREE.MeshPhysicalMaterial({
-                color: TEAL,
-                emissive: TEAL,
-                emissiveIntensity: 0.8,
-                metalness: 0.82,
-                roughness: 0.12,
-                clearcoat: 0.9,
-                clearcoatRoughness: 0.08,
+            new THREE.ShaderMaterial({
+                uniforms: {
+                    uTime: { value: 0 },
+                    uColor: { value: new THREE.Color(TEAL) },
+                    uVis: { value: 1.0 },
+                },
+                vertexShader: /* glsl */ `
+                    varying vec3 vPos;
+                    varying vec3 vNormal;
+                    varying vec2 vUv;
+                    void main() {
+                        vPos = position;
+                        vNormal = normalize(normalMatrix * normal);
+                        vUv = uv;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: /* glsl */ `
+                    uniform float uTime;
+                    uniform vec3 uColor;
+                    uniform float uVis;
+                    varying vec3 vPos;
+                    varying vec3 vNormal;
+                    varying vec2 vUv;
+                    void main() {
+                        // Fresnel: bright silhouette edges
+                        float fr = pow(1.0 - abs(dot(normalize(vNormal), vec3(0.0, 0.0, 1.0))), 2.2);
+                        // Scanline: thin horizontal bands scrolling upward
+                        float scan = smoothstep(0.82, 1.0, fract(vPos.y * 6.0 - uTime * 0.45));
+                        // Window grid: bright dots at intersections
+                        float wx = smoothstep(0.78, 1.0, fract(vUv.x * 7.0));
+                        float wy = smoothstep(0.72, 1.0, fract(vUv.y * 14.0));
+                        float win = wx * wy * (0.4 + 0.6 * fract(sin(dot(floor(vUv * vec2(7.0, 14.0)), vec2(12.9898, 78.233))) * 43758.5453));
+                        // Win pulse: some windows blink
+                        float blink = step(0.5, fract(sin(dot(floor(vUv * vec2(7.0, 14.0)), vec2(127.1, 311.7))) * 43758.5453 + uTime * 0.4));
+                        win *= (0.5 + 0.5 * blink);
+                        // Base color composition
+                        vec3 col = uColor * 0.12;
+                        col += uColor * scan * 0.7;
+                        col += uColor * fr * 1.8;
+                        col += vec3(0.6, 1.0, 0.9) * win * 0.9;
+                        float a = (0.15 + fr * 0.55 + scan * 0.18 + win * 0.12) * uVis;
+                        gl_FragColor = vec4(col, clamp(a, 0.0, 1.0));
+                    }
+                `,
                 transparent: true,
-                opacity: 0.72,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+            }),
+        []
+    );
+
+    // Ground grid plane below the city
+    const groundGridMat = useMemo(
+        () =>
+            new THREE.ShaderMaterial({
+                uniforms: { uTime: { value: 0 }, uVis: { value: 1.0 } },
+                vertexShader: /* glsl */ `
+                    varying vec2 vUv;
+                    void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+                `,
+                fragmentShader: /* glsl */ `
+                    uniform float uTime;
+                    uniform float uVis;
+                    varying vec2 vUv;
+                    void main() {
+                        vec2 grid = abs(fract(vUv * 18.0 - 0.5) - 0.5) / fwidth(vUv * 18.0);
+                        float line = 1.0 - min(min(grid.x, grid.y), 1.0);
+                        // Radial fade from center
+                        float dist = length(vUv - 0.5) * 2.0;
+                        float fade = 1.0 - smoothstep(0.5, 1.0, dist);
+                        // Pulse ring expanding from center
+                        float pulse = smoothstep(0.02, 0.0, abs(fract(dist - uTime * 0.18) - 0.5) - 0.46);
+                        vec3 col = vec3(0.0, 0.78, 0.78) * (line * 0.5 + pulse * 0.8);
+                        gl_FragColor = vec4(col, (line * 0.25 + pulse * 0.35) * fade * uVis);
+                    }
+                `,
+                transparent: true,
+                depthWrite: false,
+                side: THREE.DoubleSide,
             }),
         []
     );
@@ -679,8 +750,10 @@ function CityGrid({ progress }: { progress: React.MutableRefObject<number> }) {
         if (root.current) root.current.visible = v > 0.01;
         if (!v) return;
 
-        hexMat.emissiveIntensity = (0.7 + Math.sin(t * 0.5) * 0.2) * v;
-        hexMat.opacity = (0.68 + Math.sin(t * 0.4) * 0.05) * v;
+        hexMat.uniforms.uTime.value = t;
+        hexMat.uniforms.uVis.value = v;
+        groundGridMat.uniforms.uTime.value = t;
+        groundGridMat.uniforms.uVis.value = v;
 
         ringMats.forEach((m, i) => {
             m.emissiveIntensity = (1.3 - i * 0.22 + Math.sin(t * 0.7 + i * 1.2) * 0.25) * v;
@@ -699,6 +772,10 @@ function CityGrid({ progress }: { progress: React.MutableRefObject<number> }) {
 
     return (
         <group ref={root} position={GRID_POS}>
+            {/* Ground grid plane */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} material={groundGridMat}>
+                <planeGeometry args={[42, 42]} />
+            </mesh>
             {hexTowers.map(({ x, z, h }, i) => (
                 <mesh key={i} position={[x, h / 2, z]} material={hexMat}>
                     <cylinderGeometry args={[1.85, 1.85, h, 6]} />
@@ -1087,7 +1164,6 @@ function VoidPortal({ progress }: { progress: React.MutableRefObject<number> }) 
                 </mesh>
             </group>
             <points ref={swirl} geometry={swirlGeo} material={swirlMat} />
-            <Sparkles count={30} size={2.2} speed={0.28} color={GOLD} noise={2} />
             <mesh position={[0, 0, -0.8]}>
                 <sphereGeometry args={[PORTAL_R * 0.55, 14, 14]} />
                 <meshStandardMaterial
@@ -1453,7 +1529,8 @@ function Scene({
             <SceneFog />
             <CameraRig progress={progress} mouse={mouse} />
             <SceneAtmosphere progress={progress} />
-            <Environment preset="night" />
+            {/* Hemisphere light: night sky blue top, dark warm bottom — simulates IBL */}
+            <hemisphereLight args={['#1a2a4a', '#0a0608', 0.9]} />
 
             <Stars radius={180} depth={60} count={6000} factor={4.5} saturation={0.2} fade speed={0.1} />
             <VoidDust />
