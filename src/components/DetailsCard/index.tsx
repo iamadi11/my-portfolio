@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import clsx from 'clsx';
-import { motion, useMotionValue, useReducedMotion, useSpring } from 'motion/react';
+import { motion, useInView, useMotionValue, useReducedMotion, useSpring } from 'motion/react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-/* ---------- deterministic ambient particles ---------- */
+/* ---------- deterministic ambient particles (CSS-driven) ---------- */
 const PARTICLES = [
     { top: 12, left: 5, dur: 5.8, delay: 0, size: 2 },
     { top: 25, left: 18, dur: 7.2, delay: 1.1, size: 1.5 },
@@ -24,6 +24,45 @@ const PARTICLES = [
     { top: 92, left: 38, dur: 5.4, delay: 1.7, size: 1.5 },
     { top: 60, left: 75, dur: 7.0, delay: 0.9, size: 2.5 },
 ];
+
+/* ---------- count-up component ---------- */
+function CountUp({
+    to,
+    from = 0,
+    decimals = 0,
+    suffix = '',
+    duration = 1.4,
+}: {
+    to: number;
+    from?: number;
+    decimals?: number;
+    suffix?: string;
+    duration?: number;
+}) {
+    const ref = useRef<HTMLSpanElement>(null);
+    const inView = useInView(ref, { once: true, margin: '-20px' });
+    const prefersReduced = useReducedMotion();
+
+    useEffect(() => {
+        if (!inView || !ref.current || prefersReduced) return;
+        const startTime = performance.now();
+        const range = to - from;
+
+        function step(now: number) {
+            const progress = Math.min((now - startTime) / (duration * 1000), 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            if (ref.current) {
+                ref.current.textContent = `${(from + range * eased).toFixed(decimals)}${suffix}`;
+            }
+            if (progress < 1) requestAnimationFrame(step);
+        }
+
+        requestAnimationFrame(step);
+    }, [inView, from, to, decimals, suffix, duration, prefersReduced]);
+
+    const initial = `${(prefersReduced ? to : from).toFixed(decimals)}${suffix}`;
+    return <span ref={ref}>{initial}</span>;
+}
 
 /* ---------- magnetic wrapper ---------- */
 function MagneticWrapper({ children, strength = 0.28 }: { children: React.ReactNode; strength?: number }) {
@@ -51,6 +90,14 @@ function MagneticWrapper({ children, strength = 0.28 }: { children: React.ReactN
         </motion.div>
     );
 }
+
+/* ---------- stats data ---------- */
+const STATS = [
+    { label: 'years exp', countTo: 4.5, decimals: 1, suffix: '+', staticVal: null },
+    { label: 'faster builds', countTo: 80, decimals: 0, suffix: '%', staticVal: null },
+    { label: 'SLA reduction', countTo: null, decimals: 0, suffix: '', staticVal: '70→15%' },
+    { label: 'txns processed', countTo: null, decimals: 0, suffix: '', staticVal: '~M/mo' },
+] as const;
 
 /* ---------- main component ---------- */
 const DetailsCard: React.FC = () => {
@@ -82,25 +129,20 @@ const DetailsCard: React.FC = () => {
                 'md:py-24 lg:py-28'
             )}
         >
-            {/* ambient floating particles */}
+            {/* ambient floating particles — CSS keyframe, compositor-only */}
             {!reduce &&
                 PARTICLES.map((p, i) => (
-                    <motion.span
+                    <span
                         key={i}
                         aria-hidden
-                        className="pointer-events-none absolute rounded-full bg-cyan-400/25"
+                        className="hero-particle"
                         style={{
                             top: `${p.top}%`,
                             left: `${p.left}%`,
                             width: p.size,
                             height: p.size,
-                        }}
-                        animate={{ y: [0, -28, 0], opacity: [0, 0.45, 0] }}
-                        transition={{
-                            duration: p.dur,
-                            delay: p.delay,
-                            repeat: Infinity,
-                            ease: 'easeInOut',
+                            ['--p-dur' as string]: `${p.dur}s`,
+                            ['--p-delay' as string]: `${p.delay}s`,
                         }}
                     />
                 ))}
@@ -160,7 +202,12 @@ const DetailsCard: React.FC = () => {
                                             : {
                                                   delay: 0.08 + i * 0.18,
                                                   duration: 0.7,
-                                                  ease: [0.22, 1, 0.36, 1],
+                                                  ease: [0.22, 1, 0.36, 1] as [
+                                                      number,
+                                                      number,
+                                                      number,
+                                                      number,
+                                                  ],
                                               }
                                     }
                                 >
@@ -186,17 +233,12 @@ const DetailsCard: React.FC = () => {
                         systems processing millions of transactions monthly.
                     </motion.p>
 
-                    {/* Impact stats strip — glow on hover */}
+                    {/* Impact stats strip — count-up on scroll-into-view */}
                     <motion.div
                         variants={item}
                         className="mt-6 grid grid-cols-2 justify-center gap-2 sm:flex sm:flex-wrap sm:gap-2.5 lg:justify-start"
                     >
-                        {[
-                            { val: '4.5+', label: 'years exp' },
-                            { val: '80%', label: 'faster builds' },
-                            { val: '70→15%', label: 'SLA reduction' },
-                            { val: '~M/mo', label: 'txns processed' },
-                        ].map(({ val, label }, i) => (
+                        {STATS.map(({ label, countTo, decimals, suffix, staticVal }, i) => (
                             <motion.div
                                 key={label}
                                 initial={reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
@@ -204,7 +246,11 @@ const DetailsCard: React.FC = () => {
                                 transition={
                                     reduce
                                         ? { duration: 0 }
-                                        : { delay: 0.5 + i * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] }
+                                        : {
+                                              delay: 0.5 + i * 0.07,
+                                              duration: 0.45,
+                                              ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+                                          }
                                 }
                                 whileHover={
                                     reduce
@@ -215,9 +261,20 @@ const DetailsCard: React.FC = () => {
                                               transition: { duration: 0.18 },
                                           }
                                 }
-                                className="cursor-default rounded-xl border border-white/[0.07] bg-white/[0.035] px-4 py-3 text-center sm:text-left"
+                                className="cursor-default rounded-xl border border-white/[0.07] bg-white/[0.035] px-4 py-3 text-center will-change-transform sm:text-left"
                             >
-                                <div className="text-base font-bold tabular-nums text-zinc-100">{val}</div>
+                                <div className="text-base font-bold tabular-nums text-zinc-100">
+                                    {staticVal ? (
+                                        staticVal
+                                    ) : (
+                                        <CountUp
+                                            to={countTo!}
+                                            decimals={decimals}
+                                            suffix={suffix}
+                                            duration={1.4 + i * 0.1}
+                                        />
+                                    )}
+                                </div>
                                 <div className="mt-0.5 text-[11px] leading-tight text-zinc-500">{label}</div>
                             </motion.div>
                         ))}
@@ -274,23 +331,21 @@ const DetailsCard: React.FC = () => {
                     </motion.div>
                 </motion.div>
 
-                {/* avatar with rotating glow ring */}
+                {/* avatar with rotating glow ring — CSS animation, compositor-only */}
                 <div className="relative shrink-0">
                     {/* spinning conic ring */}
                     {!reduce && (
-                        <motion.div
+                        <div
                             aria-hidden
-                            className="absolute -inset-2 rounded-full"
+                            className="avatar-spin-ring absolute -inset-2 rounded-full"
                             style={{
                                 background:
                                     'conic-gradient(from 0deg, transparent 60%, rgba(34,211,238,0.55) 75%, rgba(139,92,246,0.45) 85%, transparent 100%)',
                             }}
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 7, repeat: Infinity, ease: 'linear' }}
                         />
                     )}
 
-                    {/* soft blur behind ring so it doesn't clip */}
+                    {/* soft blur halo behind ring */}
                     {!reduce && (
                         <div
                             aria-hidden

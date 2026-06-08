@@ -312,3 +312,35 @@ button:focus-visible {
     animation: none !important;
   }
 }
+
+/* ─── Hero particle float (CSS-only, compositor thread) ─────────── */
+@keyframes particle-float {
+  0%, 100% { transform: translateY(0);     opacity: 0;    }
+  50%       { transform: translateY(-28px); opacity: 0.45; }
+}
+
+.hero-particle {
+  animation: particle-float var(--p-dur, 6s) var(--p-delay, 0s) ease-in-out infinite;
+  pointer-events: none;
+  position: absolute;
+  border-radius: 9999px;
+  background: rgba(34, 211, 238, 0.25);
+}
+
+/* ─── Avatar ring spin (CSS-only, compositor thread) ─────────────── */
+@keyframes spin-continuous {
+  to { transform: rotate(360deg); }
+}
+
+.avatar-spin-ring {
+  animation: spin-continuous 7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-particle,
+  .avatar-spin-ring {
+    animation: none;
+    opacity: 0;
+  }
+}
+/* ─────────────────────────────────────────────────────────────────── */
