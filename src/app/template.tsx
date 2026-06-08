@@ -41,21 +41,7 @@ const Template: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     pointerEvents: 'none',
                 }}
             />
-            {/* V2 entry badge */}
-            <Link
-                href="/v2"
-                aria-label="Try the immersive V2 experience"
-                className={clsx(
-                    'fixed bottom-5 right-5 z-[100]',
-                    'inline-flex items-center gap-1.5 rounded-full border border-white/[0.12]',
-                    'bg-zinc-900/90 px-3 py-1.5 text-xs font-medium text-zinc-400 backdrop-blur-md',
-                    'transition-all duration-200 hover:border-cyan-400/40 hover:text-cyan-300',
-                    'shadow-[0_4px_20px_rgba(0,0,0,0.5)]'
-                )}
-            >
-                <span className="size-1.5 rounded-full bg-cyan-400/70" aria-hidden />
-                Try V2
-            </Link>
+
             <Layout>
                 <Layout.Header>
                     <Header />
