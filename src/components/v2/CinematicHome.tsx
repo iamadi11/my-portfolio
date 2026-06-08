@@ -2,18 +2,21 @@
 'use client';
 
 /**
- * CINEMATIC HOME — The 3D IS the experience.
+ * CINEMATIC HOME — THE LAST MILE
  *
- * Narrative: Loki's journey → Aditya's career
- *   0%–22%   TESSERACT  — crystal cube hero, name reveal
- *   22%–50%  TVA        — portals materialize, choose path
- *   50%–78%  TIMELINE   — sacred timeline tree with energy flow
- *   78%–100% THE VOID   — floating debris, contact
+ * Narrative: Aditya's career as a spatial journey through three cities
+ *   0%–14%   THE TOUCH    — origin ignites, name reveals in the dark
+ *   14%–28%  THE SIGNAL   — data pulse travels outward toward the cities
+ *   28%–44%  THE EXCHANGE — Cashfree: risk engine, real-time systems
+ *   44%–60%  THE GRID     — Tata 1mg: maps, notifications, pipeline
+ *   60%–74%  THE LATTICE  — Moresand: infrastructure, PWA, build systems
+ *   74%–88%  THE SPINE    — career overview: pull back, all cities visible
+ *   88%–100% THE VOID     — contact portal
  */
 
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Environment, Stars } from '@react-three/drei';
+import { Stars } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Bloom, ChromaticAberration, EffectComposer, Vignette } from '@react-three/postprocessing';
 import gsap from 'gsap';
@@ -31,58 +34,32 @@ gsap.registerPlugin(ScrollTrigger);
 ═══════════════════════════════════════════════════════ */
 const GOLD = '#c9a227';
 const TEAL = '#00c9c9';
-const G3 = new THREE.Color(GOLD);
-// Chromatic aberration offset — subtle film fringe
+const BLUE_M = '#2255dd';
+const GREEN_S = '#00d878';
+const PURPLE_L = '#8844cc';
 const CA_OFFSET = new THREE.Vector2(0.00055, 0.00035);
 
-// Tesseract
-const L = 8,
-    S = 3.8;
-const OV: [number, number, number][] = [
-    [-L, -L, -L],
-    [L, -L, -L],
-    [-L, L, -L],
-    [L, L, -L],
-    [-L, -L, L],
-    [L, -L, L],
-    [-L, L, L],
-    [L, L, L],
-];
-const IV: [number, number, number][] = [
-    [-S, -S, -S],
-    [S, -S, -S],
-    [-S, S, -S],
-    [S, S, -S],
-    [-S, -S, S],
-    [S, -S, S],
-    [-S, S, S],
-    [S, S, S],
-];
-const EDGES: [number, number][] = [
-    [0, 1],
-    [2, 3],
-    [4, 5],
-    [6, 7],
-    [0, 2],
-    [1, 3],
-    [4, 6],
-    [5, 7],
-    [0, 4],
-    [1, 5],
-    [2, 6],
-    [3, 7],
-];
+/* ═══════════════════════════════════════════════════════
+   WORLD POSITIONS
+═══════════════════════════════════════════════════════ */
+const EXCHANGE_POS: [number, number, number] = [24, 0, -24];
+const GRID_POS: [number, number, number] = [-22, 0, -24];
+const LATTICE_POS: [number, number, number] = [0, 0, -58];
+const SPINE_POS: [number, number, number] = [0, 0, -30];
 
-// Camera journey keyframes
+/* ═══════════════════════════════════════════════════════
+   CAMERA KEYFRAMES — 8 keys for 7 scenes
+═══════════════════════════════════════════════════════ */
 type CamKey = { p: number; px: number; py: number; pz: number; lx: number; ly: number; lz: number };
 const CAM: CamKey[] = [
-    { p: 0.0, px: 0, py: 0, pz: 26, lx: 0, ly: 0, lz: 0 },
-    { p: 0.12, px: -2, py: 1, pz: 22, lx: 0, ly: 0, lz: 0 },
-    { p: 0.3, px: 0, py: 0, pz: 50, lx: 0, ly: 0, lz: 0 },
-    { p: 0.52, px: 0, py: 0, pz: 50, lx: 0, ly: 0, lz: 0 },
-    { p: 0.66, px: 24, py: 4, pz: 36, lx: 22, ly: 0, lz: 0 },
-    { p: 0.82, px: 24, py: 4, pz: 32, lx: 22, ly: 0, lz: 0 },
-    { p: 1.0, px: 0, py: -12, pz: 36, lx: 0, ly: -7, lz: 0 },
+    { p: 0.0, px: 0, py: 2, pz: 20, lx: 0, ly: 0, lz: 0 }, // THE TOUCH
+    { p: 0.14, px: -3, py: 5, pz: 16, lx: 0, ly: -1, lz: -4 }, // THE SIGNAL
+    { p: 0.28, px: 35, py: 10, pz: 18, lx: 24, ly: 2, lz: -24 }, // THE EXCHANGE
+    { p: 0.44, px: -30, py: 8, pz: 14, lx: -22, ly: 1, lz: -24 }, // THE GRID
+    { p: 0.6, px: 0, py: 14, pz: -18, lx: 0, ly: 3, lz: -58 }, // THE LATTICE
+    { p: 0.74, px: 0, py: 45, pz: 55, lx: 0, ly: -6, lz: -28 }, // THE SPINE
+    { p: 0.88, px: 0, py: 8, pz: 26, lx: 0, ly: 0, lz: 0 }, // VOID APPROACH
+    { p: 1.0, px: 0, py: 12, pz: 22, lx: 0, ly: 3, lz: -6 }, // THE VOID
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -107,17 +84,16 @@ function CameraRig({
     mouse: React.MutableRefObject<{ x: number; y: number }>;
 }) {
     const { camera } = useThree();
-    const pos = useRef(new THREE.Vector3(0, 0, 26));
+    const pos = useRef(new THREE.Vector3(0, 2, 20));
     const look = useRef(new THREE.Vector3(0, 0, 0));
-    const tPos = useRef(new THREE.Vector3(0, 0, 26));
+    const tPos = useRef(new THREE.Vector3(0, 2, 20));
     const tLook = useRef(new THREE.Vector3(0, 0, 0));
-    const mLerp = useRef({ x: 0, y: 0 }); // smooth mouse lag
+    const mLerp = useRef({ x: 0, y: 0 });
 
     useFrame(({ clock }) => {
         const elapsed = clock.getElapsedTime();
         const p = Math.max(0, Math.min(1, progress.current));
 
-        // Scroll-driven position
         let i = 0;
         for (let k = CAM.length - 2; k >= 0; k--) {
             if (p >= CAM[k].p) {
@@ -125,8 +101,8 @@ function CameraRig({
                 break;
             }
         }
-        const k0 = CAM[i],
-            k1 = CAM[Math.min(i + 1, CAM.length - 1)];
+        const k0 = CAM[i];
+        const k1 = CAM[Math.min(i + 1, CAM.length - 1)];
         const span = k1.p - k0.p;
         const t = span <= 0 ? 0 : smoothstep((p - k0.p) / span);
         tPos.current.set(
@@ -144,20 +120,20 @@ function CameraRig({
         camera.position.copy(pos.current);
         camera.lookAt(look.current);
 
-        // Mouse parallax — inertial, fades out past portal scene
+        // Mouse parallax — inertial, fades to zero after signal scene
         mLerp.current.x += (mouse.current.x - mLerp.current.x) * 0.055;
         mLerp.current.y += (mouse.current.y - mLerp.current.y) * 0.055;
-        const falloff = Math.max(0, 1 - p * 2.2);
+        const falloff = Math.max(0, 1 - p * 3.5);
         camera.position.x += mLerp.current.x * 2.4 * falloff;
         camera.position.y += mLerp.current.y * 1.2 * falloff;
 
-        // Camera breathe — subtle living quality, only in tesseract scene
-        const breathe = Math.sin(elapsed * 0.28) * 0.09 * Math.max(0, 1 - p * 5);
+        // Breathe — only in touch scene
+        const breathe = Math.sin(elapsed * 0.28) * 0.09 * Math.max(0, 1 - p * 7);
         camera.position.y += breathe;
 
-        // Dynamic FOV — tight on tesseract, wide on void
+        // Dynamic FOV
         const pc = camera as THREE.PerspectiveCamera;
-        const targetFov = p < 0.22 ? 46 : p < 0.55 ? 52 : p < 0.82 ? 50 : 57;
+        const targetFov = p < 0.14 ? 46 : p < 0.44 ? 52 : p < 0.74 ? 50 : p < 0.88 ? 62 : 54;
         if (Math.abs(pc.fov - targetFov) > 0.05) {
             pc.fov += (targetFov - pc.fov) * 0.022;
             pc.updateProjectionMatrix();
@@ -167,334 +143,222 @@ function CameraRig({
 }
 
 /* ═══════════════════════════════════════════════════════
-   CRYSTAL TESSERACT — iridescent gem, energy core
+   TOUCH ORIGIN — the big bang: particles ignite from a point
 ═══════════════════════════════════════════════════════ */
-function edgesGeo(verts: [number, number, number][]): THREE.BufferGeometry {
-    return new THREE.BufferGeometry().setFromPoints(
-        EDGES.flatMap(([a, b]) => [new THREE.Vector3(...verts[a]), new THREE.Vector3(...verts[b])])
-    );
-}
-
-function CrystalTesseract({ progress }: { progress: React.MutableRefObject<number> }) {
+function TouchOrigin({ progress }: { progress: React.MutableRefObject<number> }) {
     const root = useRef<THREE.Group>(null!);
-    const outer = useRef<THREE.Group>(null!);
-    const inner = useRef<THREE.Group>(null!);
-    const lightRef = useRef<THREE.PointLight>(null!);
+    const coreRef = useRef<THREE.Mesh>(null!);
+    const haloRef = useRef<THREE.Mesh>(null!);
 
-    const oGeo = useMemo(() => edgesGeo(OV), []);
-    const iGeo = useMemo(() => edgesGeo(IV), []);
-
-    const connGeo = useMemo(() => {
-        const g = new THREE.BufferGeometry();
-        g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(8 * 2 * 3), 3));
-        return g;
-    }, []);
-
-    const oMat = useMemo(
-        () => new THREE.LineBasicMaterial({ color: G3, transparent: true, opacity: 0.85 }),
-        []
-    );
-    const iMat = useMemo(
-        () => new THREE.LineBasicMaterial({ color: TEAL, transparent: true, opacity: 0.85 }),
-        []
-    );
-    const cMat = useMemo(
-        () => new THREE.LineBasicMaterial({ color: '#e8b730', transparent: true, opacity: 0.25 }),
-        []
-    );
-
-    // Crystal faces — iridescent gem material
-    const solidOuter = useMemo(
+    const coreMat = useMemo(
         () =>
             new THREE.MeshPhysicalMaterial({
-                color: '#c8940a',
-                iridescence: 0.6,
-                iridescenceIOR: 1.7,
-                iridescenceThicknessRange: [200, 600] as [number, number],
-                metalness: 0.5,
-                roughness: 0.1,
+                color: '#ffffff',
+                emissive: '#c0d8ff',
+                emissiveIntensity: 8,
+                iridescence: 1.0,
+                iridescenceIOR: 2.4,
+                iridescenceThicknessRange: [100, 500] as [number, number],
+                metalness: 0.0,
+                roughness: 0.0,
+                transparent: true,
+                opacity: 0.92,
+            }),
+        []
+    );
+
+    const haloMat = useMemo(
+        () =>
+            new THREE.MeshStandardMaterial({
+                color: '#60a0ff',
+                emissive: '#60a0ff',
+                emissiveIntensity: 2,
                 transparent: true,
                 opacity: 0.05,
                 depthWrite: false,
-                emissive: GOLD,
-                emissiveIntensity: 0.5,
+                blending: THREE.AdditiveBlending,
                 side: THREE.BackSide,
             }),
         []
     );
 
-    const solidInner = useMemo(
-        () =>
-            new THREE.MeshPhysicalMaterial({
-                color: '#a0f0ff',
-                iridescence: 1.0,
-                iridescenceIOR: 2.2,
-                iridescenceThicknessRange: [80, 400] as [number, number],
-                metalness: 0.0,
-                roughness: 0.0,
-                transparent: true,
-                opacity: 0.07,
-                depthWrite: false,
-                emissive: TEAL,
-                emissiveIntensity: 3.8,
-                side: THREE.DoubleSide,
-            }),
-        []
-    );
-
-    const ovW = useMemo(() => OV.map((v) => new THREE.Vector3(...v)), []);
-    const ivW = useMemo(() => IV.map((v) => new THREE.Vector3(...v)), []);
-
-    useFrame(({ clock }) => {
-        const t = clock.getElapsedTime();
-        const p = progress.current;
-        const vis = Math.max(0, Math.min(1, 1 - (p - 0.26) / 0.12));
-        if (root.current) {
-            root.current.visible = vis > 0.01;
-            root.current.scale.setScalar(vis);
-        }
-        if (!vis) return;
-
-        if (outer.current) {
-            outer.current.rotation.x = t * 0.043;
-            outer.current.rotation.y = t * 0.069;
-            oMat.opacity = (0.6 + Math.sin(t * 0.8) * 0.3) * vis;
-            solidOuter.emissiveIntensity = (0.4 + Math.sin(t * 0.6) * 0.15) * vis;
-        }
-        if (inner.current) {
-            inner.current.rotation.x = -t * 0.13;
-            inner.current.rotation.y = t * 0.2;
-            inner.current.rotation.z = -t * 0.07;
-            const pulse = 0.82 + Math.sin(t * 0.75) * 0.18;
-            inner.current.scale.setScalar(pulse);
-            iMat.opacity = (0.8 + Math.sin(t * 1.1) * 0.2) * vis;
-            solidInner.emissiveIntensity = (1.8 + Math.sin(t * 0.9) * 0.6) * vis;
-        }
-
-        // Interior light pulses with inner cube
-        if (lightRef.current) {
-            lightRef.current.intensity = (4 + Math.sin(t * 1.3) * 2) * vis;
-        }
-
-        // Connector lines
-        const pos = connGeo.attributes.position as THREE.BufferAttribute;
-        for (let i = 0; i < 8; i++) {
-            ovW[i].set(...OV[i]).applyMatrix4(outer.current.matrixWorld);
-            ivW[i].set(...IV[i]).applyMatrix4(inner.current.matrixWorld);
-            pos.setXYZ(i * 2, ovW[i].x, ovW[i].y, ovW[i].z);
-            pos.setXYZ(i * 2 + 1, ivW[i].x, ivW[i].y, ivW[i].z);
-        }
-        pos.needsUpdate = true;
-        cMat.opacity = (0.18 + Math.sin(t * 0.55) * 0.1) * vis;
-    });
-
-    return (
-        <group ref={root}>
-            <group ref={outer}>
-                <lineSegments geometry={oGeo} material={oMat} />
-                <mesh>
-                    <boxGeometry args={[L * 2, L * 2, L * 2]} />
-                    <primitive object={solidOuter} />
-                </mesh>
-            </group>
-            <group ref={inner}>
-                <lineSegments geometry={iGeo} material={iMat} />
-                <mesh>
-                    <boxGeometry args={[S * 2, S * 2, S * 2]} />
-                    <primitive object={solidInner} />
-                </mesh>
-            </group>
-            <lineSegments geometry={connGeo} material={cMat} />
-            {/* Pulsing interior light — casts glow on scene */}
-            <pointLight ref={lightRef} color={TEAL} intensity={4} distance={28} decay={2} />
-            {/* Energy core — additive creates physical glow source */}
-            <mesh>
-                <sphereGeometry args={[1.6, 24, 24]} />
-                <meshStandardMaterial
-                    color="#60e8ff"
-                    emissive="#00b8d8"
-                    emissiveIntensity={4.5}
-                    transparent
-                    opacity={0.18}
-                    depthWrite={false}
-                    blending={THREE.AdditiveBlending}
-                />
-            </mesh>
-            {/* Mid glow halo */}
-            <mesh>
-                <sphereGeometry args={[3.2, 16, 16]} />
-                <meshStandardMaterial
-                    color={TEAL}
-                    emissive={TEAL}
-                    emissiveIntensity={1.8}
-                    transparent
-                    opacity={0.06}
-                    depthWrite={false}
-                    blending={THREE.AdditiveBlending}
-                />
-            </mesh>
-        </group>
-    );
-}
-
-/* ═══════════════════════════════════════════════════════
-   TVA PORTAL — concentric rings + inner disc + swirl
-═══════════════════════════════════════════════════════ */
-const PORTAL_R = 5.2;
-
-function TVAPortal({
-    pos,
-    accentColor,
-    visRange,
-    progress,
-}: {
-    pos: [number, number, number];
-    accentColor: string;
-    visRange: [number, number];
-    progress: React.MutableRefObject<number>;
-}) {
-    const root = useRef<THREE.Group>(null!);
-    const ring = useRef<THREE.Group>(null!);
-    const swirl = useRef<THREE.Points>(null!);
-
-    const ac3 = useMemo(() => new THREE.Color(accentColor), [accentColor]);
-
-    const ringMat = useMemo(
-        () =>
-            new THREE.MeshStandardMaterial({
-                color: accentColor,
-                emissive: accentColor,
-                emissiveIntensity: 3,
-                metalness: 0.9,
-                roughness: 0.05,
-            }),
-        [accentColor]
-    );
-
-    const innerRingMat = useMemo(
-        () =>
-            new THREE.MeshStandardMaterial({
-                color: TEAL,
-                emissive: TEAL,
-                emissiveIntensity: 2,
-                metalness: 0.8,
-                roughness: 0.1,
-            }),
-        []
-    );
-
-    // Inner disc — deep void, no emissive tint
-    const discMat = useMemo(
-        () =>
-            new THREE.MeshStandardMaterial({
-                color: '#000005',
-                emissive: '#000005',
-                emissiveIntensity: 0,
-                transparent: true,
-                opacity: 0.88,
-                side: THREE.DoubleSide,
-                depthWrite: false,
-            }),
-        []
-    );
-
-    const swirlGeo = useMemo(() => {
-        const n = 700;
+    const particleGeo = useMemo(() => {
+        const n = 1400;
         const buf = new Float32Array(n * 3);
         for (let i = 0; i < n; i++) {
-            const a = Math.random() * Math.PI * 2;
-            const r = Math.sqrt(Math.random()) * PORTAL_R * 0.88;
-            buf[i * 3] = Math.cos(a) * r;
-            buf[i * 3 + 1] = Math.sin(a) * r;
-            buf[i * 3 + 2] = (Math.random() - 0.5) * 0.8;
+            const theta = Math.acos(2 * Math.random() - 1);
+            const phi = Math.random() * Math.PI * 2;
+            const r = 0.7 + Math.random() * 0.5;
+            buf[i * 3] = r * Math.sin(theta) * Math.cos(phi);
+            buf[i * 3 + 1] = r * Math.sin(theta) * Math.sin(phi);
+            buf[i * 3 + 2] = r * Math.cos(theta);
         }
         const g = new THREE.BufferGeometry();
         g.setAttribute('position', new THREE.BufferAttribute(buf, 3));
         return g;
     }, []);
 
-    const swirlMat = useMemo(
+    const particleMat = useMemo(
         () =>
             new THREE.PointsMaterial({
-                color: ac3,
-                size: 0.055,
+                color: '#a8c8ff',
+                size: 0.1,
                 transparent: true,
-                opacity: 0.5,
+                opacity: 0.7,
                 sizeAttenuation: true,
             }),
-        [ac3]
+        []
     );
 
     useFrame(({ clock }) => {
         const t = clock.getElapsedTime();
         const p = progress.current;
-        const [lo, hi] = visRange;
-        let v = 0;
-        if (p >= lo && p < lo + 0.07) v = (p - lo) / 0.07;
-        else if (p >= lo + 0.07 && p < hi - 0.07) v = 1;
-        else if (p >= hi - 0.07 && p < hi) v = 1 - (p - (hi - 0.07)) / 0.07;
 
-        if (root.current) {
-            root.current.visible = v > 0.01;
-            root.current.scale.setScalar(0.4 + v * 0.6);
+        // Visible from p=0 to p=0.24
+        const vis = p < 0.14 ? 1 : Math.max(0, 1 - (p - 0.14) / 0.1);
+        if (!root.current) return;
+        root.current.visible = vis > 0.01;
+        if (!vis) return;
+
+        // Explosion scale: 0 → 28 as p goes 0 → 0.12
+        const explode = smoothstep(Math.min(1, p / 0.12));
+        root.current.scale.setScalar(explode * 28 + 0.3);
+
+        // Core: bright at p=0, dim as explodes
+        const coreVis = Math.max(0, 1 - p / 0.09);
+        if (coreRef.current) {
+            coreRef.current.scale.setScalar((1 + Math.sin(t * 3.2) * 0.14) * Math.max(0.01, coreVis));
+            coreMat.emissiveIntensity = (6 + Math.sin(t * 2.2) * 2) * coreVis;
+            coreMat.opacity = coreVis * 0.92;
         }
-        if (!v) return;
-        if (ring.current) ring.current.rotation.z = t * 0.38;
-        if (swirl.current) swirl.current.rotation.z = -t * 0.24;
-        ringMat.emissiveIntensity = (2.8 + Math.sin(t * 0.9) * 0.7) * v;
-        discMat.emissiveIntensity = (0.14 + Math.sin(t * 0.6) * 0.06) * v;
-        swirlMat.opacity = (0.4 + Math.sin(t * 1.2) * 0.12) * v;
+        if (haloRef.current) {
+            haloRef.current.scale.setScalar((1.8 + Math.sin(t * 1.1) * 0.3) * Math.max(0.01, coreVis));
+            haloMat.opacity = 0.05 * coreVis * vis;
+        }
+        particleMat.opacity = (0.55 + Math.sin(t * 0.8) * 0.1) * vis * Math.min(1, p * 12);
     });
 
     return (
-        <group ref={root} position={pos}>
-            {/* Inner disc — dark portal mouth */}
-            <mesh>
-                <circleGeometry args={[PORTAL_R - 0.22, 64]} />
-                <primitive object={discMat} />
+        <group ref={root}>
+            <points geometry={particleGeo} material={particleMat} />
+            <mesh ref={coreRef}>
+                <sphereGeometry args={[1.4, 32, 32]} />
+                <primitive object={coreMat} />
             </mesh>
-            <group ref={ring}>
-                <mesh>
-                    <torusGeometry args={[PORTAL_R, 0.18, 16, 100]} />
-                    <primitive object={ringMat} />
-                </mesh>
-                <mesh>
-                    <torusGeometry args={[PORTAL_R - 0.32, 0.055, 8, 80]} />
-                    <primitive object={innerRingMat} />
-                </mesh>
-                <mesh>
-                    <torusGeometry args={[PORTAL_R + 0.38, 0.038, 6, 70]} />
-                    <primitive object={ringMat} />
-                </mesh>
-                {/* Outer halo ring — slow counter-rotation */}
-                <mesh rotation={[0, 0, 0.8]}>
-                    <torusGeometry args={[PORTAL_R + 0.9, 0.018, 4, 60]} />
-                    <primitive object={ringMat} />
-                </mesh>
-            </group>
-            <points ref={swirl} geometry={swirlGeo} material={swirlMat} />
-            {/* Atmospheric glow — adds physical depth behind the portal mouth */}
-            <mesh position={[0, 0, -0.8]}>
-                <sphereGeometry args={[PORTAL_R * 0.62, 14, 14]} />
-                <meshStandardMaterial
-                    color={accentColor}
-                    emissive={accentColor}
-                    emissiveIntensity={0.6}
-                    transparent
-                    opacity={0.07}
-                    depthWrite={false}
-                    blending={THREE.AdditiveBlending}
-                />
+            <mesh ref={haloRef}>
+                <sphereGeometry args={[3.5, 16, 16]} />
+                <primitive object={haloMat} />
             </mesh>
         </group>
     );
 }
 
 /* ═══════════════════════════════════════════════════════
-   ENERGY FLOW — particles racing along timeline branches
+   SIGNAL BEAM — data highway from origin toward cities
 ═══════════════════════════════════════════════════════ */
-const FLOW_PARTICLES = 28; // per branch
-const FLOW_STEPS = 80; // sample resolution per curve
+function SignalBeam({ progress }: { progress: React.MutableRefObject<number> }) {
+    const root = useRef<THREE.Group>(null!);
+
+    const tubeMat = useMemo(
+        () =>
+            new THREE.MeshStandardMaterial({
+                color: BLUE_M,
+                emissive: BLUE_M,
+                emissiveIntensity: 1.2,
+                transparent: true,
+                opacity: 0.18,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+            }),
+        []
+    );
+
+    // Main beam: straight into -z
+    const mainTubeGeo = useMemo(() => {
+        const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(0, 0, 2), new THREE.Vector3(0, 0, -70)]);
+        return new THREE.TubeGeometry(curve, 20, 0.18, 8, false);
+    }, []);
+
+    // Branch toward Exchange
+    const branch1Geo = useMemo(() => {
+        const curve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(0, 0, -18),
+            new THREE.Vector3(12, 0, -21),
+            new THREE.Vector3(24, 0, -24),
+        ]);
+        return new THREE.TubeGeometry(curve, 16, 0.12, 6, false);
+    }, []);
+
+    // Branch toward Grid
+    const branch2Geo = useMemo(() => {
+        const curve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(0, 0, -18),
+            new THREE.Vector3(-11, 0, -21),
+            new THREE.Vector3(-22, 0, -24),
+        ]);
+        return new THREE.TubeGeometry(curve, 16, 0.12, 6, false);
+    }, []);
+
+    // Branch toward Lattice (continues main)
+    const branch3Geo = useMemo(() => {
+        const curve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(0, 0, -25),
+            new THREE.Vector3(0, 0, -58),
+        ]);
+        return new THREE.TubeGeometry(curve, 12, 0.12, 6, false);
+    }, []);
+
+    // Racing particles along main beam
+    const beamCurves = useMemo(
+        () => [
+            new THREE.CatmullRomCurve3([new THREE.Vector3(0, 0, 2), new THREE.Vector3(0, 0, -70)]),
+            new THREE.CatmullRomCurve3([
+                new THREE.Vector3(0, 0, -18),
+                new THREE.Vector3(12, 0, -21),
+                new THREE.Vector3(24, 0, -24),
+            ]),
+            new THREE.CatmullRomCurve3([
+                new THREE.Vector3(0, 0, -18),
+                new THREE.Vector3(-11, 0, -21),
+                new THREE.Vector3(-22, 0, -24),
+            ]),
+        ],
+        []
+    );
+
+    useFrame(({ clock }) => {
+        const p = progress.current;
+        const lo = 0.08,
+            hi = 0.36;
+        let v = 0;
+        if (p >= lo && p < lo + 0.06) v = (p - lo) / 0.06;
+        else if (p >= lo + 0.06 && p < hi - 0.06) v = 1;
+        else if (p >= hi - 0.06 && p < hi) v = 1 - (p - (hi - 0.06)) / 0.06;
+
+        if (root.current) root.current.visible = v > 0.01;
+        if (!v) return;
+
+        const pulse = 0.15 + Math.sin(clock.getElapsedTime() * 2.1) * 0.05;
+        tubeMat.opacity = pulse * v;
+        tubeMat.emissiveIntensity = (1.0 + Math.sin(clock.getElapsedTime() * 1.8) * 0.3) * v;
+    });
+
+    return (
+        <group ref={root}>
+            <mesh geometry={mainTubeGeo} material={tubeMat} />
+            <mesh geometry={branch1Geo} material={tubeMat} />
+            <mesh geometry={branch2Geo} material={tubeMat} />
+            <mesh geometry={branch3Geo} material={tubeMat} />
+            <EnergyFlow curves={beamCurves} color={BLUE_M} speed={0.28} size={0.08} />
+        </group>
+    );
+}
+
+/* ═══════════════════════════════════════════════════════
+   ENERGY FLOW — particles racing along curves
+═══════════════════════════════════════════════════════ */
+const FLOW_PARTICLES = 22;
+const FLOW_STEPS = 80;
 
 function EnergyFlow({
     curves,
@@ -509,7 +373,6 @@ function EnergyFlow({
 }) {
     const flowRef = useRef<THREE.Points>(null!);
 
-    // Pre-sample all curves
     const sampled = useMemo(
         () =>
             curves.map((c) => {
@@ -544,7 +407,7 @@ function EnergyFlow({
     );
 
     useFrame(({ clock }) => {
-        if (!flowRef.current?.visible) return; // skip when hidden
+        if (!flowRef.current?.visible) return;
         const t = clock.getElapsedTime();
         const pos = geo.attributes.position as THREE.BufferAttribute;
         for (let ci = 0; ci < curves.length; ci++) {
@@ -563,106 +426,450 @@ function EnergyFlow({
 }
 
 /* ═══════════════════════════════════════════════════════
-   SACRED TIMELINE — Loki's journey as 3D tree
-   Maps: tesseract → TVA → nexus → variant → god of stories
+   VISIBILITY HELPER — city fade-in/dim/spine/fade-out
 ═══════════════════════════════════════════════════════ */
-const TIMELINE_ORIGIN: [number, number, number] = [22, 0, -3];
+function cityVis(p: number, fadeIn: number, peakEnd: number, spineEnd: number): number {
+    const fi = 0.06;
+    if (p < fadeIn) return 0;
+    if (p < fadeIn + fi) return (p - fadeIn) / fi;
+    if (p < peakEnd) return 1;
+    // dim during other city scenes
+    if (p < 0.74) return 0.28;
+    // brighten for spine overview
+    if (p < 0.8) return 0.28 + ((p - 0.74) / 0.06) * 0.47;
+    if (p < spineEnd - 0.06) return 0.75;
+    if (p < spineEnd) return 0.75 * (1 - (p - (spineEnd - 0.06)) / 0.06);
+    return 0;
+}
 
-function SacredTimeline({ progress }: { progress: React.MutableRefObject<number> }) {
+/* ═══════════════════════════════════════════════════════
+   CITY: THE EXCHANGE — Cashfree risk engine
+   Octahedron core + satellite nodes + data planes
+═══════════════════════════════════════════════════════ */
+function CityExchange({ progress }: { progress: React.MutableRefObject<number> }) {
     const root = useRef<THREE.Group>(null!);
+    const coreRef = useRef<THREE.Mesh>(null!);
+    const coreLightRef = useRef<THREE.PointLight>(null!);
 
-    // Branch definitions — Loki's arc mapped to career
-    const { branches, goldCurves, tealCurves, prunedCurves } = useMemo(() => {
-        const main = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0, -10, 0),
-            new THREE.Vector3(0.4, -5, 0.6),
-            new THREE.Vector3(-0.3, 0, 0.2),
-            new THREE.Vector3(0.6, 5, 0.4),
-            new THREE.Vector3(0, 10, 0),
-            new THREE.Vector3(0.2, 13, 0),
-        ]);
-        // Left lower: "The Void" — pruned branch
-        const voidBranch = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0, -3, 0),
-            new THREE.Vector3(-4, -1, 1),
-            new THREE.Vector3(-7, 1, 0),
-            new THREE.Vector3(-8, 2, 0),
-        ]);
-        // Right lower: "TVA Variant" — golden secondary
-        const tvaBranch = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0, 1, 0),
-            new THREE.Vector3(4, 3, 1),
-            new THREE.Vector3(7, 4, 0),
-            new THREE.Vector3(9, 6, 0),
-        ]);
-        // Left upper: nexus event branch — pruned (teal, shorter)
-        const nexusBranch = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0, 5, 0),
-            new THREE.Vector3(-3, 7, 0.5),
-            new THREE.Vector3(-5, 8, 0),
-        ]);
-        // Right upper: "Enchantress path" — golden
-        const enchBranch = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0, 7, 0),
-            new THREE.Vector3(4, 9, 1),
-            new THREE.Vector3(6, 10, 0),
-            new THREE.Vector3(7, 11, 0),
-        ]);
-        // Sub-branch from void branch: pruned fragment
-        const voidSub = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-7, 1, 0),
-            new THREE.Vector3(-9, 3, 0.4),
-            new THREE.Vector3(-8, 5, 0),
-        ]);
-        // Tip: "God of Stories" — splits open upward
-        const godBranch = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0, 10, 0),
-            new THREE.Vector3(1.2, 12, 0.5),
-            new THREE.Vector3(0.4, 14, 0),
-        ]);
+    const satPositions = useMemo<[number, number, number][]>(
+        () =>
+            Array.from({ length: 8 }, (_, i) => {
+                const a = (i / 8) * Math.PI * 2;
+                return [Math.cos(a) * 5.5, Math.sin(a * 2) * 1.8, Math.sin(a) * 5.5];
+            }),
+        []
+    );
 
-        const branchDefs = [
-            { curve: main, radius: 0.11, isMain: true, isTeal: false, isPruned: false },
-            { curve: tvaBranch, radius: 0.065, isMain: false, isTeal: false, isPruned: false },
-            { curve: enchBranch, radius: 0.058, isMain: false, isTeal: false, isPruned: false },
-            { curve: godBranch, radius: 0.075, isMain: false, isTeal: false, isPruned: false },
-            { curve: voidBranch, radius: 0.05, isMain: false, isTeal: true, isPruned: true },
-            { curve: nexusBranch, radius: 0.042, isMain: false, isTeal: true, isPruned: true },
-            { curve: voidSub, radius: 0.032, isMain: false, isTeal: true, isPruned: true },
-        ];
-
-        const bs = branchDefs.map((b) => ({
-            ...b,
-            geo: new THREE.TubeGeometry(b.curve, 60, b.radius, 8, false),
-        }));
-
-        return {
-            branches: bs,
-            goldCurves: [main, tvaBranch, enchBranch, godBranch],
-            tealCurves: [nexusBranch],
-            prunedCurves: [voidBranch, voidSub],
-        };
-    }, []);
-
-    // Nodes: [x, y, z, color, radius, isPrimary]
-    const nodes = useMemo<[number, number, number, string, number, boolean][]>(
+    const panelData = useMemo<[number, number, number, number][]>(
         () => [
-            [0, -10, 0, GOLD, 0.3, false], // origin
-            [0, -3, 0, GOLD, 0.42, false], // tesseract pick-up (IIIT Lucknow)
-            [0, 1, 0, GOLD, 0.52, true], // TVA capture (Tata 1mg SDE I)
-            [0, 5, 0, GOLD, 0.58, true], // nexus event (Tata 1mg SDE II)
-            [9, 6, 0, GOLD, 0.42, false], // TVA variant branch tip
-            [0, 7, 0, GOLD, 0.64, true], // Moresand pivot
-            [0, 10, 0, GOLD, 0.78, true], // Cashfree — current (brightest)
-            [-8, 2, 0, TEAL, 0.32, false], // void branch node
-            [-5, 8, 0, TEAL, 0.28, false], // nexus marker
-            [7, 11, 0, GOLD, 0.36, false], // enchantress path tip
-            [0, 13, 0, '#f5d56e', 0.55, false], // god of stories tip
+            [7.5, 3.0, -1, -0.5],
+            [7.5, 0.0, 1, -0.4],
+            [7.5, -3.0, 0, -0.6],
+            [-2, 4.0, 6.5, 0.3],
+            [-2, -4.0, 6.5, 0.3],
+            [3, 0.0, 7.5, 0.1],
         ],
         []
     );
 
-    const tubeMat = useMemo(
+    const coreMat = useMemo(
+        () =>
+            new THREE.MeshStandardMaterial({
+                color: GOLD,
+                emissive: GOLD,
+                emissiveIntensity: 3,
+                metalness: 0.9,
+                roughness: 0.05,
+            }),
+        []
+    );
+
+    const nodeMat = useMemo(
+        () =>
+            new THREE.MeshStandardMaterial({
+                color: '#88aaff',
+                emissive: '#3355bb',
+                emissiveIntensity: 2.2,
+                metalness: 0.7,
+                roughness: 0.1,
+            }),
+        []
+    );
+
+    const panelMat = useMemo(
+        () =>
+            new THREE.MeshStandardMaterial({
+                color: BLUE_M,
+                emissive: BLUE_M,
+                emissiveIntensity: 0.4,
+                metalness: 0.9,
+                roughness: 0.08,
+                transparent: true,
+                opacity: 0.65,
+            }),
+        []
+    );
+
+    const lineGeo = useMemo(() => {
+        const pts: THREE.Vector3[] = [];
+        satPositions.forEach((sp, i) => {
+            pts.push(new THREE.Vector3(0, 0, 0), new THREE.Vector3(...sp));
+            const next = satPositions[(i + 1) % 8];
+            pts.push(new THREE.Vector3(...sp), new THREE.Vector3(...next));
+        });
+        return new THREE.BufferGeometry().setFromPoints(pts);
+    }, [satPositions]);
+
+    const lineMat = useMemo(
+        () =>
+            new THREE.LineBasicMaterial({
+                color: '#3355cc',
+                transparent: true,
+                opacity: 0.38,
+            }),
+        []
+    );
+
+    const flowCurves = useMemo(() => {
+        const even = satPositions.filter((_, i) => i % 2 === 0).map((p) => new THREE.Vector3(...p));
+        const odd = satPositions.filter((_, i) => i % 2 !== 0).map((p) => new THREE.Vector3(...p));
+        return [new THREE.CatmullRomCurve3(even, true), new THREE.CatmullRomCurve3(odd, true)];
+    }, [satPositions]);
+
+    useFrame(({ clock }) => {
+        const t = clock.getElapsedTime();
+        const p = progress.current;
+        const v = cityVis(p, 0.24, 0.54, 0.92);
+
+        if (root.current) root.current.visible = v > 0.01;
+        if (!v) return;
+
+        if (coreRef.current) {
+            coreRef.current.rotation.y = t * 0.22;
+            coreRef.current.rotation.x = t * 0.14;
+        }
+        if (coreLightRef.current) {
+            coreLightRef.current.intensity = (2.2 + Math.sin(t * 1.1) * 0.8) * v;
+        }
+        coreMat.emissiveIntensity = (2.8 + Math.sin(t * 0.8) * 0.8) * v;
+        nodeMat.emissiveIntensity = (1.8 + Math.sin(t * 1.2) * 0.5) * v;
+        panelMat.opacity = (0.55 + Math.sin(t * 0.6) * 0.08) * v;
+        panelMat.emissiveIntensity = (0.35 + Math.sin(t * 0.7) * 0.1) * v;
+        lineMat.opacity = (0.32 + Math.sin(t * 0.5) * 0.07) * v;
+    });
+
+    return (
+        <group ref={root} position={EXCHANGE_POS}>
+            <mesh ref={coreRef} material={coreMat}>
+                <octahedronGeometry args={[2.8, 1]} />
+            </mesh>
+            <pointLight ref={coreLightRef} color={GOLD} intensity={2.2} distance={32} decay={2} />
+            {satPositions.map((sp, i) => (
+                <mesh key={i} position={sp} material={nodeMat}>
+                    <sphereGeometry args={[0.52, 12, 12]} />
+                </mesh>
+            ))}
+            <lineSegments geometry={lineGeo} material={lineMat} />
+            {panelData.map(([x, y, z, ry], i) => (
+                <mesh key={i} position={[x, y, z]} rotation={[0, ry, 0]} material={panelMat}>
+                    <boxGeometry args={[3.2, 2.0, 0.07]} />
+                </mesh>
+            ))}
+            <EnergyFlow curves={flowCurves} color={GOLD} speed={0.18} size={0.06} />
+        </group>
+    );
+}
+
+/* ═══════════════════════════════════════════════════════
+   CITY: THE GRID — Tata 1mg polygon delivery zones
+   Hex towers + delivery zone rings + notification pulses
+═══════════════════════════════════════════════════════ */
+function CityGrid({ progress }: { progress: React.MutableRefObject<number> }) {
+    const root = useRef<THREE.Group>(null!);
+    const pulseRefs = useRef<(THREE.Mesh | null)[]>([]);
+
+    const hexTowers = useMemo(() => {
+        const towers: { x: number; z: number; h: number }[] = [{ x: 0, z: 0, h: 4.0 }];
+        const r1 = 3.8;
+        for (let i = 0; i < 6; i++) {
+            const a = (i / 6) * Math.PI * 2;
+            towers.push({ x: Math.cos(a) * r1, z: Math.sin(a) * r1, h: 1.4 + (i % 3) * 0.7 });
+        }
+        const r2 = 7.6;
+        for (let i = 0; i < 12; i++) {
+            const a = (i / 12) * Math.PI * 2;
+            towers.push({ x: Math.cos(a) * r2, z: Math.sin(a) * r2, h: 0.5 + (i % 4) * 0.35 });
+        }
+        return towers;
+    }, []);
+
+    const hexMat = useMemo(
+        () =>
+            new THREE.MeshStandardMaterial({
+                color: TEAL,
+                emissive: TEAL,
+                emissiveIntensity: 0.8,
+                metalness: 0.3,
+                roughness: 0.5,
+                transparent: true,
+                opacity: 0.72,
+            }),
+        []
+    );
+
+    const ringGeos = useMemo(() => [4.5, 8.5, 13.0].map((r) => new THREE.TorusGeometry(r, 0.07, 6, 80)), []);
+
+    const ringMats = useMemo(
+        () =>
+            [0, 1, 2].map(
+                (i) =>
+                    new THREE.MeshStandardMaterial({
+                        color: GREEN_S,
+                        emissive: GREEN_S,
+                        emissiveIntensity: 1.5 - i * 0.3,
+                        transparent: true,
+                        opacity: 0.5 - i * 0.08,
+                        metalness: 0.2,
+                        roughness: 0.2,
+                    })
+            ),
+        []
+    );
+
+    const notifGeo = useMemo(() => new THREE.TorusGeometry(1, 0.055, 6, 60), []);
+    const nMat = useMemo(
+        () =>
+            new THREE.MeshStandardMaterial({
+                color: TEAL,
+                emissive: TEAL,
+                emissiveIntensity: 3,
+                transparent: true,
+                opacity: 0.7,
+            }),
+        []
+    );
+
+    const spiralCurve = useMemo(() => {
+        const pts: THREE.Vector3[] = [];
+        for (let i = 0; i <= 28; i++) {
+            const a = (i / 28) * Math.PI * 5;
+            const r = 0.8 + i * 0.44;
+            pts.push(new THREE.Vector3(Math.cos(a) * r, i * 0.28 - 3.5, Math.sin(a) * r));
+        }
+        return [new THREE.CatmullRomCurve3(pts)];
+    }, []);
+
+    useFrame(({ clock }) => {
+        const t = clock.getElapsedTime();
+        const p = progress.current;
+        const v = cityVis(p, 0.4, 0.7, 0.92);
+
+        if (root.current) root.current.visible = v > 0.01;
+        if (!v) return;
+
+        hexMat.emissiveIntensity = (0.7 + Math.sin(t * 0.5) * 0.2) * v;
+        hexMat.opacity = (0.68 + Math.sin(t * 0.4) * 0.05) * v;
+
+        ringMats.forEach((m, i) => {
+            m.emissiveIntensity = (1.3 - i * 0.22 + Math.sin(t * 0.7 + i * 1.2) * 0.25) * v;
+            m.opacity = (0.44 - i * 0.07 + Math.sin(t * 0.5 + i) * 0.06) * v;
+        });
+
+        // Expanding notification rings
+        pulseRefs.current.forEach((mesh, i) => {
+            if (!mesh) return;
+            const phase = (t * 0.55 + i * 0.6) % 2.5;
+            const s = phase * 7.5 + 0.5;
+            mesh.scale.setScalar(s * v);
+            nMat.opacity = Math.max(0, (1 - phase / 2.5) * 0.55 * v);
+        });
+    });
+
+    return (
+        <group ref={root} position={GRID_POS}>
+            {hexTowers.map(({ x, z, h }, i) => (
+                <mesh key={i} position={[x, h / 2, z]} material={hexMat}>
+                    <cylinderGeometry args={[1.85, 1.85, h, 6]} />
+                </mesh>
+            ))}
+            {ringGeos.map((g, i) => (
+                <mesh key={i} rotation={[-Math.PI / 2, 0, 0]} geometry={g} material={ringMats[i]} />
+            ))}
+            {[0, 1, 2, 3].map((i) => (
+                <mesh
+                    key={i}
+                    ref={(el) => {
+                        pulseRefs.current[i] = el;
+                    }}
+                    rotation={[-Math.PI / 2, 0, 0]}
+                    geometry={notifGeo}
+                    material={nMat}
+                />
+            ))}
+            <EnergyFlow curves={spiralCurve} color={TEAL} speed={0.1} size={0.065} />
+        </group>
+    );
+}
+
+/* ═══════════════════════════════════════════════════════
+   CITY: THE LATTICE — Moresand build infrastructure
+   3D lattice of nodes + tubes — dependency graph
+═══════════════════════════════════════════════════════ */
+function CityLattice({ progress }: { progress: React.MutableRefObject<number> }) {
+    const root = useRef<THREE.Group>(null!);
+
+    // 4×3×2 grid of nodes
+    const nodes = useMemo<[number, number, number][]>(() => {
+        const pts: [number, number, number][] = [];
+        for (let xi = 0; xi < 4; xi++) {
+            for (let yi = 0; yi < 3; yi++) {
+                for (let zi = 0; zi < 2; zi++) {
+                    pts.push([(xi - 1.5) * 4.2, (yi - 1) * 4.0, (zi - 0.5) * 5.0]);
+                }
+            }
+        }
+        return pts;
+    }, []);
+
+    // Horizontal + vertical beams
+    const beamGeos = useMemo(() => {
+        const geos: THREE.BufferGeometry[] = [];
+        const addBeam = (a: [number, number, number], b: [number, number, number]) => {
+            const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(...a), new THREE.Vector3(...b)]);
+            geos.push(new THREE.TubeGeometry(curve, 2, 0.1, 5, false));
+        };
+        // Horizontal rows (x direction)
+        for (let yi = 0; yi < 3; yi++) {
+            for (let zi = 0; zi < 2; zi++) {
+                for (let xi = 0; xi < 3; xi++) {
+                    addBeam(
+                        [(xi - 1.5) * 4.2, (yi - 1) * 4.0, (zi - 0.5) * 5.0],
+                        [(xi - 0.5) * 4.2, (yi - 1) * 4.0, (zi - 0.5) * 5.0]
+                    );
+                }
+            }
+        }
+        // Vertical columns (y direction)
+        for (let xi = 0; xi < 4; xi++) {
+            for (let zi = 0; zi < 2; zi++) {
+                for (let yi = 0; yi < 2; yi++) {
+                    addBeam(
+                        [(xi - 1.5) * 4.2, (yi - 1) * 4.0, (zi - 0.5) * 5.0],
+                        [(xi - 1.5) * 4.2, yi * 4.0, (zi - 0.5) * 5.0]
+                    );
+                }
+            }
+        }
+        // Depth (z direction)
+        for (let xi = 0; xi < 4; xi++) {
+            for (let yi = 0; yi < 3; yi++) {
+                addBeam([(xi - 1.5) * 4.2, (yi - 1) * 4.0, -2.5], [(xi - 1.5) * 4.2, (yi - 1) * 4.0, 2.5]);
+            }
+        }
+        return geos;
+    }, []);
+
+    const beamMat = useMemo(
+        () =>
+            new THREE.MeshStandardMaterial({
+                color: PURPLE_L,
+                emissive: PURPLE_L,
+                emissiveIntensity: 1.2,
+                metalness: 0.6,
+                roughness: 0.2,
+                transparent: true,
+                opacity: 0.7,
+            }),
+        []
+    );
+
+    const nodeMat = useMemo(
+        () =>
+            new THREE.MeshStandardMaterial({
+                color: '#cc99ff',
+                emissive: '#9955cc',
+                emissiveIntensity: 2.5,
+                metalness: 0.8,
+                roughness: 0.05,
+            }),
+        []
+    );
+
+    const flowCurves = useMemo(() => {
+        // Two pipeline curves snaking through lattice
+        const c1 = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(-6.3, -4, -2.5),
+            new THREE.Vector3(-2.1, 0, 2.5),
+            new THREE.Vector3(2.1, 4, -2.5),
+            new THREE.Vector3(6.3, 0, 2.5),
+        ]);
+        const c2 = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(6.3, -4, 2.5),
+            new THREE.Vector3(2.1, 0, -2.5),
+            new THREE.Vector3(-2.1, 4, 2.5),
+            new THREE.Vector3(-6.3, 0, -2.5),
+        ]);
+        return [c1, c2];
+    }, []);
+
+    useFrame(({ clock }) => {
+        const t = clock.getElapsedTime();
+        const p = progress.current;
+        const v = cityVis(p, 0.56, 0.78, 0.92);
+
+        if (root.current) root.current.visible = v > 0.01;
+        if (!v) return;
+
+        beamMat.emissiveIntensity = (1.1 + Math.sin(t * 0.6) * 0.3) * v;
+        beamMat.opacity = (0.65 + Math.sin(t * 0.5) * 0.07) * v;
+        nodeMat.emissiveIntensity = (2.2 + Math.sin(t * 1.0) * 0.6) * v;
+    });
+
+    return (
+        <group ref={root} position={LATTICE_POS}>
+            {beamGeos.map((g, i) => (
+                <mesh key={i} geometry={g} material={beamMat} />
+            ))}
+            {nodes.map((n, i) => (
+                <mesh key={i} position={n} material={nodeMat}>
+                    <sphereGeometry args={[0.38, 10, 10]} />
+                </mesh>
+            ))}
+            <EnergyFlow curves={flowCurves} color={PURPLE_L} speed={0.14} size={0.065} />
+        </group>
+    );
+}
+
+/* ═══════════════════════════════════════════════════════
+   CAREER SPINE — vertical career line + city connections
+   Visible primarily in THE SPINE overview scene
+═══════════════════════════════════════════════════════ */
+const SPINE_NODES: { y: number; color: string; r: number; isPrimary: boolean }[] = [
+    { y: -16, color: '#a89060', r: 0.4, isPrimary: false }, // IIIT Lucknow
+    { y: -8, color: TEAL, r: 0.5, isPrimary: false }, // Tata 1mg SDE I
+    { y: 0, color: TEAL, r: 0.6, isPrimary: true }, // Tata 1mg SDE II
+    { y: 8, color: PURPLE_L, r: 0.5, isPrimary: false }, // Moresand
+    { y: 16, color: GOLD, r: 0.72, isPrimary: true }, // Cashfree (current)
+];
+
+function CareerSpine({ progress }: { progress: React.MutableRefObject<number> }) {
+    const root = useRef<THREE.Group>(null!);
+
+    const spineCurve = useMemo(
+        () =>
+            new THREE.CatmullRomCurve3([
+                new THREE.Vector3(0, -20, 0),
+                new THREE.Vector3(0.4, -10, 0.2),
+                new THREE.Vector3(-0.3, 0, 0.1),
+                new THREE.Vector3(0.3, 10, -0.2),
+                new THREE.Vector3(0, 20, 0),
+            ]),
+        []
+    );
+
+    const spineGeo = useMemo(() => new THREE.TubeGeometry(spineCurve, 80, 0.12, 8, false), [spineCurve]);
+
+    const spineMat = useMemo(
         () =>
             new THREE.MeshStandardMaterial({
                 color: GOLD,
@@ -674,102 +881,210 @@ function SacredTimeline({ progress }: { progress: React.MutableRefObject<number>
         []
     );
 
-    const branchMat = useMemo(
-        () =>
-            new THREE.MeshStandardMaterial({
-                color: TEAL,
-                emissive: TEAL,
-                emissiveIntensity: 1.5,
-                metalness: 0.3,
-                roughness: 0.2,
-            }),
-        []
-    );
+    // Connection lines to cities — world space relative to SPINE_POS
+    const connectionGeo = useMemo(() => {
+        const ex = EXCHANGE_POS.map((v, i) => v - SPINE_POS[i]) as [number, number, number];
+        const gr = GRID_POS.map((v, i) => v - SPINE_POS[i]) as [number, number, number];
+        const la = LATTICE_POS.map((v, i) => v - SPINE_POS[i]) as [number, number, number];
+        return new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, 8, 0),
+            new THREE.Vector3(...ex),
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(...gr),
+            new THREE.Vector3(0, 4, 0),
+            new THREE.Vector3(...la),
+        ]);
+    }, []);
 
-    const prunedMat = useMemo(
+    const connMat = useMemo(
         () =>
-            new THREE.MeshStandardMaterial({
-                color: TEAL,
-                emissive: TEAL,
-                emissiveIntensity: 0.8,
-                metalness: 0.2,
-                roughness: 0.3,
+            new THREE.LineBasicMaterial({
+                color: GOLD,
                 transparent: true,
-                opacity: 0.55,
+                opacity: 0.22,
             }),
         []
     );
 
     const nodeMats = useMemo(
         () =>
-            nodes.map((n) => {
-                const color = n[3];
-                const isPrimary = n[5];
-                return new THREE.MeshStandardMaterial({
-                    color,
-                    emissive: color,
-                    emissiveIntensity: isPrimary ? 5 : 3,
-                    metalness: 0.8,
-                    roughness: 0.05,
-                });
+            SPINE_NODES.map(
+                (n) =>
+                    new THREE.MeshStandardMaterial({
+                        color: n.color,
+                        emissive: n.color,
+                        emissiveIntensity: n.isPrimary ? 4.5 : 2.8,
+                        metalness: 0.8,
+                        roughness: 0.05,
+                    })
+            ),
+        []
+    );
+
+    const spineFlowCurve = useMemo(() => [spineCurve], [spineCurve]);
+
+    useFrame(({ clock }) => {
+        const t = clock.getElapsedTime();
+        const p = progress.current;
+
+        let v = 0;
+        if (p >= 0.7 && p < 0.76) v = (p - 0.7) / 0.06;
+        else if (p >= 0.76 && p < 0.9) v = 1;
+        else if (p >= 0.9 && p < 0.96) v = 1 - (p - 0.9) / 0.06;
+
+        if (root.current) root.current.visible = v > 0.01;
+        if (!v) return;
+
+        spineMat.emissiveIntensity = (1.8 + Math.sin(t * 0.7) * 0.4) * v;
+        connMat.opacity = (0.22 + Math.sin(t * 0.5) * 0.05) * v;
+        nodeMats.forEach((m, i) => {
+            m.emissiveIntensity =
+                ((SPINE_NODES[i].isPrimary ? 4.2 : 2.6) + Math.sin(t * 0.8 + i * 0.9) * 0.8) * v;
+        });
+    });
+
+    return (
+        <group ref={root} position={SPINE_POS}>
+            <mesh geometry={spineGeo} material={spineMat} />
+            <lineSegments geometry={connectionGeo} material={connMat} />
+            {SPINE_NODES.map((n, i) => (
+                <mesh key={i} position={[0, n.y, 0]} material={nodeMats[i]}>
+                    <sphereGeometry args={[n.r, 18, 18]} />
+                </mesh>
+            ))}
+            <EnergyFlow curves={spineFlowCurve} color={GOLD} speed={0.08} size={0.055} />
+        </group>
+    );
+}
+
+/* ═══════════════════════════════════════════════════════
+   VOID PORTAL — contact destination
+═══════════════════════════════════════════════════════ */
+const PORTAL_R = 6.5;
+const VOID_PORTAL_POS: [number, number, number] = [0, 2, -4];
+
+function VoidPortal({ progress }: { progress: React.MutableRefObject<number> }) {
+    const root = useRef<THREE.Group>(null!);
+    const ringGroup = useRef<THREE.Group>(null!);
+    const swirl = useRef<THREE.Points>(null!);
+
+    const ringMat = useMemo(
+        () =>
+            new THREE.MeshStandardMaterial({
+                color: GOLD,
+                emissive: GOLD,
+                emissiveIntensity: 3.2,
+                metalness: 0.9,
+                roughness: 0.04,
             }),
-        [nodes]
+        []
+    );
+
+    const discMat = useMemo(
+        () =>
+            new THREE.MeshStandardMaterial({
+                color: '#000005',
+                transparent: true,
+                opacity: 0.9,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+            }),
+        []
+    );
+
+    const innerRingMat = useMemo(
+        () =>
+            new THREE.MeshStandardMaterial({
+                color: TEAL,
+                emissive: TEAL,
+                emissiveIntensity: 2.2,
+                metalness: 0.8,
+                roughness: 0.08,
+            }),
+        []
+    );
+
+    const swirlGeo = useMemo(() => {
+        const n = 600;
+        const buf = new Float32Array(n * 3);
+        for (let i = 0; i < n; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const r = Math.sqrt(Math.random()) * PORTAL_R * 0.85;
+            buf[i * 3] = Math.cos(a) * r;
+            buf[i * 3 + 1] = Math.sin(a) * r;
+            buf[i * 3 + 2] = (Math.random() - 0.5) * 0.9;
+        }
+        const g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.BufferAttribute(buf, 3));
+        return g;
+    }, []);
+
+    const swirlMat = useMemo(
+        () =>
+            new THREE.PointsMaterial({
+                color: GOLD,
+                size: 0.06,
+                transparent: true,
+                opacity: 0.5,
+                sizeAttenuation: true,
+            }),
+        []
     );
 
     useFrame(({ clock }) => {
         const t = clock.getElapsedTime();
         const p = progress.current;
-        let v = 0;
-        if (p >= 0.55 && p < 0.62) v = (p - 0.55) / 0.07;
-        else if (p >= 0.62 && p < 0.87) v = 1;
-        else if (p >= 0.87 && p < 0.94) v = 1 - (p - 0.87) / 0.07;
 
-        if (root.current) {
-            root.current.visible = v > 0.01;
-            root.current.scale.setScalar(0.5 + v * 0.5);
-        }
+        let v = 0;
+        if (p >= 0.84 && p < 0.9) v = (p - 0.84) / 0.06;
+        else if (p >= 0.9) v = 1;
+
+        if (root.current) root.current.visible = v > 0.01;
         if (!v) return;
 
-        tubeMat.emissiveIntensity = (1.8 + Math.sin(t * 0.7) * 0.4) * v;
-        branchMat.emissiveIntensity = (1.4 + Math.sin(t * 0.9) * 0.3) * v;
-        prunedMat.emissiveIntensity = (0.6 + Math.sin(t * 1.1) * 0.2) * v;
-        prunedMat.opacity = (0.45 + Math.sin(t * 0.8) * 0.08) * v;
-
-        nodeMats.forEach((m, i) => {
-            const isPrimary = nodes[i][5];
-            m.emissiveIntensity = ((isPrimary ? 4.5 : 2.8) + Math.sin(t * 0.8 + i * 0.9) * 0.9) * v;
-        });
+        if (ringGroup.current) ringGroup.current.rotation.z = t * 0.34;
+        if (swirl.current) swirl.current.rotation.z = -t * 0.22;
+        ringMat.emissiveIntensity = (3.0 + Math.sin(t * 0.9) * 0.8) * v;
+        swirlMat.opacity = (0.42 + Math.sin(t * 1.1) * 0.1) * v;
     });
 
-    const getMat = (b: (typeof branches)[0]) => {
-        if (b.isPruned) return prunedMat;
-        if (b.isTeal) return branchMat;
-        return tubeMat;
-    };
-
     return (
-        <group ref={root} position={TIMELINE_ORIGIN}>
-            {/* Branch tubes */}
-            {branches.map((b, i) => (
-                <mesh key={i} geometry={b.geo} material={getMat(b)} />
-            ))}
-
-            {/* Nodes */}
-            {nodes.map(([x, y, z, , r], i) => (
-                <mesh key={i} position={[x, y, z]}>
-                    <sphereGeometry args={[r, 20, 20]} />
-                    <primitive object={nodeMats[i]} />
+        <group ref={root} position={VOID_PORTAL_POS}>
+            <mesh>
+                <circleGeometry args={[PORTAL_R - 0.2, 64]} />
+                <primitive object={discMat} />
+            </mesh>
+            <group ref={ringGroup}>
+                <mesh>
+                    <torusGeometry args={[PORTAL_R, 0.2, 16, 100]} />
+                    <primitive object={ringMat} />
                 </mesh>
-            ))}
-
-            {/* Energy flowing along golden branches */}
-            <EnergyFlow curves={goldCurves} color={GOLD} speed={0.14} size={0.065} />
-
-            {/* Slower teal flow on secondary branches */}
-            <EnergyFlow curves={tealCurves} color={TEAL} speed={0.08} size={0.045} />
-
-            {/* Dispersing particles on pruned branches — energy bleeding out */}
-            <EnergyFlow curves={prunedCurves} color={TEAL} speed={0.05} size={0.032} />
+                <mesh>
+                    <torusGeometry args={[PORTAL_R - 0.35, 0.06, 8, 80]} />
+                    <primitive object={innerRingMat} />
+                </mesh>
+                <mesh>
+                    <torusGeometry args={[PORTAL_R + 0.42, 0.042, 6, 70]} />
+                    <primitive object={ringMat} />
+                </mesh>
+                <mesh rotation={[0, 0, 0.8]}>
+                    <torusGeometry args={[PORTAL_R + 1.0, 0.022, 4, 60]} />
+                    <primitive object={ringMat} />
+                </mesh>
+            </group>
+            <points ref={swirl} geometry={swirlGeo} material={swirlMat} />
+            <mesh position={[0, 0, -0.8]}>
+                <sphereGeometry args={[PORTAL_R * 0.55, 14, 14]} />
+                <meshStandardMaterial
+                    color={GOLD}
+                    emissive={GOLD}
+                    emissiveIntensity={0.6}
+                    transparent
+                    opacity={0.07}
+                    depthWrite={false}
+                    blending={THREE.AdditiveBlending}
+                />
+            </mesh>
         </group>
     );
 }
@@ -794,19 +1109,19 @@ function VoidDust() {
     useFrame(({ clock }) => {
         const t = clock.getElapsedTime();
         if (ref.current) {
-            ref.current.rotation.y = t * 0.006;
-            ref.current.rotation.x = t * 0.003;
+            ref.current.rotation.y = t * 0.005;
+            ref.current.rotation.x = t * 0.002;
         }
     });
     return (
         <points ref={ref} geometry={geo}>
-            <pointsMaterial color={GOLD} size={0.065} transparent opacity={0.24} sizeAttenuation />
+            <pointsMaterial color={GOLD} size={0.055} transparent opacity={0.18} sizeAttenuation />
         </points>
     );
 }
 
 /* ═══════════════════════════════════════════════════════
-   VOID DEBRIS — pruned timeline fragments drifting
+   VOID DEBRIS — drifting fragments in contact zone
 ═══════════════════════════════════════════════════════ */
 type DebrisPiece = {
     pos: [number, number, number];
@@ -824,15 +1139,15 @@ function VoidDebris({ progress }: { progress: React.MutableRefObject<number> }) 
         const rng = (s: number, r: number) => s + (Math.random() - 0.5) * r;
         return [
             {
-                pos: [rng(-15, 14), rng(-8, 12), rng(-20, 16)],
+                pos: [rng(-14, 12), rng(-7, 10), rng(-18, 14)],
                 rx: 0.3,
                 ry: 0.7,
                 rz: 0.2,
-                size: 1.4,
+                size: 1.3,
                 spd: [0.012, 0.008, 0.015],
             },
             {
-                pos: [rng(12, 14), rng(-10, 14), rng(-18, 14)],
+                pos: [rng(11, 12), rng(-9, 12), rng(-16, 12)],
                 rx: 0.6,
                 ry: 0.4,
                 rz: 0.8,
@@ -840,7 +1155,7 @@ function VoidDebris({ progress }: { progress: React.MutableRefObject<number> }) 
                 spd: [0.018, 0.012, 0.009],
             },
             {
-                pos: [rng(-5, 10), rng(-12, 8), rng(-22, 12)],
+                pos: [rng(-4, 8), rng(-11, 6), rng(-20, 10)],
                 rx: 0.1,
                 ry: 0.9,
                 rz: 0.4,
@@ -848,7 +1163,7 @@ function VoidDebris({ progress }: { progress: React.MutableRefObject<number> }) 
                 spd: [0.009, 0.016, 0.011],
             },
             {
-                pos: [rng(8, 12), rng(4, 14), rng(-16, 14)],
+                pos: [rng(7, 10), rng(3, 12), rng(-14, 12)],
                 rx: 0.8,
                 ry: 0.2,
                 rz: 0.6,
@@ -856,20 +1171,12 @@ function VoidDebris({ progress }: { progress: React.MutableRefObject<number> }) 
                 spd: [0.014, 0.01, 0.018],
             },
             {
-                pos: [rng(-10, 14), rng(6, 10), rng(-24, 10)],
+                pos: [rng(-9, 12), rng(5, 8), rng(-22, 8)],
                 rx: 0.5,
                 ry: 0.5,
                 rz: 0.3,
-                size: 1.6,
+                size: 1.5,
                 spd: [0.007, 0.013, 0.01],
-            },
-            {
-                pos: [rng(4, 16), rng(-6, 16), rng(-12, 18)],
-                rx: 0.4,
-                ry: 0.6,
-                rz: 0.7,
-                size: 0.6,
-                spd: [0.016, 0.007, 0.014],
             },
         ];
     }, []);
@@ -881,7 +1188,7 @@ function VoidDebris({ progress }: { progress: React.MutableRefObject<number> }) 
                 emissive: GOLD,
                 emissiveIntensity: 0.4,
                 transparent: true,
-                opacity: 0.07,
+                opacity: 0.13,
                 wireframe: true,
             }),
         []
@@ -890,12 +1197,10 @@ function VoidDebris({ progress }: { progress: React.MutableRefObject<number> }) 
     useFrame(({ clock }) => {
         const t = clock.getElapsedTime();
         const p = progress.current;
-        // Appear only in void scene
-        const v = p >= 0.82 ? Math.min(1, (p - 0.82) / 0.1) : 0;
+        const v = p >= 0.84 ? Math.min(1, (p - 0.84) / 0.1) : 0;
         if (root.current) root.current.visible = v > 0.01;
         if (!v) return;
-        mat.opacity = 0.06 * v;
-
+        mat.opacity = 0.13 * v;
         const children = root.current.children as THREE.Mesh[];
         pieces.forEach((piece, i) => {
             if (children[i]) {
@@ -918,12 +1223,146 @@ function VoidDebris({ progress }: { progress: React.MutableRefObject<number> }) 
 }
 
 /* ═══════════════════════════════════════════════════════
-   SCENE FOG — exponential depth haze
+   VOID LIGHT — cold point light in contact zone
+═══════════════════════════════════════════════════════ */
+function VoidLight({ progress }: { progress: React.MutableRefObject<number> }) {
+    const ref = useRef<THREE.PointLight>(null!);
+    useFrame(() => {
+        const p = progress.current;
+        if (ref.current) {
+            ref.current.intensity = p >= 0.84 ? Math.min(1, (p - 0.84) / 0.14) * 2.8 : 0;
+        }
+    });
+    return (
+        <pointLight ref={ref} color="#3355aa" position={[0, 14, -18]} intensity={0} distance={75} decay={2} />
+    );
+}
+
+/* ═══════════════════════════════════════════════════════
+   SCENE ATMOSPHERE — dynamic zone lighting
+═══════════════════════════════════════════════════════ */
+function SceneAtmosphere({ progress }: { progress: React.MutableRefObject<number> }) {
+    const keyRef = useRef<THREE.DirectionalLight>(null!);
+    const fillRef = useRef<THREE.DirectionalLight>(null!);
+    const kState = useRef({ r: 0.5, g: 0.6, b: 1.0, i: 0.8 });
+    const fState = useRef({ r: 0.0, g: 0.5, b: 0.8, i: 0.4 });
+
+    useFrame(() => {
+        const p = progress.current;
+        const L = 0.022;
+        let kr: number, kg: number, kb: number, ki: number;
+        let fr: number, fg: number, fb: number, fi: number;
+
+        if (p < 0.14) {
+            // THE TOUCH — cool white/blue birth
+            kr = 0.6;
+            kg = 0.7;
+            kb = 1.0;
+            ki = 0.9;
+            fr = 0.1;
+            fg = 0.3;
+            fb = 0.7;
+            fi = 0.4;
+        } else if (p < 0.28) {
+            // THE SIGNAL — electric blue
+            kr = 0.2;
+            kg = 0.4;
+            kb = 1.0;
+            ki = 1.2;
+            fr = 0.0;
+            fg = 0.3;
+            fb = 0.9;
+            fi = 0.5;
+        } else if (p < 0.44) {
+            // THE EXCHANGE — warm gold + blue
+            kr = 1.0;
+            kg = 0.75;
+            kb = 0.35;
+            ki = 1.6;
+            fr = 0.1;
+            fg = 0.3;
+            fb = 0.8;
+            fi = 0.5;
+        } else if (p < 0.6) {
+            // THE GRID — teal + green
+            kr = 0.2;
+            kg = 0.9;
+            kb = 0.7;
+            ki = 1.4;
+            fr = 0.1;
+            fg = 0.8;
+            fb = 0.4;
+            fi = 0.45;
+        } else if (p < 0.74) {
+            // THE LATTICE — purple + lavender
+            kr = 0.6;
+            kg = 0.3;
+            kb = 0.9;
+            ki = 1.3;
+            fr = 0.4;
+            fg = 0.2;
+            fb = 0.6;
+            fi = 0.4;
+        } else if (p < 0.88) {
+            // THE SPINE — wide spectrum, slightly golden
+            kr = 1.0;
+            kg = 0.8;
+            kb = 0.4;
+            ki = 1.2;
+            fr = 0.2;
+            fg = 0.4;
+            fb = 0.7;
+            fi = 0.35;
+        } else {
+            // THE VOID — cold deep blue
+            kr = 0.4;
+            kg = 0.45;
+            kb = 0.8;
+            ki = 0.45;
+            fr = 0.1;
+            fg = 0.18;
+            fb = 0.32;
+            fi = 0.2;
+        }
+
+        const k = kState.current;
+        k.r += (kr - k.r) * L;
+        k.g += (kg - k.g) * L;
+        k.b += (kb - k.b) * L;
+        k.i += (ki - k.i) * L;
+        const f = fState.current;
+        f.r += (fr - f.r) * L;
+        f.g += (fg - f.g) * L;
+        f.b += (fb - f.b) * L;
+        f.i += (fi - f.i) * L;
+
+        if (keyRef.current) {
+            keyRef.current.color.setRGB(k.r, k.g, k.b);
+            keyRef.current.intensity = k.i;
+        }
+        if (fillRef.current) {
+            fillRef.current.color.setRGB(f.r, f.g, f.b);
+            fillRef.current.intensity = f.i;
+        }
+    });
+
+    return (
+        <>
+            <directionalLight ref={keyRef} position={[8, 14, 10]} intensity={0.9} color="#aabbff" />
+            <directionalLight ref={fillRef} position={[-10, 2, -8]} intensity={0.4} color="#4488cc" />
+            <directionalLight position={[2, -10, -10]} intensity={0.2} color="#5060cc" />
+            <ambientLight color="#030210" intensity={0.55} />
+        </>
+    );
+}
+
+/* ═══════════════════════════════════════════════════════
+   SCENE FOG
 ═══════════════════════════════════════════════════════ */
 function SceneFog() {
     const { scene } = useThree();
     useEffect(() => {
-        scene.fog = new THREE.FogExp2('#03020a', 0.0036);
+        scene.fog = new THREE.FogExp2('#02010a', 0.0028);
         return () => {
             scene.fog = null;
         };
@@ -934,7 +1373,6 @@ function SceneFog() {
 /* ═══════════════════════════════════════════════════════
    FULL 3D SCENE
 ═══════════════════════════════════════════════════════ */
-// Reduced-motion: detect once at module level (SSR-safe)
 const REDUCED_MOTION =
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -952,33 +1390,28 @@ function Scene({
         <>
             <SceneFog />
             <CameraRig progress={progress} mouse={mouse} />
+            <SceneAtmosphere progress={progress} />
 
-            {/* Three-point lighting — balanced for materials without bloom halos */}
-            <directionalLight position={[8, 14, 10]} intensity={1.2} color="#ffd880" />
-            <directionalLight position={[-10, 2, -8]} intensity={0.55} color="#00b8d0" />
-            <directionalLight position={[2, -10, -10]} intensity={0.22} color="#5060cc" />
-            <ambientLight color="#060410" intensity={0.5} />
-
-            {/* HDRI environment — enables PBR reflections + iridescence */}
-            <Suspense fallback={null}>
-                <Environment preset="city" background={false} />
-            </Suspense>
-
-            <Stars radius={200} depth={80} count={4200} factor={3} fade speed={0.22} />
+            <Stars radius={200} depth={80} count={4200} factor={3} fade speed={0.18} />
             <VoidDust />
+
+            {/* Scene objects by zone */}
+            <TouchOrigin progress={progress} />
+            <SignalBeam progress={progress} />
+
+            <CityExchange progress={progress} />
+            <CityGrid progress={progress} />
+            <CityLattice progress={progress} />
+            <CareerSpine progress={progress} />
+
+            <VoidPortal progress={progress} />
             <VoidDebris progress={progress} />
-            <CrystalTesseract progress={progress} />
-
-            <TVAPortal pos={[-17, 0, -4]} accentColor={GOLD} visRange={[0.27, 0.6]} progress={progress} />
-            <TVAPortal pos={[0, 11, -7]} accentColor={TEAL} visRange={[0.27, 0.6]} progress={progress} />
-            <TVAPortal pos={[17, 0, -4]} accentColor={GOLD} visRange={[0.27, 0.6]} progress={progress} />
-
-            <SacredTimeline progress={progress} />
+            <VoidLight progress={progress} />
 
             <EffectComposer>
-                <Bloom intensity={2.0} luminanceThreshold={0.14} luminanceSmoothing={0.88} mipmapBlur />
+                <Bloom intensity={2.2} luminanceThreshold={0.12} luminanceSmoothing={0.9} mipmapBlur />
                 <ChromaticAberration offset={CA_OFFSET} />
-                <Vignette eskil={false} offset={0.15} darkness={0.65} />
+                <Vignette eskil={false} offset={0.15} darkness={0.68} />
             </EffectComposer>
         </>
     );
@@ -1018,9 +1451,9 @@ function useOverlayAnimator(progress: React.MutableRefObject<number>, overlays: 
 }
 
 /* ═══════════════════════════════════════════════════════
-   HERO OVERLAY
+   TOUCH OVERLAY — hero: name + title
 ═══════════════════════════════════════════════════════ */
-function HeroOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | null> }) {
+function TouchOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | null> }) {
     return (
         <div
             ref={divRef}
@@ -1041,12 +1474,12 @@ function HeroOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | null
                     gap: 8,
                     padding: '5px 12px 5px 7px',
                     borderRadius: 3,
-                    background: 'rgba(201,162,39,0.07)',
-                    border: '1px solid rgba(201,162,39,0.22)',
+                    background: 'rgba(34,85,221,0.08)',
+                    border: '1px solid rgba(34,85,221,0.25)',
                     fontFamily: "'JetBrains Mono', monospace",
                     fontSize: 9,
                     letterSpacing: '0.2em',
-                    color: GOLD,
+                    color: '#6688ee',
                     textTransform: 'uppercase',
                     marginBottom: 24,
                 }}
@@ -1061,7 +1494,7 @@ function HeroOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | null
                         flexShrink: 0,
                     }}
                 />
-                TVA CLEARANCE · NEXUS VARIANT · LEVEL Ω
+                SIGNAL ORIGIN · FRONTEND ENGINEER · 4.5Y
             </div>
 
             <div
@@ -1100,6 +1533,7 @@ function HeroOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | null
             </div>
 
             <div
+                className="tva-scroll-cue"
                 style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -1107,26 +1541,21 @@ function HeroOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | null
                     fontFamily: "'JetBrains Mono', monospace",
                     fontSize: 9,
                     letterSpacing: '0.26em',
-                    color: '#5c4d30',
+                    color: '#9a8050',
                     textTransform: 'uppercase',
                     marginTop: 36,
                 }}
             >
-                ↓ SCROLL TO ENTER THE TIMELINE
+                ↓ SCROLL TO BEGIN THE JOURNEY
             </div>
         </div>
     );
 }
 
 /* ═══════════════════════════════════════════════════════
-   PORTAL OVERLAY
+   EXCHANGE OVERLAY — Cashfree systems
 ═══════════════════════════════════════════════════════ */
-function PortalOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | null> }) {
-    const portals = [
-        { label: 'THE WORK', sub: 'Projects & Case Studies', route: '/work', x: '15%', y: '60%' },
-        { label: 'THE STORY', sub: 'Experience & Skills', route: '/about', x: '50%', y: '26%' },
-        { label: 'REACH OUT', sub: 'Contact & Hire', route: '/contact', x: '85%', y: '60%' },
-    ];
+function ExchangeOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | null> }) {
     return (
         <div
             ref={divRef}
@@ -1135,124 +1564,421 @@ function PortalOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | nu
             <div
                 style={{
                     position: 'absolute',
-                    top: '14%',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 10,
-                    letterSpacing: '0.28em',
-                    color: '#5c4d30',
-                    textTransform: 'uppercase',
-                    textAlign: 'center',
-                    whiteSpace: 'nowrap',
+                    top: '50%',
+                    right: '5%',
+                    transform: 'translateY(-50%)',
+                    maxWidth: 340,
                 }}
             >
-                — CHOOSE YOUR PATH THROUGH THE TIMELINE —
-            </div>
-            {portals.map((p) => (
-                <button
-                    key={p.route}
-                    onClick={() => navigate(p.route)}
-                    aria-label={p.label}
+                <div
                     style={{
-                        position: 'absolute',
-                        left: p.x,
-                        top: p.y,
-                        transform: 'translate(-50%,-50%)',
-                        background: 'none',
-                        border: 'none',
-                        textAlign: 'center',
-                        borderRadius: 4,
-                        padding: '8px 12px',
-                        outline: 'none',
-                        cursor: 'pointer',
-                    }}
-                    onFocus={(e) => {
-                        e.currentTarget.style.outline = '2px solid rgba(201,162,39,0.7)';
-                        e.currentTarget.style.outlineOffset = '6px';
-                    }}
-                    onBlur={(e) => {
-                        e.currentTarget.style.outline = 'none';
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: 9,
+                        letterSpacing: '0.28em',
+                        color: BLUE_M,
+                        textTransform: 'uppercase',
+                        marginBottom: 14,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
                     }}
                 >
+                    <span style={{ display: 'block', width: 20, height: 1, background: BLUE_M }} />
+                    THE EXCHANGE · CASHFREE PAYMENTS
+                </div>
+
+                <div
+                    style={{
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: 'clamp(32px, 4.5vw, 52px)',
+                        color: '#f0e6c8',
+                        lineHeight: 0.92,
+                        letterSpacing: '0.02em',
+                        marginBottom: 18,
+                    }}
+                >
+                    RISK ENGINE
+                </div>
+
+                <div
+                    style={{
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: 11,
+                        color: '#a89060',
+                        lineHeight: 1.7,
+                        marginBottom: 20,
+                    }}
+                >
+                    Schema-driven fraud rule engine. 200+ merchants self-configure transaction-blocking rules
+                    with zero frontend deployments.
+                </div>
+
+                {[
+                    { v: '200+', k: 'merchants self-serve' },
+                    { v: '<120ms', k: 'p99 rule decision' },
+                    { v: '40%', k: 'faster time-to-action' },
+                ].map((m) => (
                     <div
-                        style={{
-                            fontFamily: "'Bebas Neue', sans-serif",
-                            fontSize: 'clamp(22px, 2.8vw, 34px)',
-                            letterSpacing: '0.07em',
-                            color: GOLD,
-                            textShadow: `0 0 40px rgba(201,162,39,0.5)`,
-                            whiteSpace: 'nowrap',
-                        }}
+                        key={m.k}
+                        style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8 }}
                     >
-                        {p.label}
+                        <span
+                            style={{
+                                fontFamily: "'Bebas Neue', sans-serif",
+                                fontSize: 28,
+                                color: GOLD,
+                                lineHeight: 1,
+                            }}
+                        >
+                            {m.v}
+                        </span>
+                        <span
+                            style={{
+                                fontFamily: "'JetBrains Mono', monospace",
+                                fontSize: 8,
+                                color: '#5c4d30',
+                                letterSpacing: '0.14em',
+                                textTransform: 'uppercase',
+                            }}
+                        >
+                            {m.k}
+                        </span>
                     </div>
-                    <div
-                        style={{
-                            fontFamily: "'JetBrains Mono', monospace",
-                            fontSize: 9,
-                            letterSpacing: '0.18em',
-                            color: '#5c4d30',
-                            textTransform: 'uppercase',
-                            marginTop: 6,
-                        }}
-                    >
-                        {p.sub}
-                    </div>
+                ))}
+
+                <div
+                    style={{
+                        marginTop: 14,
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: 8,
+                        color: '#3344aa',
+                        letterSpacing: '0.16em',
+                        textTransform: 'uppercase',
+                    }}
+                >
+                    React · TypeScript · Zustand · Micro-frontends
+                </div>
+
+                <button
+                    onClick={() => navigate('/work')}
+                    style={{
+                        marginTop: 18,
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: 9,
+                        letterSpacing: '0.18em',
+                        color: GOLD,
+                        textTransform: 'uppercase',
+                        background: 'none',
+                        border: `1px solid rgba(201,162,39,0.28)`,
+                        padding: '8px 16px',
+                        borderRadius: 3,
+                        pointerEvents: 'auto',
+                        cursor: 'pointer',
+                    }}
+                >
+                    VIEW ALL PROJECTS →
                 </button>
-            ))}
+            </div>
         </div>
     );
 }
 
 /* ═══════════════════════════════════════════════════════
-   TIMELINE OVERLAY — Loki journey narrative
+   GRID OVERLAY — Tata 1mg systems
 ═══════════════════════════════════════════════════════ */
-const LOKI_NODES = [
+function GridOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | null> }) {
+    return (
+        <div
+            ref={divRef}
+            style={{ position: 'fixed', inset: 0, zIndex: 10, opacity: 0, pointerEvents: 'none' }}
+        >
+            <div
+                style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '5%',
+                    transform: 'translateY(-50%)',
+                    maxWidth: 340,
+                }}
+            >
+                <div
+                    style={{
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: 9,
+                        letterSpacing: '0.28em',
+                        color: TEAL,
+                        textTransform: 'uppercase',
+                        marginBottom: 14,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                    }}
+                >
+                    <span style={{ display: 'block', width: 20, height: 1, background: TEAL }} />
+                    THE GRID · TATA 1MG
+                </div>
+
+                <div
+                    style={{
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: 'clamp(32px, 4.5vw, 52px)',
+                        color: '#f0e6c8',
+                        lineHeight: 0.92,
+                        letterSpacing: '0.02em',
+                        marginBottom: 18,
+                    }}
+                >
+                    MAPS · PULSE · PIPELINE
+                </div>
+
+                <div
+                    style={{
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: 11,
+                        color: '#a89060',
+                        lineHeight: 1.7,
+                        marginBottom: 20,
+                    }}
+                >
+                    Polygon delivery zones across 120+ cities. Real-time notifications cutting SLA breaches
+                    from 70% to 15%. Turborepo monorepo shaving 64% off CI time.
+                </div>
+
+                {[
+                    { v: '120+', k: 'cities covered' },
+                    { v: '70→15%', k: 'SLA breach rate' },
+                    { v: '80%', k: 'faster builds' },
+                ].map((m) => (
+                    <div
+                        key={m.k}
+                        style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8 }}
+                    >
+                        <span
+                            style={{
+                                fontFamily: "'Bebas Neue', sans-serif",
+                                fontSize: 28,
+                                color: TEAL,
+                                lineHeight: 1,
+                            }}
+                        >
+                            {m.v}
+                        </span>
+                        <span
+                            style={{
+                                fontFamily: "'JetBrains Mono', monospace",
+                                fontSize: 8,
+                                color: '#1a5050',
+                                letterSpacing: '0.14em',
+                                textTransform: 'uppercase',
+                            }}
+                        >
+                            {m.k}
+                        </span>
+                    </div>
+                ))}
+
+                <div
+                    style={{
+                        marginTop: 14,
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: 8,
+                        color: '#006655',
+                        letterSpacing: '0.16em',
+                        textTransform: 'uppercase',
+                    }}
+                >
+                    React · Node · Redis · Google Maps · Webpack · Turborepo
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════════════
+   LATTICE OVERLAY — Moresand infrastructure
+═══════════════════════════════════════════════════════ */
+function LatticeOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | null> }) {
+    return (
+        <div
+            ref={divRef}
+            style={{ position: 'fixed', inset: 0, zIndex: 10, opacity: 0, pointerEvents: 'none' }}
+        >
+            <div
+                style={{
+                    position: 'absolute',
+                    bottom: '14%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    maxWidth: 440,
+                    textAlign: 'center',
+                }}
+            >
+                <div
+                    style={{
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: 9,
+                        letterSpacing: '0.28em',
+                        color: PURPLE_L,
+                        textTransform: 'uppercase',
+                        marginBottom: 14,
+                    }}
+                >
+                    THE LATTICE · MORESAND TECHNOLOGIES
+                </div>
+
+                <div
+                    style={{
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: 'clamp(30px, 4vw, 48px)',
+                        color: '#f0e6c8',
+                        lineHeight: 0.92,
+                        letterSpacing: '0.02em',
+                        marginBottom: 18,
+                    }}
+                >
+                    BUILD INFRASTRUCTURE
+                </div>
+
+                <div
+                    style={{
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: 11,
+                        color: '#a89060',
+                        lineHeight: 1.7,
+                        marginBottom: 20,
+                    }}
+                >
+                    Migrated legacy Backbone.js to React. PWA with service-worker pre-caching — 3× faster
+                    delivery, 50% faster repeat visits.
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
+                    {[
+                        { v: '3×', k: 'faster delivery' },
+                        { v: '50%', k: 'faster repeat visits' },
+                    ].map((m) => (
+                        <div key={m.k} style={{ textAlign: 'center' }}>
+                            <div
+                                style={{
+                                    fontFamily: "'Bebas Neue', sans-serif",
+                                    fontSize: 36,
+                                    color: PURPLE_L,
+                                    lineHeight: 1,
+                                }}
+                            >
+                                {m.v}
+                            </div>
+                            <div
+                                style={{
+                                    fontFamily: "'JetBrains Mono', monospace",
+                                    fontSize: 8,
+                                    color: '#552266',
+                                    letterSpacing: '0.14em',
+                                    textTransform: 'uppercase',
+                                    marginTop: 2,
+                                }}
+                            >
+                                {m.k}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div
+                    style={{
+                        marginTop: 16,
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: 8,
+                        color: '#552266',
+                        letterSpacing: '0.16em',
+                        textTransform: 'uppercase',
+                    }}
+                >
+                    React · Next.js · React Query · PWA · Node.js
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════════════
+   SPINE OVERLAY — career overview
+═══════════════════════════════════════════════════════ */
+const CAREER_NODES = [
     {
-        lokiEvent: 'TESSERACT ACQUIRED',
+        event: 'ORIGIN POINT',
         year: '2017–21',
         company: 'IIIT Lucknow',
         role: 'B.Tech — Information Technology',
-        metric: 'CGPA 8.14 — the origin point',
-        color: GOLD,
+        metric: 'CGPA 8.14 — foundations laid',
+        color: '#a89060',
     },
     {
-        lokiEvent: 'CAPTURED BY THE TVA',
+        event: 'FIRST SIGNAL',
         year: '2021',
         company: 'Tata 1mg',
         role: 'SDE I — first production systems',
-        metric: 'Maps across 20+ cities, PDF microservice',
-        color: GOLD,
-    },
-    {
-        lokiEvent: 'NEXUS EVENT DETECTED',
-        year: '2023',
-        company: 'Tata 1mg',
-        role: 'SDE II — building at scale',
-        metric: 'Build time 15→3 min · SLA breach 70→15%',
-        color: GOLD,
-    },
-    {
-        lokiEvent: 'TIMELINE BRANCHING',
-        year: '2024',
-        company: 'Moresand Technologies',
-        role: 'Software Engineer — new path',
-        metric: '3× faster delivery · PWA offline-first',
+        metric: 'Maps across 20+ cities · PDF microservice',
         color: TEAL,
     },
     {
-        lokiEvent: 'GOD OF THE TIMELINE',
+        event: 'SCALE ACHIEVED',
+        year: '2023',
+        company: 'Tata 1mg',
+        role: 'SDE II — building at scale',
+        metric: 'Build 15→3 min · SLA breach 70→15%',
+        color: TEAL,
+    },
+    {
+        event: 'NEW ARCHITECTURE',
+        year: '2024',
+        company: 'Moresand Technologies',
+        role: 'Software Engineer — platform rebuild',
+        metric: '3× faster delivery · PWA offline-first',
+        color: PURPLE_L,
+    },
+    {
+        event: 'CURRENT MISSION',
         year: '2025',
         company: 'Cashfree Payments',
-        role: 'Frontend Engineer II — current',
+        role: 'Frontend Engineer II — now',
         metric: '200+ merchants · 30% KYC drop reduction',
-        color: '#f5d56e',
+        color: GOLD,
         current: true,
     },
 ] as const;
 
-function TimelineOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | null> }) {
+function SpineOverlay({
+    divRef,
+    progress,
+}: {
+    divRef: React.RefObject<HTMLDivElement | null>;
+    progress: React.MutableRefObject<number>;
+}) {
+    const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+    useEffect(() => {
+        const NODE_BASE = 0.76;
+        const NODE_STEP = 0.038;
+        const FADE_SPAN = 0.024;
+        let raf: number;
+        const tick = () => {
+            const p = progress.current;
+            nodeRefs.current.forEach((el, i) => {
+                if (!el) return;
+                const lo = NODE_BASE + i * NODE_STEP;
+                let v = 0;
+                if (p >= lo && p < lo + FADE_SPAN) v = (p - lo) / FADE_SPAN;
+                else if (p >= lo + FADE_SPAN) v = 1;
+                el.style.opacity = String(v);
+                el.style.transform = `translateX(${(1 - v) * 14}px)`;
+            });
+            raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(raf);
+    }, [progress]);
+
     return (
         <div
             ref={divRef}
@@ -1270,7 +1996,6 @@ function TimelineOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | 
                     gap: 0,
                 }}
             >
-                {/* Header */}
                 <div
                     style={{
                         fontFamily: "'JetBrains Mono', monospace",
@@ -1285,10 +2010,9 @@ function TimelineOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | 
                     }}
                 >
                     <span style={{ display: 'block', width: 20, height: 1, background: GOLD }} />
-                    SACRED TIMELINE — VARIANT LOG
+                    THE SPINE — CAREER ARC
                 </div>
 
-                {/* Years total badge */}
                 <div style={{ marginBottom: 24, display: 'flex', alignItems: 'baseline', gap: 10 }}>
                     <span
                         style={{
@@ -1311,22 +2035,28 @@ function TimelineOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | 
                             lineHeight: 1.6,
                         }}
                     >
-                        YEARS ON THE TIMELINE
+                        YEARS OF
+                        <br />
+                        PRODUCTION WORK
                     </span>
                 </div>
 
-                {/* Loki event nodes */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {LOKI_NODES.map((node, i) => (
+                    {CAREER_NODES.map((node, i) => (
                         <div
                             key={i}
+                            ref={(el) => {
+                                nodeRefs.current[i] = el;
+                            }}
                             style={{
                                 display: 'flex',
                                 gap: 12,
                                 alignItems: 'flex-start',
                                 paddingBottom: 12,
                                 borderBottom:
-                                    i < LOKI_NODES.length - 1 ? '1px solid rgba(201,162,39,0.08)' : 'none',
+                                    i < CAREER_NODES.length - 1 ? '1px solid rgba(201,162,39,0.08)' : 'none',
+                                opacity: 0,
+                                transform: 'translateX(14px)',
                             }}
                         >
                             <div
@@ -1351,7 +2081,7 @@ function TimelineOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | 
                                         marginBottom: 2,
                                     }}
                                 >
-                                    {node.lokiEvent} · {node.year}
+                                    {node.event} · {node.year}
                                 </div>
                                 <div
                                     style={{
@@ -1367,7 +2097,7 @@ function TimelineOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | 
                                             style={{
                                                 marginLeft: 6,
                                                 fontSize: 7,
-                                                background: node.color,
+                                                background: GOLD,
                                                 color: '#06040c',
                                                 padding: '1px 5px',
                                                 borderRadius: 2,
@@ -1414,7 +2144,7 @@ function TimelineOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | 
                         cursor: 'pointer',
                     }}
                 >
-                    VIEW FULL TIMELINE →
+                    VIEW FULL STORY →
                 </button>
             </div>
         </div>
@@ -1422,7 +2152,7 @@ function TimelineOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | 
 }
 
 /* ═══════════════════════════════════════════════════════
-   VOID OVERLAY
+   VOID OVERLAY — contact portal
 ═══════════════════════════════════════════════════════ */
 function VoidOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | null> }) {
     return (
@@ -1450,7 +2180,7 @@ function VoidOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | null
                     textTransform: 'uppercase',
                 }}
             >
-                END OF TIME — OR THE BEGINNING
+                THE LAST MILE — OR THE NEXT ONE
             </div>
             <div
                 style={{
@@ -1508,9 +2238,17 @@ function VoidOverlay({ divRef }: { divRef: React.RefObject<HTMLDivElement | null
 }
 
 /* ═══════════════════════════════════════════════════════
-   SCROLL PROGRESS BAR — right edge
+   PROGRESS BAR — right edge
 ═══════════════════════════════════════════════════════ */
-const PROGRESS_SCENES = ['TESSERACT', 'TVA PORTALS', 'TIMELINE', 'THE VOID'] as const;
+const PROGRESS_SCENES = [
+    'THE TOUCH',
+    'THE SIGNAL',
+    'THE EXCHANGE',
+    'THE GRID',
+    'THE LATTICE',
+    'THE SPINE',
+    'THE VOID',
+] as const;
 
 function ProgressBar({ progress }: { progress: React.MutableRefObject<number> }) {
     const barRef = useRef<HTMLDivElement>(null);
@@ -1522,7 +2260,20 @@ function ProgressBar({ progress }: { progress: React.MutableRefObject<number> })
             const p = progress.current;
             if (barRef.current) barRef.current.style.transform = `scaleY(${p})`;
             if (labelRef.current) {
-                const idx = p < 0.27 ? 0 : p < 0.55 ? 1 : p < 0.82 ? 2 : 3;
+                const idx =
+                    p < 0.14
+                        ? 0
+                        : p < 0.28
+                          ? 1
+                          : p < 0.44
+                            ? 2
+                            : p < 0.6
+                              ? 3
+                              : p < 0.74
+                                ? 4
+                                : p < 0.88
+                                  ? 5
+                                  : 6;
                 labelRef.current.textContent = PROGRESS_SCENES[idx];
             }
             raf = requestAnimationFrame(tick);
@@ -1548,7 +2299,7 @@ function ProgressBar({ progress }: { progress: React.MutableRefObject<number> })
                 style={{
                     width: '100%',
                     height: '100%',
-                    background: `linear-gradient(180deg, ${GOLD}, ${TEAL})`,
+                    background: `linear-gradient(180deg, ${BLUE_M}, ${TEAL}, ${GOLD})`,
                     transformOrigin: 'top',
                     transform: 'scaleY(0)',
                 }}
@@ -1568,7 +2319,7 @@ function ProgressBar({ progress }: { progress: React.MutableRefObject<number> })
                     whiteSpace: 'nowrap',
                 }}
             >
-                TESSERACT
+                THE TOUCH
             </div>
         </div>
     );
@@ -1624,17 +2375,20 @@ export default function CinematicHome(): JSX.Element {
     const mouseRef = useRef({ x: 0, y: 0 });
     const driverRef = useRef<HTMLDivElement>(null);
 
-    // Overlay refs — all driven by one RAF
-    const heroRef = useRef<HTMLDivElement>(null);
-    const portalRef = useRef<HTMLDivElement>(null);
-    const timelineRef = useRef<HTMLDivElement>(null);
+    const touchRef = useRef<HTMLDivElement>(null);
+    const exchangeRef = useRef<HTMLDivElement>(null);
+    const gridRef = useRef<HTMLDivElement>(null);
+    const latticeRef = useRef<HTMLDivElement>(null);
+    const spineRef = useRef<HTMLDivElement>(null);
     const voidRef = useRef<HTMLDivElement>(null);
 
     const overlays = useMemo<OverlayDef[]>(
         () => [
-            { ref: heroRef, lo: -0.1, hi: 0.27, fl: 0.06 },
-            { ref: portalRef, lo: 0.27, hi: 0.6 },
-            { ref: timelineRef, lo: 0.57, hi: 0.93 },
+            { ref: touchRef, lo: -0.1, hi: 0.28, fl: 0.06 },
+            { ref: exchangeRef, lo: 0.26, hi: 0.55 },
+            { ref: gridRef, lo: 0.42, hi: 0.7 },
+            { ref: latticeRef, lo: 0.58, hi: 0.78 },
+            { ref: spineRef, lo: 0.72, hi: 0.93 },
             { ref: voidRef, lo: 0.86, hi: 1.02 },
         ],
         []
@@ -1644,7 +2398,6 @@ export default function CinematicHome(): JSX.Element {
 
     const { muted, toggleMute } = useSoundEngine(progress);
 
-    // Mouse tracking for camera parallax
     useEffect(() => {
         const onMove = (e: MouseEvent) => {
             mouseRef.current.x = (e.clientX / window.innerWidth - 0.5) * 2;
@@ -1678,9 +2431,9 @@ export default function CinematicHome(): JSX.Element {
             <div className="tva-grain" aria-hidden="true" />
 
             {/* Fixed 3D canvas */}
-            <div style={{ position: 'fixed', inset: 0, zIndex: 0, background: '#06040c' }}>
+            <div style={{ position: 'fixed', inset: 0, zIndex: 0, background: '#02010a' }}>
                 <Canvas
-                    camera={{ position: [0, 0, 26], fov: 50, near: 0.1, far: 1000 }}
+                    camera={{ position: [0, 2, 20], fov: 50, near: 0.1, far: 1000 }}
                     gl={{ antialias: true, alpha: false }}
                     dpr={[1, 1.5]}
                 >
@@ -1695,13 +2448,14 @@ export default function CinematicHome(): JSX.Element {
             />
 
             {/* Scene overlays */}
-            <HeroOverlay divRef={heroRef} />
-            <PortalOverlay divRef={portalRef} />
-            <TimelineOverlay divRef={timelineRef} />
+            <TouchOverlay divRef={touchRef} />
+            <ExchangeOverlay divRef={exchangeRef} />
+            <GridOverlay divRef={gridRef} />
+            <LatticeOverlay divRef={latticeRef} />
+            <SpineOverlay divRef={spineRef} progress={progress} />
             <VoidOverlay divRef={voidRef} />
             <ProgressBar progress={progress} />
 
-            {/* Sound toggle */}
             <SoundToggle muted={muted} onToggle={toggleMute} />
 
             {/* 500vh scroll driver */}

@@ -681,6 +681,11 @@
   *, *::before, *::after { animation-duration: 0.01s !important; transition-duration: 0.01s !important; }
 }
 
+/* TVA scroll cue — pulses to invite first scroll */
+.tva-scroll-cue {
+  animation: v2Pulse 2.2s ease-in-out infinite;
+}
+
 /* ============================================================
    Kinetic typography
    ============================================================ */
