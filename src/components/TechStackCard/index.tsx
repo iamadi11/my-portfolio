@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import clsx from 'clsx';
 import { motion, useReducedMotion } from 'motion/react';
@@ -110,6 +110,7 @@ const TechStackCard: React.FC<TechStackCardProps> = ({ titleAs = 'h2' }) => {
     const prefersReducedMotion = useReducedMotion();
     const reduce = prefersReducedMotion === true;
     const TitleTag = titleAs;
+    const [hovered, setHovered] = useState<string | null>(null);
 
     return (
         <motion.section
@@ -139,48 +140,93 @@ const TechStackCard: React.FC<TechStackCardProps> = ({ titleAs = 'h2' }) => {
                 <div className="mt-12 flex flex-col gap-10">
                     {techGroups.map((group, gi) => (
                         <div key={group.label}>
-                            <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-zinc-500">
-                                {group.label}
-                            </p>
+                            {/* animated group label + rule */}
+                            <motion.div
+                                className="mb-4 flex items-center gap-3"
+                                initial={reduce ? { opacity: 1, x: 0 } : { opacity: 0, x: -16 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true, margin: '-16px' }}
+                                transition={
+                                    reduce
+                                        ? { duration: 0 }
+                                        : { delay: gi * 0.06, duration: 0.38, ease: [0.22, 1, 0.36, 1] }
+                                }
+                            >
+                                <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
+                                    {group.label}
+                                </p>
+                                <div className="h-px flex-1 bg-gradient-to-r from-white/[0.07] to-transparent" />
+                            </motion.div>
+
                             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 md:grid-cols-6 lg:grid-cols-7">
-                                {group.items.map((tech, index) => (
-                                    <motion.div
-                                        key={tech.name}
-                                        className={clsx(
-                                            'flex flex-col items-center rounded-2xl border border-white/[0.07]',
-                                            'bg-white/[0.03] px-2 py-4 backdrop-blur-sm transition-colors',
-                                            'hover:border-cyan-500/20 hover:bg-white/[0.05]'
-                                        )}
-                                        initial={reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        viewport={{ once: true, margin: '-20px' }}
-                                        transition={
-                                            reduce
-                                                ? { duration: 0 }
-                                                : {
-                                                      delay: gi * 0.05 + index * 0.03,
-                                                      duration: 0.35,
-                                                      ease: [0.22, 1, 0.36, 1],
-                                                  }
-                                        }
-                                        whileHover={
-                                            reduce ? { y: 0 } : { y: -3, transition: { duration: 0.2 } }
-                                        }
-                                    >
-                                        <div
-                                            className="flex size-11 items-center justify-center rounded-xl bg-zinc-900/80"
-                                            style={{
-                                                color: tech.color,
-                                                filter: `drop-shadow(0 0 16px ${tech.color}55)`,
-                                            }}
+                                {group.items.map((tech, index) => {
+                                    const isHov = hovered === tech.name && !reduce;
+                                    return (
+                                        <motion.div
+                                            key={tech.name}
+                                            className={clsx(
+                                                'flex flex-col items-center rounded-2xl border border-white/[0.07]',
+                                                'bg-white/[0.03] px-2 py-4 backdrop-blur-sm',
+                                                'cursor-default'
+                                            )}
+                                            style={
+                                                isHov
+                                                    ? {
+                                                          borderColor: `${tech.color}30`,
+                                                          backgroundColor: `${tech.color}08`,
+                                                          transition:
+                                                              'border-color 0.2s, background-color 0.2s',
+                                                      }
+                                                    : {
+                                                          transition:
+                                                              'border-color 0.2s, background-color 0.2s',
+                                                      }
+                                            }
+                                            initial={reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+                                            whileInView={{ opacity: 1, y: 0 }}
+                                            viewport={{ once: true, margin: '-20px' }}
+                                            transition={
+                                                reduce
+                                                    ? { duration: 0 }
+                                                    : {
+                                                          delay: gi * 0.05 + index * 0.03,
+                                                          duration: 0.35,
+                                                          ease: [0.22, 1, 0.36, 1],
+                                                      }
+                                            }
+                                            whileHover={
+                                                reduce ? {} : { y: -4, transition: { duration: 0.2 } }
+                                            }
+                                            onHoverStart={() => setHovered(tech.name)}
+                                            onHoverEnd={() => setHovered(null)}
                                         >
-                                            {tech.icon}
-                                        </div>
-                                        <span className="mt-2.5 text-center text-[10px] font-medium leading-tight text-zinc-400">
-                                            {tech.name}
-                                        </span>
-                                    </motion.div>
-                                ))}
+                                            {/* icon with brand-color glow */}
+                                            <div
+                                                style={{
+                                                    color: tech.color,
+                                                    filter: isHov
+                                                        ? `drop-shadow(0 0 14px ${tech.color}CC) drop-shadow(0 0 6px ${tech.color}88)`
+                                                        : `drop-shadow(0 0 10px ${tech.color}44)`,
+                                                    transform: isHov ? 'scale(1.14)' : 'scale(1)',
+                                                    transition: 'filter 0.25s ease, transform 0.25s ease',
+                                                }}
+                                                className="flex size-11 items-center justify-center rounded-xl bg-zinc-900/80"
+                                            >
+                                                {tech.icon}
+                                            </div>
+                                            {/* name fades to tech color on hover */}
+                                            <span
+                                                className="mt-2.5 text-center text-[10px] font-medium leading-tight"
+                                                style={{
+                                                    color: isHov ? tech.color : '#a1a1aa',
+                                                    transition: 'color 0.2s ease',
+                                                }}
+                                            >
+                                                {tech.name}
+                                            </span>
+                                        </motion.div>
+                                    );
+                                })}
                             </div>
                         </div>
                     ))}
