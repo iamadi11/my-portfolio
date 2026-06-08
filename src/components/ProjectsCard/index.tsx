@@ -101,6 +101,9 @@ const ProjectsCard: React.FC = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-24px' }}
                     transition={reduce ? { duration: 0 } : { duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={
+                        reduce ? {} : { y: -4, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }
+                    }
                 >
                     <div
                         className={clsx(

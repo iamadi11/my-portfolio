@@ -166,11 +166,9 @@ const TechStackCard: React.FC<TechStackCardProps> = ({ titleAs = 'h2' }) => {
                         <motion.div
                             aria-hidden
                             className="pointer-events-none absolute inset-0"
-                            style={{
-                                background: spotlightBg,
-                                opacity: spotlightActive ? 1 : 0,
-                                transition: 'opacity 0.4s ease',
-                            }}
+                            style={{ background: spotlightBg }}
+                            animate={{ opacity: spotlightActive ? 1 : 0 }}
+                            transition={{ duration: 0.4, ease: 'easeInOut' }}
                         />
                     )}
                     {techGroups.map((group, gi) => (

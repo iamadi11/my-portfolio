@@ -28,13 +28,14 @@ const PARTICLES = [
 /* ---------- magnetic wrapper ---------- */
 function MagneticWrapper({ children, strength = 0.28 }: { children: React.ReactNode; strength?: number }) {
     const ref = useRef<HTMLDivElement>(null);
+    const prefersReduced = useReducedMotion();
     const mx = useMotionValue(0);
     const my = useMotionValue(0);
     const sx = useSpring(mx, { stiffness: 220, damping: 22, mass: 0.4 });
     const sy = useSpring(my, { stiffness: 220, damping: 22, mass: 0.4 });
 
     function onMove(e: React.MouseEvent) {
-        if (!ref.current) return;
+        if (!ref.current || prefersReduced) return;
         const r = ref.current.getBoundingClientRect();
         mx.set((e.clientX - (r.left + r.width / 2)) * strength);
         my.set((e.clientY - (r.top + r.height / 2)) * strength);
