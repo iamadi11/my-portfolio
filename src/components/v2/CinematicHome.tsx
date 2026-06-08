@@ -16,9 +16,16 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Stars } from '@react-three/drei';
+import { Environment, Sparkles, Stars } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Bloom, ChromaticAberration, EffectComposer, Vignette } from '@react-three/postprocessing';
+import {
+    Bloom,
+    ChromaticAberration,
+    EffectComposer,
+    GodRays,
+    SMAA,
+    Vignette,
+} from '@react-three/postprocessing';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import * as THREE from 'three';
@@ -240,6 +247,7 @@ function TouchOrigin({ progress }: { progress: React.MutableRefObject<number> })
 
     return (
         <group ref={root}>
+            <Sparkles count={18} size={0.7} speed={1.6} color="#90b0ff" noise={3} />
             <points geometry={particleGeo} material={particleMat} />
             <mesh ref={coreRef}>
                 <sphereGeometry args={[1.4, 32, 32]} />
@@ -474,12 +482,14 @@ function CityExchange({ progress }: { progress: React.MutableRefObject<number> }
 
     const coreMat = useMemo(
         () =>
-            new THREE.MeshStandardMaterial({
+            new THREE.MeshPhysicalMaterial({
                 color: GOLD,
                 emissive: GOLD,
                 emissiveIntensity: 3,
-                metalness: 0.9,
-                roughness: 0.05,
+                metalness: 0.95,
+                roughness: 0.02,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.04,
             }),
         []
     );
@@ -605,12 +615,14 @@ function CityGrid({ progress }: { progress: React.MutableRefObject<number> }) {
 
     const hexMat = useMemo(
         () =>
-            new THREE.MeshStandardMaterial({
+            new THREE.MeshPhysicalMaterial({
                 color: TEAL,
                 emissive: TEAL,
                 emissiveIntensity: 0.8,
-                metalness: 0.3,
-                roughness: 0.5,
+                metalness: 0.82,
+                roughness: 0.12,
+                clearcoat: 0.9,
+                clearcoatRoughness: 0.08,
                 transparent: true,
                 opacity: 0.72,
             }),
@@ -910,12 +922,14 @@ function CareerSpine({ progress }: { progress: React.MutableRefObject<number> })
         () =>
             SPINE_NODES.map(
                 (n) =>
-                    new THREE.MeshStandardMaterial({
+                    new THREE.MeshPhysicalMaterial({
                         color: n.color,
                         emissive: n.color,
                         emissiveIntensity: n.isPrimary ? 4.5 : 2.8,
-                        metalness: 0.8,
-                        roughness: 0.05,
+                        metalness: 0.9,
+                        roughness: 0.03,
+                        clearcoat: 1.0,
+                        clearcoatRoughness: 0.04,
                     })
             ),
         []
@@ -1073,6 +1087,7 @@ function VoidPortal({ progress }: { progress: React.MutableRefObject<number> }) 
                 </mesh>
             </group>
             <points ref={swirl} geometry={swirlGeo} material={swirlMat} />
+            <Sparkles count={30} size={2.2} speed={0.28} color={GOLD} noise={2} />
             <mesh position={[0, 0, -0.8]}>
                 <sphereGeometry args={[PORTAL_R * 0.55, 14, 14]} />
                 <meshStandardMaterial
@@ -1086,6 +1101,51 @@ function VoidPortal({ progress }: { progress: React.MutableRefObject<number> }) 
                 />
             </mesh>
         </group>
+    );
+}
+
+/* ═══════════════════════════════════════════════════════
+   SPINE SUN — invisible GodRays light source above the spine
+   Becomes visible only during THE SPINE (p=0.70–0.96)
+═══════════════════════════════════════════════════════ */
+function SpineSun({
+    progress,
+    sunRef,
+}: {
+    progress: React.MutableRefObject<number>;
+    sunRef: React.MutableRefObject<THREE.Mesh>;
+}) {
+    const mat = useMemo(
+        () =>
+            new THREE.MeshBasicMaterial({
+                color: GOLD,
+                transparent: true,
+                opacity: 0,
+                depthWrite: false,
+            }),
+        []
+    );
+
+    useFrame(({ clock }) => {
+        const p = progress.current;
+        const t = clock.getElapsedTime();
+        let v = 0;
+        if (p >= 0.7 && p < 0.76) v = (p - 0.7) / 0.06;
+        else if (p >= 0.76 && p < 0.9) v = 1;
+        else if (p >= 0.9 && p < 0.96) v = 1 - (p - 0.9) / 0.06;
+
+        if (sunRef.current) {
+            sunRef.current.visible = v > 0.005;
+            mat.opacity = v * (0.88 + Math.sin(t * 1.3) * 0.1);
+        }
+    });
+
+    // World position: SPINE_POS=[0,0,-30] + local y=22 → [0, 22, -30]
+    return (
+        <mesh ref={sunRef} position={[0, 22, -30]}>
+            <sphereGeometry args={[0.38, 6, 6]} />
+            <primitive object={mat} />
+        </mesh>
     );
 }
 
@@ -1383,16 +1443,19 @@ function Scene({
     progress: React.MutableRefObject<number>;
     mouse: React.MutableRefObject<{ x: number; y: number }>;
 }) {
+    const sunMeshRef = useRef<THREE.Mesh>(null!);
+
     if (REDUCED_MOTION) {
-        return <Stars radius={200} depth={80} count={2000} factor={2} fade speed={0} />;
+        return <Stars radius={180} depth={60} count={2000} factor={3} fade speed={0} />;
     }
     return (
         <>
             <SceneFog />
             <CameraRig progress={progress} mouse={mouse} />
             <SceneAtmosphere progress={progress} />
+            <Environment preset="night" />
 
-            <Stars radius={200} depth={80} count={4200} factor={3} fade speed={0.18} />
+            <Stars radius={180} depth={60} count={6000} factor={4.5} saturation={0.2} fade speed={0.1} />
             <VoidDust />
 
             {/* Scene objects by zone */}
@@ -1403,13 +1466,24 @@ function Scene({
             <CityGrid progress={progress} />
             <CityLattice progress={progress} />
             <CareerSpine progress={progress} />
+            <SpineSun progress={progress} sunRef={sunMeshRef} />
 
             <VoidPortal progress={progress} />
             <VoidDebris progress={progress} />
             <VoidLight progress={progress} />
 
             <EffectComposer>
+                <SMAA />
                 <Bloom intensity={2.2} luminanceThreshold={0.12} luminanceSmoothing={0.9} mipmapBlur />
+                <GodRays
+                    sun={sunMeshRef}
+                    samples={20}
+                    density={0.96}
+                    decay={0.94}
+                    weight={0.4}
+                    exposure={0.45}
+                    blur
+                />
                 <ChromaticAberration offset={CA_OFFSET} />
                 <Vignette eskil={false} offset={0.15} darkness={0.68} />
             </EffectComposer>
