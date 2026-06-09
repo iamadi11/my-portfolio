@@ -1,6 +1,6 @@
 # Source of truth — Aditya Raj portfolio
 
-**Last reviewed:** 2026-06-05  
+**Last reviewed:** 2026-06-09  
 **Source PDF:** `Aditya_Raj_SDE.pdf` (updated June 2026)  
 **Hierarchy (strict):** `Aditya_Raj_SDE.pdf` → LinkedIn → GitHub. On conflict, **resume wins**.
 
@@ -8,15 +8,15 @@
 
 ## Identity
 
-| Field    | Value (resume)                                                                                      |
-| -------- | --------------------------------------------------------------------------------------------------- |
-| Name     | Aditya Raj                                                                                          |
-| Location | Bengaluru, Karnataka, India                                                                         |
-| Title    | Frontend Engineer II (resume current role, Cashfree Payments; hero + site metadata + JSON-LD match) |
-| Email    | adityaraj92.20@gmail.com                                                                            |
-| Phone    | +91 72578 07070 → `tel:+917257807070`                                                               |
-| LinkedIn | https://www.linkedin.com/in/adityaraj11/                                                            |
-| GitHub   | https://github.com/iamadi11                                                                         |
+| Field    | Value (resume)                                                                                                  |
+| -------- | --------------------------------------------------------------------------------------------------------------- |
+| Name     | Aditya Raj                                                                                                      |
+| Location | Bengaluru, Karnataka, India                                                                                     |
+| Title    | Frontend Engineer II (most recent role; Cashfree Payments Mar 2025 – May 2026; currently open to opportunities) |
+| Email    | adityaraj92.20@gmail.com                                                                                        |
+| Phone    | +91 72578 07070 → `tel:+917257807070`                                                                           |
+| LinkedIn | https://www.linkedin.com/in/adityaraj11/                                                                        |
+| GitHub   | https://github.com/iamadi11                                                                                     |
 
 **Tagline (resume summary, shortened for UI):** Frontend engineer with ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise; strong React / Next.js / TypeScript; performance and production systems focus.
 
@@ -130,7 +130,7 @@ my-portfolio/
 
 ### Most recent role (resume)
 
-- **Frontend Engineer II** — Cashfree Payments — Mar 2025 – May 2026 — Bengaluru
+- **Frontend Engineer II** — Cashfree Payments — Mar 2025 – May 2026 — Bengaluru _(ended; currently open to new roles)_
 
 ### Prior roles (resume)
 

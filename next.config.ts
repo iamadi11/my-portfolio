@@ -1,9 +1,21 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-    /** Avoid advertising stack in response headers (production hygiene). */
     poweredByHeader: false,
-    reactStrictMode: false,
+    reactStrictMode: true,
+
+    experimental: {
+        /** Tree-shake barrel packages — biggest win for react-icons (~400 icons → only used ones). */
+        optimizePackageImports: ['react-icons', 'motion'],
+        /** Minify CSS with LightningCSS in prod. */
+        optimizeCss: true,
+    },
+
+    compiler: {
+        /** Strip all console.* calls in production builds. */
+        removeConsole: { exclude: ['error', 'warn'] },
+    },
+
     async redirects() {
         return [
             {
@@ -25,7 +37,6 @@ const nextConfig: NextConfig = {
         ];
     },
     images: {
-        /** GitHub repo OG images are stable; longer TTL improves repeat visits (Lighthouse / CDN). */
         minimumCacheTTL: 60 * 60 * 24 * 7,
         remotePatterns: [
             {

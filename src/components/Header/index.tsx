@@ -9,6 +9,49 @@ import { usePathname } from 'next/navigation';
 import { FaLinkedin, FaPhoneAlt } from 'react-icons/fa';
 import { FaGithub } from 'react-icons/fa6';
 
+function HomeLogo() {
+    return (
+        <svg
+            width="28"
+            height="28"
+            viewBox="0 0 28 28"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden
+            className="drop-shadow-[0_0_14px_rgba(34,211,238,0.45)]"
+        >
+            <defs>
+                <linearGradient id="hl-bg" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="rgba(34,211,238,0.15)" />
+                    <stop offset="100%" stopColor="rgba(139,92,246,0.10)" />
+                </linearGradient>
+                <linearGradient id="hl-border" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="rgba(34,211,238,0.5)" />
+                    <stop offset="100%" stopColor="rgba(139,92,246,0.3)" />
+                </linearGradient>
+                <linearGradient id="hl-text" x1="6" y1="8" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#67e8f9" />
+                    <stop offset="100%" stopColor="#a78bfa" />
+                </linearGradient>
+            </defs>
+            <rect width="28" height="28" rx="7" fill="url(#hl-bg)" />
+            <rect x="0.5" y="0.5" width="27" height="27" rx="6.5" stroke="url(#hl-border)" strokeWidth="1" />
+            <text
+                x="14"
+                y="19.5"
+                textAnchor="middle"
+                fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
+                fontWeight="800"
+                fontSize="11"
+                letterSpacing="-0.5"
+                fill="url(#hl-text)"
+            >
+                AR
+            </text>
+        </svg>
+    );
+}
+
 const headerJson = {
     tag: 'div',
     visible: true,
@@ -27,18 +70,7 @@ const headerJson = {
                     href: '/',
                     visible: true,
                     ariaLabel: 'Aditya Raj — home',
-                    children: [
-                        {
-                            tag: 'Image',
-                            visible: true,
-                            src: '/favicon-32x32.png',
-                            alt: '',
-                            width: 24,
-                            height: 24,
-                            priority: true,
-                            className: 'drop-shadow-[0_0_14px_rgba(34,211,238,0.35)]',
-                        },
-                    ],
+                    children: <HomeLogo />,
                 },
             ],
         },

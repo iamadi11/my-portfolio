@@ -18,7 +18,7 @@ const roles: Role[] = [
     {
         title: 'Frontend Engineer II',
         company: 'Cashfree Payments',
-        range: 'Mar 2025 – Present',
+        range: 'Mar 2025 – May 2026',
         location: 'Bengaluru, Karnataka',
         bullets: [
             'Own and maintain Risk WebApp platform serving enterprise merchants processing millions of transactions per month.',
