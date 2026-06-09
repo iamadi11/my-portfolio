@@ -244,6 +244,7 @@ const TechStackCard: React.FC<TechStackCardProps> = ({ titleAs = 'h2' }) => {
                                                     transition: 'filter 0.25s ease, transform 0.25s ease',
                                                 }}
                                                 className="flex size-11 items-center justify-center rounded-xl bg-zinc-900/80"
+                                                aria-hidden="true"
                                             >
                                                 {tech.icon}
                                             </div>

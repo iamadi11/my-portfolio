@@ -69,7 +69,7 @@ const headerJson = {
                     tag: 'Link',
                     href: '/',
                     visible: true,
-                    ariaLabel: 'Aditya Raj — home',
+                    ariaLabel: 'AR – Aditya Raj — home',
                     children: <HomeLogo />,
                 },
             ],

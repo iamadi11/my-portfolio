@@ -108,17 +108,15 @@ const DetailsCard: React.FC = () => {
     const reduce = prefersReducedMotion === true;
 
     const container = {
-        hidden: { opacity: reduce ? 1 : 0 },
+        hidden: {},
         show: {
-            opacity: 1,
             transition: reduce ? { duration: 0 } : { staggerChildren: 0.09, delayChildren: 0.04 },
         },
     };
 
     const item = {
-        hidden: { opacity: reduce ? 1 : 0, y: reduce ? 0 : 16 },
+        hidden: { y: reduce ? 0 : 16 },
         show: {
-            opacity: 1,
             y: 0,
             transition: reduce ? { duration: 0 } : { type: 'spring' as const, stiffness: 360, damping: 30 },
         },
@@ -231,10 +229,8 @@ const DetailsCard: React.FC = () => {
                                     key={word}
                                     className="bg-gradient-to-r from-cyan-300 via-sky-400 to-violet-400 bg-clip-text text-5xl text-transparent sm:text-6xl lg:text-7xl"
                                     style={{ textShadow: '0 0 60px rgba(34,211,238,0.12)' }}
-                                    initial={
-                                        reduce ? { opacity: 1 } : { opacity: 0, filter: 'blur(14px)', y: 22 }
-                                    }
-                                    animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+                                    initial={reduce ? { y: 0 } : { y: 22 }}
+                                    animate={{ y: 0 }}
                                     transition={
                                         reduce
                                             ? { duration: 0 }
@@ -291,8 +287,8 @@ const DetailsCard: React.FC = () => {
                         {STATS.map(({ label, countTo, decimals, suffix, staticVal }, i) => (
                             <motion.div
                                 key={label}
-                                initial={reduce ? { opacity: 1 } : { opacity: 0, y: 8 }}
-                                animate={{ opacity: 1, y: 0 }}
+                                initial={reduce ? { y: 0 } : { y: 8 }}
+                                animate={{ y: 0 }}
                                 transition={
                                     reduce
                                         ? { duration: 0 }
@@ -422,8 +418,8 @@ const DetailsCard: React.FC = () => {
                             'ring-2 ring-cyan-400/30 ring-offset-4 ring-offset-zinc-950',
                             'shadow-[0_0_80px_-8px_rgba(34,211,238,0.55)]'
                         )}
-                        initial={reduce ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        initial={reduce ? { scale: 1 } : { scale: 0.9 }}
+                        animate={{ scale: 1 }}
                         transition={
                             reduce
                                 ? { duration: 0 }
@@ -453,8 +449,8 @@ const DetailsCard: React.FC = () => {
                                 'shadow-[0_4px_20px_rgba(0,0,0,0.45)]',
                                 pos
                             )}
-                            initial={reduce ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.75 }}
-                            animate={{ opacity: 1, scale: 1 }}
+                            initial={reduce ? { scale: 1 } : { scale: 0.75 }}
+                            animate={{ scale: 1 }}
                             transition={
                                 reduce
                                     ? { duration: 0 }
