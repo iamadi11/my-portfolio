@@ -7,7 +7,7 @@ import { motion, useInView, useMotionValue, useReducedMotion, useSpring } from '
 import Image from 'next/image';
 import Link from 'next/link';
 
-/* ---------- deterministic ambient particles (CSS-driven) ---------- */
+/* ---------- ambient particles (CSS-driven, compositor-only) ---------- */
 const PARTICLES = [
     { top: 12, left: 5, dur: 5.8, delay: 0, size: 2 },
     { top: 25, left: 18, dur: 7.2, delay: 1.1, size: 1.5 },
@@ -25,7 +25,23 @@ const PARTICLES = [
     { top: 60, left: 75, dur: 7.0, delay: 0.9, size: 2.5 },
 ];
 
-/* ---------- count-up component ---------- */
+/* ---------- skill badges floating around avatar ---------- */
+const SKILL_BADGES = [
+    { label: 'React', pos: 'top-2 -left-16 sm:-left-20', delay: 0.72 },
+    { label: 'Next.js', pos: 'top-8 -right-16 sm:-right-20', delay: 0.88 },
+    { label: 'TypeScript', pos: 'bottom-14 -left-20 sm:-left-24', delay: 1.04 },
+    { label: 'Node.js', pos: 'bottom-6 -right-14 sm:-right-18', delay: 1.18 },
+] as const;
+
+/* ---------- stats data ---------- */
+const STATS = [
+    { label: 'yrs exp', countTo: 4.5, decimals: 1, suffix: '+', staticVal: null },
+    { label: 'faster builds', countTo: 80, decimals: 0, suffix: '%', staticVal: null },
+    { label: 'SLA drop', countTo: null, decimals: 0, suffix: '', staticVal: '70→15%' },
+    { label: 'txns / mo', countTo: null, decimals: 0, suffix: '', staticVal: '~M' },
+] as const;
+
+/* ---------- count-up ---------- */
 function CountUp({
     to,
     from = 0,
@@ -47,21 +63,16 @@ function CountUp({
         if (!inView || !ref.current || prefersReduced) return;
         const startTime = performance.now();
         const range = to - from;
-
         function step(now: number) {
             const progress = Math.min((now - startTime) / (duration * 1000), 1);
             const eased = 1 - Math.pow(1 - progress, 3);
-            if (ref.current) {
-                ref.current.textContent = `${(from + range * eased).toFixed(decimals)}${suffix}`;
-            }
+            if (ref.current) ref.current.textContent = `${(from + range * eased).toFixed(decimals)}${suffix}`;
             if (progress < 1) requestAnimationFrame(step);
         }
-
         requestAnimationFrame(step);
     }, [inView, from, to, decimals, suffix, duration, prefersReduced]);
 
-    const initial = `${(prefersReduced ? to : from).toFixed(decimals)}${suffix}`;
-    return <span ref={ref}>{initial}</span>;
+    return <span ref={ref}>{`${(prefersReduced ? to : from).toFixed(decimals)}${suffix}`}</span>;
 }
 
 /* ---------- magnetic wrapper ---------- */
@@ -91,14 +102,6 @@ function MagneticWrapper({ children, strength = 0.28 }: { children: React.ReactN
     );
 }
 
-/* ---------- stats data ---------- */
-const STATS = [
-    { label: 'years exp', countTo: 4.5, decimals: 1, suffix: '+', staticVal: null },
-    { label: 'faster builds', countTo: 80, decimals: 0, suffix: '%', staticVal: null },
-    { label: 'SLA reduction', countTo: null, decimals: 0, suffix: '', staticVal: '70→15%' },
-    { label: 'txns processed', countTo: null, decimals: 0, suffix: '', staticVal: '~M/mo' },
-] as const;
-
 /* ---------- main component ---------- */
 const DetailsCard: React.FC = () => {
     const prefersReducedMotion = useReducedMotion();
@@ -125,11 +128,11 @@ const DetailsCard: React.FC = () => {
         <section
             aria-labelledby="hero-title"
             className={clsx(
-                'relative mx-auto max-w-6xl overflow-hidden px-4 py-14 sm:px-6 sm:py-20',
-                'md:py-24 lg:py-28'
+                'relative mx-auto max-w-6xl overflow-visible px-4 py-14 sm:px-6 sm:py-20',
+                'md:py-28 lg:py-32'
             )}
         >
-            {/* ambient floating particles — CSS keyframe, compositor-only */}
+            {/* ambient particles */}
             {!reduce &&
                 PARTICLES.map((p, i) => (
                     <span
@@ -147,31 +150,66 @@ const DetailsCard: React.FC = () => {
                     />
                 ))}
 
-            {/* radial ambient glow behind name */}
+            {/* ── background layers ── */}
+            {/* dot grid */}
+            <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 -z-10"
+                style={{
+                    backgroundImage: 'radial-gradient(circle, rgba(148,163,184,0.07) 1px, transparent 1px)',
+                    backgroundSize: '32px 32px',
+                    maskImage: 'radial-gradient(ellipse 85% 85% at 50% 50%, black 30%, transparent 100%)',
+                    WebkitMaskImage:
+                        'radial-gradient(ellipse 85% 85% at 50% 50%, black 30%, transparent 100%)',
+                }}
+            />
+            {/* cyan left glow */}
             <div
                 aria-hidden
                 className="pointer-events-none absolute left-0 top-0 -z-10 size-full"
                 style={{
                     background:
-                        'radial-gradient(ellipse 55% 40% at 30% 45%, rgba(34,211,238,0.07), transparent 70%)',
+                        'radial-gradient(ellipse 60% 55% at 18% 42%, rgba(34,211,238,0.14), transparent 68%)',
                 }}
             />
+            {/* violet right glow */}
+            <div
+                aria-hidden
+                className="pointer-events-none absolute left-0 top-0 -z-10 size-full"
+                style={{
+                    background:
+                        'radial-gradient(ellipse 50% 50% at 82% 55%, rgba(139,92,246,0.11), transparent 68%)',
+                }}
+            />
+            {/* top beam */}
+            {!reduce && (
+                <div
+                    aria-hidden
+                    className="pointer-events-none absolute -top-24 left-1/2 -z-10 h-64 w-px -translate-x-1/2"
+                    style={{
+                        background:
+                            'linear-gradient(to bottom, transparent, rgba(34,211,238,0.3) 50%, transparent)',
+                        filter: 'blur(18px)',
+                    }}
+                />
+            )}
 
             <div
                 className={clsx(
-                    'flex flex-col items-center gap-12 lg:flex-row lg:items-center lg:justify-between lg:gap-16'
+                    'flex flex-col items-center gap-16 lg:flex-row lg:items-center lg:justify-between lg:gap-20'
                 )}
             >
+                {/* ── left: text ── */}
                 <motion.div
                     className="max-w-xl text-center lg:max-w-2xl lg:text-left"
                     variants={container}
                     initial="hidden"
                     animate="show"
                 >
-                    {/* Availability badge */}
+                    {/* availability badge */}
                     <motion.div
                         variants={item}
-                        className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5"
+                        className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/[0.07] px-4 py-1.5 shadow-[0_0_18px_-4px_rgba(52,211,153,0.35)]"
                     >
                         <span
                             className={clsx(
@@ -180,18 +218,19 @@ const DetailsCard: React.FC = () => {
                             )}
                             aria-hidden
                         />
-                        <span className="text-xs font-medium tracking-wide text-emerald-300">
-                            Available for opportunities
+                        <span className="text-xs font-semibold uppercase tracking-widest text-emerald-300">
+                            Open to opportunities
                         </span>
                     </motion.div>
 
-                    {/* blur-reveal name — each word independent */}
+                    {/* name blur-reveal */}
                     <h1 id="hero-title" className="mt-1 font-extrabold tracking-tight">
                         <span className="flex flex-wrap justify-center gap-x-4 lg:justify-start">
                             {['Aditya', 'Raj'].map((word, i) => (
                                 <motion.span
                                     key={word}
-                                    className="bg-gradient-to-r from-cyan-300 via-sky-400 to-violet-400 bg-clip-text text-4xl text-transparent sm:text-5xl lg:text-6xl"
+                                    className="bg-gradient-to-r from-cyan-300 via-sky-400 to-violet-400 bg-clip-text text-5xl text-transparent sm:text-6xl lg:text-7xl"
+                                    style={{ textShadow: '0 0 60px rgba(34,211,238,0.12)' }}
                                     initial={
                                         reduce ? { opacity: 1 } : { opacity: 0, filter: 'blur(14px)', y: 22 }
                                     }
@@ -217,51 +256,55 @@ const DetailsCard: React.FC = () => {
                         </span>
                     </h1>
 
-                    <motion.p variants={item} className="mt-4 text-pretty text-lg text-zinc-300 sm:text-xl">
-                        <span className="font-semibold text-white">Software Development Engineer</span>
-                        <span className="text-zinc-500"> · Bengaluru</span>
-                    </motion.p>
-
+                    {/* title chip + location */}
                     <motion.p
                         variants={item}
-                        className="mt-4 max-w-xl text-pretty text-sm leading-relaxed text-zinc-400 sm:text-base"
+                        className="mt-5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5 lg:justify-start"
                     >
-                        4.5+ years shipping production-grade React apps in fintech, e-commerce, and
-                        enterprise. Cut build times 80%, reduced SLA breaches from 70% to 15%, and built
-                        systems processing millions of transactions monthly.
+                        <span className="rounded border border-cyan-400/25 bg-cyan-400/[0.08] px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-cyan-400">
+                            SDE
+                        </span>
+                        <span className="text-lg font-semibold text-white sm:text-xl">
+                            Software Development Engineer
+                        </span>
+                        <span className="text-zinc-500">·</span>
+                        <span className="text-zinc-400">Bengaluru</span>
                     </motion.p>
 
-                    {/* Impact stats strip — count-up on scroll-into-view */}
+                    {/* tagline with metric highlights */}
+                    <motion.p
+                        variants={item}
+                        className="mt-5 max-w-xl text-pretty text-sm leading-relaxed text-zinc-400 sm:text-base"
+                    >
+                        4.5+ years shipping production-grade React apps in fintech, e-commerce, and
+                        enterprise. Cut build times <span className="font-medium text-zinc-200">80%</span>,
+                        reduced SLA breaches <span className="font-medium text-zinc-200">70% → 15%</span>, and
+                        built systems processing{' '}
+                        <span className="font-medium text-zinc-200">millions of txns</span> monthly.
+                    </motion.p>
+
+                    {/* stats — horizontal row with dividers */}
                     <motion.div
                         variants={item}
-                        className="mt-6 grid grid-cols-2 justify-center gap-2 sm:flex sm:flex-wrap sm:gap-2.5 lg:justify-start"
+                        className="mt-8 flex items-center justify-center divide-x divide-white/[0.07] lg:justify-start"
                     >
                         {STATS.map(({ label, countTo, decimals, suffix, staticVal }, i) => (
                             <motion.div
                                 key={label}
-                                initial={reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+                                initial={reduce ? { opacity: 1 } : { opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={
                                     reduce
                                         ? { duration: 0 }
                                         : {
-                                              delay: 0.5 + i * 0.07,
-                                              duration: 0.45,
+                                              delay: 0.52 + i * 0.07,
+                                              duration: 0.4,
                                               ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
                                           }
                                 }
-                                whileHover={
-                                    reduce
-                                        ? {}
-                                        : {
-                                              borderColor: 'rgba(34,211,238,0.22)',
-                                              backgroundColor: 'rgba(34,211,238,0.04)',
-                                              transition: { duration: 0.18 },
-                                          }
-                                }
-                                className="cursor-default rounded-xl border border-white/[0.07] bg-white/[0.035] px-4 py-3 text-center will-change-transform sm:text-left"
+                                className="cursor-default px-4 first:pl-0 last:pr-0 sm:px-5"
                             >
-                                <div className="text-base font-bold tabular-nums text-zinc-100">
+                                <div className="text-xl font-bold tabular-nums text-white sm:text-2xl">
                                     {staticVal ? (
                                         staticVal
                                     ) : (
@@ -273,24 +316,26 @@ const DetailsCard: React.FC = () => {
                                         />
                                     )}
                                 </div>
-                                <div className="mt-0.5 text-[11px] leading-tight text-zinc-500">{label}</div>
+                                <div className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+                                    {label}
+                                </div>
                             </motion.div>
                         ))}
                     </motion.div>
 
+                    {/* CTAs */}
                     <motion.div
                         variants={item}
-                        className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start"
+                        className="mt-9 flex flex-wrap justify-center gap-3 lg:justify-start"
                     >
-                        {/* primary magnetic CTA */}
                         <MagneticWrapper strength={0.32}>
                             <Link
                                 href="/contact"
                                 className={clsx(
-                                    'inline-flex items-center justify-center rounded-xl border border-cyan-400/35',
-                                    'bg-gradient-to-r from-cyan-500/15 to-sky-500/10 px-5 py-2.5 text-sm font-semibold text-cyan-100',
-                                    'shadow-[0_0_24px_-4px_rgba(34,211,238,0.35)] transition-all duration-200',
-                                    'hover:border-cyan-300/50 hover:from-cyan-500/25 hover:to-sky-500/15 hover:shadow-[0_0_36px_-4px_rgba(34,211,238,0.55)]'
+                                    'inline-flex items-center justify-center rounded-xl border border-cyan-400/40',
+                                    'bg-gradient-to-r from-cyan-500/20 to-sky-500/15 px-6 py-3 text-sm font-semibold text-cyan-100',
+                                    'shadow-[0_0_28px_-4px_rgba(34,211,238,0.45)] transition-all duration-200',
+                                    'hover:border-cyan-300/60 hover:from-cyan-500/30 hover:shadow-[0_0_44px_-4px_rgba(34,211,238,0.65)]'
                                 )}
                             >
                                 Get in touch
@@ -303,9 +348,9 @@ const DetailsCard: React.FC = () => {
                                 target="_blank"
                                 rel="noopener noreferrer me"
                                 className={clsx(
-                                    'border-white/12 inline-flex items-center justify-center rounded-xl border',
-                                    'bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-zinc-200',
-                                    'transition-all duration-200 hover:border-white/20 hover:bg-white/[0.07]'
+                                    'inline-flex items-center justify-center rounded-xl border border-white/10',
+                                    'bg-white/[0.05] px-5 py-3 text-sm font-semibold text-zinc-300',
+                                    'transition-all duration-200 hover:border-white/20 hover:bg-white/[0.09] hover:text-white'
                                 )}
                             >
                                 GitHub
@@ -318,9 +363,9 @@ const DetailsCard: React.FC = () => {
                                 target="_blank"
                                 rel="noopener noreferrer me"
                                 className={clsx(
-                                    'border-white/12 inline-flex items-center justify-center rounded-xl border',
-                                    'bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-zinc-200',
-                                    'transition-all duration-200 hover:border-white/20 hover:bg-white/[0.07]'
+                                    'inline-flex items-center justify-center rounded-xl border border-white/10',
+                                    'bg-white/[0.05] px-5 py-3 text-sm font-semibold text-zinc-300',
+                                    'transition-all duration-200 hover:border-white/20 hover:bg-white/[0.09] hover:text-white'
                                 )}
                             >
                                 LinkedIn
@@ -329,8 +374,22 @@ const DetailsCard: React.FC = () => {
                     </motion.div>
                 </motion.div>
 
-                {/* avatar with rotating glow ring — CSS animation, compositor-only */}
+                {/* ── right: avatar + floating badges ── */}
                 <div className="relative shrink-0">
+                    {/* outer glow disc */}
+                    {!reduce && (
+                        <div
+                            aria-hidden
+                            className="pointer-events-none absolute inset-0 rounded-full"
+                            style={{
+                                background:
+                                    'radial-gradient(circle, rgba(34,211,238,0.18) 0%, transparent 65%)',
+                                transform: 'scale(2)',
+                                filter: 'blur(24px)',
+                            }}
+                        />
+                    )}
+
                     {/* spinning conic ring */}
                     {!reduce && (
                         <div
@@ -338,31 +397,32 @@ const DetailsCard: React.FC = () => {
                             className="avatar-spin-ring absolute -inset-2 rounded-full"
                             style={{
                                 background:
-                                    'conic-gradient(from 0deg, transparent 60%, rgba(34,211,238,0.55) 75%, rgba(139,92,246,0.45) 85%, transparent 100%)',
+                                    'conic-gradient(from 0deg, transparent 55%, rgba(34,211,238,0.7) 72%, rgba(139,92,246,0.6) 85%, transparent 100%)',
                             }}
                         />
                     )}
 
-                    {/* soft blur halo behind ring */}
+                    {/* soft blur halo */}
                     {!reduce && (
                         <div
                             aria-hidden
                             className="absolute -inset-2 rounded-full"
                             style={{
                                 background:
-                                    'conic-gradient(from 0deg, transparent 60%, rgba(34,211,238,0.18) 75%, rgba(139,92,246,0.15) 85%, transparent 100%)',
-                                filter: 'blur(6px)',
+                                    'conic-gradient(from 0deg, transparent 55%, rgba(34,211,238,0.24) 72%, rgba(139,92,246,0.2) 85%, transparent 100%)',
+                                filter: 'blur(9px)',
                             }}
                         />
                     )}
 
+                    {/* avatar */}
                     <motion.div
                         className={clsx(
-                            'relative size-40 overflow-hidden rounded-full sm:size-48',
+                            'relative size-44 overflow-hidden rounded-full sm:size-52',
                             'ring-2 ring-cyan-400/30 ring-offset-4 ring-offset-zinc-950',
-                            'shadow-[0_0_60px_-8px_rgba(34,211,238,0.45)]'
+                            'shadow-[0_0_80px_-8px_rgba(34,211,238,0.55)]'
                         )}
-                        initial={reduce ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.92 }}
+                        initial={reduce ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={
                             reduce
@@ -372,7 +432,7 @@ const DetailsCard: React.FC = () => {
                     >
                         <Image
                             src="/profile_pic.png"
-                            alt="Aditya Raj — Frontend Engineer II, Bengaluru"
+                            alt="Aditya Raj — Software Development Engineer, Bengaluru"
                             fill
                             priority
                             fetchPriority="high"
@@ -380,6 +440,35 @@ const DetailsCard: React.FC = () => {
                             sizes="(max-width: 1024px) 192px, 224px"
                         />
                     </motion.div>
+
+                    {/* floating skill badges */}
+                    {SKILL_BADGES.map(({ label, pos, delay }) => (
+                        <motion.span
+                            key={label}
+                            aria-hidden
+                            className={clsx(
+                                'absolute hidden items-center gap-1.5 rounded-full sm:inline-flex',
+                                'border border-white/[0.10] bg-zinc-900/85 px-2.5 py-1 backdrop-blur-sm',
+                                'text-[11px] font-semibold text-zinc-300',
+                                'shadow-[0_4px_20px_rgba(0,0,0,0.45)]',
+                                pos
+                            )}
+                            initial={reduce ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.75 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={
+                                reduce
+                                    ? { duration: 0 }
+                                    : {
+                                          delay,
+                                          duration: 0.42,
+                                          ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+                                      }
+                            }
+                        >
+                            <span className="size-1.5 rounded-full bg-cyan-400/80" aria-hidden />
+                            {label}
+                        </motion.span>
+                    ))}
                 </div>
             </div>
         </section>
