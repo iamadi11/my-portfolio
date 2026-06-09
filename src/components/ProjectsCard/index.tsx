@@ -173,12 +173,12 @@ const ProjectsCard: React.FC = () => {
                             {/* right: code snippet */}
                             <div
                                 className={clsx(
-                                    'flex min-w-0 items-center border-t border-white/[0.06] bg-black/30 p-6 sm:p-8',
+                                    'flex min-w-0 items-center overflow-hidden border-t border-white/[0.06] bg-black/30 p-4 sm:p-6 lg:p-8',
                                     'lg:border-l lg:border-t-0'
                                 )}
                             >
                                 <pre
-                                    className="w-full max-w-full overflow-x-auto rounded-xl border border-white/[0.06] bg-zinc-950/60 p-4 text-[11px] leading-6 text-zinc-400 sm:text-xs"
+                                    className="w-full min-w-0 overflow-x-auto rounded-xl border border-white/[0.06] bg-zinc-950/60 p-3 text-[10px] leading-6 text-zinc-400 sm:p-4 sm:text-[11px]"
                                     aria-label="Eidos usage example"
                                 >
                                     {featuredProject.snippet.map((line, i) => {
