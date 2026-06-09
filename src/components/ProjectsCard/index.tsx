@@ -119,10 +119,10 @@ const ProjectsCard: React.FC = () => {
                             aria-hidden
                         />
 
-                        <div className="grid gap-0 lg:grid-cols-2">
+                        <div className="grid min-w-0 gap-0 lg:grid-cols-2">
                             {/* left: info */}
-                            <div className="flex flex-col gap-4 p-6 sm:p-8">
-                                <div className="flex items-start justify-between gap-3">
+                            <div className="flex min-w-0 flex-col gap-4 p-6 sm:p-8">
+                                <div className="flex min-w-0 items-start justify-between gap-3">
                                     <h3 className="text-xl font-bold tracking-tight text-zinc-100 sm:text-2xl">
                                         {featuredProject.title}
                                     </h3>
@@ -148,7 +148,7 @@ const ProjectsCard: React.FC = () => {
                                     ))}
                                 </div>
 
-                                <div className="flex items-center gap-4 border-t border-white/[0.06] pt-4 text-xs">
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/[0.06] pt-4 text-xs">
                                     <Link
                                         href={featuredProject.liveLink!}
                                         target="_blank"
@@ -173,12 +173,12 @@ const ProjectsCard: React.FC = () => {
                             {/* right: code snippet */}
                             <div
                                 className={clsx(
-                                    'flex items-center border-t border-white/[0.06] bg-black/30 p-6 sm:p-8',
+                                    'flex min-w-0 items-center border-t border-white/[0.06] bg-black/30 p-6 sm:p-8',
                                     'lg:border-l lg:border-t-0'
                                 )}
                             >
                                 <pre
-                                    className="w-full overflow-x-auto rounded-xl border border-white/[0.06] bg-zinc-950/60 p-4 text-[11px] leading-6 text-zinc-400 sm:text-xs"
+                                    className="w-full max-w-full overflow-x-auto rounded-xl border border-white/[0.06] bg-zinc-950/60 p-4 text-[11px] leading-6 text-zinc-400 sm:text-xs"
                                     aria-label="Eidos usage example"
                                 >
                                     {featuredProject.snippet.map((line, i) => {
