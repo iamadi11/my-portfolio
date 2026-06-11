@@ -2,10 +2,11 @@
 
 import React from 'react';
 
-import { motion, useTransform } from 'motion/react';
+import { motion, useMotionValueEvent, useReducedMotion, useTransform } from 'motion/react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
-import { JourneyProvider } from './core/JourneyProvider';
+import { JourneyProvider, useJourney } from './core/JourneyProvider';
 import { Scene } from './core/Scene';
 import { SceneContent } from './core/SceneContent';
 import { useSceneProgress } from './core/useSceneProgress';
@@ -14,7 +15,13 @@ import { AtmosphereLayer } from './fx/AtmosphereLayer';
 import { ParticleField } from './fx/ParticleField';
 import { ThreadLayer } from './fx/ThreadLayer';
 
+const TimelineNetwork = dynamic(() => import('./three/TimelineNetwork'), { ssr: false });
+
 const sceneIds = journeyScenes.map((s) => s.id);
+
+/** Global-progress window covering the career chapters (scenes 1–4). */
+const SCENE_STEP = 1 / (journeyScenes.length - 1);
+const NETWORK_RANGE: [number, number] = [SCENE_STEP * 0.55, SCENE_STEP * 4 + SCENE_STEP * 0.45];
 
 /**
  * V2 cinematic experience. Full-viewport overlay with its own scroll
@@ -27,6 +34,7 @@ export default function CinematicHome(): React.JSX.Element {
         <div className="fixed inset-0 z-[120] overflow-y-auto overscroll-y-contain bg-[#04050a] text-white">
             <JourneyProvider>
                 <AtmosphereLayer count={journeyScenes.length} />
+                <NetworkLayer />
                 <ParticleField />
                 <ThreadLayer sceneIds={sceneIds} />
 
@@ -57,6 +65,43 @@ export default function CinematicHome(): React.JSX.Element {
                 <ScrollHint />
             </JourneyProvider>
         </div>
+    );
+}
+
+/**
+ * Mounts the WebGL network only while the career chapters are near the
+ * viewport (hysteresis slightly wider than the opacity fade window, so the
+ * canvas never pops). Keeps hero LCP canvas-free and tears the GL context
+ * down once the story moves past the career arc.
+ */
+function NetworkLayer(): React.JSX.Element | null {
+    const { scrollProgress } = useJourney();
+    const reduce = useReducedMotion() === true;
+    const [active, setActive] = React.useState(false);
+
+    useMotionValueEvent(scrollProgress, 'change', (v) => {
+        const on = v > NETWORK_RANGE[0] - 0.04 && v < NETWORK_RANGE[1] + 0.04;
+        setActive((prev) => (prev === on ? prev : on));
+    });
+
+    const opacity = useTransform(
+        scrollProgress,
+        [NETWORK_RANGE[0], NETWORK_RANGE[0] + 0.05, NETWORK_RANGE[1] - 0.05, NETWORK_RANGE[1]],
+        [0, 1, 1, 0]
+    );
+
+    if (reduce) return null;
+
+    return (
+        <motion.div
+            aria-hidden="true"
+            data-layer="network"
+            data-active={active ? '1' : '0'}
+            style={{ opacity }}
+            className="pointer-events-none fixed inset-0"
+        >
+            {active ? <TimelineNetwork progress={scrollProgress} range={NETWORK_RANGE} /> : null}
+        </motion.div>
     );
 }
 

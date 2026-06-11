@@ -1,6 +1,6 @@
 # STORY_SPEC.md — Cinematic Journey Architecture
 
-**Status:** Phase 2 (experience layer shipped)
+**Status:** Phase 3 (timeline network shipped)
 **Authority:** content from `SOURCE_OF_TRUTH.md` only. This doc defines _presentation_, never facts.
 **Staging route:** `/v2` (`src/components/v2/`, per CLAUDE.md §10). Existing site untouched — V2 is a self-contained full-viewport overlay with its own scroll container. Swapped to `/` only after Phase 12 audit passes all gates.
 
@@ -75,8 +75,8 @@ depth-separated groups — one WebGL context max on screen.
 ## 6. Dependency plan
 
 - Phase 1: none added.
-- Phase 2: `@react-three/fiber`, `@react-three/drei` (tree-shaken imports only),
-  `@react-three/postprocessing`.
+- Phase 3: `@react-three/fiber` only — no drei, no postprocessing (thin GL lines
+    - additive points cover the visual brief at lower cost).
 - GSAP: not planned — `motion` covers scroll choreography; revisit only if a
   concrete sequencing need appears (record justification here).
 
