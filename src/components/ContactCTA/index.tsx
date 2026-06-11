@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import clsx from 'clsx';
 import { motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
-import { FaEnvelope, FaLinkedin, FaPaperPlane } from 'react-icons/fa';
+import { FaEnvelope, FaHeart, FaLinkedin, FaPaperPlane } from 'react-icons/fa';
 
 const ContactCTA: React.FC = () => {
     const prefersReducedMotion = useReducedMotion();
@@ -144,6 +144,19 @@ const ContactCTA: React.FC = () => {
                         >
                             <FaLinkedin className="size-4 shrink-0" aria-hidden />
                             LinkedIn
+                        </Link>
+                        <Link
+                            href="https://github.com/sponsors/iamadi11"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={clsx(
+                                'border-white/12 inline-flex items-center gap-2 rounded-xl border',
+                                'bg-white/[0.04] px-6 py-3 text-sm font-semibold text-zinc-200',
+                                'transition-all duration-200 hover:border-pink-400/40 hover:bg-pink-500/[0.08] hover:text-pink-200'
+                            )}
+                        >
+                            <FaHeart className="size-4 shrink-0" aria-hidden />
+                            Sponsor
                         </Link>
                     </div>
                 </div>
