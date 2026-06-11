@@ -5,13 +5,14 @@ import React from 'react';
 import clsx from 'clsx';
 import { motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
-import { FaLink, FaGithub } from 'react-icons/fa';
+import { FaLink, FaGithub, FaNpm } from 'react-icons/fa';
 
 type ProjectItem = {
     title: string;
     description: string;
     tags: string[];
     githubLink: string;
+    npmLink?: string;
     liveLink?: string;
     /** Tailwind gradient classes for the accent bar */
     accent: string;
@@ -26,6 +27,7 @@ const featuredProject: ProjectItem & { snippet: string[] } = {
     tags: ['TypeScript', 'Service Workers', 'Cache API', 'IndexedDB', 'npm'],
     liveLink: 'https://playground-iamadi11s-projects.vercel.app',
     githubLink: 'https://github.com/iamadi11/eidos',
+    npmLink: 'https://www.npmjs.com/package/@sweidos/eidos',
     accent: 'from-amber-500 to-orange-500',
     badge: 'npm · OSS',
     snippet: [
@@ -166,6 +168,15 @@ const ProjectsCard: React.FC = () => {
                                     >
                                         <FaGithub className="size-3.5" aria-hidden />
                                         Code
+                                    </Link>
+                                    <Link
+                                        href={featuredProject.npmLink || ''}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex cursor-pointer items-center gap-2 text-[#CB3837] transition-colors hover:text-[#E34F4F]"
+                                    >
+                                        <FaNpm className="size-3.5" aria-hidden />
+                                        npm
                                     </Link>
                                 </div>
                             </div>
