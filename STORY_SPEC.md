@@ -1,6 +1,6 @@
 # STORY_SPEC.md — Cinematic Journey Architecture
 
-**Status:** Phase 3 (timeline network shipped)
+**Status:** Phase 4 (open-source ecosystem shipped)
 **Authority:** content from `SOURCE_OF_TRUTH.md` only. This doc defines _presentation_, never facts.
 **Staging route:** `/v2` (`src/components/v2/`, per CLAUDE.md §10). Existing site untouched — V2 is a self-contained full-viewport overlay with its own scroll container. Swapped to `/` only after Phase 12 audit passes all gates.
 
@@ -80,16 +80,22 @@ depth-separated groups — one WebGL context max on screen.
 - GSAP: not planned — `motion` covers scroll choreography; revisit only if a
   concrete sequencing need appears (record justification here).
 
+## 6b. Known risks
+
+- The classic site registers a service worker (PWA). It cached stale dev chunks
+  during verification (fixed by unregistering). Phase 12 must verify SW caching
+  strategy covers /v2 chunks correctly after the swap.
+
 ## 7. Phase ledger
 
 | Phase | Scope                                                          | Status  |
 | ----- | -------------------------------------------------------------- | ------- |
 | 1     | Engine: provider, scene registry, progress hook, staging route | done    |
 | 2     | Experience layer: atmosphere, thread, particles, choreography  | done    |
-| 3     | Timeline network engine                                        | pending |
+| 3     | Timeline network engine (R3F career constellation)             | done    |
 | 4     | Company chapters (2–4)                                         | pending |
 | 5     | Project branches                                               | pending |
-| 6     | Open-source ecosystem                                          | pending |
+| 6     | Open-source ecosystem (shared JourneyCanvas)                   | done    |
 | 7     | Skills network                                                 | pending |
 | 8     | Transition engine polish                                       | pending |
 | 9     | Contact finale                                                 | pending |

@@ -15,13 +15,17 @@ import { AtmosphereLayer } from './fx/AtmosphereLayer';
 import { ParticleField } from './fx/ParticleField';
 import { ThreadLayer } from './fx/ThreadLayer';
 
-const TimelineNetwork = dynamic(() => import('./three/TimelineNetwork'), { ssr: false });
+const JourneyCanvas = dynamic(() => import('./three/JourneyCanvas'), { ssr: false });
 
 const sceneIds = journeyScenes.map((s) => s.id);
 
-/** Global-progress window covering the career chapters (scenes 1–4). */
 const SCENE_STEP = 1 / (journeyScenes.length - 1);
+/** Career chapters (scenes 1–4). */
 const NETWORK_RANGE: [number, number] = [SCENE_STEP * 0.55, SCENE_STEP * 4 + SCENE_STEP * 0.45];
+/** Open-source ecosystem (scene 5). */
+const ECOSYSTEM_RANGE: [number, number] = [SCENE_STEP * 4.55, SCENE_STEP * 5.45];
+/** Canvas mounts across the union of all 3D windows (hysteresis beyond the fades). */
+const CANVAS_RANGE: [number, number] = [NETWORK_RANGE[0] - 0.04, ECOSYSTEM_RANGE[1] + 0.04];
 
 /**
  * V2 cinematic experience. Full-viewport overlay with its own scroll
@@ -34,7 +38,7 @@ export default function CinematicHome(): React.JSX.Element {
         <div className="fixed inset-0 z-[120] overflow-y-auto overscroll-y-contain bg-[#04050a] text-white">
             <JourneyProvider>
                 <AtmosphereLayer count={journeyScenes.length} />
-                <NetworkLayer />
+                <CanvasLayer />
                 <ParticleField />
                 <ThreadLayer sceneIds={sceneIds} />
 
@@ -69,25 +73,35 @@ export default function CinematicHome(): React.JSX.Element {
 }
 
 /**
- * Mounts the WebGL network only while the career chapters are near the
- * viewport (hysteresis slightly wider than the opacity fade window, so the
- * canvas never pops). Keeps hero LCP canvas-free and tears the GL context
- * down once the story moves past the career arc.
+ * Mounts the single WebGL canvas only while a 3D window (career network or
+ * ecosystem) is near the viewport — hysteresis slightly wider than the
+ * opacity fades, so it never pops. Keeps hero LCP canvas-free and tears the
+ * GL context down outside the 3D arc. The DOM opacity dips to 0 in the gap
+ * between the two windows, covering the camera jump.
  */
-function NetworkLayer(): React.JSX.Element | null {
+function CanvasLayer(): React.JSX.Element | null {
     const { scrollProgress } = useJourney();
     const reduce = useReducedMotion() === true;
     const [active, setActive] = React.useState(false);
 
     useMotionValueEvent(scrollProgress, 'change', (v) => {
-        const on = v > NETWORK_RANGE[0] - 0.04 && v < NETWORK_RANGE[1] + 0.04;
+        const on = v > CANVAS_RANGE[0] && v < CANVAS_RANGE[1];
         setActive((prev) => (prev === on ? prev : on));
     });
 
     const opacity = useTransform(
         scrollProgress,
-        [NETWORK_RANGE[0], NETWORK_RANGE[0] + 0.05, NETWORK_RANGE[1] - 0.05, NETWORK_RANGE[1]],
-        [0, 1, 1, 0]
+        [
+            NETWORK_RANGE[0],
+            NETWORK_RANGE[0] + 0.05,
+            NETWORK_RANGE[1] - 0.05,
+            NETWORK_RANGE[1],
+            ECOSYSTEM_RANGE[0],
+            ECOSYSTEM_RANGE[0] + 0.04,
+            ECOSYSTEM_RANGE[1] - 0.04,
+            ECOSYSTEM_RANGE[1],
+        ],
+        [0, 1, 1, 0, 0, 1, 1, 0]
     );
 
     if (reduce) return null;
@@ -95,12 +109,18 @@ function NetworkLayer(): React.JSX.Element | null {
     return (
         <motion.div
             aria-hidden="true"
-            data-layer="network"
+            data-layer="journey-canvas"
             data-active={active ? '1' : '0'}
             style={{ opacity }}
             className="pointer-events-none fixed inset-0"
         >
-            {active ? <TimelineNetwork progress={scrollProgress} range={NETWORK_RANGE} /> : null}
+            {active ? (
+                <JourneyCanvas
+                    progress={scrollProgress}
+                    networkRange={NETWORK_RANGE}
+                    ecosystemRange={ECOSYSTEM_RANGE}
+                />
+            ) : null}
         </motion.div>
     );
 }

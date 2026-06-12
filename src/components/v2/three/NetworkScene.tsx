@@ -115,6 +115,7 @@ export function NetworkScene({
     const { nodes, curves, lineGeometries } = React.useMemo(buildNetwork, []);
     const particles = React.useMemo(() => makeParticles(curves), [curves]);
 
+    const groupRef = React.useRef<THREE.Group>(null);
     const pointsRef = React.useRef<THREE.Points>(null);
     const glowRefs = React.useRef<(THREE.Mesh | null)[]>([]);
     const tmp = React.useMemo(() => new THREE.Vector3(), []);
@@ -124,6 +125,10 @@ export function NetworkScene({
     useFrame((state) => {
         const [start, end] = range;
         const g = progress.get();
+        // shared canvas: hide + skip all work (incl. camera) outside this scene's window
+        const inWindow = g > start - 0.05 && g < end + 0.05;
+        if (groupRef.current) groupRef.current.visible = inWindow;
+        if (!inWindow) return;
         const m = Math.min(1, Math.max(0, (g - start) / (end - start)));
         const focusY = THREE.MathUtils.lerp(2.5, nodes[nodes.length - 1].y - 2.5, m);
 
@@ -164,9 +169,7 @@ export function NetworkScene({
 
     return (
         // shifted right so node glows sit beside the left-aligned scene text, not under it
-        <group position={[2.4, 0, 0]}>
-            <fog attach="fog" args={['#04050a', 10, 34]} />
-
+        <group ref={groupRef} position={[2.4, 0, 0]}>
             {lineGeometries.map(({ geometry, color }, i) => (
                 // eslint-disable-next-line react/no-array-index-key
                 <line key={`net-line-${i}`}>
