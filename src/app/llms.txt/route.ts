@@ -20,6 +20,7 @@ export function GET(): globalThis.Response {
 
 ## Notable Public Projects
 
+- [Eidos](https://playground-iamadi11s-projects.vercel.app) — [GitHub](https://github.com/iamadi11/eidos) — [npm](https://www.npmjs.com/package/@sweidos/eidos): Declarative offline-first abstraction layer for Service Workers. Replaces 40+ lines of Workbox / Cache API boilerplate with a 2-line intent-based API.
 - [Mouse Follow](https://mouse-follow-demo.vercel.app/) — [GitHub](https://github.com/iamadi11/mouse-follow): React + Vite cursor-follow demo; interactive frontend showcase.
 - [Spatial](https://spatial-zeta.vercel.app/) — [GitHub](https://github.com/iamadi11/spatial): TypeScript-based UI performance detection and optimization tool.
 - [MCP UI POC](https://mcp-ui-poc.vercel.app/) — [GitHub](https://github.com/iamadi11/mcp-ui-poc): Full-stack MCP UI demo using React, Vite, Node.js, Express.

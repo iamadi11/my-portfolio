@@ -13,10 +13,33 @@ export default function sitemap(): MetadataRoute.Sitemap {
         '/tech-stack': '2026-05-01',
     };
 
-    return paths.map((path) => ({
+    const localSitemaps = paths.map((path) => ({
         url: path === '/' ? `${base}/` : `${base}${path}`,
         lastModified: new Date(lastModified[path] ?? '2026-06-09'),
         changeFrequency: path === '/' ? ('weekly' as const) : ('monthly' as const),
         priority: path === '/' ? 1 : 0.8,
     }));
+
+    const eidosUrls = [
+        {
+            url: 'https://github.com/iamadi11/eidos',
+            lastModified: new Date('2026-06-12'),
+            changeFrequency: 'monthly' as const,
+            priority: 0.7,
+        },
+        {
+            url: 'https://playground-iamadi11s-projects.vercel.app',
+            lastModified: new Date('2026-06-12'),
+            changeFrequency: 'monthly' as const,
+            priority: 0.7,
+        },
+        {
+            url: 'https://www.npmjs.com/package/@sweidos/eidos',
+            lastModified: new Date('2026-06-12'),
+            changeFrequency: 'monthly' as const,
+            priority: 0.7,
+        },
+    ];
+
+    return [...localSitemaps, ...eidosUrls];
 }
