@@ -22,7 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     const eidosUrls = [
         {
-            url: 'https://github.com/iamadi11/eidos',
+            url: 'https://github.com/sweidos/eidos',
             lastModified: new Date('2026-06-12'),
             changeFrequency: 'monthly' as const,
             priority: 0.7,
