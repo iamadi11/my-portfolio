@@ -25,7 +25,7 @@ const featuredProject: ProjectItem & { snippet: string[] } = {
     description:
         'Declarative offline-first abstraction layer for Service Workers. Replaces 40+ lines of Workbox / Cache API boilerplate with a 2-line intent-based API. Published on npm as @sweidos/eidos.',
     tags: ['TypeScript', 'Service Workers', 'Cache API', 'IndexedDB', 'npm'],
-    liveLink: 'https://playground-iamadi11s-projects.vercel.app',
+    liveLink: 'https://sweidos.vercel.app',
     githubLink: 'https://github.com/sweidos/eidos',
     npmLink: 'https://www.npmjs.com/package/@sweidos/eidos',
     accent: 'from-amber-500 to-orange-500',

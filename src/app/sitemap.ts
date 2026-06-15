@@ -28,7 +28,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.7,
         },
         {
-            url: 'https://playground-iamadi11s-projects.vercel.app',
+            url: 'https://sweidos.vercel.app',
             lastModified: new Date('2026-06-12'),
             changeFrequency: 'monthly' as const,
             priority: 0.7,
