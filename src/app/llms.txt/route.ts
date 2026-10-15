@@ -5,7 +5,7 @@ export function GET(): globalThis.Response {
 
     const body = `# Aditya Raj — Portfolio
 
-> Frontend Engineer II at Cashfree Payments, Bengaluru, India. ~4.5 years building scalable web apps in fintech, e-commerce, and enterprise. Strong in React, Next.js, TypeScript; performance and production-focused.
+> Senior Software Development Engineer, Bengaluru, India. Most recently Frontend Engineer II at Cashfree Payments (Mar 2025 – May 2026). ~4.5 years building scalable web apps in fintech, e-commerce, and enterprise. Strong in React, Next.js, TypeScript; performance and production-focused.
 
 ## Main Pages
 

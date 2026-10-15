@@ -2,7 +2,7 @@ import React from 'react';
 
 import { ImageResponse } from 'next/og';
 
-export const alt = 'Aditya Raj — Frontend Engineer II at Cashfree Payments, Bengaluru';
+export const alt = 'Aditya Raj — Senior Software Development Engineer, Bengaluru';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -110,7 +110,7 @@ export default function OGImage(): ImageResponse {
                             marginBottom: 10,
                         }}
                     >
-                        Frontend Engineer II · Cashfree Payments
+                        Senior Software Development Engineer · Bengaluru
                     </div>
 
                     {/* Sub-line */}

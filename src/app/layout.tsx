@@ -22,7 +22,7 @@ const siteUrl = getSiteOrigin();
 
 /** Same resume-backed tagline as About + SOURCE_OF_TRUTH.md (search / OG / Twitter). */
 const defaultDescription =
-    'Frontend Engineer II · Bengaluru. ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise; strong React, Next.js, and TypeScript; performance and production systems focus. Open to new opportunities.';
+    'Senior Software Development Engineer · Bengaluru. ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise; strong React, Next.js, and TypeScript; performance and production systems focus. Open to new opportunities.';
 
 /** GitHub profile image (https://github.com/iamadi11) — used for link previews without shipping a separate asset. */
 const openGraphImage = 'https://avatars.githubusercontent.com/u/34628188?v=4&s=512';
@@ -46,7 +46,7 @@ const structuredDataJsonLd = {
             name: 'Aditya Raj',
             url: siteUrl,
             image: openGraphImage,
-            jobTitle: 'Frontend Engineer II',
+            jobTitle: 'Senior Software Development Engineer',
             email: 'adityaraj92.20@gmail.com',
             telephone: '+917257807070',
             /** Portfolio + public profiles (SOURCE_OF_TRUTH.md) — helps crawlers link entities. */
@@ -57,7 +57,7 @@ const structuredDataJsonLd = {
                 addressRegion: 'Karnataka',
                 addressCountry: 'IN',
             },
-            seeks: 'Frontend Engineering roles (React, Next.js, TypeScript)',
+            seeks: 'Senior Software Development Engineer roles (React, Next.js, TypeScript)',
             alumniOf: { '@id': `${siteUrl}#education-iiit` },
             knowsAbout: [
                 'React',
@@ -108,7 +108,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
     metadataBase: new URL(siteUrl),
     title: {
-        default: 'Aditya Raj — Frontend Engineer II',
+        default: 'Aditya Raj — Senior Software Development Engineer',
         template: '%s · Aditya Raj',
     },
     description: defaultDescription,
@@ -118,7 +118,8 @@ export const metadata: Metadata = {
     keywords: [
         'Aditya Raj',
         'Frontend Engineer',
-        'Frontend Engineer II',
+        'Senior Software Development Engineer',
+        'Senior Software Engineer',
         'React',
         'Next.js',
         'TypeScript',
@@ -132,7 +133,7 @@ export const metadata: Metadata = {
         'PWA',
         'Turborepo',
         'hire frontend engineer Bengaluru',
-        'SDE II React',
+        'Senior SDE React',
         'polygon serviceability',
         'WebPush notifications',
     ],
@@ -140,7 +141,7 @@ export const metadata: Metadata = {
         canonical: '/',
     },
     openGraph: {
-        title: 'Aditya Raj — Frontend Engineer II',
+        title: 'Aditya Raj — Senior Software Development Engineer',
         description: defaultDescription,
         url: '/',
         siteName: 'Aditya Raj',
@@ -149,7 +150,7 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Aditya Raj — Frontend Engineer II',
+        title: 'Aditya Raj — Senior Software Development Engineer',
         description: defaultDescription,
     },
     icons: {

@@ -8,7 +8,7 @@ import type { SiteContent } from '@/components/instrumented/content';
 export const SITE: SiteContent = {
     profile: {
         name: 'Aditya Raj',
-        role: 'Frontend Engineer II',
+        role: 'Senior Software Development Engineer',
         statement:
             '~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise. React, Next.js and TypeScript, with a focus on performance and production systems.',
         location: 'Bengaluru, India',
@@ -74,7 +74,7 @@ export const SITE: SiteContent = {
         },
     ],
     practice: {
-        intro: 'Frontend engineer with ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise. Strong in React, Next.js and TypeScript, with a focus on performance and production systems.',
+        intro: 'Senior software engineer with ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise. Strong in React, Next.js and TypeScript, with a focus on performance and production systems.',
         skills: [
             { group: 'Languages', items: 'JavaScript (ES2022+), TypeScript' },
             {
