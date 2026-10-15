@@ -3,344 +3,491 @@
 @tailwind utilities;
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-border: rgba(255, 255, 255, 0.08);
-  --accent-cyan: rgb(34 211 238);
-  --accent-violet: rgb(167 139 250);
+    --background: #09090b;
+    --foreground: #fafafa;
+    --surface: rgba(255, 255, 255, 0.04);
+    --surface-border: rgba(255, 255, 255, 0.08);
+    --accent-cyan: rgb(34 211 238);
+    --accent-violet: rgb(167 139 250);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #09090b;
-    --foreground: #fafafa;
-  }
+    :root {
+        --background: #09090b;
+        --foreground: #fafafa;
+    }
 }
 
 @layer base {
-  body {
-    @apply min-h-dvh bg-zinc-950 font-sans text-zinc-100 antialiased;
-  }
+    body {
+        @apply min-h-dvh bg-[#0c0b0a] font-sans text-zinc-100 antialiased;
+    }
+}
+
+.signal-room {
+    background: linear-gradient(180deg, transparent 0%, transparent 18%, var(--room) 46%, var(--room) 100%);
+}
+
+@media (min-width: 1024px) {
+    .signal-room {
+        background: linear-gradient(90deg, var(--room) 0%, var(--room) 42%, transparent 68%);
+    }
 }
 
 /* Ambient background — static gradient; motion users get subtle shine via template layer */
 .app-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(ellipse 100% 80% at 50% -30%, rgba(34, 211, 238, 0.14), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 100% 20%, rgba(167, 139, 250, 0.1), transparent 50%),
-    radial-gradient(ellipse 60% 40% at 0% 60%, rgba(59, 130, 246, 0.06), transparent 45%),
-    #09090b;
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(244, 239, 230, 0.06), transparent 55%),
+        #0c0b0a;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app-backdrop {
-    background: radial-gradient(ellipse 100% 60% at 50% -20%, rgba(34, 211, 238, 0.08), #09090b);
-  }
+    .app-backdrop {
+        background: #0c0b0a;
+    }
 }
 
 ::selection {
-  background: rgba(34, 211, 238, 0.25);
-  color: #fafafa;
+    background: rgba(34, 211, 238, 0.25);
+    color: #fafafa;
 }
 
 /* Keyboard navigation — skip mouse-only :focus */
 a:focus-visible,
 button:focus-visible {
-  outline: 2px solid rgb(34 211 238);
-  outline-offset: 3px;
-  border-radius: 0.25rem;
+    outline: 2px solid rgb(34 211 238);
+    outline-offset: 3px;
+    border-radius: 0.25rem;
 }
 
 /* ─── Prime Universe Easter Egg ─────────────────────────────────── */
 @keyframes prime-fadein {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes prime-slidein {
-  from { opacity: 0; transform: translateY(-12px); }
-  to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .prime-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: #000008;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: prime-fadein 0.5s ease forwards;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #000008;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: prime-fadein 0.5s ease forwards;
 }
 
 .prime-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100% !important;
-  height: 100% !important;
-  cursor: grab;
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    cursor: grab;
 }
 
 .prime-canvas:active {
-  cursor: grabbing;
+    cursor: grabbing;
 }
 
 .prime-hud {
-  position: absolute;
-  top: 28px;
-  left: 50%;
-  max-width: calc(100% - 100px);
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  pointer-events: none;
-  animation: prime-slidein 0.6s 0.2s ease both;
+    position: absolute;
+    top: 28px;
+    left: 50%;
+    max-width: calc(100% - 100px);
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    pointer-events: none;
+    animation: prime-slidein 0.6s 0.2s ease both;
 }
 
 .prime-hud-title {
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.85rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #00e5ff;
-  text-shadow: 0 0 14px rgba(0, 229, 255, 0.7);
+    font-family: var(--font-geist-mono), monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #00e5ff;
+    text-shadow: 0 0 14px rgba(0, 229, 255, 0.7);
 }
 
 .prime-hud-sub {
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  color: rgba(0, 229, 255, 0.45);
+    font-family: var(--font-geist-mono), monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    color: rgba(0, 229, 255, 0.45);
 }
 
 .prime-close {
-  position: absolute;
-  top: 20px;
-  right: 24px;
-  background: rgba(0, 229, 255, 0.08);
-  border: 1px solid rgba(0, 229, 255, 0.25);
-  color: rgba(0, 229, 255, 0.7);
-  font-size: 1rem;
-  line-height: 1;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, color 0.2s;
-  animation: prime-slidein 0.5s 0.1s ease both;
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: rgba(0, 229, 255, 0.08);
+    border: 1px solid rgba(0, 229, 255, 0.25);
+    color: rgba(0, 229, 255, 0.7);
+    font-size: 1rem;
+    line-height: 1;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        background 0.2s,
+        color 0.2s;
+    animation: prime-slidein 0.5s 0.1s ease both;
 }
 
 .prime-close:hover {
-  background: rgba(0, 229, 255, 0.18);
-  color: #00e5ff;
+    background: rgba(0, 229, 255, 0.18);
+    color: #00e5ff;
 }
 
 .prime-close:focus-visible {
-  outline: 2px solid rgb(34 211 238);
-  outline-offset: 3px;
+    outline: 2px solid rgb(34 211 238);
+    outline-offset: 3px;
 }
 
 .prime-controls {
-  position: absolute;
-  bottom: 52px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  animation: prime-slidein 0.5s 0.3s ease both;
+    position: absolute;
+    bottom: 52px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    animation: prime-slidein 0.5s 0.3s ease both;
 }
 
 .prime-count-display {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
 }
 
 .prime-count-num {
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: #00e5ff;
-  text-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
-  transition: color 0.2s;
+    font-family: var(--font-geist-mono), monospace;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #00e5ff;
+    text-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
+    transition: color 0.2s;
 }
 
 .prime-count-label {
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.65rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(0, 229, 255, 0.45);
+    font-family: var(--font-geist-mono), monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(0, 229, 255, 0.45);
 }
 
 .prime-range {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 240px;
-  height: 3px;
-  background: linear-gradient(
-    to right,
-    rgba(0, 229, 255, 0.75) 0%,
-    rgba(0, 229, 255, 0.75) var(--prime-progress, 100%),
-    rgba(255, 255, 255, 0.1) var(--prime-progress, 100%),
-    rgba(255, 255, 255, 0.1) 100%
-  );
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 240px;
+    height: 3px;
+    background: linear-gradient(
+        to right,
+        rgba(0, 229, 255, 0.75) 0%,
+        rgba(0, 229, 255, 0.75) var(--prime-progress, 100%),
+        rgba(255, 255, 255, 0.1) var(--prime-progress, 100%),
+        rgba(255, 255, 255, 0.1) 100%
+    );
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
 }
 
 .prime-range::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #00e5ff;
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.7), 0 0 20px rgba(0, 229, 255, 0.3);
-  cursor: pointer;
-  transition: transform 0.12s;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #00e5ff;
+    box-shadow:
+        0 0 10px rgba(0, 229, 255, 0.7),
+        0 0 20px rgba(0, 229, 255, 0.3);
+    cursor: pointer;
+    transition: transform 0.12s;
 }
 
 .prime-range::-webkit-slider-thumb:active {
-  transform: scale(1.35);
+    transform: scale(1.35);
 }
 
 .prime-range::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  border: none;
-  border-radius: 50%;
-  background: #00e5ff;
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.7);
-  cursor: pointer;
+    width: 16px;
+    height: 16px;
+    border: none;
+    border-radius: 50%;
+    background: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.7);
+    cursor: pointer;
 }
 
 .prime-range:focus-visible {
-  outline: 2px solid rgba(0, 229, 255, 0.6);
-  outline-offset: 6px;
-  border-radius: 4px;
+    outline: 2px solid rgba(0, 229, 255, 0.6);
+    outline-offset: 6px;
+    border-radius: 4px;
 }
 
 .prime-range-ends {
-  display: flex;
-  justify-content: space-between;
-  width: 240px;
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.1em;
-  color: rgba(0, 229, 255, 0.3);
+    display: flex;
+    justify-content: space-between;
+    width: 240px;
+    font-family: var(--font-geist-mono), monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    color: rgba(0, 229, 255, 0.3);
 }
 
 .prime-hint {
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.2);
-  animation: prime-slidein 0.5s 0.4s ease both;
-  pointer-events: none;
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-geist-mono), monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.2);
+    animation: prime-slidein 0.5s 0.4s ease both;
+    pointer-events: none;
 }
 
 .prime-loading {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-  color: rgba(0, 229, 255, 0.65);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    color: rgba(0, 229, 255, 0.65);
+    font-family: var(--font-geist-mono), monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
 }
 
 @keyframes prime-spin {
-  to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .prime-spinner {
-  width: 44px;
-  height: 44px;
-  border: 2px solid rgba(0, 229, 255, 0.12);
-  border-top-color: rgba(0, 229, 255, 0.75);
-  border-radius: 50%;
-  animation: prime-spin 0.75s linear infinite;
+    width: 44px;
+    height: 44px;
+    border: 2px solid rgba(0, 229, 255, 0.12);
+    border-top-color: rgba(0, 229, 255, 0.75);
+    border-radius: 50%;
+    animation: prime-spin 0.75s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .prime-overlay,
-  .prime-hud,
-  .prime-close,
-  .prime-hint {
-    animation: none;
-  }
-  .prime-spinner {
-    animation: none;
-    border-color: rgba(0, 229, 255, 0.5);
-  }
+    .prime-overlay,
+    .prime-hud,
+    .prime-close,
+    .prime-hint {
+        animation: none;
+    }
+    .prime-spinner {
+        animation: none;
+        border-color: rgba(0, 229, 255, 0.5);
+    }
 }
 /* ─────────────────────────────────────────────────────────────────── */
 
 /* Tailwind custom `animate-*` — respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .animate-pulse,
-  .animate-spin,
-  .animate-bounce,
-  .animate-ping,
-  .animate-wave,
-  .animate-rocketTakeoff,
-  .animate-fireTrail {
-    animation: none !important;
-  }
+    .animate-pulse,
+    .animate-spin,
+    .animate-bounce,
+    .animate-ping,
+    .animate-wave,
+    .animate-rocketTakeoff,
+    .animate-fireTrail {
+        animation: none !important;
+    }
 }
 
 /* ─── Hero particle float (CSS-only, compositor thread) ─────────── */
 @keyframes particle-float {
-  0%, 100% { transform: translateY(0);     opacity: 0;    }
-  50%       { transform: translateY(-28px); opacity: 0.45; }
+    0%,
+    100% {
+        transform: translateY(0);
+        opacity: 0;
+    }
+    50% {
+        transform: translateY(-28px);
+        opacity: 0.45;
+    }
 }
 
 .hero-particle {
-  animation: particle-float var(--p-dur, 6s) var(--p-delay, 0s) ease-in-out infinite;
-  pointer-events: none;
-  position: absolute;
-  border-radius: 9999px;
-  background: rgba(34, 211, 238, 0.25);
+    animation: particle-float var(--p-dur, 6s) var(--p-delay, 0s) ease-in-out infinite;
+    pointer-events: none;
+    position: absolute;
+    border-radius: 9999px;
+    background: rgba(34, 211, 238, 0.25);
 }
 
 /* ─── Avatar ring spin (CSS-only, compositor thread) ─────────────── */
 @keyframes spin-continuous {
-  to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .avatar-spin-ring {
-  animation: spin-continuous 7s linear infinite;
+    animation: spin-continuous 7s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-particle,
-  .avatar-spin-ring {
-    animation: none;
-    opacity: 0;
-  }
+    .hero-particle,
+    .avatar-spin-ring {
+        animation: none;
+        opacity: 0;
+    }
+}
+
+/* INDEX — title screen. One drawing, one entrance, tactile keys. */
+.index-root {
+    background: #141210;
+    color: #f3efe6;
+    scroll-padding-bottom: 6.5rem;
+}
+
+.index-root ::selection {
+    background: rgba(226, 61, 43, 0.35);
+    color: #f3efe6;
+}
+
+.index-root a:focus-visible,
+.index-root button:focus-visible {
+    outline-color: #e23d2b;
+}
+
+.index-plate {
+    background: linear-gradient(160deg, #2a2622 0%, #1a1714 55%, #141210 100%);
+    box-shadow:
+        12px 16px 32px #0a0908,
+        -8px -8px 18px #322e29;
+}
+
+.index-key {
+    background: #221f1b;
+    box-shadow:
+        5px 6px 12px #0c0b0a,
+        -3px -3px 8px #3a342c;
+    transition:
+        transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.index-key:hover {
+    transform: translateY(-1px);
+}
+
+.index-key:active {
+    transform: translateY(1px);
+    box-shadow:
+        inset 4px 4px 8px #0c0b0a,
+        inset -2px -2px 6px #3a342c;
+}
+
+.index-glass {
+    background: rgba(243, 239, 230, 0.06);
+    border: 1px solid rgba(243, 239, 230, 0.14);
+    backdrop-filter: blur(14px);
+}
+
+.index-stage {
+    transform: translate3d(calc(var(--px, 0) * 10px), calc(var(--py, 0) * 8px), 0);
+    transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.index-shutter-l,
+.index-shutter-r {
+    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.index-stage:hover .index-shutter-l {
+    transform: translateX(-10px);
+}
+
+.index-stage:hover .index-shutter-r {
+    transform: translateX(10px);
+}
+
+.index-title {
+    animation: index-in 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.index-zone {
+    stroke-dasharray: 520;
+    stroke-dashoffset: 520;
+    animation: index-draw 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+}
+
+@keyframes index-in {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes index-draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .index-stage,
+    .index-shutter-l,
+    .index-shutter-r,
+    .index-key {
+        transform: none;
+        transition: none;
+    }
+
+    .index-title,
+    .index-zone {
+        animation: none;
+    }
+
+    .index-zone {
+        stroke-dashoffset: 0;
+    }
 }
 /* ─────────────────────────────────────────────────────────────────── */

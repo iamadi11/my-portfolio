@@ -1,0 +1,498 @@
+/*
+ * The host on /v2: a portrait that becomes a 3D guide.
+ * Same tokens and key family as the Instrumented page; the blueprint scan is the bridge
+ * between the two (2D photo → 3D head), the porthole is where the guide lives after that.
+ */
+
+/* ---------- first screen ---------- */
+
+.host-grid {
+    grid-template-rows: auto auto auto auto auto auto;
+    row-gap: 18px;
+}
+
+.host-grid .ins-meta {
+    grid-row: 1;
+}
+
+.host-frame {
+    position: relative;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border: 1px solid var(--ink);
+    border-radius: 6px;
+    background:
+        radial-gradient(circle, rgba(14, 14, 16, 0.16) 0.9px, transparent 1.3px) 0 0 / 16px 16px,
+        #e3e5f6;
+}
+
+.host-name {
+    grid-row: 3;
+    --name-span: 1;
+}
+
+.host-name.is-measured span::before,
+.host-name.is-measured span::after {
+    width: 100%;
+}
+
+.host-statement {
+    grid-column: 1 / -1;
+    grid-row: 4;
+}
+
+.host-actions {
+    grid-column: 1 / -1;
+    grid-row: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.host-grid .ins-index {
+    grid-row: 6;
+}
+
+.host-note {
+    flex-basis: 100%;
+    max-width: 46ch;
+    font: 500 12px/1.5 var(--mono);
+    color: var(--ink-2);
+}
+
+@media (min-width: 900px) {
+    .host-grid {
+        grid-template-rows: auto 1fr auto auto auto;
+    }
+
+    .host-name {
+        grid-column: 1 / 8;
+        grid-row: 2;
+        align-self: end;
+        --name-span: 0.56;
+    }
+
+    .host-statement {
+        grid-column: 1 / 7;
+        grid-row: 3;
+    }
+
+    .host-actions {
+        grid-column: 1 / 8;
+        grid-row: 4;
+    }
+
+    .host-frame {
+        grid-column: 8 / -1;
+        grid-row: 2 / 5;
+        align-self: center;
+        aspect-ratio: 4 / 5;
+        max-height: 70svh;
+    }
+
+    .host-grid .ins-index {
+        grid-row: 5;
+    }
+}
+
+.host-photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 28%;
+    transition: opacity var(--t-section) var(--ease);
+}
+
+.host-tag {
+    position: absolute;
+    z-index: 2;
+    left: 10px;
+    bottom: 10px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: var(--paper);
+    font: 500 11px/1.2 var(--mono);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* loading: progress along the bottom edge */
+.host-frame::after {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--spec);
+    transform: scaleX(var(--progress, 0));
+    transform-origin: left;
+    opacity: 0;
+    transition:
+        transform 200ms linear,
+        opacity var(--t-fast);
+}
+
+.host-frame.is-loading::after {
+    opacity: 1;
+}
+
+/* the scan line that turns the photo into the head */
+.host-scan {
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+    border-top: 2px solid var(--spec);
+    background: linear-gradient(rgba(31, 51, 224, 0.18), transparent 28px);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-2px);
+}
+
+.host-frame.is-scanning .host-scan {
+    opacity: 1;
+    animation: host-scan 1.5s var(--ease) forwards;
+}
+
+/* waiting for the head: the scan line breathes at the top edge */
+.host-frame.is-loading .host-scan {
+    opacity: 1;
+}
+
+.host-frame.is-scanning .host-photo {
+    animation: host-erase 1.5s var(--ease) forwards;
+}
+
+.host-frame.is-live:not(.is-away) .host-photo {
+    opacity: 0;
+}
+
+@keyframes host-scan {
+    to {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes host-erase {
+    to {
+        clip-path: inset(100% 0 0 0);
+    }
+}
+
+/* ---------- Start: the one key that calls for attention ---------- */
+
+.ins-root .host-start {
+    position: relative;
+    /* fixed width: the label changes, its neighbours must not move */
+    width: 16.5em;
+    max-width: 100%;
+    min-height: 56px;
+    padding: 0 22px;
+    font-size: 16px;
+}
+
+.host-start svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.host-start.is-calling::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 2px solid var(--spec);
+    border-radius: 14px;
+    pointer-events: none;
+    animation: host-call 2.2s var(--ease) infinite;
+}
+
+@keyframes host-call {
+    0% {
+        opacity: 0.9;
+        transform: scale(1);
+    }
+    70%,
+    100% {
+        opacity: 0;
+        transform: scale(1.12, 1.35);
+    }
+}
+
+/* ---------- the head: in the portrait frame, then docked ---------- */
+
+.host-stage,
+.host-port {
+    --crop: 1.55;
+    --face-y: 46%;
+    --face-at: 40%;
+    overflow: hidden;
+}
+
+.host-stage {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    pointer-events: none;
+}
+
+.host-stage.is-portrait,
+.host-stage.is-loading {
+    clip-path: inset(0 0 100% 0);
+}
+
+.host-stage.is-scanning {
+    animation: host-reveal 1.5s var(--ease) forwards;
+}
+
+.host-frame.is-live:not(.is-away) .host-stage {
+    pointer-events: auto;
+    cursor: grab;
+}
+
+@keyframes host-reveal {
+    from {
+        clip-path: inset(0 0 100% 0);
+    }
+    to {
+        clip-path: inset(0 0 0 0);
+    }
+}
+
+.host-avatar {
+    position: absolute;
+    left: calc(50% - 50% * var(--crop));
+    top: calc(var(--face-at) - var(--face-y) * var(--crop));
+    width: calc(100% * var(--crop));
+    height: calc(100% * var(--crop));
+}
+
+/* NProgress ships with the renderer; the frame shows progress instead. */
+#nprogress {
+    display: none;
+}
+
+.host-port {
+    --crop: 2.1;
+    --face-at: 47%;
+    position: fixed;
+    z-index: 45;
+    right: 16px;
+    bottom: calc(var(--dock-space) + 8px);
+    width: 150px;
+    height: 176px;
+    border: 1px solid var(--ink);
+    border-radius: 18px;
+    background:
+        radial-gradient(circle, rgba(14, 14, 16, 0.14) 0.9px, transparent 1.3px) 0 0 / 14px 14px,
+        #e3e5f6;
+    box-shadow: 0 18px 40px -18px rgba(14, 14, 16, 0.55);
+    cursor: grab;
+}
+
+.host-port.is-flat .host-photo {
+    object-position: 50% 30%;
+}
+
+/* ---------- the companion card: captions, controls, ask ---------- */
+
+.host-card {
+    position: fixed;
+    z-index: 45;
+    right: 16px;
+    bottom: calc(var(--dock-space) + 8px);
+    display: grid;
+    gap: 10px;
+    width: min(420px, calc(100vw - 32px - 160px));
+    padding: 12px;
+    border: 1px solid var(--ink);
+    border-radius: 16px;
+    background: var(--paper);
+    box-shadow: 0 18px 40px -18px rgba(14, 14, 16, 0.5);
+}
+
+/* makes room for the porthole by sliding, not by re-laying out */
+.host-card.is-docked {
+    transform: translateX(-160px);
+    transition: transform var(--t-section) var(--ease);
+}
+
+.host-caption {
+    height: 6em;
+    overflow-y: auto;
+    font-size: 15px;
+    line-height: 1.5;
+    text-wrap: pretty;
+}
+
+.host-who {
+    display: block;
+    font: 500 11px/1.4 var(--mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--spec);
+}
+
+.host-controls,
+.host-form {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ins-root .host-icon {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+}
+
+.host-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.ins-root .host-icon[aria-pressed='true'],
+.ins-root .host-ask-key.is-on {
+    border-color: #1427b8;
+    background: var(--spec);
+    color: #fff;
+}
+
+.ins-root .host-icon.is-listening {
+    animation: host-call 1.6s var(--ease) infinite;
+}
+
+.host-step {
+    margin-left: auto;
+    padding: 0 6px;
+    font: 500 12px/1 var(--mono);
+    color: var(--ink-2);
+}
+
+.ins-root .host-ask-key {
+    min-height: 44px;
+    padding: 0 14px;
+}
+
+.host-ask {
+    display: grid;
+    gap: 10px;
+}
+
+.host-input {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid rgba(14, 14, 16, 0.3);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+    font: 400 16px var(--text);
+}
+
+.host-input:focus-visible {
+    outline: 2px solid var(--spec);
+    outline-offset: 1px;
+}
+
+.host-prompts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.host-chip {
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink);
+    font: 500 13px/1 var(--text);
+    cursor: pointer;
+    transition: background-color var(--t-fast) var(--ease);
+}
+
+.host-chip:hover {
+    background: #fff;
+}
+
+/* the page keeps room for the guide */
+html:has(.host-card) {
+    scroll-padding-bottom: 300px;
+}
+
+.ins-root:has(.host-card) .ins-colophon {
+    padding-bottom: 320px;
+}
+
+/* ---------- where the guide is pointing ---------- */
+
+.ins-plate.is-guided .ins-plate-art {
+    outline: 2px solid var(--spec);
+    outline-offset: 6px;
+    transition: outline-offset var(--t-section) var(--ease);
+}
+
+.ins-section.is-guided .ins-head h2 {
+    color: var(--spec);
+    transition: color var(--t-section) var(--ease);
+}
+
+.ins-reply.is-guided .ins-head h2 {
+    color: #8fa0ff;
+}
+
+/* ---------- phones: porthole bottom-left, card beside it ---------- */
+
+@media (max-width: 640px) {
+    .host-port {
+        right: 10px;
+        width: 92px;
+        height: 112px;
+        border-radius: 14px;
+    }
+
+    /* left edge and height stay put; only the right edge gives way to the porthole */
+    .host-card {
+        right: 10px;
+        left: 10px;
+        width: auto;
+    }
+
+    .host-card.is-docked {
+        right: calc(10px + 92px + 8px);
+        transform: none;
+    }
+
+    .host-caption {
+        height: 6em;
+        font-size: 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .host-stage.is-scanning,
+    .host-frame.is-scanning .host-photo,
+    .host-frame.is-scanning .host-scan,
+    .host-start.is-calling::after,
+    .ins-root .host-icon.is-listening {
+        animation: none;
+    }
+
+    .host-stage.is-scanning {
+        clip-path: none;
+    }
+}
