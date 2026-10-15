@@ -101,7 +101,7 @@ const structuredDataJsonLd = {
 export const viewport: Viewport = {
     width: 'device-width',
     initialScale: 1,
-    themeColor: '#09090b',
+    themeColor: '#0c0b0a',
     colorScheme: 'dark',
 };
 

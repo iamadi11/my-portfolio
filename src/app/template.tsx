@@ -5,12 +5,14 @@ import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import Header from '@/components/Header';
 import Layout from '@/components/Layout';
 import SocialLinks from '@/components/SocialLinks';
 
 const Template: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const pathname = usePathname();
     const prefersReducedMotion = useReducedMotion();
     const [scrollPct, setScrollPct] = useState(0);
 
@@ -23,6 +25,10 @@ const Template: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         window.addEventListener('scroll', onScroll, { passive: true });
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
+
+    if (pathname === '/' || pathname === '/v2') {
+        return <>{children}</>;
+    }
 
     return (
         <>

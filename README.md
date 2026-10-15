@@ -20,6 +20,15 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Make it yours
+
+The site is driven by one file, so it works for any engineer (SDE-2, SDE-3, tech lead):
+
+1. Edit `src/content/site.ts`: profile, projects (pick a `mark` drawing and `hue` for each), experience, skills. Leave out what you can't back up; empty sections disappear.
+2. Guide on `/`: set `HOST.portrait` and `HOST.voice` (a Kokoro voice id). For the 3D head, export your avatar from a front-facing photo with the [LAM demo](https://www.modelscope.cn/studios/Damo_XR_Lab/LAM_Large_Avatar_Model), save it as `public/avatar/<you>.zip` and set `HOST.avatar`; without that file the guide stays a photo.
+3. `npm run voice` (needs `ffmpeg`) renders every line the host can say into `public/voice/`; `npm run check:host` checks the answers.
+4. `src/components/instrumented/content.ts` → `SAMPLE` shows every field with placeholder copy.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
