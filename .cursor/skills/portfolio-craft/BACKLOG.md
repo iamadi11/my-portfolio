@@ -2,7 +2,7 @@
 
 Ordered. The skill updates this file at the end of a pass.
 
-1. Export the real avatar to `public/avatar/aditya.zip` (LAM ModelScope demo, from `public/profile_pic.png`). Until then production `/v2` shows the 2D portrait guide; dev borrows LAM's gitignored sample head. After export, tune `--crop`, `--face-y`, `--face-at` in `src/components/host/host.css` so the 3D head lines up with the photo during the scan (current values are fitted to the sample).
+1. Done: `public/avatar/aditya.zip` (LAM export from `public/profile_pic.png`) is live on `/`; framing checked at 1440 in the frame and the docked porthole. Re-check the scan alignment at 375 and on a real phone (`--crop`, `--face-y`, `--face-at` in `src/components/host/host.css`).
 2. Listen to the voice. Audio decodes and plays on a clock that drives the lip-sync, but nobody has heard it. Check "Tata one M G", "More sand", the email and phone readouts; fix with `HOST.say`, then `npm run voice`.
 3. Voice questions (Web Speech API) were not tested with a real microphone. Headless Chrome only proves the mic key renders and typed questions work.
 4. The LAM renderer is alpha (`0.0.9-alpha.2`): a 323 KB gzip chunk carrying its own three@0.173, logs to the console, and renders at full devicePixelRatio (no cap). Measure on a mid-range phone; if it stutters, shrink the porthole or patch the DPR.
