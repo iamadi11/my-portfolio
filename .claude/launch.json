@@ -4,7 +4,20 @@
         {
             "name": "portfolio-v2",
             "runtimeExecutable": "bash",
-            "runtimeArgs": ["-c", "source ~/.nvm/nvm.sh && npm run dev"],
+            "runtimeArgs": [
+                "-c",
+                "source ~/.nvm/nvm.sh && npm run dev"
+            ],
+            "port": 3000,
+            "autoPort": true
+        },
+        {
+            "name": "portfolio-sample-avatar",
+            "runtimeExecutable": "bash",
+            "runtimeArgs": [
+                "-c",
+                "source ~/.nvm/nvm.sh && HOST_SAMPLE_AVATAR=1 npm run dev"
+            ],
             "port": 3000,
             "autoPort": true
         }
