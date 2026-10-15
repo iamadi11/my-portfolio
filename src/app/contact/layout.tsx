@@ -6,12 +6,12 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
     title: 'Contact',
     description:
-        'Hire Aditya Raj — Frontend Engineer II open to senior frontend and full-stack roles. Reach out via email, phone, LinkedIn, or GitHub. Based in Bengaluru, open to remote.',
+        'Hire Aditya Raj — Senior Software Development Engineer open to senior software engineering roles. Reach out via email, phone, LinkedIn, or GitHub. Based in Bengaluru, open to remote.',
     keywords: [
         'hire Aditya Raj',
         'contact frontend engineer Bengaluru',
         'React Next.js developer for hire',
-        'senior frontend engineer remote India',
+        'senior software engineer remote India',
     ],
     alternates: {
         canonical: '/contact',
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
         url: '/contact',
         title: 'Contact · Aditya Raj',
         description:
-            'Hire Aditya Raj — Frontend Engineer II open to senior frontend and full-stack roles. Based in Bengaluru, open to remote.',
+            'Hire Aditya Raj — Senior Software Development Engineer open to senior software engineering roles. Based in Bengaluru, open to remote.',
     },
 };
 

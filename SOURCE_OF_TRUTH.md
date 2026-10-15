@@ -12,13 +12,13 @@
 | -------- | --------------------------------------------------------------------------------------------------------------- |
 | Name     | Aditya Raj                                                                                                      |
 | Location | Bengaluru, Karnataka, India                                                                                     |
-| Title    | Frontend Engineer II (most recent role; Cashfree Payments Mar 2025 – May 2026; currently open to opportunities) |
+| Title    | Senior Software Development Engineer (owner-confirmed 2026-10-15). Most recent role: Frontend Engineer II, Cashfree Payments, Mar 2025 – May 2026; currently open to opportunities |
 | Email    | adityaraj92.20@gmail.com                                                                                        |
 | Phone    | +91 72578 07070 → `tel:+917257807070`                                                                           |
 | LinkedIn | https://www.linkedin.com/in/adityaraj11/                                                                        |
 | GitHub   | https://github.com/iamadi11                                                                                     |
 
-**Tagline (resume summary, shortened for UI):** Frontend engineer with ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise; strong React / Next.js / TypeScript; performance and production systems focus.
+**Tagline (resume summary, shortened for UI; title per owner 2026-10-15):** Senior software engineer with ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise; strong React / Next.js / TypeScript; performance and production systems focus.
 
 ---
 

@@ -13,8 +13,7 @@ const workHistoryJsonLd = {
         '@type': 'Person',
         '@id': `${siteUrl}#person`,
         name: 'Aditya Raj',
-        jobTitle: 'Frontend Engineer II',
-        worksFor: { '@type': 'Organization', name: 'Cashfree Payments' },
+        jobTitle: 'Senior Software Development Engineer',
         alumniOf: {
             '@type': 'EducationalOrganization',
             name: 'IIIT Lucknow',
@@ -25,6 +24,7 @@ const workHistoryJsonLd = {
                 '@type': 'EmployeeRole',
                 roleName: 'Frontend Engineer II',
                 startDate: '2025-03',
+                endDate: '2026-05',
                 worksFor: {
                     '@type': 'Organization',
                     name: 'Cashfree Payments',
@@ -67,7 +67,7 @@ const workHistoryJsonLd = {
 export const metadata: Metadata = {
     title: 'About',
     description:
-        'Hire Aditya Raj — Frontend Engineer II with 4.5+ years React/Next.js/TypeScript at Cashfree Payments, Moresand, and Tata 1mg. Open to senior frontend and full-stack roles in Bengaluru or remote.',
+        'Hire Aditya Raj — Senior Software Development Engineer with 4.5+ years React/Next.js/TypeScript at Cashfree Payments, Moresand, and Tata 1mg. Open to senior software engineering roles in Bengaluru or remote.',
     keywords: [
         'Aditya Raj work history',
         'Cashfree Payments frontend engineer',
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
         'Moresand Technologies React',
         'hire React developer Bengaluru',
         'IIIT Lucknow frontend engineer',
-        'senior frontend engineer India',
+        'senior software engineer India',
     ],
     alternates: {
         canonical: '/about',
@@ -84,7 +84,7 @@ export const metadata: Metadata = {
         url: '/about',
         title: 'About · Aditya Raj',
         description:
-            'Hire Aditya Raj — Frontend Engineer II with 4.5+ years React/Next.js/TypeScript at Cashfree Payments, Moresand, and Tata 1mg. Open to senior frontend and full-stack roles.',
+            'Hire Aditya Raj — Senior Software Development Engineer with 4.5+ years React/Next.js/TypeScript at Cashfree Payments, Moresand, and Tata 1mg. Open to senior software engineering roles.',
     },
 };
 
