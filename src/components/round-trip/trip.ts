@@ -27,7 +27,13 @@ export type Trip = {
 };
 
 /** Each project's ring takes its colour from the project's hue. */
-const RING: Record<Hue, string> = { blue: '#6fb8ff', red: '#ff6b8a', green: '#5ff0b0', ink: '#c9d0dc' };
+const RING: Record<Hue, string> = {
+    blue: '#6fb8ff',
+    red: '#ff6b8a',
+    green: '#5ff0b0',
+    amber: '#ffb35c',
+    ink: '#c9d0dc',
+};
 
 export function tripFrom(site: SiteContent): Trip {
     const { profile, projects, practice } = site;
@@ -36,7 +42,7 @@ export function tripFrom(site: SiteContent): Trip {
         slug: profile.name.split(' ')[0].toLowerCase(),
         role: profile.role,
         statement: profile.statement,
-        meta: [profile.availability, profile.location].filter(Boolean).join(' · '),
+        meta: [profile.status, profile.location].filter(Boolean).join(' · '),
         impact: practice.impact ?? [],
         skills: practice.skills ?? [],
         projects: projects.map(({ hue, ...p }) => ({ ...p, colour: RING[hue] })),

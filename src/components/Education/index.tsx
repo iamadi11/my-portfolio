@@ -5,6 +5,8 @@ import React from 'react';
 import clsx from 'clsx';
 import { motion, useReducedMotion } from 'motion/react';
 
+import { SITE } from '@/content/site';
+
 const Education: React.FC = () => {
     const prefersReducedMotion = useReducedMotion();
     const reduce = prefersReducedMotion === true;
@@ -28,18 +30,20 @@ const Education: React.FC = () => {
             >
                 Education
             </h2>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-8">
-                <div>
-                    <h3 className="text-xl font-semibold text-zinc-100">IIIT Lucknow</h3>
-                    <p className="mt-2 text-lg font-medium text-zinc-400">
-                        B.Tech Information Technology — CGPA 8.14/10
-                    </p>
+            {(SITE.practice.education ?? []).map((e) => (
+                <div key={e.org} className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-8">
+                    <div>
+                        <h3 className="text-xl font-semibold text-zinc-100">{e.org}</h3>
+                        <p className="mt-2 text-lg font-medium text-zinc-400">
+                            {[e.role, ...(e.highlights ?? [])].join(' — ')}
+                        </p>
+                    </div>
+                    <div>
+                        <p className="text-base text-zinc-500 md:text-right">{e.period}</p>
+                        {e.location && <p className="text-sm text-zinc-600 md:text-right">{e.location}</p>}
+                    </div>
                 </div>
-                <div>
-                    <p className="text-base text-zinc-500 md:text-right">Aug 2017 – Jun 2021</p>
-                    <p className="text-sm text-zinc-600 md:text-right">Lucknow, Uttar Pradesh</p>
-                </div>
-            </div>
+            ))}
         </motion.section>
     );
 };

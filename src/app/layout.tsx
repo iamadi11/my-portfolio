@@ -22,7 +22,7 @@ const siteUrl = getSiteOrigin();
 
 /** Same resume-backed tagline as About + SOURCE_OF_TRUTH.md (search / OG / Twitter). */
 const defaultDescription =
-    'Senior Software Development Engineer · Bengaluru. ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise; strong React, Next.js, and TypeScript; performance and production systems focus. Open to new opportunities.';
+    'Senior Software Development Engineer at Amby Tech · Bengaluru. 5+ years building fast, scalable web products for fintech and e-commerce with React, Next.js, Node.js and TypeScript; performance and production systems focus.';
 
 /** GitHub profile image (https://github.com/iamadi11) — used for link previews without shipping a separate asset. */
 const openGraphImage = 'https://avatars.githubusercontent.com/u/34628188?v=4&s=512';
@@ -57,7 +57,7 @@ const structuredDataJsonLd = {
                 addressRegion: 'Karnataka',
                 addressCountry: 'IN',
             },
-            seeks: 'Senior Software Development Engineer roles (React, Next.js, TypeScript)',
+            worksFor: { '@type': 'Organization', name: 'Amby Tech', url: 'https://ambytech.com/' },
             alumniOf: { '@id': `${siteUrl}#education-iiit` },
             knowsAbout: [
                 'React',
@@ -117,7 +117,7 @@ export const metadata: Metadata = {
     /** Resume-backed terms for search / discovery (subset of SOURCE_OF_TRUTH.md). */
     keywords: [
         'Aditya Raj',
-        'Frontend Engineer',
+        'Senior Frontend Engineer',
         'Senior Software Development Engineer',
         'Senior Software Engineer',
         'React',
@@ -125,6 +125,7 @@ export const metadata: Metadata = {
         'TypeScript',
         'JavaScript',
         'Bengaluru',
+        'Amby Tech',
         'Cashfree Payments',
         'Tata 1mg',
         'Moresand Technologies',

@@ -6,7 +6,7 @@
 export type Link = { label: string; href: string };
 
 /** Colour of the project's ring in the services zone. */
-export type Hue = 'blue' | 'red' | 'green' | 'ink';
+export type Hue = 'blue' | 'red' | 'green' | 'amber' | 'ink';
 
 export type Project = {
     id: string;
@@ -38,7 +38,8 @@ export type SiteContent = {
         role: string;
         statement: string;
         location: string;
-        availability: string;
+        /** A short line under the name, e.g. 'Now at Acme' or 'Open to new roles'. */
+        status?: string;
         email: string;
         phone?: Link;
         links: Link[];
@@ -60,7 +61,7 @@ export const SAMPLE: SiteContent = {
         role: 'Senior Software Engineer',
         statement: 'One sentence on the systems you build and why they hold up in production.',
         location: 'City, Country',
-        availability: 'Open to new work',
+        status: 'Open to new work',
         email: 'you@example.com',
         links: [
             { label: 'GitHub', href: 'https://example.com' },

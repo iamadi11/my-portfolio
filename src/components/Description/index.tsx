@@ -5,6 +5,8 @@ import React from 'react';
 import clsx from 'clsx';
 import { motion, useReducedMotion } from 'motion/react';
 
+import { SITE } from '@/content/site';
+
 const Description: React.FC = () => {
     const prefersReducedMotion = useReducedMotion();
     const reduce = prefersReducedMotion === true;
@@ -29,9 +31,8 @@ const Description: React.FC = () => {
                 About
             </h1>
             <p className="text-base leading-relaxed text-zinc-300 sm:text-lg">
-                <span className="font-semibold text-zinc-100">Software Development Engineer</span> with ~4.5+
-                years building scalable web apps in fintech, e-commerce, and enterprise; strong React,
-                Next.js, and TypeScript; performance and production systems focus.
+                <span className="font-semibold text-zinc-100">{SITE.profile.role}</span>
+                {SITE.profile.status ? ` · ${SITE.profile.status}` : ''}. {SITE.profile.statement}
             </p>
         </motion.section>
     );

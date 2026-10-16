@@ -5,55 +5,26 @@ import React from 'react';
 import clsx from 'clsx';
 import { motion, useReducedMotion } from 'motion/react';
 
+import { SITE } from '@/content/site';
+
 type Role = {
     title: string;
     company: string;
     range: string;
-    location: string;
+    location?: string;
     bullets: string[];
-    tech: string;
+    tech?: string;
 };
 
-const roles: Role[] = [
-    {
-        title: 'Frontend Engineer II',
-        company: 'Cashfree Payments',
-        range: 'Mar 2025 – May 2026',
-        location: 'Bengaluru, Karnataka',
-        bullets: [
-            'Own and maintain Risk WebApp platform serving enterprise merchants processing millions of transactions per month.',
-            'Architected configurable rule engine for real-time transaction blocking and flagging based on amount, velocity, and risk signals.',
-            'Enhanced Video KYC platform reliability with robust reconnection flows, reducing failure rates by 30%.',
-        ],
-        tech: 'React, TypeScript, Zustand, Semantic UI, REST APIs',
-    },
-    {
-        title: 'Software Engineer',
-        company: 'Moresand Technologies',
-        range: 'Aug 2024 – Mar 2025',
-        location: 'Bengaluru, Karnataka',
-        bullets: [
-            'Led migration of legacy back-office to React-based architecture with improved test coverage, enabling 3x faster feature development.',
-            'Implemented PWA architecture with offline capabilities, improving page load time by 50%.',
-        ],
-        tech: 'React, Next.js, React Query, Tailwind CSS, Node.js, Express.js',
-    },
-    {
-        title: 'Software Development Engineer I–II',
-        company: 'Tata 1mg',
-        range: 'Dec 2021 – Jul 2024',
-        location: 'Gurugram, Haryana',
-        bullets: [
-            'Engineered polygon-based serviceability engine using React.js and Google Maps API, enabling 15-minute and 1-hour delivery zones.',
-            'Architected centralized Node.js microservice for invoice PDF generation, reducing code duplication by 60%.',
-            'Implemented PWA for inventory management, reducing manual errors by 45%.',
-            'Implemented real-time notifications using WebPush, Redis, and SSE, reducing SLA breaches from 70% to 15%.',
-            'Optimized frontend build pipeline, reducing build time from 15 minutes to 3 minutes (80% reduction).',
-            'Consolidated repositories into monorepo architecture with Turborepo, reducing deployment time by 30%.',
-        ],
-        tech: 'React, Node.js, Express.js, Webpack, Redis, Google Maps API, Turborepo',
-    },
-];
+/** Same records as the home page: one source, `SITE` in src/content/site.ts. */
+const roles: Role[] = SITE.practice.experience.map((r) => ({
+    title: r.role,
+    company: r.org,
+    range: r.period,
+    location: r.location,
+    bullets: r.highlights ?? [],
+    tech: r.stack,
+}));
 
 const WorkExperience: React.FC = () => {
     const prefersReducedMotion = useReducedMotion();
@@ -95,17 +66,23 @@ const WorkExperience: React.FC = () => {
                             </div>
                             <div>
                                 <p className="text-base text-zinc-500 md:text-right">{role.range}</p>
-                                <p className="text-sm text-zinc-600 md:text-right">{role.location}</p>
+                                {role.location && (
+                                    <p className="text-sm text-zinc-600 md:text-right">{role.location}</p>
+                                )}
                             </div>
                         </div>
-                        <ul className="mt-5 list-disc space-y-2.5 pl-5 text-sm leading-relaxed text-zinc-300 marker:text-cyan-500/80">
-                            {role.bullets.map((b) => (
-                                <li key={b}>{b}</li>
-                            ))}
-                        </ul>
-                        <p className="mt-4 text-xs text-zinc-500">
-                            <span className="font-semibold text-zinc-400">Tech:</span> {role.tech}
-                        </p>
+                        {role.bullets.length > 0 && (
+                            <ul className="mt-5 list-disc space-y-2.5 pl-5 text-sm leading-relaxed text-zinc-300 marker:text-cyan-500/80">
+                                {role.bullets.map((b) => (
+                                    <li key={b}>{b}</li>
+                                ))}
+                            </ul>
+                        )}
+                        {role.tech && (
+                            <p className="mt-4 text-xs text-zinc-500">
+                                <span className="font-semibold text-zinc-400">Tech:</span> {role.tech}
+                            </p>
+                        )}
                     </motion.article>
                 ))}
             </div>
