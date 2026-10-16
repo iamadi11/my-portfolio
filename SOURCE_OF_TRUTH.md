@@ -1,6 +1,6 @@
 # Source of truth — Aditya Raj portfolio
 
-**Last reviewed:** 2026-06-09  
+**Last reviewed:** 2026-10-17 (LinkedIn export + owner's message)  
 **Source PDF:** `Aditya_Raj_SDE.pdf` (updated June 2026)  
 **Hierarchy (strict):** `Aditya_Raj_SDE.pdf` → LinkedIn → GitHub. On conflict, **resume wins**.
 
@@ -8,17 +8,17 @@
 
 ## Identity
 
-| Field    | Value (resume)                                                                                                                                                                     |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Name     | Aditya Raj                                                                                                                                                                         |
-| Location | Bengaluru, Karnataka, India                                                                                                                                                        |
-| Title    | Senior Software Development Engineer (owner-confirmed 2026-10-15). Most recent role: Frontend Engineer II, Cashfree Payments, Mar 2025 – May 2026; currently open to opportunities |
-| Email    | adityaraj92.20@gmail.com                                                                                                                                                           |
-| Phone    | +91 72578 07070 → `tel:+917257807070`                                                                                                                                              |
-| LinkedIn | https://www.linkedin.com/in/adityaraj11/                                                                                                                                           |
-| GitHub   | https://github.com/iamadi11                                                                                                                                                        |
+| Field    | Value (resume)                                                                                                                                                                             |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Name     | Aditya Raj                                                                                                                                                                                 |
+| Location | Bengaluru, Karnataka, India                                                                                                                                                                |
+| Title    | Senior Software Development Engineer at **Amby Tech** (https://ambytech.com/) since 9 Jul 2026 (owner, 2026-10-17). Previous: Frontend Engineer II, Cashfree Payments, Mar 2025 – May 2026 |
+| Email    | adityaraj92.20@gmail.com                                                                                                                                                                   |
+| Phone    | +91 72578 07070 → `tel:+917257807070`                                                                                                                                                      |
+| LinkedIn | https://www.linkedin.com/in/adityaraj11/                                                                                                                                                   |
+| GitHub   | https://github.com/iamadi11                                                                                                                                                                |
 
-**Tagline (resume summary, shortened for UI; title per owner 2026-10-15):** Senior software engineer with ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise; strong React / Next.js / TypeScript; performance and production systems focus.
+**Tagline (LinkedIn summary, shortened for UI; owner approved "5+ years" on 2026-10-17, counting o9 Solutions from Jun 2021):** 5+ years building fast, scalable web products for fintech and e-commerce: React, Next.js and Node.js at Tata 1mg and Cashfree, including a self-serve fraud rule engine used by 200+ merchants.
 
 ---
 
@@ -126,35 +126,44 @@ my-portfolio/
 
 ---
 
-## Cached snapshot (2026-04-09)
+## Cached snapshot (2026-10-17: resume + LinkedIn export)
 
-### Most recent role (resume)
+Role-level bullets now come from the LinkedIn export (`Profile.pdf`, 2026-10-17), which is richer than the cached resume; the resume wins where they conflict (decisions recorded below). The site's copy of all of this is `src/content/site.ts`.
 
-- **Frontend Engineer II** — Cashfree Payments — Mar 2025 – May 2026 — Bengaluru _(ended; currently open to new roles)_
+### Current role (owner)
 
-### Prior roles (resume)
+- **Senior Software Development Engineer** — Amby Tech — since 9 Jul 2026. No highlights published until the owner provides them.
 
-- **Software Engineer** — Moresand Technologies — Aug 2024 – Mar 2025 — Bengaluru
-- **Software Development Engineer II** — Tata 1mg — Apr 2023 – Jul 2024 — Gurugram
-- **Software Development Engineer I** — Tata 1mg — Dec 2021 – Mar 2023 — Gurugram
+### Prior roles
+
+- **Frontend Engineer II** — Cashfree Payments — Mar 2025 – May 2026 — Bengaluru. Risk WebApp for 200+ enterprise merchants (millions of transactions per month); schema-driven micro-frontend fraud rule engine configured at runtime (no redeploys); Video KYC session drop-offs −30% (reconnection state machine, exponential backoff); Cashmere design system (Storybook, Figma, CLI scaffolding).
+- **Software Engineer** — Moresand Technologies — Aug 2024 – Mar 2025 — Bengaluru. Backbone.js/.NET → React/TypeScript migration with tests and CI (3× delivery); Next.js SSR features with React Query and Node/Express; PWA offline architecture, page load −50% (resume).
+- **Software Development Engineer II** — Tata 1mg — Apr 2023 – Jul 2024 — Gurugram. Turborepo monorepo (CI/CD −30%); Node.js PDF microservice replacing 5+ client-side generators (duplication −60%).
+- **Software Development Engineer I** — Tata 1mg — Dec 2021 – Mar 2023 — Gurugram. Delivery-area configurator (20+ cities; 15-minute and 1-hour zones); real-time notifications (SLA breaches 70% → 15%); build 15 → 3 min, bundles −60%, Lighthouse > 90; offline warehouse PWA (manual errors −45%).
+- **Technical Consultant** — o9 Solutions — Jun 2021 – Dec 2021 — Bengaluru (LinkedIn only; owner approved including it). Client dashboard; SSIS + MySQL data integration.
+
+### Conflicts resolved (owner, 2026-10-17: resume wins)
+
+| Topic           | Resume                             | LinkedIn                       | Used               |
+| --------------- | ---------------------------------- | ------------------------------ | ------------------ |
+| Cashfree volume | millions of transactions per month | millions of daily transactions | per month          |
+| Tata SDE I end  | Mar 2023                           | Apr 2023                       | Mar 2023           |
+| Delivery zones  | 15-minute and 1-hour               | 1-hour express, 20+ cities     | both (no conflict) |
 
 ### Top skills (resume + GitHub)
 
-- React, Next.js, TypeScript, Node.js, performance, PWA, React Query, Zustand, Turborepo (resume); repo mix includes TS/JS projects on GitHub.
+- React, Next.js, TypeScript, Node.js, performance, PWA, React Query, Zustand, Turborepo (resume); LinkedIn top skills also list Vite, npm and WebPush.
 
-### Projects (portfolio-safe)
+### Projects (portfolio-safe; descriptions from each README)
 
-- **eidos** — https://github.com/iamadi11/eidos — demo: https://playground-iamadi11s-projects.vercel.app/ — npm: https://www.npmjs.com/package/@sweidos/eidos — "Declarative offline-first abstraction layer for Service Workers."
-- **mouse-follow** — https://github.com/iamadi11/mouse-follow — demo: https://mouse-follow-demo.vercel.app/ (GitHub description: “Mouse Follow Component”)
-- **mcp-ui-poc** — https://github.com/iamadi11/mcp-ui-poc — demo: https://mcp-ui-poc.vercel.app/ — “Dynamic MCP UI Generator”; copy on site from repo README (full-stack MCP UI demo, React + Vite + Node/Express).
-- **spatial** — https://github.com/iamadi11/spatial — demo: https://spatial-zeta.vercel.app/ — “Client-Side UI Performance Optimizer”; copy on site from repo README (TypeScript strict, Vitest, dev-time UI performance detection).
-- Additional public repos (AIUI, Oompa-Loompas, my-portfolio, …) — add only with short, honest descriptions from repo/README.
+- **Eidos** — https://github.com/sweidos/eidos (moved from `iamadi11/eidos`; owner is the main author) — docs https://sweidos.vercel.app — npm `@sweidos/eidos` — "Never lose a write": durable client-mutation queue (IndexedDB replay, idempotency keys).
+- **MCP UI studio** — https://github.com/iamadi11/mcp-ui-poc — https://mcp-ui-poc.vercel.app/ — chat turn → versioned, publishable widget.
+- **Spatial** — https://github.com/iamadi11/spatial — https://spatial-zeta.vercel.app — real-time UI performance anti-pattern detector.
+- **Sidecar** — https://github.com/iamadi11/progressive-image — progressive image loading (binary sidecar per image, runtime targeting < 1 KB).
+- **Video Light Sync** — https://github.com/iamadi11/video-light-sync — screen colours → Yeelight/WLED lights via a local Electron hub.
+- Not featured (thin or early): mouse-follow, noesis, interview-lab, gpt-ui (SourceLens), stacks, frontend-master, task-management.
 
-### Experience narrative
-
-- Use resume bullets; do not add employers or roles not on the resume (e.g. omit portfolio-only entries that contradict the resume).
-
-### Education (resume)
+### Education
 
 - IIIT Lucknow — B.Tech Information Technology — Aug 2017 – Jun 2021 — CGPA 8.14/10
 
@@ -167,7 +176,7 @@ my-portfolio/
 
 ### LinkedIn note
 
-- Automated extraction of full profile text is unreliable (login wall / rate limits). Re-sync headline and featured items manually against https://www.linkedin.com/in/adityaraj11/ when updating; resume still wins on conflicts.
+- Automated extraction is unreliable (login wall). The owner exports the profile as PDF instead (last: 2026-10-17); re-sync from a fresh export. Resume still wins on conflicts.
 
 ---
 

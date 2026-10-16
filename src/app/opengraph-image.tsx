@@ -110,7 +110,7 @@ export default function OGImage(): ImageResponse {
                             marginBottom: 10,
                         }}
                     >
-                        Senior Software Development Engineer · Bengaluru
+                        Senior Software Development Engineer · Amby Tech
                     </div>
 
                     {/* Sub-line */}
@@ -121,13 +121,13 @@ export default function OGImage(): ImageResponse {
                             marginBottom: 40,
                         }}
                     >
-                        Bengaluru · React · Next.js · TypeScript · 4.5+ yrs fintech
+                        Bengaluru · React · Next.js · TypeScript · 5+ yrs fintech
                     </div>
 
                     {/* Stats row */}
                     <div style={{ display: 'flex', gap: 18 }}>
                         {[
-                            { val: '4.5+', label: 'years exp' },
+                            { val: '5+', label: 'years exp' },
                             { val: '80%', label: 'faster builds' },
                             { val: '70→15%', label: 'SLA reduction' },
                             { val: '~M/mo', label: 'txns processed' },

@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
     title: 'Contact',
     description:
-        'Hire Aditya Raj — Senior Software Development Engineer open to senior software engineering roles. Reach out via email, phone, LinkedIn, or GitHub. Based in Bengaluru, open to remote.',
+        'Contact Aditya Raj — Senior Software Development Engineer at Amby Tech, Bengaluru. Email, phone, LinkedIn or GitHub.',
     keywords: [
         'hire Aditya Raj',
         'contact frontend engineer Bengaluru',
@@ -19,8 +19,7 @@ export const metadata: Metadata = {
     openGraph: {
         url: '/contact',
         title: 'Contact · Aditya Raj',
-        description:
-            'Hire Aditya Raj — Senior Software Development Engineer open to senior software engineering roles. Based in Bengaluru, open to remote.',
+        description: 'Contact Aditya Raj — Senior Software Development Engineer at Amby Tech, Bengaluru.',
     },
 };
 

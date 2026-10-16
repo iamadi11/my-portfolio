@@ -2,64 +2,48 @@ import type { ReactNode } from 'react';
 
 import type { Metadata } from 'next';
 
+import { SITE } from '@/content/site';
 import { getSiteOrigin } from '@/lib/site';
 
 const siteUrl = getSiteOrigin();
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+/** 'Mar 2025' → '2025-03'; anything else (e.g. 'now') → undefined. */
+const month = (s = ''): string | undefined => {
+    const [m, y] = s.trim().split(' ');
+    const i = MONTHS.indexOf(m);
+    return i < 0 || !y ? undefined : `${y}-${String(i + 1).padStart(2, '0')}`;
+};
+
+/** Built from the same records as the page (`SITE`), so search engines see exactly what visitors see. */
 const workHistoryJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ProfilePage',
     mainEntity: {
         '@type': 'Person',
         '@id': `${siteUrl}#person`,
-        name: 'Aditya Raj',
-        jobTitle: 'Senior Software Development Engineer',
-        alumniOf: {
+        name: SITE.profile.name,
+        jobTitle: SITE.profile.role,
+        alumniOf: (SITE.practice.education ?? []).map((e) => ({
             '@type': 'EducationalOrganization',
-            name: 'IIIT Lucknow',
-            description: 'B.Tech Information Technology, CGPA 8.14/10, Aug 2017 – Jun 2021',
-        },
-        hasOccupation: [
-            {
+            name: e.org,
+            description: [e.role, ...(e.highlights ?? []), e.period].join(', '),
+        })),
+        hasOccupation: SITE.practice.experience.map((r) => {
+            const [from, to] = r.period.split('–');
+            return {
                 '@type': 'EmployeeRole',
-                roleName: 'Frontend Engineer II',
-                startDate: '2025-03',
-                endDate: '2026-05',
+                roleName: r.role,
+                startDate: month(from),
+                endDate: month(to),
                 worksFor: {
                     '@type': 'Organization',
-                    name: 'Cashfree Payments',
-                    address: { '@type': 'PostalAddress', addressLocality: 'Bengaluru' },
+                    name: r.org,
+                    ...(r.location && { address: { '@type': 'PostalAddress', addressLocality: r.location } }),
                 },
-                description:
-                    'Own Risk WebApp serving enterprise merchants — millions of transactions/month. Configurable rule engine for real-time transaction blocking; reduced Video KYC failure rate 30%.',
-            },
-            {
-                '@type': 'EmployeeRole',
-                roleName: 'Software Engineer',
-                startDate: '2024-08',
-                endDate: '2025-03',
-                worksFor: {
-                    '@type': 'Organization',
-                    name: 'Moresand Technologies',
-                    address: { '@type': 'PostalAddress', addressLocality: 'Bengaluru' },
-                },
-                description:
-                    'Led legacy back-office migration to React; 3× faster feature delivery. PWA offline architecture cut page load time 50%.',
-            },
-            {
-                '@type': 'EmployeeRole',
-                roleName: 'Software Development Engineer I–II',
-                startDate: '2021-12',
-                endDate: '2024-07',
-                worksFor: {
-                    '@type': 'Organization',
-                    name: 'Tata 1mg',
-                    address: { '@type': 'PostalAddress', addressLocality: 'Gurugram' },
-                },
-                description:
-                    'Polygon serviceability engine for 15-min delivery zones. Real-time push notifications cut SLA breaches 70→15%. Turborepo monorepo cut build time 80%.',
-            },
-        ],
+                ...(r.highlights && { description: r.highlights.join(' ') }),
+            };
+        }),
     },
 };
 
@@ -67,9 +51,10 @@ const workHistoryJsonLd = {
 export const metadata: Metadata = {
     title: 'About',
     description:
-        'Hire Aditya Raj — Senior Software Development Engineer with 4.5+ years React/Next.js/TypeScript at Cashfree Payments, Moresand, and Tata 1mg. Open to senior software engineering roles in Bengaluru or remote.',
+        'Aditya Raj — Senior Software Development Engineer at Amby Tech. 5+ years of React, Next.js and TypeScript at Cashfree Payments, Tata 1mg, Moresand and o9 Solutions.',
     keywords: [
         'Aditya Raj work history',
+        'Amby Tech software engineer',
         'Cashfree Payments frontend engineer',
         'Tata 1mg SDE',
         'Moresand Technologies React',
@@ -84,7 +69,7 @@ export const metadata: Metadata = {
         url: '/about',
         title: 'About · Aditya Raj',
         description:
-            'Hire Aditya Raj — Senior Software Development Engineer with 4.5+ years React/Next.js/TypeScript at Cashfree Payments, Moresand, and Tata 1mg. Open to senior software engineering roles.',
+            'Aditya Raj — Senior Software Development Engineer at Amby Tech. 5+ years of React, Next.js and TypeScript at Cashfree Payments, Tata 1mg and Moresand.',
     },
 };
 

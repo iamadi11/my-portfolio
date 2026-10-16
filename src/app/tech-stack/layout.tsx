@@ -46,7 +46,7 @@ const skillsJsonLd = {
 export const metadata: Metadata = {
     title: 'Tech stack',
     description:
-        'React, Next.js, TypeScript, Node.js, Redis, Turborepo, PWA — production skills from 4.5+ years at Cashfree Payments, Tata 1mg, and Moresand Technologies. Hire a senior software engineer in Bengaluru.',
+        'React, Next.js, TypeScript, Node.js, Redis, Turborepo, PWA — production skills from 5+ years at Cashfree Payments, Tata 1mg, Moresand Technologies and Amby Tech. Hire a senior software engineer in Bengaluru.',
     keywords: [
         'React developer skills',
         'Next.js TypeScript engineer',
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
         url: '/tech-stack',
         title: 'Tech stack · Aditya Raj',
         description:
-            'React, Next.js, TypeScript, Node.js, Redis, Turborepo, PWA — production skills from 4.5+ years at Cashfree Payments, Tata 1mg, and Moresand.',
+            'React, Next.js, TypeScript, Node.js, Redis, Turborepo, PWA — production skills from 5+ years at Cashfree Payments, Tata 1mg, Moresand and Amby Tech.',
     },
 };
 
