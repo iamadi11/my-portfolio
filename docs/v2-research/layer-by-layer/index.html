@@ -1,0 +1,641 @@
+<title>Layer by Layer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500;700&display=swap" />
+<style>
+/* ================================================================
+   The page ships in two states.
+   1) html.css        the designed site, set before first paint. Every designed rule is
+                      scoped under .css, so "Disable CSS" really returns the page to raw HTML.
+   2) html:not(.css)  raw HTML, as a browser shows a document with no stylesheet.
+   On arrival a raw copy of the page sits over the designed one (a shadow-DOM overlay, so the
+   real layout never moves), shows "Loading styles.css", then every element flies into place.
+   Layout (designed): a sticky build bar on top; full-bleed sections, each painted in
+   the colour its layer is known by (HTML orange, CSS blue, JS yellow, API green,
+   Postgres blue, deploy black). Deliberate single light world, explicit colours.
+   ================================================================ */
+:root {
+  color-scheme: light;
+  --ink: #0d0d12; --paper: #f6f7f9; --white: #ffffff; --muted: #5c606b; --line: rgba(13,13,18,.12);
+  --html: #e44d26; --cssc: #2965f1; --js: #f7df1e; --api: #1fb978; --db: #336791; --ship: #0d0d12;
+  --display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --gutter: clamp(16px, 4vw, 56px);
+  --ease: cubic-bezier(.16, 1, .3, 1);
+}
+
+/* ---------------- raw HTML: a faithful default stylesheet, so first paint is a real unstyled document */
+html:not(.css) body { margin: 8px; background: #ffffff; color: #000000; font: 16px/1.2 "Times New Roman", Times, serif; }
+html:not(.css) a { color: #0000ee; }
+html:not(.css) a:visited { color: #551a8b; }
+html:not(.css) .deco, html:not(.css) .needs-css { display: none !important; }
+html:not(.css) .raw-note { display: block; background: #ffffe0; border: 1px solid #000; padding: 6px; margin: 8px 0; }
+html:not(.css) pre, html:not(.css) textarea { font-family: monospace; }
+html:not(.css) table { border-collapse: separate; border-spacing: 2px; }
+html:not(.css) td, html:not(.css) th { padding: 1px; text-align: left; }
+.raw-note { display: none; }
+.css [hidden] { display: none !important; }
+.booting #bar, .booting main { visibility: hidden; }
+
+/* ---------------- designed site */
+.css body { margin: 0; background: var(--paper); color: var(--ink); font: 400 17px/1.55 var(--body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+.css a { color: inherit; }
+.css button { font: inherit; color: inherit; cursor: pointer; }
+.css :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.css .mono { font: 500 11.5px/1.5 var(--mono); letter-spacing: .02em; }
+.css .eyebrow { font: 500 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+
+/* bar */
+.css .bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 12px var(--gutter); background: rgba(246,247,249,.86); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+.css .bar h1, .css .brand { font: 800 15px var(--display); letter-spacing: -.02em; margin: 0; text-decoration: none; margin-right: auto; }
+.css .pipeline { display: flex; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.css .pipeline li { font: 500 11px var(--mono); padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); background: var(--white); transition: background .5s, color .5s, border-color .5s; }
+.css .pipeline li.done { color: var(--white); border-color: transparent; }
+.css .pipeline li[data-s="html"].done { background: var(--html); } .css .pipeline li[data-s="css"].done { background: var(--cssc); }
+.css .pipeline li[data-s="js"].done { background: var(--js); color: var(--ink); } .css .pipeline li[data-s="api"].done { background: var(--api); }
+.css .pipeline li[data-s="db"].done { background: var(--db); } .css .pipeline li[data-s="deploy"].done { background: var(--ship); }
+.css .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.css .chip { border: 1px solid var(--line); background: var(--white); border-radius: 999px; padding: 8px 14px; font: 500 12.5px var(--body); }
+.css .chip.dark { background: var(--ink); color: var(--white); border-color: transparent; }
+.css .chip[aria-expanded="true"] { background: #ff5a3c; }
+
+/* hero */
+.css main { display: block; }
+.css section { position: relative; padding: clamp(56px, 9vw, 120px) var(--gutter); }
+.css .hero { background: var(--white); padding-top: clamp(40px, 7vw, 90px); overflow: hidden; }
+.css .kicker { margin: 0 0 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+.css .kicker span { font: 500 12px var(--mono); padding: 6px 11px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
+.css .kicker span.html { background: var(--html); color: var(--white); border-color: transparent; }
+.css .name { font: 900 clamp(54px, 14.5vw, 232px)/.82 var(--display); letter-spacing: -.065em; margin: 0 0 26px; text-transform: uppercase; overflow-wrap: anywhere; }
+.css .lede { font-size: clamp(18px, 1.7vw, 22px); max-width: 52ch; margin: 0 0 28px; color: #2a2d35; text-wrap: pretty; }
+.css .facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin: 34px 0 0; padding: 0; list-style: none; background: var(--line); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.css .facts li { background: var(--white); padding: 16px 18px; }
+.css .facts b { display: block; font: 800 clamp(22px, 2.6vw, 34px)/1 var(--display); letter-spacing: -.04em; margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+.css .facts span { color: var(--muted); font-size: 14px; }
+
+/* the step prompt in each section */
+.css .step { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin: 0 0 30px; padding: 14px 14px 14px 20px; border-radius: 18px; background: var(--ink); color: var(--white); max-width: 760px; }
+.css .step p { margin: 0; flex: 1 1 260px; font-size: 15px; }
+.css .step p b { font-family: var(--mono); font-weight: 500; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; display: block; opacity: .65; margin-bottom: 2px; }
+.css .run { display: inline-flex; align-items: center; gap: 10px; border: 0; border-radius: 999px; padding: 13px 20px; font: 700 14px var(--body); background: var(--white); color: var(--ink); transition: transform .2s var(--ease); }
+.css .run:hover { transform: translateY(-2px); }
+.css .run code { font: 500 12.5px var(--mono); }
+.css .run i { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+.css .step p { display: grid; }
+.css .step .todo, .css .step .did { grid-area: 2 / 1; }
+.css .step .did, .css .step.done .todo { visibility: hidden; }
+.css .step.done .did { visibility: visible; }
+html:not(.css) .step:not(.done) .did, html:not(.css) .step.done .todo { display: none; }
+.css .step.done { background: transparent; color: inherit; box-shadow: inset 0 0 0 1px currentColor; }
+.css .step.done .run { background: transparent; color: inherit; cursor: default; transform: none; box-shadow: inset 0 0 0 1px currentColor; }
+.css .step.done .run i { background: var(--api); }
+
+/* section heads */
+.css h2 { font: 900 clamp(40px, 7.4vw, 112px)/.86 var(--display); letter-spacing: -.06em; margin: 0 0 28px; text-transform: uppercase; }
+.css .sub { max-width: 54ch; color: #2a2d35; margin: -8px 0 30px; }
+.css #work { background: var(--cssc); color: var(--white); }
+.css #work .sub { color: rgba(255,255,255,.82); }
+.css #work .step { background: var(--js); color: var(--ink); }
+.css #work .step .run { background: var(--ink); color: var(--js); }
+.css #work .step.done { background: transparent; color: var(--white); }
+
+/* project cards */
+.css .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.css .card { background: var(--white); color: var(--ink); border-radius: 26px; padding: 26px; display: grid; gap: 12px; align-content: start; min-height: 320px; transform-style: preserve-3d; transition: transform .5s var(--ease), box-shadow .5s; position: relative; overflow: hidden; }
+.css .card:nth-child(1) { background: #ffffff; } .css .card:nth-child(2) { background: var(--js); } .css .card:nth-child(3) { background: #ffd8cc; } .css .card:nth-child(4) { background: #c9f2df; }
+.css .card .n { font: 500 12px var(--mono); }
+.css .card h3 { margin: 0; font: 800 clamp(26px, 3vw, 40px)/.95 var(--display); letter-spacing: -.045em; }
+.css .card p { margin: 0; font-size: 16px; }
+.css .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.css .tags li { font: 500 11.5px var(--mono); padding: 5px 9px; border-radius: 999px; background: rgba(13,13,18,.07); }
+.css .card details { margin-top: auto; border-top: 1px solid rgba(13,13,18,.14); padding-top: 12px; }
+.css .card summary { cursor: pointer; font: 700 14px var(--body); list-style: none; display: flex; justify-content: space-between; }
+.css .card summary::-webkit-details-marker { display: none; }
+.css .card summary::after { content: '+'; font: 500 18px var(--mono); line-height: 1; }
+.css .card details[open] summary::after { content: '–'; }
+.css .card dl { display: grid; grid-template-columns: 92px 1fr; gap: 8px 12px; margin: 12px 0 0; font-size: 14.5px; }
+.css .card dt { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: .06em; opacity: .65; padding-top: 3px; }
+.css .card dd { margin: 0; }
+.css.js .card:hover { box-shadow: 0 30px 60px -30px rgba(0,0,0,.45); }
+
+/* API section */
+.css #api { background: var(--api); }
+.css .api { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.css .editor { background: #0f1512; color: #d8f5e6; border-radius: 22px; overflow: hidden; display: grid; }
+.css .editor header { display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,.08); font: 500 11.5px var(--mono); color: #8fd3b0; }
+.css .editor textarea { width: 100%; min-height: 420px; resize: vertical; border: 0; background: transparent; color: inherit; font: 400 13.5px/1.6 var(--mono); padding: 14px 16px; outline: none; tab-size: 2; }
+.css .editor .err { min-height: 32px; padding: 7px 16px; font: 500 12px var(--mono); color: #ffb4a8; border-top: 1px solid rgba(255,255,255,.08); }
+.css .preview { display: grid; gap: 12px; }
+.css .pcard { background: var(--white); border-radius: 22px; padding: 22px; }
+.css .pcard h3 { margin: 0 0 4px; font: 800 28px/1 var(--display); letter-spacing: -.04em; }
+.css .pcard ul { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; }
+.css .pcard li { display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); padding-top: 8px; font-size: 15px; }
+.css .pcard li span { font: 400 12px var(--mono); color: var(--muted); text-align: right; }
+.css .skel { height: 14px; border-radius: 6px; background: linear-gradient(90deg, #e7ebe9 25%, #f5f7f6 50%, #e7ebe9 75%); background-size: 200% 100%; animation: shimmer 1.1s linear infinite; margin: 8px 0; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+.css .preview.idle .skel { animation: none; }
+.css .banner { font: 500 12px var(--mono); padding: 9px 12px; border-radius: 12px; background: #fff3c4; }
+
+/* DB section */
+.css #db { background: var(--db); color: var(--white); }
+.css #db .sub { color: rgba(255,255,255,.82); }
+.css .sql { background: #0b1626; border-radius: 22px; padding: 18px; margin-bottom: 16px; }
+.css .sql pre { margin: 0 0 14px; font: 400 14px/1.6 var(--mono); white-space: pre-wrap; color: #cfe0ff; }
+.css .sql pre .k { color: #7fb2ff; } .css .sql pre .s { color: #ffd479; }
+.css .filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.css .filters button { border: 1px solid rgba(255,255,255,.22); background: transparent; color: var(--white); border-radius: 999px; padding: 8px 13px; font: 500 12.5px var(--mono); }
+.css .filters button:disabled { opacity: .45; cursor: default; }
+.css .filters button[aria-pressed="true"] { background: var(--white); color: var(--db); border-color: transparent; }
+.css .result { width: 100%; border-collapse: collapse; background: var(--white); color: var(--ink); border-radius: 22px; overflow: hidden; }
+.css .result th { text-align: left; font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.css .result td { padding: 16px; border-bottom: 1px solid var(--line); font-size: 16px; }
+.css .result td:first-child { font: 800 clamp(16px, 1.6vw, 20px) var(--display); letter-spacing: -.03em; }
+.css .result tr.now td:last-child { color: var(--api); font-weight: 700; }
+.css .meta { margin-top: 10px; font: 500 11.5px var(--mono); color: rgba(255,255,255,.75); }
+
+/* deploy */
+.css #deploy { background: var(--ship); color: var(--white); min-height: 100svh; }
+.css #deploy .step { background: var(--white); color: var(--ink); }
+.css #deploy .step .run { background: var(--ink); color: var(--white); }
+.css #deploy .step.done { color: var(--white); background: transparent; }
+.css #work .step.done .run, .css #deploy .step.done .run { background: transparent; color: inherit; }
+.css .ship { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 22px; align-items: center; }
+.css .globe { width: 100%; aspect-ratio: 1; max-width: 520px; display: block; justify-self: center; }
+.css .log { margin: 0; min-height: 240px; padding: 18px; border-radius: 22px; background: #15161d; font: 400 13px/1.75 var(--mono); color: #c9cbd6; white-space: pre; overflow-x: auto; }
+.css .log .ok { color: #5cf2a0; } .css .log .dim { color: #6e7280; } .css .log .live { color: #fff; font-weight: 700; }
+.css .contact { margin-top: clamp(40px, 8vw, 90px); display: grid; gap: 16px; }
+.css .contact .mail { font: 800 clamp(30px, 6.4vw, 96px)/.95 var(--display); letter-spacing: -.055em; text-decoration: none; overflow-wrap: anywhere; }
+.css .contact .row { display: flex; flex-wrap: wrap; gap: 10px; }
+.css .contact .row a, .css .contact .row button { border: 1px solid rgba(255,255,255,.25); border-radius: 999px; padding: 11px 18px; text-decoration: none; background: transparent; color: var(--white); font: 500 14px var(--body); }
+.css .contact .row a:hover, .css .contact .row button:hover { background: var(--white); color: var(--ink); }
+.css .live-badge { display: inline-flex; gap: 8px; align-items: center; font: 500 12px var(--mono); padding: 7px 12px; border-radius: 999px; background: rgba(92,242,160,.14); color: #5cf2a0; width: fit-content; }
+.css .live-badge:not(.on) { visibility: hidden; }
+.css .live-badge i { width: 8px; height: 8px; border-radius: 50%; background: #5cf2a0; }
+
+/* hydration wave */
+.css .wave { position: fixed; left: 0; right: 0; height: 160px; top: 0; transform: translateY(-160px); z-index: 40; pointer-events: none; background: linear-gradient(180deg, rgba(247,223,30,0), rgba(247,223,30,.55) 70%, rgba(247,223,30,.95)); mix-blend-mode: multiply; }
+.css .hydrated { animation: hyd .9s var(--ease); }
+@keyframes hyd { 0% { box-shadow: 0 0 0 0 rgba(247,223,30,.0); } 30% { box-shadow: 0 0 0 6px rgba(247,223,30,.95); } 100% { box-shadow: 0 0 0 0 rgba(247,223,30,0); } }
+
+/* devtools */
+.css .devtools { position: fixed; left: var(--gutter); right: var(--gutter); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 50; background: #17181d; color: #d7d9e0; border-radius: 18px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.6); max-height: min(420px, 58svh); display: grid; grid-template-rows: auto 1fr; overflow: hidden; font: 400 12.5px/1.5 var(--mono); }
+.css .devtools nav { display: flex; gap: 2px; padding: 6px; border-bottom: 1px solid #2a2c33; align-items: center; }
+.css .devtools nav button { border: 0; background: transparent; color: #9aa0ad; padding: 7px 12px; border-radius: 8px; font: 500 12px var(--mono); }
+.css .devtools nav button[aria-selected="true"] { background: #2a2c33; color: #fff; }
+.css .devtools nav .x { margin-left: auto; }
+.css .pane { overflow: auto; padding: 10px 14px 14px; }
+.css .net { width: 100%; border-collapse: collapse; }
+.css .net th, .css .net td { text-align: left; padding: 5px 8px; border-bottom: 1px solid #24262c; white-space: nowrap; }
+.css .net th { color: #7d8290; font-weight: 500; }
+.css .net .wf { position: relative; min-width: 160px; }
+.css .net .wf i { position: absolute; top: 50%; height: 8px; margin-top: -4px; border-radius: 2px; background: #4f8cff; }
+.css .perf { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.css .perf div { background: #202228; border-radius: 12px; padding: 10px 12px; }
+.css .perf b { display: block; font-size: 20px; color: #fff; }
+.css .fps { width: 100%; height: 90px; display: block; margin-top: 10px; background: #202228; border-radius: 12px; }
+.css .toggles { display: grid; gap: 8px; }
+.css .toggle { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: center; background: #202228; border-radius: 12px; padding: 10px 12px; }
+.css .toggle input { width: 18px; height: 18px; accent-color: #ff5a3c; }
+.css .toggle small { grid-column: 2; color: #8a8f9c; }
+
+/* toast */
+.css .toast { position: fixed; left: 50%; top: 74px; z-index: 60; transform: translate(-50%, -20px); opacity: 0; background: var(--ink); color: var(--white); padding: 10px 16px; border-radius: 999px; font: 500 12.5px var(--mono); transition: opacity .3s, transform .5s var(--ease); pointer-events: none; white-space: nowrap; }
+.css .toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+@media (max-width: 860px) {
+  .css .bar { padding-block: 10px; gap: 8px 10px; }
+  .css .pipeline li { padding: 5px 6px; font-size: 10px; }
+  .css .long { display: none; }
+  .css .actions { width: 100%; }
+  .css .chip { padding: 7px 12px; }
+  .css .preview { min-height: 360px; align-content: start; }
+  .css .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .css .cards, .css .api, .css .ship { grid-template-columns: 1fr; }
+  .css .card { min-height: 0; }
+  .css .card dl { grid-template-columns: 1fr; gap: 2px; } .css .card dt { padding-top: 8px; }
+  .css .editor textarea { min-height: 300px; }
+  .css .result th:nth-child(3), .css .result td:nth-child(3) { display: none; }
+  .css .perf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .css .devtools { left: 8px; right: 8px; }
+  .css .toast { top: 96px; }
+}
+@media (prefers-reduced-motion: reduce) { .css .skel { animation: none; } .css .wave { display: none; } }
+</style>
+<script>document.documentElement.classList.add('css', 'booting');</script>
+
+<header class="bar" id="bar">
+  <a class="brand" href="#top" data-bind="name" data-flip>Your Name</a>
+  <ol class="pipeline" aria-label="Build progress" data-flip><li data-s="html" class="done">HTML</li><li data-s="css">CSS</li><li data-s="js">JS</li><li data-s="api">API</li><li data-s="db">DB</li><li data-s="deploy">Deploy</li></ol>
+  <div class="actions" data-flip><button class="chip" id="auto" type="button">Build it <span class="long">for me</span></button><button class="chip" id="skip" type="button">Skip <span class="long">to the finished site</span></button><button class="chip dark needs-js" id="devBtn" type="button" aria-expanded="false" hidden>DevTools</button></div>
+</header>
+
+<main id="top">
+  <section class="hero" id="hero">
+    <p class="kicker" data-flip><span class="html">index.html · 200</span><span>Senior Software Engineer</span><span>Full-stack</span><span>Your City</span></p>
+    <h1 class="name" data-flip data-bind="name">Your Name</h1>
+    <p class="lede" data-flip>I build web products end to end, from the button you tap to the query that answers it. This page is built the same way, one layer at a time: HTML and CSS are in, the rest of the stack is yours to run.</p>
+    <div class="step" id="step-css" data-flip>
+      <p><b>Step 2 of 6 · CSS</b><span class="todo">No stylesheet yet. Everything you need is already here, it just looks like 1996.</span><span class="did">Stylesheet loaded. Same HTML, same content; only the presentation changed.</span></p>
+      <button class="run" type="button" data-run="css"><i></i>Load <code>styles.css</code></button>
+    </div>
+    <ul class="facts" data-flip>
+      <li><b data-count="7">7</b><span>years shipping production software</span></li>
+      <li><b data-count="4">4</b><span>layers I work across: UI, API, services, data</span></li>
+      <li><b>SDE-2 → Senior</b><span>current level</span></li>
+      <li><b>Open</b><span>to new roles</span></li>
+    </ul>
+  </section>
+
+  <section id="work">
+    <h2 data-flip>Selected work</h2>
+    <p class="sub" data-flip>Four projects. Each card works without JavaScript; run app.js and they come alive.</p>
+    <div class="step" id="step-js" data-flip>
+      <p><b>Step 3 of 6 · JavaScript</b><span class="todo">The page is styled but asleep. Hydrate it.</span><span class="did">Hydrated. Cards respond, counters run, DevTools is in the top bar.</span></p>
+      <button class="run" type="button" data-run="js"><i></i>Run <code>app.js</code></button>
+    </div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section id="api">
+    <h2 data-flip>Live data</h2>
+    <p class="sub" data-flip>The profile comes from an API. Fetch it, then edit the JSON: the whole page re-renders, name included.</p>
+    <p class="raw-note">This section needs JavaScript to fetch data. Everything it shows is also in the plain text above.</p>
+    <div class="step" id="step-api" data-flip>
+      <p><b>Step 4 of 6 · API</b><span class="todo">Call the endpoint that powers this page.</span><span class="did">Fetched. Edit the JSON and the page follows it.</span></p>
+      <button class="run" type="button" data-run="api"><i></i>Fetch <code>GET /api/profile</code></button>
+    </div>
+    <div class="api needs-css" id="apiBox">
+      <div class="editor"><header><span>GET /api/profile · 200 · application/json</span><span id="apiTime"></span></header><textarea id="json" spellcheck="false" readonly placeholder="// Not fetched yet. Run step 4." aria-label="Profile JSON, editable after fetching"></textarea><div class="err" id="jsonErr" aria-live="polite"></div></div>
+      <div class="preview idle" id="preview" aria-busy="false"><div class="pcard"><div class="skel" style="width:60%;height:26px"></div><div class="skel"></div><div class="skel" style="width:80%"></div></div><div class="pcard"><div class="skel" style="width:40%"></div><div class="skel"></div><div class="skel"></div><div class="skel" style="width:70%"></div></div></div>
+    </div>
+  </section>
+
+  <section id="db">
+    <h2 data-flip>Experience</h2>
+    <p class="sub" data-flip>Rows from the database. Query them.</p>
+    <div class="step" id="step-db" data-flip>
+      <p><b>Step 5 of 6 · Database</b><span class="todo">Open a connection and run the query.</span><span class="did">Connected. Pick a filter and the query rewrites itself.</span></p>
+      <button class="run" type="button" data-run="db"><i></i>Run <code>SELECT … FROM experience</code></button>
+    </div>
+    <div class="sql needs-css" id="sqlBox">
+      <pre id="sql" aria-live="polite">-- not connected</pre>
+      <div class="filters" id="filters" role="group" aria-label="Query filters"></div>
+    </div>
+    <table class="result" data-flip><thead><tr><th>Company</th><th>Role</th><th>Period</th></tr></thead><tbody id="rows"></tbody></table>
+    <p class="meta needs-css" id="qmeta">Not connected.</p>
+  </section>
+
+  <section id="deploy">
+    <h2 data-flip>Ship it</h2>
+    <div class="step" id="step-deploy" data-flip>
+      <p><b>Step 6 of 6 · Deploy</b><span class="todo">Push to main. CI runs, then it goes out to the edge.</span><span class="did">Shipped. Live in 31 regions, health check green.</span></p>
+      <button class="run" type="button" data-run="deploy"><i></i>Deploy to production</button>
+    </div>
+    <div class="ship needs-css">
+      <canvas class="globe deco" id="globe" width="600" height="600" aria-hidden="true"></canvas>
+      <pre class="log" id="log" aria-live="polite">$ waiting for a deploy…</pre>
+    </div>
+    <div class="contact">
+      <span class="live-badge needs-css" id="liveBadge"><i></i>Live · yourname.dev</span>
+      <p class="eyebrow">Contact</p>
+      <a class="mail" id="mail" href="mailto:you@example.com" data-bind="email">you@example.com</a>
+      <div class="row"><button type="button" id="copy" class="needs-js">Copy email</button><a href="https://github.com/" target="_blank" rel="noopener">GitHub</a><a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a><a href="#work">Résumé highlights</a></div>
+      <p class="mono" style="opacity:.6">Sample profile: a senior / SDE-2 full-stack engineer.</p>
+    </div>
+  </section>
+</main>
+
+<aside class="devtools needs-css" id="dev" hidden aria-label="DevTools">
+  <nav role="tablist"><button role="tab" aria-selected="true" data-tab="net" type="button">Network</button><button role="tab" aria-selected="false" data-tab="perf" type="button">Performance</button><button role="tab" aria-selected="false" data-tab="break" type="button">Break it</button><button class="x" id="devClose" type="button" aria-label="Close DevTools">Close</button></nav>
+  <div class="pane" id="pane-net"><table class="net"><thead><tr><th>Name</th><th>Status</th><th>Type</th><th>Size</th><th>Time</th><th>Waterfall</th></tr></thead><tbody id="netRows"></tbody></table></div>
+  <div class="pane" id="pane-perf" hidden><div class="perf"><div>FPS<b id="pFps">–</b></div><div>DOM nodes<b id="pNodes">–</b></div><div>Layout shift since build<b id="pCls">–</b></div><div>JS heap<b id="pHeap">–</b></div></div><canvas class="fps" id="fps" width="800" height="180"></canvas></div>
+  <div class="pane" id="pane-break" hidden><div class="toggles">
+    <label class="toggle"><input type="checkbox" id="tCss" /><span>Disable CSS</span><small>Semantic HTML first: the page is still complete and readable.</small></label>
+    <label class="toggle"><input type="checkbox" id="tJs" /><span>Disable JavaScript</span><small>Cards keep working with native &lt;details&gt;; nothing important depends on JS.</small></label>
+    <label class="toggle"><input type="checkbox" id="tOff" /><span>Go offline</span><small>The API falls back to the cached response and says so.</small></label>
+    <label class="toggle"><input type="checkbox" id="tSlow" /><span>Throttle to slow 3G</span><small>Skeletons hold the layout, so nothing jumps when data arrives.</small></label>
+  </div></div>
+</aside>
+<button id="cssBack" type="button" hidden style="position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:70;font:600 15px system-ui,sans-serif;padding:12px 18px;border-radius:999px;border:0;background:#111;color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.3)">Turn CSS back on</button>
+<div class="wave" id="wave" aria-hidden="true" hidden></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+/* ================================================================ content (sample slots) */
+const PROFILE = {
+  name: 'Your Name',
+  role: 'Senior Software Engineer',
+  focus: 'Full-stack: React, Node, Go, Postgres, AWS',
+  status: 'Open to new roles',
+  email: 'you@example.com',
+  projects: [
+    { title: 'Payments API', year: 2025, stack: ['Node.js', 'Postgres', 'Kafka'], summary: 'Idempotent payments: retries, webhooks and reconciliation that never double-charge.', problem: 'Retries from clients and the provider created duplicate charges.', approach: 'Idempotency keys at the edge, an outbox table, webhooks replayed from a queue.', outcome: 'Duplicate charges stopped; payments stopped paging on-call.' },
+    { title: 'Realtime ops', year: 2024, stack: ['React', 'WebSockets', 'ClickHouse'], summary: 'A live dashboard streaming order and system events to support and ops.', problem: 'Teams refreshed stale reports to see what was happening now.', approach: 'An event stream over WebSockets, windowed aggregates in ClickHouse.', outcome: 'Incidents spotted on the dashboard before customers reported them.' },
+    { title: 'Design system', year: 2023, stack: ['React', 'Storybook', 'Radix'], summary: 'One component library and token set shared by every product team.', problem: 'Every page shipped its own buttons, spacing and accessibility bugs.', approach: 'Tokens first, accessible primitives, visual regression tests in CI.', outcome: 'Screens assembled from parts; accessibility fixed once.' },
+    { title: 'Search', year: 2022, stack: ['Go', 'OpenSearch', 'Redis'], summary: 'Typo-tolerant product search with caching and relevance tuning.', problem: 'Search timed out under load and missed misspelled queries.', approach: 'A read-through cache, query rewriting, offline relevance evaluation.', outcome: 'Faster results at peak; fewer zero-result searches.' },
+  ],
+};
+const EXPERIENCE = [
+  { id: 1, org: 'Company A', role: 'Senior Software Engineer', from: 2024, to: null, kind: 'job' },
+  { id: 2, org: 'Company B', role: 'Software Engineer II (SDE-2)', from: 2021, to: 2024, kind: 'job' },
+  { id: 3, org: 'Company C', role: 'Software Engineer', from: 2019, to: 2021, kind: 'job' },
+  { id: 4, org: 'University', role: 'B.Tech / B.S., Computer Science', from: 2015, to: 2019, kind: 'edu' },
+];
+const $ = (id) => document.getElementById(id);
+const root = document.documentElement;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let profile = structuredClone(PROFILE);
+// Prefetch the stylesheet's fonts so the CSS stage lands in one frame, not with a late font swap.
+const fontsReady = Promise.all(['900 1em Unbounded', '400 1em "DM Sans"', '500 1em "JetBrains Mono"'].map((f) => document.fonts.load(f).catch(() => {})));
+
+/* ================================================================ server-rendered content (works with no CSS and no JS stage) */
+function renderCards() {
+  $('cards').innerHTML = profile.projects.map((p, i) => `<article class="card" data-flip data-hydrate><span class="n">0${i + 1} · ${esc(p.year)}</span><h3>${esc(p.title)}</h3><p>${esc(p.summary)}</p><ul class="tags">${(p.stack || []).map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
+    <details><summary>Case study</summary><dl><dt>Problem</dt><dd>${esc(p.problem || '')}</dd><dt>Approach</dt><dd>${esc(p.approach || '')}</dd><dt>Outcome</dt><dd>${esc(p.outcome || '')}</dd></dl></details></article>`).join('');
+}
+const period = (e) => `${e.from} – ${e.to ?? 'now'}`;
+function renderRows(list) {
+  $('rows').innerHTML = list.map((e) => `<tr data-id="${e.id}" class="${e.to ? '' : 'now'}"><td>${esc(e.org)}</td><td>${esc(e.role)}</td><td>${period(e)}</td></tr>`).join('');
+}
+renderCards(); renderRows(EXPERIENCE);
+let builtAt = 0;
+
+/* ================================================================ FLIP: animate every element from where it was to where it lands */
+const flipEls = () => [...document.querySelectorAll('[data-flip]')];
+function flip(mutate, opts) {
+  // Keep the section you are looking at still while the layout changes around it.
+  const anchor = [...document.querySelectorAll('main > section')].find((s) => s.getBoundingClientRect().bottom > 80) || document.body;
+  const before = anchor.getBoundingClientRect().top;
+  const first = flipEls().map((e) => e.getBoundingClientRect());
+  mutate();
+  const after = anchor.getBoundingClientRect().top;
+  if (Math.abs(after - before) > 1) window.scrollBy(0, after - before);
+  morph(first, opts);
+}
+function morph(first, { duration = 1150, stagger = 22 } = {}) {
+  if (reduce) return;
+  const els = flipEls(), last = els.map((e) => e.getBoundingClientRect());
+  let k = 0;
+  els.forEach((el, i) => {
+    const f = first[i], l = last[i];
+    if (!f.width || !l.width || l.bottom < -200 || l.top > innerHeight + 200) return;
+    const dx = f.left - l.left, dy = f.top - l.top, sx = f.width / l.width, sy = f.height / l.height;
+    if (Math.abs(dx) + Math.abs(dy) < 2 && Math.abs(sx - 1) < 0.02 && Math.abs(sy - 1) < 0.02) return;
+    el.animate([{ transformOrigin: '0 0', transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` }, { transformOrigin: '0 0', transform: 'none' }],
+      { duration, easing: 'cubic-bezier(.16,1,.3,1)', delay: Math.min(k++ * stagger, 420), fill: 'backwards' });
+  });
+}
+
+/* ================================================================ network log (real navigation + the stages you run) */
+const net = [];
+const t0 = performance.timeOrigin;
+{
+  const nav = performance.getEntriesByType('navigation')[0];
+  net.push({ name: 'index.html', status: 200, type: 'document', size: nav ? Math.round((nav.transferSize || nav.encodedBodySize || 24000) / 102.4) / 10 + ' kB' : '–', start: 0, dur: nav ? nav.responseEnd : 40 });
+  for (const r of performance.getEntriesByType('resource').filter((r) => /fonts/.test(r.name)).slice(0, 4)) net.push({ name: r.name.split('/').pop().split('?')[0].slice(0, 28) || 'font', status: 200, type: r.initiatorType, size: r.transferSize ? Math.round(r.transferSize / 102.4) / 10 + ' kB' : '(cache)', start: r.startTime, dur: r.duration });
+}
+function logNet(name, type, size, ms, status = 200) { net.push({ name, status, type, size, start: performance.now() - ms, dur: ms }); if (!$('dev').hidden) renderNet(); }
+function renderNet() {
+  const end = Math.max(...net.map((n) => n.start + n.dur), 1);
+  $('netRows').innerHTML = net.map((n) => `<tr><td>${esc(n.name)}</td><td style="color:${n.status === 200 ? '#5cf2a0' : '#ffb4a8'}">${n.status}</td><td>${n.type}</td><td>${n.size}</td><td>${Math.round(n.dur)} ms</td><td class="wf"><i style="left:${(n.start / end) * 100}%;width:${Math.max(0.6, (n.dur / end) * 100)}%"></i></td></tr>`).join('');
+}
+
+/* ================================================================ stages */
+const done = new Set(['html', 'css']);
+const ORDER = ['js', 'api', 'db', 'deploy'];
+let busy = false;
+function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 2200); }
+function mark(stage, ms) {
+  done.add(stage); document.querySelector(`.pipeline [data-s="${stage}"]`)?.classList.add('done');
+  const step = $(`step-${stage}`); if (!step) return;
+  step.classList.add('done'); step.querySelector('b').textContent += ` · done in ${Math.max(1, Math.round(ms))} ms`;
+  step.querySelector('.run').disabled = true;
+  if (stage === 'deploy') builtAt = performance.now();
+}
+
+const STAGES = {
+  async js(fast) {
+    const ms = 260 + Math.random() * 140;
+    if (!fast) await sleep(ms);
+    root.classList.add('js');
+    $('devBtn').hidden = false;
+    logNet('app.js', 'script', '41.2 kB', ms);
+    if (fast || reduce) return;
+    // A hydration wave sweeps the screen; interactive parts flash as it reaches them.
+    const wave = $('wave'); wave.hidden = false;
+    const targets = [...document.querySelectorAll('[data-hydrate], .run, .chip, details summary')].filter((e) => { const r = e.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; });
+    const start = performance.now(), dur = 950;
+    await new Promise((res) => { const tick = (now) => { const p = Math.min(1, (now - start) / dur), y = p * (innerHeight + 160) - 160; wave.style.transform = `translateY(${y}px)`;
+      for (const t of targets) if (!t.classList.contains('hydrated') && t.getBoundingClientRect().top < y + 140) t.classList.add('hydrated');
+      p < 1 ? requestAnimationFrame(tick) : res(); }; requestAnimationFrame(tick); });
+    wave.hidden = true; targets.forEach((t) => setTimeout(() => t.classList.remove('hydrated'), 900));
+    countUp();
+    toast(`app.js · hydrated ${targets.length} components`);
+  },
+  async api(fast, opts = {}) {
+    $('preview').classList.remove('idle');
+    $('preview').innerHTML = '<div class="pcard"><div class="skel" style="width:60%;height:26px"></div><div class="skel"></div><div class="skel" style="width:80%"></div><div class="skel" style="width:70%"></div></div><div class="pcard"><div class="skel" style="width:40%"></div><div class="skel"></div></div>';
+    const slow = $('tSlow').checked, offline = $('tOff').checked;
+    const ms = fast ? 0 : slow ? 2600 : 420 + Math.random() * 200;
+    $('json').value = ''; $('json').readOnly = true;
+    if (!fast) await sleep(ms);
+    logNet('/api/profile', 'fetch', '2.1 kB', ms || 1, offline ? 503 : 200);
+    $('apiTime').textContent = offline ? 'offline · cached' : `${Math.round(ms)} ms`;
+    const text = JSON.stringify(profile, null, 2);
+    if (!fast && !reduce) { for (let i = 0; i <= text.length; i += 34) { $('json').value = text.slice(0, i); await sleep(8); } }
+    $('json').value = text; $('json').readOnly = offline;
+    renderPreview();
+    if (!fast) toast(offline ? 'Offline: showing the cached response' : `GET /api/profile · 200 · ${Math.round(ms)} ms`);
+  },
+  async db(fast) {
+    const ms = 3 + Math.random() * 4;
+    done.add('db'); renderFilters(); runQuery(fast);
+    logNet('postgres://…/experience', 'query', '0.6 kB', ms);
+    if (!fast) toast('Query ran in ' + ms.toFixed(1) + ' ms');
+  },
+  async deploy(fast) {
+    const log = $('log');
+    const lines = [
+      ['$ git push origin main', 'dim'], ['→ ci   install     pnpm install          1.8 s', ''], ['→ ci   typecheck   tsc --noEmit          ✓', 'ok'],
+      ['→ ci   test        142 passed            ✓', 'ok'], ['→ ci   build       first load 96 kB      ✓', 'ok'], ['→ cd   upload      31 edge regions', ''],
+      ['→ cd   health      GET /api/health 200   ✓', 'ok'], ['● live  https://yourname.dev', 'live'],
+    ];
+    log.innerHTML = '';
+    for (const [i, [t, c]] of lines.entries()) {
+      log.innerHTML += `<span class="${c}">${esc(t)}</span>\n`;
+      if (i === 5) regionsOn = true;
+      if (!fast) await sleep(i === 5 ? 1400 : 380);
+    }
+    regionsOn = true;
+    $('liveBadge').classList.add('on');
+    logNet('deploy · main@a1f3c9e', 'ci', '96 kB', fast ? 1 : 3900);
+    if (!fast) toast('Deployed to 31 regions');
+  },
+};
+async function timed(stage, fast) { const t = performance.now(); await STAGES[stage](fast); mark(stage, performance.now() - t); }
+async function run(stage, fast = false) {
+  if (done.has(stage)) return;
+  // Running a later step first runs the ones it depends on.
+  for (const s of ORDER.slice(0, ORDER.indexOf(stage))) if (!done.has(s)) { await timed(s, fast); if (!fast) await sleep(250); }
+  await timed(stage, fast);
+}
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-run]'); if (!b || busy) return;
+  busy = true; b.disabled = true; try { await run(b.dataset.run); } finally { busy = false; b.disabled = done.has(b.dataset.run); }
+});
+$('skip').addEventListener('click', async () => { if (busy) return; busy = true; for (const s of ORDER) await run(s, true); busy = false; scrollTo({ top: 0 }); toast('Built. Every layer is live.'); });
+$('auto').addEventListener('click', async () => {
+  if (busy) return; busy = true;
+  for (const s of ORDER) {
+    if (done.has(s)) continue;
+    const step = $(`step-${s}`);
+    step.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+    await sleep(reduce ? 50 : 900);
+    await run(s); await sleep(reduce ? 50 : 1100);
+  }
+  busy = false;
+});
+
+/* ================================================================ intro: raw HTML loads its stylesheet */
+const RAW_CSS = `.doc { display: block; margin: 8px; font: 16px/1.2 "Times New Roman", Times, serif; color: #000; }
+  a { color: #0000ee; } [hidden], .deco, .needs-css, .needs-js, .did { display: none; }
+  .raw-note { display: block; background: #ffffe0; border: 1px solid #000; padding: 6px; margin: 8px 0; }
+  table { border-collapse: separate; border-spacing: 2px; } td, th { padding: 1px; text-align: left; }`;
+async function intro() {
+  const ms = 180 + Math.random() * 120;
+  const finish = () => { root.classList.remove('booting'); mark('css', ms); logNet('styles.css', 'stylesheet', '18.4 kB', ms); };
+  // Coming back mid-page (reload, anchor link) or asking for less motion: skip straight to the site.
+  if (reduce || scrollY > 40 || location.hash) return finish();
+  const host = document.createElement('div');
+  host.setAttribute('aria-hidden', 'true');
+  host.style.cssText = 'position:fixed;inset:0;z-index:100;background:#fff;overflow:hidden';
+  const shadow = host.attachShadow({ mode: 'open' });
+  shadow.innerHTML = `<style>${RAW_CSS}</style><div class="doc"><p>Loading <code>styles.css</code> <progress max="100" value="0"></progress></p></div>`;
+  shadow.querySelector('.doc').append($('bar').cloneNode(true), document.querySelector('main').cloneNode(true));
+  document.body.append(host);
+  const bar = shadow.querySelector('progress'), start = performance.now(), dur = 1100;
+  await new Promise((res) => { const tick = (now) => { const p = Math.min(1, (now - start) / dur); bar.value = p * p * 100; p < 1 ? requestAnimationFrame(tick) : res(); }; requestAnimationFrame(tick); });
+  await Promise.race([fontsReady, sleep(600)]);
+  const first = [...shadow.querySelectorAll('[data-flip]')].map((e) => e.getBoundingClientRect());
+  host.remove(); finish();
+  morph(first, { duration: 1250 });
+  toast(`styles.css · 200 · ${Math.round(ms)} ms`);
+}
+intro();
+
+/* ================================================================ JS stage: counters, card tilt */
+function countUp() {
+  for (const el of document.querySelectorAll('[data-count]')) { const n = +el.dataset.count; let i = 0; const t = setInterval(() => { el.textContent = ++i; if (i >= n) clearInterval(t); }, 70); el.textContent = 0; }
+}
+document.addEventListener('pointermove', (e) => {
+  if (!root.classList.contains('js') || reduce) return;
+  for (const c of document.querySelectorAll('.card')) {
+    const r = c.getBoundingClientRect(), inside = e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom;
+    c.style.transform = inside ? `perspective(900px) rotateX(${((e.clientY - r.top) / r.height - 0.5) * -7}deg) rotateY(${((e.clientX - r.left) / r.width - 0.5) * 9}deg) translateZ(0)` : '';
+  }
+}, { passive: true });
+$('copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('mail').textContent); $('copy').textContent = 'Copied'; } catch { const r = document.createRange(); r.selectNodeContents($('mail')); getSelection().removeAllRanges(); getSelection().addRange(r); $('copy').textContent = 'Selected'; } setTimeout(() => ($('copy').textContent = 'Copy email'), 1800); });
+
+/* ================================================================ API stage: the JSON drives the page */
+function renderPreview() {
+  const p = profile, offline = $('tOff').checked;
+  $('preview').innerHTML = `${offline ? '<div class="banner">Offline. This is the cached response from your last visit.</div>' : ''}
+    <div class="pcard"><span class="eyebrow">${esc(p.status || '')}</span><h3>${esc(p.name || '')}</h3><p style="margin:0">${esc(p.role || '')} · ${esc(p.focus || '')}</p></div>
+    <div class="pcard"><span class="eyebrow">projects[${(p.projects || []).length}]</span><ul>${(p.projects || []).map((x) => `<li>${esc(x.title)}<span>${esc((x.stack || []).join(' · '))}</span></li>`).join('')}</ul></div>`;
+  document.querySelectorAll('[data-bind="name"]').forEach((el) => (el.textContent = p.name || ''));
+  document.querySelectorAll('[data-bind="email"]').forEach((el) => { el.textContent = p.email || ''; if (el.tagName === 'A') el.href = 'mailto:' + (p.email || ''); });
+}
+$('json').addEventListener('input', () => {
+  try {
+    const next = JSON.parse($('json').value);
+    if (typeof next !== 'object' || !next) throw new Error('The response must be an object.');
+    profile = next; $('jsonErr').textContent = '';
+    renderPreview(); renderCards();
+  } catch (err) { $('jsonErr').textContent = err.message.replace(/^JSON\.parse: /, ''); }
+});
+
+/* ================================================================ DB stage: a query you can shape */
+const F = { where: 'all', order: 'desc' };
+const WHERE = { all: ['All rows', ''], senior: ['Senior roles', "role LIKE '%Senior%'"], recent: ['Since 2021', 'start_year >= 2021'], edu: ['Education', "kind = 'edu'"] };
+function renderFilters() {
+  const off = done.has('db') ? '' : ' disabled';
+  $('filters').innerHTML = Object.entries(WHERE).map(([k, [label]]) => `<button type="button" data-where="${k}" aria-pressed="${F.where === k}"${off}>${label}</button>`).join('') +
+    `<button type="button" data-order aria-pressed="${F.order === 'asc'}"${off}>${F.order === 'desc' ? 'Newest first' : 'Oldest first'}</button>`;
+}
+$('filters').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.where) F.where = b.dataset.where; if (b.hasAttribute('data-order')) F.order = F.order === 'desc' ? 'asc' : 'desc'; renderFilters(); runQuery(); });
+renderFilters();
+function runQuery(fast) {
+  const w = WHERE[F.where][1];
+  $('sql').innerHTML = `<span class="k">SELECT</span> company, role, period\n<span class="k">FROM</span> experience${w ? `\n<span class="k">WHERE</span> ${esc(w).replace(/('[^']*')/g, '<span class="s">$1</span>')}` : ''}\n<span class="k">ORDER BY</span> start_year ${F.order.toUpperCase()};`;
+  const t = performance.now();
+  let list = EXPERIENCE.filter((e) => F.where === 'all' || (F.where === 'senior' && /Senior/.test(e.role)) || (F.where === 'recent' && e.from >= 2021) || (F.where === 'edu' && e.kind === 'edu'));
+  list = list.sort((a, b) => (F.order === 'desc' ? b.from - a.from : a.from - b.from));
+  // Animate rows to their new places.
+  const firstRects = new Map([...$('rows').children].map((tr) => [tr.dataset.id, tr.getBoundingClientRect()]));
+  renderRows(list);
+  if (!fast && !reduce) for (const tr of $('rows').children) { const f = firstRects.get(tr.dataset.id), l = tr.getBoundingClientRect(); tr.animate(f ? [{ transform: `translateY(${f.top - l.top}px)` }, { transform: 'none' }] : [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 600, easing: 'cubic-bezier(.16,1,.3,1)' }); }
+  $('qmeta').textContent = `${list.length} row${list.length === 1 ? '' : 's'} · ${(performance.now() - t + 0.2).toFixed(1)} ms · Index Scan using experience_start_idx`;
+}
+
+/* ================================================================ deploy: a dotted globe with edge regions lighting up */
+const globe = $('globe'), gx = globe.getContext('2d');
+const dots = [], regions = [];
+for (let i = 0; i < 900; i++) { const y = 1 - (i / 899) * 2, r = Math.sqrt(1 - y * y), th = i * 2.399963; dots.push([Math.cos(th) * r, y, Math.sin(th) * r]); }
+let seed = 11; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+for (let i = 0; i < 31; i++) { const lat = (rnd() - 0.5) * 2.2, lon = rnd() * Math.PI * 2; regions.push({ v: [Math.cos(lat) * Math.cos(lon), Math.sin(lat), Math.cos(lat) * Math.sin(lon)], on: 0, delay: rnd() * 1.2 }); }
+let regionsOn = false, gt = 0, glast = performance.now();
+function drawGlobe(now) {
+  const dt = Math.min(0.05, (now - glast) / 1000); glast = now; gt += dt;
+  const r = globe.getBoundingClientRect();
+  if (root.classList.contains('css') && r.bottom > 0 && r.top < innerHeight) {
+    const W = globe.width, R = W * 0.42, a = gt * (reduce ? 0.05 : 0.25);
+    gx.clearRect(0, 0, W, W);
+    const rot = ([x, y, z]) => [x * Math.cos(a) + z * Math.sin(a), y, -x * Math.sin(a) + z * Math.cos(a)];
+    for (const d of dots) { const [x, y, z] = rot(d); if (z < -0.1) continue; gx.fillStyle = `rgba(255,255,255,${0.12 + z * 0.35})`; gx.fillRect(W / 2 + x * R - 1.2, W / 2 - y * R - 1.2, 2.4, 2.4); }
+    for (const g of regions) {
+      if (regionsOn && gt > g.delay) g.on = Math.min(1, g.on + dt * 2);
+      const [x, y, z] = rot(g.v); if (z < 0 || !g.on) continue;
+      const px = W / 2 + x * R, py = W / 2 - y * R, pulse = (gt * 0.8 + g.delay) % 1;
+      gx.strokeStyle = `rgba(92,242,160,${(1 - pulse) * g.on})`; gx.lineWidth = 2; gx.beginPath(); gx.arc(px, py, 4 + pulse * 22, 0, Math.PI * 2); gx.stroke();
+      gx.fillStyle = `rgba(92,242,160,${g.on})`; gx.beginPath(); gx.arc(px, py, 4.5, 0, Math.PI * 2); gx.fill();
+    }
+  }
+  requestAnimationFrame(drawGlobe);
+}
+requestAnimationFrame(drawGlobe);
+
+/* ================================================================ DevTools: real numbers, and switches to break things */
+const dev = $('dev');
+$('devBtn').addEventListener('click', () => { dev.hidden = !dev.hidden; $('devBtn').setAttribute('aria-expanded', !dev.hidden); if (!dev.hidden) renderNet(); });
+$('devClose').addEventListener('click', () => { dev.hidden = true; $('devBtn').setAttribute('aria-expanded', false); });
+dev.querySelector('nav').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (!b) return; for (const t of dev.querySelectorAll('[data-tab]')) { const on = t === b; t.setAttribute('aria-selected', on); $('pane-' + t.dataset.tab).hidden = !on; } });
+let cls = 0;
+try { new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput && builtAt && e.startTime > builtAt) cls += e.value; }).observe({ type: 'layout-shift', buffered: true }); } catch {}
+const fpsC = $('fps'), fx = fpsC.getContext('2d'), fpsHist = [];
+let fl = performance.now(), fAcc = 0, fN = 0;
+function perfTick(now) {
+  const d = now - fl; fl = now; fAcc += d; fN++;
+  if (fAcc > 250) {
+    const fps = Math.round((fN * 1000) / fAcc); fAcc = 0; fN = 0; fpsHist.push(fps); if (fpsHist.length > 80) fpsHist.shift();
+    if (!dev.hidden && !$('pane-perf').hidden) {
+      $('pFps').textContent = fps; $('pNodes').textContent = document.getElementsByTagName('*').length; $('pCls').textContent = builtAt ? cls.toFixed(3) : 'building';
+      $('pHeap').textContent = performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) + ' MB' : 'n/a';
+      const W = fpsC.width, H = fpsC.height; fx.clearRect(0, 0, W, H);
+      fx.strokeStyle = '#2a2c33'; fx.beginPath(); fx.moveTo(0, H - (60 / 70) * H); fx.lineTo(W, H - (60 / 70) * H); fx.stroke();
+      fx.strokeStyle = '#5cf2a0'; fx.lineWidth = 3; fx.beginPath(); fpsHist.forEach((v, i) => { const x = (i / 79) * W, y = H - (Math.min(70, v) / 70) * H; i ? fx.lineTo(x, y) : fx.moveTo(x, y); }); fx.stroke();
+    }
+  }
+  requestAnimationFrame(perfTick);
+}
+requestAnimationFrame(perfTick);
+$('tCss').addEventListener('change', (e) => { const off = e.target.checked; flip(() => root.classList.toggle('css', !off), { duration: 900 }); $('cssBack').hidden = !off; if (off) scrollTo({ top: 0 }); toast(off ? 'CSS off. Still readable: it is just HTML.' : 'CSS back on'); });
+$('cssBack').addEventListener('click', () => $('tCss').click());
+$('tJs').addEventListener('change', (e) => { root.classList.toggle('js', !e.target.checked); document.querySelectorAll('.card').forEach((c) => (c.style.transform = '')); toast(e.target.checked ? 'JS off. Cards still open: they are native <details>.' : 'JS back on'); });
+$('tOff').addEventListener('change', (e) => { if (done.has('api')) { $('json').readOnly = e.target.checked; renderPreview(); $('apiTime').textContent = e.target.checked ? 'offline · cached' : 'online'; } toast(e.target.checked ? 'Offline. The API answers from cache.' : 'Back online'); });
+$('tSlow').addEventListener('change', async (e) => { toast(e.target.checked ? 'Slow 3G. Watch the skeletons hold the layout.' : 'Network back to normal'); if (e.target.checked && done.has('api')) { $('api').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); await sleep(600); STAGES.api(false); } });
+})();
+</script>

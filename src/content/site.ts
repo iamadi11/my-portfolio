@@ -1,9 +1,9 @@
-import type { HostConfig } from '@/components/host/script';
-import type { SiteContent } from '@/components/instrumented/content';
+import type { SiteContent } from '@/content/types';
 
 /**
  * Content for / (Aditya Raj). Every value traces to SOURCE_OF_TRUTH.md: resume → LinkedIn → GitHub.
- * Leave a field out rather than guess; the layout drops empty sections.
+ * Role highlights, tech and locations are the resume bullets (same text as /about).
+ * Leave a field out rather than guess; the page drops empty sections.
  */
 export const SITE: SiteContent = {
     profile: {
@@ -12,7 +12,6 @@ export const SITE: SiteContent = {
         statement:
             '~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise. React, Next.js and TypeScript, with a focus on performance and production systems.',
         location: 'Bengaluru, India',
-        timeZone: 'Asia/Kolkata',
         availability: 'Open to new roles',
         email: 'adityaraj92.20@gmail.com',
         phone: { label: '+91 72578 07070', href: 'tel:+917257807070' },
@@ -32,7 +31,6 @@ export const SITE: SiteContent = {
                 { label: 'Live', href: 'https://playground-iamadi11s-projects.vercel.app/' },
                 { label: 'npm', href: 'https://www.npmjs.com/package/@sweidos/eidos' },
             ],
-            mark: 'stack',
             hue: 'blue',
         },
         {
@@ -44,7 +42,6 @@ export const SITE: SiteContent = {
                 { label: 'Code', href: 'https://github.com/iamadi11/mcp-ui-poc' },
                 { label: 'Live', href: 'https://mcp-ui-poc.vercel.app/' },
             ],
-            mark: 'lattice',
             hue: 'red',
         },
         {
@@ -57,7 +54,6 @@ export const SITE: SiteContent = {
                 { label: 'Code', href: 'https://github.com/iamadi11/spatial' },
                 { label: 'Live', href: 'https://spatial-zeta.vercel.app/' },
             ],
-            mark: 'wave',
             hue: 'green',
         },
         {
@@ -69,12 +65,16 @@ export const SITE: SiteContent = {
                 { label: 'Code', href: 'https://github.com/iamadi11/mouse-follow' },
                 { label: 'Live', href: 'https://mouse-follow-demo.vercel.app/' },
             ],
-            mark: 'orbit',
             hue: 'ink',
         },
     ],
     practice: {
-        intro: 'Senior software engineer with ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise. Strong in React, Next.js and TypeScript, with a focus on performance and production systems.',
+        impact: [
+            { value: '15 → 3 min', label: 'Frontend build time · Tata 1mg' },
+            { value: '70% → 15%', label: 'SLA breaches after real-time notifications · Tata 1mg' },
+            { value: '−30%', label: 'Video KYC failure rate · Cashfree Payments' },
+            { value: '3×', label: 'Faster feature development after the React migration · Moresand' },
+        ],
         skills: [
             { group: 'Languages', items: 'JavaScript (ES2022+), TypeScript' },
             {
@@ -95,26 +95,52 @@ export const SITE: SiteContent = {
             },
         ],
         experience: [
-            { org: 'Cashfree Payments', role: 'Frontend Engineer II', period: 'Mar 2025 – May 2026' },
-            { org: 'Moresand Technologies', role: 'Software Engineer', period: 'Aug 2024 – Mar 2025' },
-            { org: 'Tata 1mg', role: 'Software Development Engineer II', period: 'Apr 2023 – Jul 2024' },
-            { org: 'Tata 1mg', role: 'Software Development Engineer I', period: 'Dec 2021 – Mar 2023' },
+            {
+                org: 'Cashfree Payments',
+                role: 'Frontend Engineer II',
+                period: 'Mar 2025 – May 2026',
+                location: 'Bengaluru',
+                stack: 'React, TypeScript, Zustand, Semantic UI, REST APIs',
+                highlights: [
+                    'Own and maintain Risk WebApp platform serving enterprise merchants processing millions of transactions per month.',
+                    'Architected configurable rule engine for real-time transaction blocking and flagging based on amount, velocity, and risk signals.',
+                    'Enhanced Video KYC platform reliability with robust reconnection flows, reducing failure rates by 30%.',
+                ],
+            },
+            {
+                org: 'Moresand Technologies',
+                role: 'Software Engineer',
+                period: 'Aug 2024 – Mar 2025',
+                location: 'Bengaluru',
+                stack: 'React, Next.js, React Query, Tailwind CSS, Node.js, Express.js',
+                highlights: [
+                    'Led migration of legacy back-office to React-based architecture with improved test coverage, enabling 3x faster feature development.',
+                    'Implemented PWA architecture with offline capabilities, improving page load time by 50%.',
+                ],
+            },
+            {
+                org: 'Tata 1mg',
+                role: 'Software Development Engineer I → II',
+                period: 'Dec 2021 – Jul 2024',
+                location: 'Gurugram',
+                stack: 'React, Node.js, Express.js, Webpack, Redis, Google Maps API, Turborepo',
+                highlights: [
+                    'Engineered polygon-based serviceability engine using React.js and Google Maps API, enabling 15-minute and 1-hour delivery zones.',
+                    'Implemented real-time notifications using WebPush, Redis, and SSE, reducing SLA breaches from 70% to 15%.',
+                    'Optimized frontend build pipeline, reducing build time from 15 minutes to 3 minutes (80% reduction).',
+                    'Architected centralized Node.js microservice for invoice PDF generation, reducing code duplication by 60%.',
+                    'Implemented PWA for inventory management, reducing manual errors by 45%.',
+                    'Consolidated repositories into monorepo architecture with Turborepo, reducing deployment time by 30%.',
+                ],
+            },
         ],
         education: [
-            { org: 'IIIT Lucknow', role: 'B.Tech, Information Technology', period: 'Aug 2017 – Jun 2021' },
+            {
+                org: 'IIIT Lucknow',
+                role: 'B.Tech, Information Technology',
+                period: 'Aug 2017 – Jun 2021',
+                highlights: ['CGPA 8.14/10'],
+            },
         ],
-    },
-};
-
-/** The 3D host on /v2. `npm run voice` pre-renders every line it can say. */
-export const HOST: HostConfig = {
-    avatar: '/avatar/aditya.zip',
-    portrait: '/profile_pic.png',
-    voice: 'am_michael',
-    say: {
-        'Tata 1mg': 'Tata one M G',
-        'IIIT Lucknow': 'triple I T Lucknow',
-        'mcp-ui': 'M C P U I',
-        Moresand: 'More sand',
     },
 };

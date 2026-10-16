@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Game portfolio wireframes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root { --bg: #f3f1ec; --ink: #111216; --muted: #66625a; --line: #dcd7cc; --card: #fff; --accent: #ff5a3c;
+          --disp: Anton, Impact, sans-serif; --body: Inter, system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #121317; --ink: #eceae4; --muted: #9a968d; --line: #2a2c33; --card: #1a1b20; } }
+  :root[data-theme="dark"] { --bg: #121317; --ink: #eceae4; --muted: #9a968d; --line: #2a2c33; --card: #1a1b20; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); padding: 28px 16px 56px; }
+  .wrap { max-width: 1320px; margin: 0 auto; }
+  .kick { font: 700 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+  h1 { font: clamp(44px, 7vw, 92px)/.9 var(--disp); margin: 8px 0 12px; letter-spacing: .01em; text-transform: uppercase; }
+  .lede { max-width: 72ch; color: var(--muted); line-height: 1.6; font-size: 16px; margin: 0 0 28px; }
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
+  .frame { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: #000; border-bottom: 1px solid var(--line); }
+  .frame iframe { position: absolute; top: 0; left: 0; width: 1280px; height: 800px; border: 0; transform-origin: 0 0; pointer-events: none; }
+  .body { padding: 18px 18px 20px; display: grid; gap: 10px; flex: 1; align-content: start; }
+  .body h2 { margin: 0; font: 34px/1 var(--disp); text-transform: uppercase; letter-spacing: .01em; }
+  .genre { font: 700 11px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .body p { margin: 0; line-height: 1.55; font-size: 14.5px; }
+  .body ul { margin: 0; padding-left: 18px; line-height: 1.55; font-size: 14px; color: var(--muted); }
+  .play { justify-self: start; margin-top: 6px; padding: 12px 18px; border-radius: 999px; background: var(--ink); color: var(--bg); text-decoration: none; font: 700 12px var(--mono); text-transform: uppercase; letter-spacing: .04em; }
+  .score { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 4px; }
+  .score div { border: 1px solid var(--line); border-radius: 10px; padding: 7px 8px; font: 700 11px var(--mono); color: var(--muted); }
+  .score b { display: block; font: 800 15px var(--body); color: var(--ink); }
+  section.more { margin-top: 36px; display: grid; grid-template-columns: 1.1fr .9fr; gap: 18px; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+  .panel h3 { margin: 0 0 10px; font: 26px var(--disp); text-transform: uppercase; letter-spacing: .01em; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 8px 6px; border-top: 1px solid var(--line); vertical-align: top; }
+  th { font: 700 11px var(--mono); text-transform: uppercase; color: var(--muted); border-top: 0; }
+  .note { font-size: 13px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+  .chip { position: fixed; right: 16px; top: 16px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 700 11px var(--mono); cursor: pointer; }
+  @media (max-width: 1060px) { .grid { grid-template-columns: 1fr; } section.more { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<button class="chip" id="theme" type="button">Theme</button>
+<div class="wrap">
+  <div class="kick">/v2 · round 2 · playable wireframes</div>
+  <h1>Play to hire</h1>
+  <p class="lede">Three original game concepts for a senior / SDE-2 full-stack engineer, from a teardown of 8 game portfolios with REA (Bruno Simon, Messenger by Abeto, Henry Heffernan, Igloo, Jesse Zhou, Paodao, Simone Andreotti, My Room in 3D). Every game portfolio we found is a menu in costume; these make <b>the job itself the game</b>: requests, caches, queues and incidents. Each greybox below is actually playable (keyboard or touch), uses sample content only, and has a "How it becomes 3D" panel describing the real build with free CC0 assets. The résumé is one tap away in all three.</p>
+
+  <div class="grid">
+    <article class="card">
+      <div class="frame"><iframe src="on-call.html" title="On Call preview" loading="lazy" tabindex="-1"></iframe></div>
+      <div class="body">
+        <span class="genre">Open-world · GTA-style · driving</span>
+        <h2>On Call</h2>
+        <p>The city <i>is</i> a production system. Districts are the stack (Edge, API Gateway, Services, Cache, Queue Harbour, Data Vault), traffic is live requests, incidents are missions, and your phone is the résumé.</p>
+        <ul><li>Drive to a yellow marker → incident brief → race to the fix → "Mission passed" case study</li><li>Error budget and severity stars replace "wanted level"; GPS and minimap like the games</li><li>Phone: joystick steers by direction, tap the map to set GPS, Auto-drive</li></ul>
+        <div class="score"><div>Wow<b>5</b></div><div>Fun<b>5</b></div><div>Phone<b>4</b></div><div>Build<b>Hard</b></div></div>
+        <a class="play" href="on-call.html">Play On Call</a>
+      </div>
+    </article>
+    <article class="card">
+      <div class="frame"><iframe src="save-file.html" title="Save File preview" loading="lazy" tabindex="-1"></iframe></div>
+      <div class="body">
+        <span class="genre">Retro handheld RPG · childhood</span>
+        <h2>Save File</h2>
+        <p>A pocket console in your hand. Walk a pixel town where every door is a project, NPCs are teammates, and the Incident Gym is a turn-based system-design battle. START opens the résumé.</p>
+        <ul><li>D-pad, A/B, START, SELECT on screen and on the keyboard</li><li>Battles: pick the fix that matches the fault (cache, scale out, index, rollback) to earn skill badges</li><li>Real save to the browser; "Continue" when you return</li></ul>
+        <div class="score"><div>Wow<b>4</b></div><div>Fun<b>4</b></div><div>Phone<b>5</b></div><div>Build<b>Medium</b></div></div>
+        <a class="play" href="save-file.html">Play Save File</a>
+      </div>
+    </article>
+    <article class="card">
+      <div class="frame"><iframe src="hold-the-line.html" title="Hold the Line preview" loading="lazy" tabindex="-1"></iframe></div>
+      <div class="body">
+        <span class="genre">Tower defense · strategy</span>
+        <h2>Hold the Line</h2>
+        <p>Keep the database alive. Place services (CDN, cache, rate limiter, queue, load balancer) along the path as waves of reads, writes and bots arrive. p99 latency is simulated; each wave ends with a postmortem that tells a project.</p>
+        <ul><li>Tap a service, tap a tile; towers combo like real systems</li><li>Waves: morning traffic, product launch, bot attack, Black Friday</li><li>Portrait turns the path vertical; the tray sits under your thumb</li></ul>
+        <div class="score"><div>Wow<b>4</b></div><div>Fun<b>5</b></div><div>Phone<b>5</b></div><div>Build<b>Medium</b></div></div>
+        <a class="play" href="hold-the-line.html">Play Hold the Line</a>
+      </div>
+    </article>
+  </div>
+
+  <section class="more">
+    <div class="panel">
+      <h3>What the teardown found</h3>
+      <table>
+        <tr><th>Site</th><th>Play</th><th>On a phone</th></tr>
+        <tr><td>Bruno Simon</td><td>drive a car around a toy island; 237 MP3, 69 GLB</td><td>blank in our pass</td></tr>
+        <tr><td>Messenger</td><td>postman on a tiny planet; missions, dialogue, multiplayer; 159 OGG</td><td>plays</td></tr>
+        <tr><td>Henry Heffernan</td><td>3D desk; the CRT screen is a real web OS in an iframe</td><td>"best on desktop"</td></tr>
+        <tr><td>Paodao</td><td>walk an explorer; hidden passages; gamepad</td><td>arrows + mouse only</td></tr>
+        <tr><td>Jesse Zhou</td><td>neon ramen stand; signs are menu items</td><td>diorama, cropped</td></tr>
+        <tr><td>Simone Andreotti</td><td>fly a ship between planets; arcade minigame</td><td>plays</td></tr>
+      </table>
+      <p class="note">Patterns: three.js everywhere (r130–r183), KTX2 + Draco/Meshopt assets, 5–15 MB, click-to-start gates, sound on everything. Gaps we can own: the game being <i>about</i> the job, portrait-first phones, and real HTML content inside the game (Henry's trick). Full write-up: <code>docs/v2-research/game-teardown.md</code>.</p>
+    </div>
+    <div class="panel">
+      <h3>Free assets (CC0)</h3>
+      <table>
+        <tr><th>Need</th><th>Pack</th></tr>
+        <tr><td>City, roads</td><td>Kenney City Kit Roads · Commercial · Suburban · Industrial</td></tr>
+        <tr><td>Cars, traffic</td><td>Kenney Car Kit</td></tr>
+        <tr><td>Town, diorama</td><td>KayKit City Builder Bits</td></tr>
+        <tr><td>Tower defense</td><td>Kenney Tower Defense Kit</td></tr>
+        <tr><td>Characters</td><td>Quaternius Modular Characters (24 anims) · Kenney Mini Characters · Universal Animation Library</td></tr>
+        <tr><td>Arcade props</td><td>Kenney Mini Arcade</td></tr>
+        <tr><td>Sound</td><td>Kenney Interface / Impact / Digital Audio</td></tr>
+        <tr><td>Type</td><td>Google Fonts (OFL): Anton, Press Start 2P, Inter</td></tr>
+      </table>
+      <p class="note">"GTA-style" means the camera, HUD grammar and open-world feel only: no Rockstar names, fonts, logos or art. All content here is sample slots for any senior full-stack engineer.</p>
+    </div>
+  </section>
+</div>
+<script>
+  const fit = () => document.querySelectorAll('.frame').forEach((f) => { f.querySelector('iframe').style.transform = `scale(${f.clientWidth / 1280})`; });
+  addEventListener('resize', fit); fit();
+  const root = document.documentElement;
+  document.getElementById('theme').onclick = () => { const dark = matchMedia('(prefers-color-scheme: dark)').matches; const cur = root.dataset.theme || (dark ? 'dark' : 'light'); root.dataset.theme = cur === 'dark' ? 'light' : 'dark'; };
+</script>
+</body>
+</html>

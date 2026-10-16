@@ -8,15 +8,15 @@
 
 ## Identity
 
-| Field    | Value (resume)                                                                                                  |
-| -------- | --------------------------------------------------------------------------------------------------------------- |
-| Name     | Aditya Raj                                                                                                      |
-| Location | Bengaluru, Karnataka, India                                                                                     |
+| Field    | Value (resume)                                                                                                                                                                     |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Name     | Aditya Raj                                                                                                                                                                         |
+| Location | Bengaluru, Karnataka, India                                                                                                                                                        |
 | Title    | Senior Software Development Engineer (owner-confirmed 2026-10-15). Most recent role: Frontend Engineer II, Cashfree Payments, Mar 2025 – May 2026; currently open to opportunities |
-| Email    | adityaraj92.20@gmail.com                                                                                        |
-| Phone    | +91 72578 07070 → `tel:+917257807070`                                                                           |
-| LinkedIn | https://www.linkedin.com/in/adityaraj11/                                                                        |
-| GitHub   | https://github.com/iamadi11                                                                                     |
+| Email    | adityaraj92.20@gmail.com                                                                                                                                                           |
+| Phone    | +91 72578 07070 → `tel:+917257807070`                                                                                                                                              |
+| LinkedIn | https://www.linkedin.com/in/adityaraj11/                                                                                                                                           |
+| GitHub   | https://github.com/iamadi11                                                                                                                                                        |
 
 **Tagline (resume summary, shortened for UI; title per owner 2026-10-15):** Senior software engineer with ~4.5+ years building scalable web apps in fintech, e-commerce, and enterprise; strong React / Next.js / TypeScript; performance and production systems focus.
 
@@ -171,70 +171,9 @@ my-portfolio/
 
 ---
 
-## V2 — Loki Cinematic Experience
+## Home (/)
 
-**Route:** `/v2`  
-**Architecture:** Fixed R3F canvas + 500vh GSAP ScrollTrigger scroll driver. Progress ref (0→1) drives camera + overlays.
-
-### Narrative mapping (Loki series → career)
-
-| Scroll % | Loki event                         | Career node              |
-| -------- | ---------------------------------- | ------------------------ |
-| 0–22%    | Tesseract acquired (Avengers 2012) | Identity / hero          |
-| 22–50%   | Captured by TVA                    | TVA portals → navigation |
-| 50–78%   | Sacred timeline / nexus events     | Career timeline tree     |
-| 78–100%  | End of time / The Void             | Contact / void scene     |
-
-### Loki node ↔ career mapping (in `CinematicHome.tsx` `LOKI_NODES`)
-
-1. `TESSERACT ACQUIRED` → IIIT Lucknow 2017–21
-2. `CAPTURED BY THE TVA` → Tata 1mg SDE I 2021
-3. `NEXUS EVENT DETECTED` → Tata 1mg SDE II 2023
-4. `TIMELINE BRANCHING` → Moresand Technologies 2024
-5. `GOD OF THE TIMELINE` → Cashfree Payments 2025 (current)
-
-### V2 component map
-
-```
-src/components/v2/
-  CinematicHome.tsx   — root: canvas + overlays + scroll driver
-  SoundEngine.tsx     — Web Audio API procedural ambient (CC0, no copyright)
-  data.ts             — IDENTITY, PROJECTS, EXPERIENCE, SKILLS, EDUCATION
-  Chrome.tsx          — navigate() helper
-  Pages.tsx           — assembles scenes
-```
-
-### Scene 3D components
-
-- `CrystalTesseract` — MeshPhysicalMaterial iridescence (iridescenceIOR 2.2), point light inside
-- `TVAPortal` — 4 concentric torus rings + inner disc + swirl particles
-- `SacredTimeline` — 7 branches (main trunk + 6), EnergyFlow particles, 11 nodes
-- `EnergyFlow` — pre-sampled CatmullRom curves, 28 particles/branch, single BufferGeometry
-- `VoidDebris` — 6 wireframe octahedrons drifting in void scene
-- `VoidDust` — 2800 ambient gold particles
-
-### Sound system (SoundEngine.tsx)
-
-Procedurally generated via Web Audio API — zero copyright:
-
-- Pink noise (Paul Kellet algorithm) filtered at 160 Hz
-- 3 sine drones: 40 Hz + 80 Hz + 160 Hz
-- Crystal shimmer oscillator (880 Hz), active only in tesseract scene (p < 0.28)
-- Master gain 0.16 when unmuted, fades to 0 when muted
-
-### Performance decisions
-
-- `dpr={[1, 1.5]}` — caps pixel ratio
-- Bloom: `intensity=2.8, luminanceThreshold=0.08` — reduced from default
-- Single RAF loop for all 4 HTML overlays (`useOverlayAnimator`)
-- `EnergyFlow` uses one shared `BufferGeometry` per color group
-- `VoidDebris` visible only when `progress > 0.82`
-
-### Rules for v2 content
-
-- All text in overlays must match `data.ts` and resume — never invent metrics
-- Loki event labels are narrative framing only — career data is ground truth
-- Adding new timeline nodes: update `LOKI_NODES` array + `SacredTimeline` branch curves + `data.ts` `EXPERIENCE`
+`/` is Round trip, a 3D world built in code (see `docs/round-trip.md`); `/v2` redirects to it. Content rules above apply unchanged: every fact on `/` comes from this file via `src/content/site.ts`. Role highlights, tech and locations on `/` are the resume bullets also used on `/about`; the Tata 1mg roles are shown as one record (SDE I → II, Dec 2021 – Jul 2024) because the bullets cover the whole tenure.
 
 ---
 

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wireframe C · Glass stage</title>
+<style>
+  :root { --bg: #ffffff; --ink: #0f0f10; --muted: #6d6d73; --line: #e7e7ea; --accent: #ff5a1f; --note: #fff3a8; --note-ink: #4a3f00;
+          --display: "Helvetica Neue", "Inter", Arial, sans-serif; --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--display); }
+  a { color: inherit; }
+  .mono { font: 12px var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+  .note { position: absolute; z-index: 30; max-width: 260px; padding: 8px 10px; background: var(--note); color: var(--note-ink); font: 12px/1.4 var(--mono); border-radius: 6px; }
+  .note b { display: block; margin-bottom: 2px; text-transform: uppercase; letter-spacing: .06em; font-size: 10.5px; }
+  body.clean .note { display: none; }
+  header { position: fixed; inset: 0 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; z-index: 40; background: linear-gradient(#fff, rgba(255,255,255,0)); }
+  header .who { font-weight: 700; letter-spacing: -.02em; }
+  header .who span { color: var(--muted); font-weight: 400; }
+  .talk { padding: 10px 18px; border-radius: 999px; background: var(--ink); color: #fff; text-decoration: none; font: 12px var(--mono); text-transform: uppercase; }
+  .legend { position: fixed; left: 24px; bottom: 18px; z-index: 40; }
+  .legend button { font: 11px var(--mono); padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+
+  .layout { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 3vw; padding: 0 24px; }
+  .copy section { min-height: 100svh; display: grid; align-content: center; padding: 14vh 0; border-bottom: 1px solid var(--line); position: relative; }
+  .copy h1 { font-size: clamp(56px, 8vw, 128px); letter-spacing: -.055em; line-height: .86; margin: 0 0 18px; }
+  .copy h2 { font-size: clamp(40px, 5.5vw, 84px); letter-spacing: -.05em; line-height: .9; margin: 10px 0 14px; }
+  .copy p { color: #3d3d42; font-size: 17px; line-height: 1.55; max-width: 40ch; margin: 0 0 12px; }
+  .links { display: flex; gap: 14px; margin-top: 8px; }
+  .row { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
+  .row small { display: block; color: var(--muted); font-size: 14px; }
+
+  /* The stage: one rounded WebGL window, sticky beside the copy. */
+  .stage { position: sticky; top: 12svh; height: 76svh; border-radius: 28px; overflow: hidden; margin-top: 12svh;
+           background: radial-gradient(120% 90% at 30% 20%, #f4f1ff 0%, #dfe6ff 40%, #c7d1f2 100%); box-shadow: inset 0 0 0 1px rgba(0,0,0,.05); }
+  .stage .scene { position: absolute; inset: 0; display: grid; place-items: center; perspective: 900px; opacity: 0; transition: opacity .6s; }
+  .stage .scene.on { opacity: 1; }
+  .glass { font: 900 clamp(56px, 9vw, 170px)/.9 var(--display); letter-spacing: -.06em; text-align: center;
+           background: linear-gradient(115deg, rgba(255,255,255,.95) 0%, rgba(160,190,255,.55) 30%, rgba(255,255,255,.2) 48%, rgba(255,180,210,.6) 66%, rgba(255,255,255,.9) 100%);
+           -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 18px 24px rgba(40,60,140,.25)) drop-shadow(0 1px 0 rgba(255,255,255,.9));
+           transform: rotateX(var(--rx, 8deg)) rotateY(var(--ry, -10deg)); transition: transform .2s; }
+  .floor { position: absolute; left: 10%; right: 10%; bottom: 14%; height: 18%; border-radius: 50%; background: radial-gradient(closest-side, rgba(40,60,140,.25), transparent); }
+  .bot { position: absolute; bottom: 16%; left: 50%; transform: translateX(-50%); width: 120px; height: 160px; }
+  .bot .tag { position: absolute; left: 50%; top: -24px; transform: translateX(-50%); background: var(--accent); color: #fff; font: 10.5px var(--mono); padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+  .stage .hud { position: absolute; left: 18px; bottom: 16px; right: 18px; display: flex; justify-content: space-between; color: rgba(15,15,16,.6); }
+  @media (max-width: 860px) {
+    header .who span { display: none; }
+    .layout { grid-template-columns: 1fr; }
+    .stage { position: sticky; top: 64px; height: 42svh; margin-top: 64px; order: -1; z-index: 5; }
+    .copy section { min-height: 70svh; padding: 8vh 0; }
+    .bot { width: 80px; height: 108px; }
+  }
+  @media (max-width: 760px) { .note { position: relative !important; inset: auto !important; display: block; margin: 10px 0; max-width: none; } }
+</style>
+</head>
+<body>
+<header><div class="who">Aditya Raj <span>· Senior Software Development Engineer</span></div><a class="talk" href="#contact">Let's talk</a></header>
+<div class="legend"><button id="clean" type="button">Hide notes</button></div>
+
+<div class="layout">
+  <div class="copy">
+    <section data-scene="hero">
+      <div class="note" style="top:16vh; left:0"><b>First paint</b>The copy is HTML. The window on the right is the only WebGL, so the rest of the page stays light and fast.</div>
+      <span class="mono" style="color:var(--muted)">Bengaluru, India · Open to new roles</span>
+      <h1>Aditya<br/>Raj</h1>
+      <p>~4.5+ years building scalable web apps in fintech, e-commerce and enterprise. React, Next.js and TypeScript, with a focus on performance and production systems.</p>
+    </section>
+    <section data-scene="eidos">
+      <span class="mono" style="color:var(--muted)">01 · TypeScript · Service Workers</span><h2>Eidos</h2>
+      <p>A declarative offline-first abstraction layer for Service Workers.</p>
+      <div class="links mono"><a href="#">Code</a><a href="#">Live</a><a href="#">npm</a></div>
+    </section>
+    <section data-scene="mcp-ui">
+      <span class="mono" style="color:var(--muted)">02 · React · Vite · Node · Express</span><h2>mcp-ui</h2>
+      <p>A dynamic MCP UI generator, built as a full-stack MCP UI demo.</p>
+      <div class="links mono"><a href="#">Code</a><a href="#">Live</a></div>
+    </section>
+    <section data-scene="spatial">
+      <span class="mono" style="color:var(--muted)">03 · TypeScript · Vitest</span><h2>spatial</h2>
+      <p>A client-side UI performance optimizer that detects UI performance problems at dev time.</p>
+      <div class="links mono"><a href="#">Code</a><a href="#">Live</a></div>
+    </section>
+    <section data-scene="mouse">
+      <span class="mono" style="color:var(--muted)">04 · React</span><h2>Mouse Follow</h2>
+      <p>A mouse-follow component for React.</p>
+      <div class="links mono"><a href="#">Code</a><a href="#">Live</a></div>
+    </section>
+    <section data-scene="exp">
+      <h2>Experience</h2>
+      <div class="row"><span>Cashfree Payments<small>Frontend Engineer II</small></span><span class="mono">Mar 2025 – May 2026</span></div>
+      <div class="row"><span>Moresand Technologies<small>Software Engineer</small></span><span class="mono">Aug 2024 – Mar 2025</span></div>
+      <div class="row"><span>Tata 1mg<small>Software Development Engineer II</small></span><span class="mono">Apr 2023 – Jul 2024</span></div>
+      <div class="row"><span>Tata 1mg<small>Software Development Engineer I</small></span><span class="mono">Dec 2021 – Mar 2023</span></div>
+      <div class="row"><span>IIIT Lucknow<small>B.Tech, Information Technology</small></span><span class="mono">Aug 2017 – Jun 2021</span></div>
+    </section>
+    <section data-scene="contact" id="contact">
+      <h2>Say hello</h2>
+      <p><a href="#">adityaraj92.20@gmail.com</a><br/><a href="#">+91 72578 07070</a></p>
+      <div class="links mono"><a href="#">GitHub</a><a href="#">LinkedIn</a></div>
+    </section>
+  </div>
+
+  <aside class="stage" aria-hidden="true" id="stage">
+    <div class="note" style="top:18px; left:18px"><b>WebGL window</b>Real glass (refraction) 3D type of each section's title, chrome reflections, soft studio light. It tilts toward the pointer; scrolling cross-fades one scene into the next.</div>
+    <div class="scene on" data-scene="hero"><div class="glass">AR</div></div>
+    <div class="scene" data-scene="eidos"><div class="glass">EIDOS</div></div>
+    <div class="scene" data-scene="mcp-ui"><div class="glass">mcp‑ui</div></div>
+    <div class="scene" data-scene="spatial"><div class="glass">spatial</div></div>
+    <div class="scene" data-scene="mouse"><div class="glass">follow</div></div>
+    <div class="scene" data-scene="exp"><div class="glass">2017 →<br/>2026</div></div>
+    <div class="scene" data-scene="contact"><div class="glass">hello</div></div>
+    <div class="floor"></div>
+    <div class="bot"><span class="tag" id="clip">Robot · Wave</span>
+      <svg viewBox="0 0 110 150" width="100%" height="100%"><g fill="#fff" stroke="#0f0f10" stroke-width="2.5"><rect x="22" y="8" width="66" height="50" rx="16"/><circle cx="43" cy="33" r="6" fill="#0f0f10"/><circle cx="67" cy="33" r="6" fill="#0f0f10"/><rect x="30" y="62" width="50" height="52" rx="12"/><rect x="10" y="66" width="16" height="38" rx="8"/><rect x="84" y="66" width="16" height="38" rx="8"/><rect x="34" y="114" width="16" height="32" rx="7"/><rect x="60" y="114" width="16" height="32" rx="7"/></g></svg>
+    </div>
+    <div class="hud mono"><span id="hud">00 / Intro</span><span>drag to orbit</span></div>
+  </aside>
+</div>
+
+<script>
+  document.getElementById('clean').onclick = (e) => { document.body.classList.toggle('clean'); e.target.textContent = document.body.classList.contains('clean') ? 'Show notes' : 'Hide notes'; };
+  const clips = { hero: 'Wave', eidos: 'Walking → pulls a plug (offline)', 'mcp-ui': 'Punch → blocks re-stack', spatial: 'Running · slow frame = Death (falls)', mouse: 'Head follows your cursor', exp: 'Sitting', contact: 'Dance · ThumbsUp' };
+  const labels = { hero: '00 / Intro', eidos: '01 / Eidos', 'mcp-ui': '02 / mcp-ui', spatial: '03 / spatial', mouse: '04 / Mouse Follow', exp: '05 / Experience', contact: '06 / Contact' };
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting) return;
+    const k = e.target.dataset.scene;
+    document.querySelectorAll('.scene').forEach((s) => s.classList.toggle('on', s.dataset.scene === k));
+    document.getElementById('clip').textContent = 'Robot · ' + clips[k];
+    document.getElementById('hud').textContent = labels[k];
+  }), { threshold: 0.55 });
+  document.querySelectorAll('.copy section').forEach((s) => io.observe(s));
+  const stage = document.getElementById('stage');
+  addEventListener('pointermove', (e) => {
+    const r = stage.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+    document.querySelectorAll('.glass').forEach((g) => { g.style.setProperty('--ry', `${x * 24}deg`); g.style.setProperty('--rx', `${-y * 18}deg`); });
+  });
+</script>
+</body>
+</html>

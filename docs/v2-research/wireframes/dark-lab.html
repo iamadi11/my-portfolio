@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wireframe B · Dark lab</title>
+<style>
+  :root { --bg: #0d0e11; --ink: #eceef2; --muted: #8a8f99; --line: #23262d; --accent: #4b7bff; --note: #fff3a8; --note-ink: #4a3f00;
+          --display: "Helvetica Neue", "Inter", Arial, sans-serif; --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--mono); font-size: 14px; }
+  a { color: inherit; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; }
+  .note { position: absolute; z-index: 30; max-width: 270px; padding: 8px 10px; background: var(--note); color: var(--note-ink); font: 12px/1.4 var(--mono); border-radius: 6px; }
+  .note b { display: block; margin-bottom: 2px; text-transform: uppercase; letter-spacing: .06em; font-size: 10.5px; }
+  body.clean .note { display: none; }
+  .top { position: fixed; inset: 0 0 auto; padding: 18px 22px 30px; display: flex; justify-content: space-between; z-index: 20; background: linear-gradient(#0d0e11 55%, rgba(13,14,17,0)); }
+  .name { font: 800 clamp(34px, 5vw, 64px)/.9 var(--display); letter-spacing: -.045em; margin: 0; }
+  .dock { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 20; display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(30,32,38,.75); backdrop-filter: blur(10px); border: 1px solid var(--line); }
+  .dock a { padding: 9px 16px; border-radius: 999px; text-decoration: none; font-size: 12px; color: var(--muted); }
+  .dock a.on { background: var(--accent); color: #fff; }
+  .legend { position: fixed; right: 22px; bottom: 22px; z-index: 20; }
+  .legend button { font: 11px var(--mono); padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line); background: #15171b; color: var(--ink); cursor: pointer; }
+  main { position: relative; z-index: 10; }
+  section { min-height: 100svh; padding: 22vh 22px 14vh; width: min(520px, 100%); position: relative; }
+  .label { color: var(--muted); text-transform: lowercase; margin-bottom: 10px; display: block; }
+  h2 { font: 800 clamp(34px, 4.6vw, 64px)/.92 var(--display); letter-spacing: -.04em; margin: 0 0 14px; }
+  p { color: #c7cbd3; line-height: 1.6; margin: 0 0 12px; max-width: 46ch; }
+  .meta { display: grid; grid-template-columns: 110px 1fr; gap: 6px 14px; border-top: 1px solid var(--line); padding-top: 12px; margin-top: 14px; }
+  .meta span:nth-child(odd) { color: var(--muted); }
+  .links { display: flex; gap: 14px; margin-top: 14px; }
+  .links a { color: var(--accent); }
+  .rows div { display: grid; grid-template-columns: 30px 1fr; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .rows b { font-weight: 600; color: #fff; }
+  .rows small { display: block; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips span { padding: 5px 9px; border: 1px solid var(--line); border-radius: 6px; color: #c7cbd3; font-size: 12px; }
+  .robot { position: fixed; z-index: 15; right: 16vw; top: 30vh; width: 120px; height: 160px; opacity: 0; transition: opacity .8s .4s; pointer-events: none; }
+  .robot.on { opacity: 1; }
+  .robot .tag { position: absolute; left: 50%; top: -24px; transform: translateX(-50%); background: var(--accent); color: #fff; font-size: 10.5px; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+  @media (max-width: 760px) { section { padding-top: 58vh; } .robot { right: 50%; transform: translateX(50%); top: 14vh; width: 90px; height: 120px; } }
+  @media (max-width: 760px) { .note { position: relative !important; inset: auto !important; display: block; margin: 10px 0; max-width: none; } }
+</style>
+</head>
+<body>
+<canvas id="c" aria-hidden="true"></canvas>
+<div class="top"><h1 class="name">aditya raj</h1><span style="color:var(--muted)">♪ off · bengaluru · open to new roles</span></div>
+<nav class="dock" aria-label="Sections"><a href="#hero" class="on">root</a><a href="#work">work</a><a href="#exp">experience</a><a href="#contact">contact</a></nav>
+<div class="legend"><button id="clean" type="button">Hide notes</button></div>
+<div class="robot" id="robot" aria-hidden="true"><span class="tag">Robot · Wave</span>
+  <svg viewBox="0 0 110 150" width="100%" height="100%"><g fill="#1c1f26" stroke="#4b7bff" stroke-width="2.5"><rect x="22" y="8" width="66" height="50" rx="16"/><circle cx="43" cy="33" r="6" fill="#4b7bff"/><circle cx="67" cy="33" r="6" fill="#4b7bff"/><rect x="30" y="62" width="50" height="52" rx="12"/><rect x="10" y="66" width="16" height="38" rx="8"/><rect x="84" y="66" width="16" height="38" rx="8"/><rect x="34" y="114" width="16" height="32" rx="7"/><rect x="60" y="114" width="16" height="32" rx="7"/></g></svg>
+</div>
+
+<main>
+  <section id="hero" data-shape="robot">
+    <div class="note" style="top:12vh; left:22px"><b>Signature</b>~200k GPU points (here 2.4k on a 2D canvas) swarm into the robot's silhouette; then the real 3D robot (CC0, real clips) fades in where the dots were and waves.</div>
+    <span class="label">tl;dr</span>
+    <p>Senior Software Development Engineer, ~4.5+ years building scalable web apps in fintech, e-commerce and enterprise. React, Next.js and TypeScript, with a focus on performance and production systems.</p>
+    <div class="meta"><span>now</span><span>Frontend Engineer II · Cashfree Payments</span><span>based</span><span>Bengaluru, India</span><span>status</span><span>Open to new roles</span></div>
+  </section>
+
+  <section id="work" data-shape="cloud">
+    <div class="note" style="top:12vh; right:-300px"><b>Morph per project</b>As each project scrolls in, the dots re-form into a shape for what it does. Move the pointer through them: they scatter and return.</div>
+    <span class="label">work · 01</span><h2>Eidos</h2>
+    <p>A declarative offline-first abstraction layer for Service Workers.</p>
+    <div class="meta"><span>stack</span><span>TypeScript · Service Workers</span><span>shape</span><span>cloud + cache</span></div>
+    <div class="links"><a href="#">code</a><a href="#">live</a><a href="#">npm</a></div>
+  </section>
+  <section data-shape="blocks">
+    <span class="label">work · 02</span><h2>mcp-ui</h2>
+    <p>A dynamic MCP UI generator, built as a full-stack MCP UI demo.</p>
+    <div class="meta"><span>stack</span><span>React · Vite · Node · Express</span><span>shape</span><span>UI blocks assembling</span></div>
+    <div class="links"><a href="#">code</a><a href="#">live</a></div>
+  </section>
+  <section data-shape="wave">
+    <span class="label">work · 03</span><h2>spatial</h2>
+    <p>A client-side UI performance optimizer that detects UI performance problems at dev time.</p>
+    <div class="meta"><span>stack</span><span>TypeScript · Vitest</span><span>shape</span><span>frame-time graph, one slow spike</span></div>
+    <div class="links"><a href="#">code</a><a href="#">live</a></div>
+  </section>
+  <section data-shape="cursor">
+    <span class="label">work · 04</span><h2>Mouse Follow</h2>
+    <p>A mouse-follow component for React.</p>
+    <div class="meta"><span>stack</span><span>React</span><span>shape</span><span>cursor with a trail that follows yours</span></div>
+    <div class="links"><a href="#">code</a><a href="#">live</a></div>
+  </section>
+
+  <section id="exp" data-shape="steps">
+    <div class="note" style="top:12vh; right:-300px"><b>Robot</b>Climbs the dot staircase, one step per role (clips Walking, Jump).</div>
+    <span class="label">experience</span>
+    <div class="rows">
+      <div><span>05</span><span><b>Cashfree Payments</b><small>Frontend Engineer II · Mar 2025 – May 2026</small></span></div>
+      <div><span>04</span><span><b>Moresand Technologies</b><small>Software Engineer · Aug 2024 – Mar 2025</small></span></div>
+      <div><span>03</span><span><b>Tata 1mg</b><small>Software Development Engineer II · Apr 2023 – Jul 2024</small></span></div>
+      <div><span>02</span><span><b>Tata 1mg</b><small>Software Development Engineer I · Dec 2021 – Mar 2023</small></span></div>
+      <div><span>01</span><span><b>IIIT Lucknow</b><small>B.Tech, Information Technology · Aug 2017 – Jun 2021</small></span></div>
+    </div>
+  </section>
+
+  <section data-shape="keys">
+    <span class="label">tools</span>
+    <div class="chips"><span>TypeScript</span><span>React</span><span>Next.js</span><span>Zustand</span><span>React Query</span><span>Tailwind CSS</span><span>Radix UI</span><span>PWA</span><span>Storybook</span><span>Micro-frontends</span><span>Webpack 5</span><span>Core Web Vitals</span><span>Lighthouse</span><span>Service Workers</span><span>Node.js</span><span>Redis</span><span>SSE</span><span>PostgreSQL</span><span>Docker</span><span>Playwright</span><span>GitHub Actions</span></div>
+  </section>
+
+  <section id="contact" data-shape="envelope">
+    <div class="note" style="top:12vh; right:-300px"><b>Robot</b>Thumbs-up; hover the email and the dots burst into confetti (clip ThumbsUp).</div>
+    <span class="label">contact</span><h2>Say hello</h2>
+    <p><a href="#">adityaraj92.20@gmail.com</a><br/><a href="#">+91 72578 07070</a></p>
+    <div class="links"><a href="#">github</a><a href="#">linkedin</a></div>
+  </section>
+</main>
+
+<script>
+  document.getElementById('clean').onclick = (e) => { document.body.classList.toggle('clean'); e.target.textContent = document.body.classList.contains('clean') ? 'Show notes' : 'Hide notes'; };
+  const cv = document.getElementById('c'), g = cv.getContext('2d');
+  const N = innerWidth < 760 ? 1300 : 2400;
+  let W, H, dpr;
+  const P = Array.from({ length: N }, () => ({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, vx: 0, vy: 0, tx: 0, ty: 0 }));
+  // Draw each shape white-on-black offscreen, then sample its pixels as targets.
+  const S = 220;
+  const off = document.createElement('canvas'); off.width = off.height = S; const o = off.getContext('2d');
+  const rr = (x, y, w, h, r) => { o.beginPath(); o.roundRect(x, y, w, h, r); o.fill(); };
+  const draw = {
+    robot() { rr(60, 20, 100, 72, 24); rr(72, 98, 76, 70, 18); rr(42, 104, 22, 56, 11); rr(156, 104, 22, 56, 11); rr(78, 170, 24, 40, 10); rr(118, 170, 24, 40, 10); o.globalCompositeOperation = 'destination-out'; o.beginPath(); o.arc(90, 54, 9, 0, 7); o.arc(130, 54, 9, 0, 7); o.fill(); o.globalCompositeOperation = 'source-over'; },
+    cloud() { for (const [x, y, r] of [[95, 70, 34], [130, 62, 40], [160, 78, 28], [70, 84, 24]]) { o.beginPath(); o.arc(x, y, r, 0, 7); o.fill(); } rr(40, 132, 46, 78, 10); rr(118, 150, 60, 50, 10); },
+    blocks() { for (let i = 0; i < 9; i++) rr(30 + (i % 3) * 56, 30 + Math.floor(i / 3) * 56, 46 - (i % 2) * 10, 44, 8); },
+    wave() { o.lineWidth = 9; o.strokeStyle = '#fff'; o.beginPath(); for (let x = 10; x < 210; x += 4) { const spike = x > 130 && x < 146 ? 70 : 0; o.lineTo(x, 130 - Math.sin(x * 0.08) * 16 - spike); } o.stroke(); rr(10, 176, 200, 6, 3); },
+    cursor() { o.beginPath(); o.moveTo(60, 30); o.lineTo(60, 170); o.lineTo(95, 136); o.lineTo(122, 196); o.lineTo(140, 188); o.lineTo(114, 128); o.lineTo(160, 128); o.closePath(); o.fill(); for (let i = 0; i < 4; i++) { o.beginPath(); o.arc(180 - i * 6, 40 + i * 30, 9 - i, 0, 7); o.fill(); } },
+    steps() { for (let i = 0; i < 5; i++) rr(14 + i * 40, 190 - (i + 1) * 34, 36, (i + 1) * 34, 6); },
+    keys() { for (let r = 0; r < 4; r++) for (let c = 0; c < 6; c++) rr(14 + c * 33 + r * 6, 50 + r * 34, 28, 28, 6); },
+    envelope() { rr(20, 60, 180, 120, 10); o.globalCompositeOperation = 'destination-out'; o.lineWidth = 10; o.beginPath(); o.moveTo(26, 66); o.lineTo(110, 132); o.lineTo(194, 66); o.stroke(); o.globalCompositeOperation = 'source-over'; },
+  };
+  const shapes = {};
+  for (const [k, fn] of Object.entries(draw)) {
+    o.clearRect(0, 0, S, S); o.fillStyle = '#fff'; fn();
+    const d = o.getImageData(0, 0, S, S).data, pts = [];
+    for (let y = 0; y < S; y += 2) for (let x = 0; x < S; x += 2) if (d[(y * S + x) * 4 + 3] > 128) pts.push([x / S, y / S]);
+    shapes[k] = pts;
+  }
+  let current = 'robot';
+  const setShape = (k) => {
+    current = k; const pts = shapes[k];
+    const box = innerWidth < 760 ? { x: innerWidth * 0.12, y: innerHeight * 0.08, s: Math.min(innerWidth * 0.76, innerHeight * 0.45) } : { x: innerWidth * 0.5, y: innerHeight * 0.16, s: Math.min(innerWidth * 0.4, innerHeight * 0.72) };
+    P.forEach((p, i) => { const q = pts[(i * 7919) % pts.length]; p.tx = box.x + q[0] * box.s + (Math.random() - 0.5) * 3; p.ty = box.y + q[1] * box.s + (Math.random() - 0.5) * 3; });
+    document.getElementById('robot').classList.toggle('on', k === 'robot');
+  };
+  const resize = () => { dpr = Math.min(devicePixelRatio, 2); W = cv.width = innerWidth * dpr; H = cv.height = innerHeight * dpr; setShape(current); };
+  addEventListener('resize', resize); resize();
+  const mouse = { x: -999, y: -999 };
+  addEventListener('pointermove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { setShape(e.target.dataset.shape); const id = e.target.id; document.querySelectorAll('.dock a').forEach((a) => a.classList.toggle('on', a.getAttribute('href') === '#' + id)); } }), { threshold: 0.45 });
+  document.querySelectorAll('section').forEach((s) => io.observe(s));
+  function tick(t) {
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.fillStyle = 'rgba(13,14,17,0.35)'; g.fillRect(0, 0, innerWidth, innerHeight);
+    for (const p of P) {
+      const dx = p.x - mouse.x, dy = p.y - mouse.y, d2 = dx * dx + dy * dy;
+      if (d2 < 9000) { const f = (9000 - d2) / 9000 * 2.4; p.vx += dx / Math.sqrt(d2 + 1) * f; p.vy += dy / Math.sqrt(d2 + 1) * f; }
+      p.vx += (p.tx - p.x) * 0.012; p.vy += (p.ty - p.y) * 0.012;
+      p.vx *= 0.86; p.vy *= 0.86; p.x += p.vx; p.y += p.vy;
+      const sp = Math.min(1, Math.hypot(p.vx, p.vy) / 6);
+      g.fillStyle = `rgba(${75 + sp * 180},${123 + sp * 100},255,${0.55 + sp * 0.45})`;
+      g.fillRect(p.x, p.y, 1.8, 1.8);
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+</script>
+</body>
+</html>

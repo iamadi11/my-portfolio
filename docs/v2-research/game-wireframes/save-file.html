@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Save File wireframe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+<style>
+  :root { --c0: #10131c; --c1: #3c4a6b; --c2: #8fb3c9; --c3: #eef2e6; --shell: #e9e3d5; --shell2: #d6cfbe; --accent: #ff5a3c;
+          --pix: "Press Start 2P", ui-monospace, monospace; --body: Inter, system-ui, sans-serif; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body { margin: 0; min-height: 100%; background: radial-gradient(circle at 50% 30%, #2a2f45, #0e0f17 70%); font-family: var(--body); color: #fff; overflow-x: hidden; }
+  body { display: grid; place-items: center; padding: 18px 12px; min-height: 100svh; touch-action: manipulation; }
+  button { font: inherit; cursor: pointer; }
+  .top { position: fixed; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; z-index: 30; gap: 8px; }
+  .chip { background: rgba(0,0,0,.5); color: #fff; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; padding: 9px 14px; font: 600 12px var(--body); }
+  .chip.y { background: #ffd23f; color: #111; border-color: transparent; }
+  /* the handheld: an original shape, not any real console's */
+  .console { position: relative; width: min(400px, 94vw); aspect-ratio: 400 / 700; max-height: calc(100svh - 70px); background: linear-gradient(160deg, var(--shell), var(--shell2)); border-radius: 26px 26px 70px 26px;
+             box-shadow: inset 0 -8px 0 rgba(0,0,0,.08), 0 40px 80px rgba(0,0,0,.55); padding: 7% 7% 0; display: flex; flex-direction: column; }
+  .bezel { background: #2b2d3a; border-radius: 12px 12px 34px 12px; padding: 7% 6% 4%; position: relative; }
+  .bezel .led { position: absolute; left: 3%; top: 38%; width: 7px; height: 7px; border-radius: 50%; background: #ff3b3b; box-shadow: 0 0 6px #ff3b3b; }
+  .bezel .lbl { font: 8px var(--pix); color: #9aa0b5; letter-spacing: .1em; margin-top: 8px; text-align: center; }
+  .screen { position: relative; aspect-ratio: 160 / 144; background: var(--c3); overflow: hidden; border-radius: 3px; }
+  canvas#lcd { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+  .screen::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.06) 0 1px, transparent 1px 3px); }
+  /* in-screen UI, drawn in HTML so text is crisp and readable by screen readers */
+  .dlg { position: absolute; left: 3%; right: 3%; bottom: 3%; background: var(--c3); color: var(--c0); border: 3px solid var(--c0); box-shadow: inset 0 0 0 2px var(--c3), inset 0 0 0 4px var(--c1); padding: 7px 9px 9px; font: clamp(6.5px, 2.1vw, 9px)/1.7 var(--pix); min-height: 30%; display: none; }
+  .dlg.open { display: block; }
+  .dlg .more { position: absolute; right: 8px; bottom: 5px; animation: blink .8s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .menu { position: absolute; right: 3%; top: 3%; width: 58%; background: var(--c3); color: var(--c0); border: 3px solid var(--c0); box-shadow: inset 0 0 0 2px var(--c3), inset 0 0 0 4px var(--c1); padding: 6px 4px; font: clamp(6.5px, 2.1vw, 9px)/2.1 var(--pix); display: none; }
+  .menu.open { display: block; }
+  .menu div { padding: 0 6px 0 16px; position: relative; }
+  .menu div.sel::before { content: '▶'; position: absolute; left: 3px; }
+  .battle-ui { position: absolute; inset: 0; display: none; }
+  .battle-ui.open { display: block; }
+  .hp { position: absolute; font: clamp(5.5px, 1.8vw, 8px)/1.6 var(--pix); color: var(--c0); }
+  .hp .track { width: 100%; height: 5px; border: 1px solid var(--c0); background: var(--c3); margin-top: 2px; }
+  .hp .track i { display: block; height: 100%; background: var(--c1); transition: width .4s; }
+  .moves { position: absolute; left: 3%; right: 3%; bottom: 3%; display: grid; grid-template-columns: 1fr 1fr; background: var(--c3); border: 3px solid var(--c0); box-shadow: inset 0 0 0 2px var(--c3), inset 0 0 0 4px var(--c1); padding: 5px; font: clamp(5.5px, 1.8vw, 8px)/2 var(--pix); color: var(--c0); }
+  .moves div { padding-left: 12px; position: relative; }
+  .moves div.sel::before { content: '▶'; position: absolute; left: 1px; }
+  /* controls */
+  .pad { flex: 1; display: grid; grid-template-columns: 1fr 1fr; align-items: center; padding: 6% 0 10%; }
+  .dpad { position: relative; width: 112px; height: 112px; justify-self: start; }
+  .dpad button { position: absolute; width: 38px; height: 38px; background: #2f3140; border: 0; border-radius: 6px; box-shadow: 0 4px 0 #15161d; }
+  .dpad button:active, .dpad button.on { transform: translateY(3px); box-shadow: 0 1px 0 #15161d; }
+  .dpad .u { left: 37px; top: 0; } .dpad .d { left: 37px; bottom: 0; } .dpad .l { left: 0; top: 37px; } .dpad .r { right: 0; top: 37px; }
+  .dpad .c { left: 37px; top: 37px; width: 38px; height: 38px; position: absolute; background: #2f3140; }
+  .ab { justify-self: end; display: flex; gap: 14px; transform: rotate(-22deg); margin-right: 4px; }
+  .ab button { width: 52px; height: 52px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; font: 11px var(--pix); box-shadow: 0 5px 0 #a8321f; }
+  .ab button:active, .ab button.on { transform: translateY(4px); box-shadow: 0 1px 0 #a8321f; }
+  .ab .b { margin-top: 26px; }
+  .ss { grid-column: 1 / -1; display: flex; justify-content: center; gap: 22px; margin-top: 4%; }
+  .ss button { background: #9a937f; border: 0; border-radius: 99px; width: 54px; height: 13px; transform: rotate(-22deg); box-shadow: 0 3px 0 #6e6858; }
+  .ss span { display: block; text-align: center; font: 7px var(--pix); color: #6e6858; margin-top: 10px; }
+  .brand { position: absolute; left: 9%; bottom: 3.2%; font: 800 italic 15px var(--body); color: #8a8270; letter-spacing: .02em; }
+  .speaker { position: absolute; right: 9%; bottom: 5%; display: grid; grid-template-columns: repeat(4, 6px); gap: 6px; transform: rotate(-22deg); }
+  .speaker i { width: 6px; height: 34px; border-radius: 4px; background: rgba(0,0,0,.18); }
+  /* sheets (HTML overlays) */
+  .sheet { position: fixed; inset: 0; z-index: 40; background: rgba(8,9,14,.82); display: none; place-items: center; padding: 16px; }
+  .sheet.open { display: grid; }
+  .sheet .in { width: min(560px, 100%); max-height: 88svh; overflow: auto; background: var(--c3); color: var(--c0); border: 4px solid var(--c0); box-shadow: 8px 8px 0 var(--c1); padding: 22px; font-size: 14.5px; line-height: 1.55; }
+  .sheet h2 { font: 16px/1.4 var(--pix); margin: 0 0 6px; }
+  .sheet h3 { font: 10px var(--pix); margin: 18px 0 6px; color: var(--c1); }
+  .sheet a { color: var(--c1); }
+  .r-row { display: grid; gap: 2px; padding: 7px 0; border-top: 2px dotted var(--c2); }
+  .r-proj { padding: 7px 0; border-top: 2px dotted var(--c2); }
+  .r-proj small { color: var(--c1); }
+  .r-role { color: var(--c1); }
+  .badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .badge { border: 3px solid var(--c0); padding: 10px; text-align: center; font: 8px/1.6 var(--pix); }
+  .badge.off { opacity: .35; }
+  .badge b { display: block; font-size: 22px; margin-bottom: 6px; }
+  .close { float: right; background: var(--c0); color: var(--c3); border: 0; font: 9px var(--pix); padding: 8px 10px; }
+  .notes { position: fixed; inset: 0 auto 0 0; width: min(420px, 92vw); z-index: 45; background: #fff8c9; color: #3b3300; padding: 22px; overflow: auto; transform: translateX(-105%); transition: transform .3s; font: 13.5px/1.55 ui-monospace, Menlo, monospace; }
+  .notes.open { transform: none; }
+  .notes h2 { font: 14px/1.4 var(--pix); color: #111; }
+  .notes h3 { font: 700 11px ui-monospace, monospace; text-transform: uppercase; letter-spacing: .1em; margin: 16px 0 4px; color: #6a5d00; }
+  .notes ul { padding-left: 18px; margin: 0; } .notes li, .notes p { margin: 0 0 6px; }
+  .hint { position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; font: 12px var(--body); color: #9aa0b5; }
+  @media (min-width: 900px) and (min-height: 700px) { .console { width: 410px; } }
+</style>
+</head>
+<body>
+<div class="top"><button class="chip" id="notesBtn" type="button">How it becomes 3D</button><button class="chip y" id="resumeBtn" type="button">Read as a page</button></div>
+
+<main class="console" aria-label="Handheld console">
+  <div class="bezel"><span class="led" aria-hidden="true"></span>
+    <div class="screen">
+      <canvas id="lcd" width="160" height="144" aria-hidden="true"></canvas>
+      <div class="dlg" id="dlg" role="status" aria-live="polite"><span id="dlgText"></span><span class="more" id="more">▼</span></div>
+      <div class="menu" id="menu" role="menu"></div>
+      <div class="battle-ui" id="bui">
+        <div class="hp" style="left:4%;top:5%;width:52%"><span id="foeName">OUTAGE</span><div class="track"><i id="foeHp" style="width:100%"></i></div></div>
+        <div class="hp" style="right:4%;top:46%;width:46%;text-align:right"><span id="meName">YOU</span><div class="track"><i id="meHp" style="width:100%"></i></div></div>
+        <div class="moves" id="moves"></div>
+      </div>
+    </div>
+    <div class="lbl">DOT · MATRIX · WITH · STEREO · SOUND</div>
+  </div>
+  <div class="pad">
+    <div class="dpad" aria-label="Direction pad"><button class="u" data-k="up" aria-label="Up"></button><button class="l" data-k="left" aria-label="Left"></button><span class="c"></span><button class="r" data-k="right" aria-label="Right"></button><button class="d" data-k="down" aria-label="Down"></button></div>
+    <div class="ab"><button class="b" data-k="b" aria-label="B">B</button><button class="a" data-k="a" aria-label="A">A</button></div>
+    <div class="ss"><div><button data-k="select" aria-label="Select"></button><span>SELECT</span></div><div><button data-k="start" aria-label="Start"></button><span>START</span></div></div>
+  </div>
+  <div class="brand">devboy</div>
+  <div class="speaker" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+</main>
+<p class="hint">Arrows / WASD move · Z or Space = A · X = B · Enter = START</p>
+
+<section class="sheet" id="sheet"><div class="in" id="sheetIn"></div></section>
+<aside class="notes" id="notes">
+  <button class="close" id="notesClose" type="button">CLOSE</button>
+  <h2>Save File: the 3D build</h2>
+  <p>The greybox draws the town flat. The real build is "HD-2D": a 3D diorama with pixel sprites, seen through the handheld's screen.</p>
+  <h3>Look</h3><ul><li>The town is a low-poly 3D diorama (KayKit City Builder Bits or Kenney Suburban, CC0) rendered at 160×144 with a 4-colour palette shader, so 3D reads as pixel art.</li><li>Characters are pixel sprites billboarded into the 3D scene; tilt-shift depth of field like a model village.</li><li>The handheld itself is a 3D object in a soft studio; on desktop you can rotate it, the cartridge pops out when you save.</li><li>LCD shader: pixel grid, ghosting, a little backlight bleed.</li></ul>
+  <h3>Play</h3><ul><li>Doors are case studies; NPCs give short lines; the gym battle is a turn-based system-design fight (pick the right fix for the fault). Winning earns a skill badge.</li><li>Real save: position and badges persist; "Continue" on return.</li><li>Chiptune sound from CC0 packs; off until START.</li></ul>
+  <h3>Why phones win</h3><p>Portrait is the native shape of a handheld. Touch buttons are big, nothing needs a keyboard, and it runs at 160×144: tiny GPU cost.</p>
+  <h3>Recruiter path</h3><p>"Read as a page" opens the plain résumé before anything loads; START → RÉSUMÉ inside the game does the same.</p>
+</aside>
+
+<script src="sample.js"></script>
+<script>
+(() => {
+const S = window.SAMPLE;
+const $ = (id) => document.getElementById(id);
+const C = ['#10131c', '#3c4a6b', '#8fb3c9', '#eef2e6'];
+const lcd = $('lcd'), g = lcd.getContext('2d');
+g.imageSmoothingEnabled = false;
+
+/* ---------------- the town: 30 × 24 tiles of 8 px; the screen shows 20 × 18 */
+const MAP = [
+  '##############################',
+  '#............................#',
+  '#..RRRRR....FFFF....RRRRRRR..#',
+  '#..RRRRR....F..F....RRRRRRR..#',
+  '#..HHDHH....FFFF....HHHDHHH..#',
+  '#....=...............=.......#',
+  '#....=================.......#',
+  '#....=.......S.......=.......#',
+  '#....=...............=.......#',
+  '#..RRRRR......M......=..RRRR.#',
+  '#..RRRRR.............=..RRRR.#',
+  '#..HHDHH.............=..HDHH.#',
+  '#....=...............=...=...#',
+  '#....=================.===...#',
+  '#....=.......=.......=.=.....#',
+  '#....=..WWWW.=.......=.=.....#',
+  '#....=..WWWW.=..RRRRRRRRR....#',
+  '#....=..WWWW.=..RRRRRRRRR....#',
+  '#....=.......=..HHHHDHHHH....#',
+  '#....=========......=........#',
+  '#...........=========........#',
+  '#..FF..................FF....#',
+  '#............................#',
+  '##############################',
+];
+const TW = MAP[0].length, TH = MAP.length;
+const at = (x, y) => (MAP[y] && MAP[y][x]) || '#';
+// What each door opens (by tile position).
+const DOORS = {
+  '5,4': { kind: 'project', id: 'payments', name: 'PAYMENTS HOUSE' },
+  '23,4': { kind: 'project', id: 'realtime', name: 'OPS TOWER' },
+  '5,11': { kind: 'project', id: 'design-system', name: 'STUDIO' },
+  '25,11': { kind: 'project', id: 'search', name: 'SEARCH HUT' },
+  '20,18': { kind: 'gym', name: 'INCIDENT GYM' },
+};
+const SIGN = { '13,7': ['TOWN OF FULLSTACK', 'Doors are projects. The big hall is the Incident Gym.'] };
+const MAILBOX = { '14,9': true };
+const npcs = [
+  { x: 9, y: 8, dir: 0, lines: ['PM: Ask about the payments rewrite. Nobody got double-charged after it.'], c: 1 },
+  { x: 18, y: 14, dir: 0, lines: ['SRE: The gym trains you on outages. Pick the fix that matches the fault.'], c: 1 },
+  { x: 7, y: 21, dir: 0, lines: ['DESIGNER: The studio has the design system. One button, everywhere.'], c: 1 },
+];
+const SOLID = new Set(['#', 'R', 'H', 'W', 'F', 'S', 'M']);
+
+/* ---------------- player, save state */
+const save = (() => { try { return JSON.parse(localStorage.getItem('savefile') || 'null'); } catch { return null; } })();
+const me = { x: save?.x ?? 13, y: save?.y ?? 9, dir: 2, step: 0, moving: 0, fx: 0, fy: 0 };
+me.fx = me.x; me.fy = me.y;
+const badges = new Set(save?.badges ?? []);
+const persist = () => { try { localStorage.setItem('savefile', JSON.stringify({ x: me.x, y: me.y, badges: [...badges] })); } catch {} };
+
+/* ---------------- tiles, drawn as 8 × 8 pixel art in four tones */
+function tile(ch, px, py, t) {
+  const f = (c, x, y, w = 1, h = 1) => { g.fillStyle = C[c]; g.fillRect(px + x, py + y, w, h); };
+  f(3, 0, 0, 8, 8);
+  if (ch === '.') { if ((px * 7 + py * 3) % 5 === 0) { f(2, 2, 3); f(2, 5, 6); } return; }
+  if (ch === '=') { f(2, 0, 0, 8, 8); f(3, 1, 2); f(3, 5, 5); return; }
+  if (ch === '#') { f(1, 1, 0, 6, 5); f(2, 2, 1, 2, 2); f(0, 3, 5, 2, 3); return; }
+  if (ch === 'F') { f(2, 0, 0, 8, 8); f(t % 2 ? 0 : 1, 2, 2, 2, 2); f(1, 5, 5, 2, 2); return; }
+  if (ch === 'W') { f(1, 0, 0, 8, 8); f(2, ((t >> 1) + py) % 8, 2, 3, 1); f(2, ((t >> 1) + 4 + px) % 8, 6, 3, 1); return; }
+  if (ch === 'R') { f(1, 0, 0, 8, 8); f(0, 0, 7, 8, 1); f(2, 0, 3, 8, 1); return; }
+  if (ch === 'H') { f(3, 0, 0, 8, 8); f(0, 0, 0, 8, 1); f(2, 2, 2, 4, 3); f(0, 2, 2, 4, 1); return; }
+  if (ch === 'D') { f(3, 0, 0, 8, 8); f(0, 2, 1, 4, 7); f(2, 5, 4); return; }
+  if (ch === 'S') { f(1, 1, 1, 6, 4); f(3, 2, 2, 4, 1); f(0, 3, 5, 2, 3); return; }
+  if (ch === 'M') { f(1, 2, 1, 4, 4); f(0, 2, 1, 4, 1); f(0, 3, 5, 2, 3); f(3, 3, 3, 2, 1); return; }
+}
+// A small walker sprite: dir 0 up, 1 right, 2 down, 3 left.
+function sprite(px, py, dir, frame, tone) {
+  const f = (c, x, y, w = 1, h = 1) => { g.fillStyle = C[c]; g.fillRect(px + x, py + y, w, h); };
+  f(0, 2, 0, 4, 3); f(tone === 1 ? 2 : 3, 2, 2, 4, 2);
+  if (dir === 2) { f(0, 3, 2); f(0, 5, 2); }
+  if (dir === 1) f(0, 5, 2); if (dir === 3) f(0, 2, 2);
+  f(tone, 1, 4, 6, 3); f(0, 1, 4, 6, 1);
+  const leg = frame % 2;
+  f(0, 2, 7 - leg, 2, 1 + leg); f(0, 4, 6 + leg, 2, 2 - leg);
+}
+
+/* ---------------- dialogue, menus and sheets */
+let dlgQueue = [], typing = null, onDlgDone = null;
+function say(lines, done) { dlgQueue = [...lines]; onDlgDone = done || null; nextLine(); }
+function nextLine() {
+  const el = $('dlg'), text = $('dlgText');
+  if (typing) { clearInterval(typing); typing = null; text.textContent = text.dataset.full; $('more').style.visibility = 'visible'; return; }
+  if (!dlgQueue.length) { el.classList.remove('open'); const d = onDlgDone; onDlgDone = null; d?.(); return; }
+  const line = dlgQueue.shift();
+  el.classList.add('open'); text.dataset.full = line; text.textContent = ''; $('more').style.visibility = 'hidden';
+  let i = 0;
+  typing = setInterval(() => { text.textContent = line.slice(0, ++i); if (i >= line.length) { clearInterval(typing); typing = null; $('more').style.visibility = 'visible'; } }, 22);
+}
+const dlgOpen = () => $('dlg').classList.contains('open');
+let menu = null;
+function openMenu(items, pick) { menu = { items, pick, sel: 0 }; drawMenu(); $('menu').classList.add('open'); }
+function drawMenu() { $('menu').innerHTML = menu.items.map((t, i) => `<div class="${i === menu.sel ? 'sel' : ''}">${t}</div>`).join(''); }
+function closeMenu() { menu = null; $('menu').classList.remove('open'); }
+function sheet(html) { $('sheetIn').innerHTML = `<button class="close" data-close>CLOSE</button>` + html; $('sheet').classList.add('open'); }
+$('sheet').addEventListener('click', (e) => { if (e.target.closest('[data-close]') || e.target === $('sheet')) $('sheet').classList.remove('open'); });
+const sheetOpen = () => $('sheet').classList.contains('open');
+function projectSheet(id) {
+  const p = S.projects.find((x) => x.id === id);
+  sheet(`<h2>${p.title.toUpperCase()}</h2><p>${p.summary}</p><h3>PROBLEM</h3><p>${p.problem}</p><h3>APPROACH</h3><p>${p.approach}</p><h3>OUTCOME</h3><p>${p.outcome}</p><h3>STACK</h3><p>${p.stack.join(' · ')}</p>`);
+}
+const BADGES = [['CACHE', 'C'], ['SCALE', 'S'], ['INDEX', 'I'], ['ROLLBACK', 'R']];
+function startMenu() {
+  openMenu(['RÉSUMÉ', 'PROJECTS', 'BADGES', 'CONTACT', 'SAVE', 'EXIT'], (i) => {
+    closeMenu();
+    if (i === 0) sheet(window.resumeHTML());
+    if (i === 1) sheet(`<h2>PROJECTS</h2>` + S.projects.map((p) => `<div class="r-proj"><b>${p.title}</b> · ${p.summary}<br/><small>${p.stack.join(' · ')}</small></div>`).join(''));
+    if (i === 2) sheet(`<h2>BADGES ${badges.size}/${BADGES.length}</h2><p>Earned in the Incident Gym. Each one maps to a skill group.</p><div class="badges">${BADGES.map(([n, l]) => `<div class="badge ${badges.has(n) ? '' : 'off'}"><b>${l}</b>${n}</div>`).join('')}</div><h3>SKILLS</h3>${S.skills.map((s) => `<div class="r-row"><b>${s.group}</b><span>${s.items.join(', ')}</span></div>`).join('')}`);
+    if (i === 3) sheet(`<h2>CONTACT</h2><p>${S.name} · ${S.role}</p><p>${S.status} · ${S.city}</p><p><a href="mailto:${S.email}">${S.email}</a></p>${S.links.map((l) => `<p><a href="${l.href}">${l.label}</a></p>`).join('')}`);
+    if (i === 4) { persist(); say(['Progress saved to this browser.']); }
+  });
+}
+
+/* ---------------- battle: a turn-based system-design fight */
+const FOES = [
+  { name: 'TRAFFIC SPIKE', hp: 3, weak: 'SCALE OUT', badge: 'SCALE', intro: 'A wild TRAFFIC SPIKE appeared!' },
+  { name: 'N+1 QUERY', hp: 3, weak: 'ADD INDEX', badge: 'INDEX', intro: 'An N+1 QUERY crawls out of the ORM!' },
+  { name: 'COLD CACHE', hp: 3, weak: 'ADD CACHE', badge: 'CACHE', intro: 'COLD CACHE! Every read hits the database!' },
+  { name: 'BAD DEPLOY', hp: 3, weak: 'ROLLBACK', badge: 'ROLLBACK', intro: 'A BAD DEPLOY is throwing 500s!' },
+];
+const MOVES = ['ADD CACHE', 'SCALE OUT', 'ADD INDEX', 'ROLLBACK'];
+let battle = null;
+function startBattle() {
+  const left = FOES.filter((f) => !badges.has(f.badge));
+  const foe = { ...(left.length ? left[Math.floor(Math.random() * left.length)] : FOES[Math.floor(Math.random() * FOES.length)]) };
+  battle = { foe, me: 4, sel: 0, busy: true, flash: 0 };
+  $('foeName').textContent = foe.name; $('meName').textContent = S.name.toUpperCase();
+  $('bui').classList.add('open'); drawMoves(); updateHp();
+  say([foe.intro, 'Pick the fix that matches the fault.'], () => { battle.busy = false; });
+}
+function drawMoves() { $('moves').innerHTML = MOVES.map((m, i) => `<div class="${i === battle.sel ? 'sel' : ''}">${m}</div>`).join(''); }
+function updateHp() { $('foeHp').style.width = (battle.foe.hp / 3) * 100 + '%'; $('meHp').style.width = (battle.me / 4) * 100 + '%'; }
+function useMove() {
+  const m = MOVES[battle.sel], f = battle.foe; battle.busy = true;
+  const right = m === f.weak;
+  f.hp -= right ? 3 : 1; battle.flash = 0.4;
+  const lines = [`You used ${m}!`, right ? "It's super effective! Root cause fixed." : 'It helped a little, but the fault is elsewhere.'];
+  if (f.hp > 0) { battle.me -= 1; lines.push(`${f.name} paged you again!`); }
+  updateHp();
+  say(lines, () => {
+    if (f.hp <= 0) {
+      const fresh = !badges.has(f.badge); badges.add(f.badge); persist();
+      say([`${f.name} resolved!`, fresh ? `You earned the ${f.badge} BADGE.` : 'Postmortem written. Blameless, of course.'], endBattle);
+    } else if (battle.me <= 0) say(['You were paged out... a teammate takes over. Try again!'], endBattle);
+    else battle.busy = false;
+  });
+}
+function endBattle() { battle = null; $('bui').classList.remove('open'); }
+
+/* ---------------- input (keyboard + on-screen buttons share one path) */
+const held = new Set();
+const KEY = { arrowup: 'up', w: 'up', arrowdown: 'down', s: 'down', arrowleft: 'left', a: 'left', arrowright: 'right', d: 'right', z: 'a', ' ': 'a', x: 'b', enter: 'start', shift: 'select' };
+addEventListener('keydown', (e) => { const k = KEY[e.key.toLowerCase()]; if (!k) return; e.preventDefault(); if (!held.has(k)) press(k); held.add(k); });
+addEventListener('keyup', (e) => { const k = KEY[e.key.toLowerCase()]; if (k) held.delete(k); });
+document.querySelectorAll('[data-k]').forEach((b) => {
+  const k = b.dataset.k;
+  b.addEventListener('pointerdown', (e) => { e.preventDefault(); b.setPointerCapture(e.pointerId); b.classList.add('on'); held.add(k); press(k); });
+  const up = () => { b.classList.remove('on'); held.delete(k); };
+  b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);
+});
+const DIRS = { up: [0, -1, 0], right: [1, 0, 1], down: [0, 1, 2], left: [-1, 0, 3] };
+function press(k) {
+  if (sheetOpen()) { if (k === 'b' || k === 'a' || k === 'start') $('sheet').classList.remove('open'); return; }
+  if (dlgOpen()) { if (k === 'a' || k === 'b') nextLine(); return; }
+  if (menu) {
+    if (k === 'up') { menu.sel = (menu.sel + menu.items.length - 1) % menu.items.length; drawMenu(); }
+    if (k === 'down') { menu.sel = (menu.sel + 1) % menu.items.length; drawMenu(); }
+    if (k === 'a') menu.pick(menu.sel);
+    if (k === 'b' || k === 'start') closeMenu();
+    return;
+  }
+  if (battle) {
+    if (battle.busy) return;
+    const grid = { left: -1, right: 1, up: -2, down: 2 };
+    if (grid[k] !== undefined) { battle.sel = (battle.sel + grid[k] + 4) % 4; drawMoves(); }
+    if (k === 'a') useMove();
+    return;
+  }
+  if (k === 'start') { startMenu(); return; }
+  if (k === 'a') interact();
+}
+function interact() {
+  const [dx, dy] = Object.values(DIRS)[me.dir];
+  const tx = me.x + dx, ty = me.y + dy, key = `${tx},${ty}`;
+  const npc = npcs.find((n) => n.x === tx && n.y === ty);
+  if (npc) { say(npc.lines); return; }
+  if (SIGN[key]) { say(SIGN[key]); return; }
+  if (MAILBOX[key]) { say(['A mailbox. It reads:', `${S.email}`, 'START → CONTACT has everything.']); return; }
+}
+function enterDoor(x, y) {
+  const d = DOORS[`${x},${y}`]; if (!d) return;
+  me.dir = 2;
+  if (d.kind === 'project') say([`${d.name}`, 'Someone left a case study on the table...'], () => projectSheet(d.id));
+  if (d.kind === 'gym') say(['INCIDENT GYM', 'Trainers here only speak in outages.'], startBattle);
+}
+
+/* ---------------- loop */
+let t = 0, moveCd = 0;
+const blocked = (x, y) => SOLID.has(at(x, y)) || npcs.some((n) => n.x === x && n.y === y);
+function update(dt) {
+  t += dt;
+  if (!dlgOpen() && !menu && !battle && !sheetOpen()) {
+    moveCd -= dt;
+    const dir = ['up', 'right', 'down', 'left'].find((d) => held.has(d));
+    if (dir && moveCd <= 0 && me.moving <= 0) {
+      const [dx, dy, di] = DIRS[dir]; me.dir = di;
+      const nx = me.x + dx, ny = me.y + dy;
+      if (at(nx, ny) === 'D') { enterDoor(nx, ny); moveCd = 0.25; }
+      else if (!blocked(nx, ny)) { me.x = nx; me.y = ny; me.moving = 1; me.step++; }
+      moveCd = 0.14;
+    }
+    // NPCs wander a little.
+    for (const n of npcs) if (Math.random() < dt * 0.4) { const [dx, dy, di] = Object.values(DIRS)[Math.floor(Math.random() * 4)]; n.dir = di; if (!blocked(n.x + dx, n.y + dy) && at(n.x + dx, n.y + dy) !== 'D' && !(n.x + dx === me.x && n.y + dy === me.y)) { n.x += dx; n.y += dy; } }
+  }
+  if (me.moving > 0) me.moving = Math.max(0, me.moving - dt * 7);
+  document.body.dataset.pos = `${me.x},${me.y}`; // read by the wireframe's test harness
+  me.fx += (me.x - me.fx) * Math.min(1, dt * 14); me.fy += (me.y - me.fy) * Math.min(1, dt * 14);
+}
+function draw() {
+  if (battle) { drawBattle(); return; }
+  const camX = Math.max(0, Math.min(TW * 8 - 160, me.fx * 8 - 76)), camY = Math.max(0, Math.min(TH * 8 - 144, me.fy * 8 - 68));
+  const frame = Math.floor(t * 2);
+  for (let y = 0; y < TH; y++) for (let x = 0; x < TW; x++) {
+    const px = Math.round(x * 8 - camX), py = Math.round(y * 8 - camY);
+    if (px < -8 || py < -8 || px > 160 || py > 144) continue;
+    tile(at(x, y), px, py, frame);
+  }
+  for (const n of npcs) sprite(Math.round(n.x * 8 - camX), Math.round(n.y * 8 - camY), n.dir, frame, n.c);
+  sprite(Math.round(me.fx * 8 - camX), Math.round(me.fy * 8 - camY), me.dir, me.moving > 0 ? me.step : 0, 2);
+}
+function drawBattle() {
+  g.fillStyle = C[3]; g.fillRect(0, 0, 160, 144);
+  g.fillStyle = C[2]; g.fillRect(84, 44, 64, 10); g.fillRect(8, 98, 64, 10);
+  // the foe: a jagged graph spike monster; you: your back, holding a laptop
+  const shake = battle.flash > 0 ? (Math.random() - 0.5) * 4 : 0;
+  battle.flash = Math.max(0, battle.flash - 1 / 60);
+  g.fillStyle = C[0];
+  const fx = 100 + shake;
+  for (let i = 0; i < 8; i++) { const h = [6, 12, 9, 22, 30, 14, 10, 7][i]; g.fillRect(fx + i * 4, 44 - h, 3, h); }
+  g.fillRect(fx - 2, 44, 36, 2); g.fillStyle = C[3]; g.fillRect(fx + 14, 18, 2, 2); g.fillRect(fx + 20, 18, 2, 2);
+  g.fillStyle = C[0]; g.fillRect(24, 70, 16, 12); g.fillRect(20, 82, 24, 18); g.fillStyle = C[1]; g.fillRect(40, 86, 14, 9); g.fillStyle = C[2]; g.fillRect(42, 88, 10, 5);
+}
+let last = performance.now();
+function loop(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; update(dt); draw(); requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+
+$('notesBtn').onclick = () => $('notes').classList.add('open');
+$('notesClose').onclick = () => $('notes').classList.remove('open');
+$('resumeBtn').onclick = () => sheet(window.resumeHTML());
+say(save ? [`Welcome back, ${S.name}. Your save was loaded.`] : [`${S.name.toUpperCase()}`, `${S.role}.`, 'Explore the town. Press START for the résumé any time.']);
+})();
+</script>
+</body>
+</html>

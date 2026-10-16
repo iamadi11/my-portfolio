@@ -23,6 +23,8 @@ const nextConfig: NextConfig = {
                 destination: '/',
                 permanent: true,
             },
+            /** /v2 was the preview of the 3D home page; it is now / itself. */
+            { source: '/v2', destination: '/', permanent: false },
         ];
     },
     async headers() {

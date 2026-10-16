@@ -1,0 +1,714 @@
+<title>Round Trip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;600;800&family=Funnel+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+<style>
+/* ================================================================
+   Round Trip. Scrolling sends one request through a full-stack world built in WebGL:
+   wire (fibre tunnel) → edge (server city) → services (gyroscopes, one per project)
+   → data (crystal lattice, one lit record per role) → 200 OK (the whole route as a map).
+   Layout: a fixed canvas behind; each section is a tall scroll track with a sticky panel
+   (bottom-left on desktop, bottom on phones) over a scrim so text stays readable.
+   Deliberate single dark world: the night is the stage.
+   ================================================================ */
+:root {
+  color-scheme: dark;
+  --bg: #05070d; --ink: #eef2f8; --muted: #9aa3b5; --line: rgba(238,242,248,.16); --soft: #c9d0dc;
+  --wire: #8fd3ff; --edge: #ffb35c; --svc: #ff7ad9; --data: #7af0ff; --ok: #ffffff;
+  --accent: var(--wire);
+  --display: "Funnel Display", "Helvetica Neue", Arial, sans-serif;
+  --body: "Funnel Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --g: clamp(16px, 4vw, 56px);
+  --ease: cubic-bezier(.16, 1, .3, 1);
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 17px/1.55 var(--body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+#gl { position: fixed; inset: 0; width: 100%; height: 100lvh; display: block; z-index: 0; opacity: 0; transition: opacity 1.4s ease; }
+.ready #gl { opacity: 1; }
+.nogl body { background: radial-gradient(120% 80% at 50% 0%, #121a30, var(--bg) 70%) fixed; }
+
+/* scroll tracks + sticky panels */
+main { position: relative; z-index: 2; }
+section { position: relative; height: calc(var(--h) * 1svh); }
+section[data-zone="wire"] { --accent: var(--wire); } section[data-zone="edge"] { --accent: var(--edge); }
+section[data-zone="services"] { --accent: var(--svc); } section[data-zone="data"] { --accent: var(--data); } section[data-zone="ok"] { --accent: var(--ok); }
+.pin { position: sticky; top: 0; height: 100svh; display: grid; align-content: end; padding: 110px var(--g) clamp(88px, 13vh, 130px); pointer-events: none; isolation: isolate; }
+/* one fixed scrim behind every panel, so no hard edge scrolls past */
+body::before { content: ''; position: fixed; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, rgba(5,7,13,.8), rgba(5,7,13,.4) 40%, rgba(5,7,13,0) 66%); }
+.pin a, .pin button { pointer-events: auto; }
+.panel { position: relative; max-width: 620px; }
+.label { font: 500 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; gap: 10px; align-items: center; margin: 0 0 20px; }
+.label i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px var(--accent); }
+.label em { font-style: normal; color: var(--accent); }
+
+/* reveals (only when JS runs, so no-JS readers get everything) */
+.ln { display: block; overflow: hidden; padding-bottom: .08em; margin-bottom: -.08em; }
+.js .ln > span { display: block; transform: translateY(108%); transition: transform 1.05s var(--ease); transition-delay: calc(var(--i, 0) * 80ms); }
+.js .in .ln > span { transform: none; }
+.js .fade { opacity: 0; transform: translateY(14px); transition: opacity .8s var(--ease), transform .9s var(--ease); transition-delay: calc(var(--i, 0) * 80ms + 140ms); }
+.js .in .fade { opacity: 1; transform: none; }
+
+/* hero */
+.kicker { font: 500 12.5px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--soft); margin: 0 0 18px; }
+.name { font: 800 clamp(66px, 14.5vw, 240px)/.84 var(--display); letter-spacing: -.05em; margin: 0 0 24px; }
+.lede { font-size: clamp(17px, 1.45vw, 21px); color: var(--soft); max-width: 44ch; margin: 0 0 28px; text-wrap: pretty; }
+.cue { font: 500 12px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 12px; margin: 0; }
+.cue b { width: 56px; height: 1px; background: var(--line); position: relative; overflow: hidden; }
+.cue b::after { content: ''; position: absolute; inset: 0; background: var(--accent); transform: translateX(-100%); animation: cue 2.2s var(--ease) infinite; }
+@keyframes cue { to { transform: translateX(100%); } }
+
+/* about */
+.big { font: 600 clamp(32px, 4.4vw, 70px)/1.02 var(--display); letter-spacing: -.035em; margin: 0; max-width: 17ch; }
+.big .ln + .ln { margin-top: .18em; }
+.big .dim { color: var(--muted); }
+
+/* stack */
+.layers { list-style: none; margin: 0; padding: 0; }
+.layers li { display: grid; grid-template-columns: 7.5em 1fr; gap: 18px; align-items: baseline; padding: 15px 0; border-top: 1px solid var(--line); opacity: .55; transition: opacity .5s, padding .5s var(--ease); }
+.layers li.on { opacity: 1; }
+.layers b { font: 600 clamp(22px, 2.2vw, 30px)/1 var(--display); letter-spacing: -.02em; }
+.layers li.on b { color: var(--accent); }
+.layers span { font: 400 13.5px/1.5 var(--mono); color: var(--soft); }
+h2 { font: 800 clamp(40px, 5.2vw, 84px)/.9 var(--display); letter-spacing: -.045em; margin: 0 0 22px; }
+
+/* work */
+.projects { display: grid; }
+.proj { grid-area: 1 / 1; opacity: 0; transform: translateY(18px); transition: opacity .55s var(--ease), transform .8s var(--ease); }
+.proj.on { opacity: 1; transform: none; }
+.proj .meta { font: 500 12px var(--mono); letter-spacing: .1em; color: var(--muted); text-transform: uppercase; margin: 0; }
+.proj h3 { font: 800 clamp(44px, 6vw, 96px)/.88 var(--display); letter-spacing: -.045em; margin: 12px 0 16px; }
+.proj p { margin: 0 0 10px; color: var(--soft); max-width: 44ch; }
+.proj p strong { color: var(--ink); font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 16px 0 0; padding: 0; }
+.chips li { font: 500 12px var(--mono); padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--soft); }
+.count { font: 500 12px var(--mono); letter-spacing: .1em; color: var(--muted); margin: 22px 0 0; display: flex; gap: 6px; align-items: center; }
+.count i { width: 22px; height: 2px; background: var(--line); border-radius: 2px; transition: background .4s, width .4s var(--ease); }
+.count i.on { background: var(--accent); width: 40px; }
+
+/* experience */
+.roles { list-style: none; margin: 0; padding: 0; }
+.roles li { display: grid; grid-template-columns: 1fr auto; gap: 2px 18px; padding: 15px 0; border-top: 1px solid var(--line); opacity: .55; transition: opacity .5s; }
+.roles li.on { opacity: 1; }
+.roles b { font: 600 clamp(20px, 2vw, 28px)/1.15 var(--display); letter-spacing: -.02em; }
+.roles span { color: var(--soft); grid-column: 1; font-size: 15.5px; }
+.roles time { font: 500 12px var(--mono); color: var(--accent); grid-row: 1; grid-column: 2; align-self: center; letter-spacing: .06em; }
+
+/* contact */
+.ok { font: 800 clamp(84px, 15vw, 236px)/.82 var(--display); letter-spacing: -.065em; margin: 0; }
+.done-meta { font: 500 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 18px 0 26px; }
+.mail { font: 600 clamp(26px, 3.4vw, 50px)/1.1 var(--display); letter-spacing: -.03em; text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 6px; display: inline-block; overflow-wrap: anywhere; }
+.mail:hover { border-color: var(--ink); }
+.links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.links a, .links button { font: 500 14px var(--body); color: var(--ink); background: rgba(238,242,248,.06); border: 1px solid var(--line); border-radius: 999px; padding: 12px 18px; min-height: 44px; text-decoration: none; cursor: pointer; backdrop-filter: blur(8px); transition: background .25s, color .25s; }
+.links a:hover, .links button:hover { background: var(--ink); color: var(--bg); }
+.note { font: 400 12px var(--mono); color: var(--muted); margin: 26px 0 0; }
+
+/* HUD */
+.hud { position: fixed; left: 0; right: 0; z-index: 10; display: flex; align-items: center; gap: 18px; padding: 18px var(--g); pointer-events: none; font: 500 11.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.hud a, .hud button { pointer-events: auto; }
+.hud.top { top: 0; }
+.hud.bottom { bottom: 0; padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+.brand { font: 700 16px var(--display); letter-spacing: -.01em; text-transform: none; color: var(--ink); text-decoration: none; margin-right: auto; }
+.route { display: flex; list-style: none; margin: 0; padding: 0; }
+.route li { display: flex; align-items: center; gap: 8px; transition: color .4s; }
+.route li + li::before { content: ''; width: 22px; height: 1px; background: var(--line); margin: 0 10px; }
+.route i { width: 6px; height: 6px; border-radius: 50%; border: 1px solid var(--muted); transition: background .4s, border-color .4s, box-shadow .4s; }
+.route li.past i { background: var(--soft); border-color: var(--soft); }
+.route li.on { color: var(--ink); }
+.route li.on i { background: var(--z, var(--wire)); border-color: var(--z, var(--wire)); box-shadow: 0 0 10px var(--z, var(--wire)); }
+.snd { background: rgba(238,242,248,.04); border: 1px solid var(--line); color: var(--ink); border-radius: 999px; padding: 9px 14px; min-height: 36px; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; }
+.snd[aria-pressed="true"] { border-color: var(--ink); }
+.req { color: var(--ink); margin-right: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.req em { font-style: normal; color: var(--muted); }
+.hint { transition: opacity .6s; }
+.scrolled .hint { opacity: 0; }
+
+/* labels pinned to things in the world */
+.tag { position: fixed; left: 0; top: 0; z-index: 3; pointer-events: none; font: 500 11.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); white-space: nowrap; opacity: 0; transition: opacity .35s; display: flex; align-items: center; gap: 8px; text-shadow: 0 1px 8px rgba(0,0,0,.8); will-change: transform; }
+.tag::before { content: ''; width: 20px; height: 1px; background: currentColor; }
+.tag.on { opacity: 1; }
+.tag small { color: var(--muted); font-size: inherit; }
+
+@media (max-width: 760px) {
+  .pin { padding: 84px var(--g) 92px; }
+  body::before { background: linear-gradient(0deg, rgba(5,7,13,.9), rgba(5,7,13,.55) 45%, rgba(5,7,13,0) 75%); }
+  .route span { display: none; }
+  .route li.on span { display: inline; }
+  .route li + li::before { width: 5px; margin: 0 3px; }
+  .hud.bottom { gap: 10px; font-size: 10.5px; letter-spacing: .06em; }
+  .hud.top .route { display: none; }
+  .hud.bottom { justify-content: space-between; }
+  .req { margin-right: 0; }
+  .hint { display: none; }
+  .layers li { grid-template-columns: 1fr; gap: 4px; padding: 11px 0; }
+  .roles li { padding: 11px 0; }
+  .proj h3 { margin: 8px 0 10px; }
+  .tag { font-size: 10.5px; }
+}
+@media (min-width: 761px) { .hud.bottom .route { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .js .ln > span, .js .fade, .proj, .cue b::after { transition: none !important; animation: none !important; }
+}
+</style>
+<script>document.documentElement.classList.add('js');</script>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+
+<header class="hud top">
+  <a class="brand" href="#hero">Alex Kim</a>
+  <ol class="route" aria-label="Request route">
+    <li data-r="0"><i></i><span>Browser</span></li><li data-r="1"><i></i><span>Wire</span></li><li data-r="2"><i></i><span>Edge</span></li><li data-r="3"><i></i><span>Services</span></li><li data-r="4"><i></i><span>Data</span></li><li data-r="5"><i></i><span>200 OK</span></li>
+  </ol>
+  <button class="snd" id="snd" type="button" aria-pressed="false">Sound off</button>
+</header>
+<div class="hud bottom" aria-hidden="true">
+  <span class="req" id="req">GET /alex <em>· 0 ms</em></span>
+  <ol class="route"><li data-r="0"><i></i><span>Browser</span></li><li data-r="1"><i></i><span>Wire</span></li><li data-r="2"><i></i><span>Edge</span></li><li data-r="3"><i></i><span>Services</span></li><li data-r="4"><i></i><span>Data</span></li><li data-r="5"><i></i><span>200 OK</span></li></ol>
+  <span class="hint">Scroll to send</span>
+</div>
+
+<main>
+  <section id="hero" data-zone="browser" style="--h:130">
+    <div class="pin"><div class="panel">
+      <p class="kicker ln"><span>Senior Software Engineer · Full-stack</span></p>
+      <h1 class="name"><span class="ln"><span>Alex Kim</span></span></h1>
+      <p class="lede fade">I build the whole round trip: the button you tap, the API it calls, the services behind it and the query that answers. Scroll to send one request through my stack.</p>
+      <p class="cue fade" style="--i:2"><b></b>Scroll to send</p>
+    </div></div>
+  </section>
+
+  <section id="about" data-zone="wire" style="--h:230">
+    <div class="pin"><div class="panel">
+      <p class="label fade"><i></i>01 · Wire <em id="ms-wire"></em></p>
+      <p class="big"><span class="ln" style="--i:0"><span>Seven years shipping production software.</span></span><span class="ln" style="--i:1"><span class="dim">From the first pixel to the last index.</span></span><span class="ln" style="--i:2"><span>I own features end to end, and I'm on call for what I ship.</span></span></p>
+    </div></div>
+  </section>
+
+  <section id="stack" data-zone="edge" style="--h:270">
+    <div class="pin"><div class="panel">
+      <p class="label fade"><i></i>02 · Edge <em id="ms-edge"></em></p>
+      <h2 class="ln"><span>What runs at every hop</span></h2>
+      <ul class="layers" id="layers">
+        <li class="fade" style="--i:1"><b>Interface</b><span>React · Next.js · TypeScript · Tailwind</span></li>
+        <li class="fade" style="--i:2"><b>API</b><span>Node.js · GraphQL · REST · tRPC</span></li>
+        <li class="fade" style="--i:3"><b>Services</b><span>Go · Kafka · Redis · gRPC</span></li>
+        <li class="fade" style="--i:4"><b>Data</b><span>Postgres · ClickHouse · AWS · Terraform</span></li>
+      </ul>
+    </div></div>
+  </section>
+
+  <section id="work" data-zone="services" style="--h:440">
+    <div class="pin"><div class="panel">
+      <p class="label fade"><i></i>03 · Services <em id="ms-svc"></em></p>
+      <div class="projects fade" id="projects">
+        <article class="proj"><p class="meta">01 · 2025 · Payments</p><h3>Payments API</h3><p>Retries from clients and the provider created duplicate charges. Idempotency keys at the edge, an outbox table, webhooks replayed from a queue.</p><p><strong>Duplicate charges stopped, and payments stopped paging on-call.</strong></p><ul class="chips"><li>Node.js</li><li>Postgres</li><li>Kafka</li></ul></article>
+        <article class="proj"><p class="meta">02 · 2024 · Operations</p><h3>Realtime ops</h3><p>Support refreshed stale reports to see what was happening now. An event stream over WebSockets with windowed aggregates in ClickHouse.</p><p><strong>Incidents spotted on the dashboard before customers reported them.</strong></p><ul class="chips"><li>React</li><li>WebSockets</li><li>ClickHouse</li></ul></article>
+        <article class="proj"><p class="meta">03 · 2023 · Platform</p><h3>Design system</h3><p>Every page shipped its own buttons, spacing and accessibility bugs. Tokens first, accessible primitives, visual regression tests in CI.</p><p><strong>Screens assembled from parts; accessibility fixed once.</strong></p><ul class="chips"><li>React</li><li>Storybook</li><li>Radix</li></ul></article>
+        <article class="proj"><p class="meta">04 · 2022 · Discovery</p><h3>Search</h3><p>Search timed out under load and missed misspelled queries. A read-through cache, query rewriting and offline relevance evaluation.</p><p><strong>Faster results at peak, fewer zero-result searches.</strong></p><ul class="chips"><li>Go</li><li>OpenSearch</li><li>Redis</li></ul></article>
+      </div>
+      <p class="count fade" id="count" aria-hidden="true"><i></i><i></i><i></i><i></i></p>
+    </div></div>
+  </section>
+
+  <section id="experience" data-zone="data" style="--h:330">
+    <div class="pin"><div class="panel">
+      <p class="label fade"><i></i>04 · Data <em id="ms-data"></em></p>
+      <h2 class="ln"><span>SELECT * FROM career</span></h2>
+      <ol class="roles" id="roles">
+        <li class="fade" style="--i:1"><b>Company A</b><span>Senior Software Engineer</span><time>2024 – now</time></li>
+        <li class="fade" style="--i:2"><b>Company B</b><span>Software Engineer II (SDE-2)</span><time>2021 – 2024</time></li>
+        <li class="fade" style="--i:3"><b>Company C</b><span>Software Engineer</span><time>2019 – 2021</time></li>
+        <li class="fade" style="--i:4"><b>University</b><span>B.Tech, Computer Science</span><time>2015 – 2019</time></li>
+      </ol>
+    </div></div>
+  </section>
+
+  <section id="contact" data-zone="ok" style="--h:250">
+    <div class="pin"><div class="panel">
+      <p class="label fade"><i></i>05 · Response</p>
+      <h2 class="ok"><span class="ln"><span>200 OK</span></span></h2>
+      <p class="done-meta fade" id="done-meta">Round trip complete · 238 ms · 6 hops</p>
+      <a class="mail fade" style="--i:1" id="mail" href="mailto:alex@example.com">alex@example.com</a>
+      <div class="links fade" style="--i:2"><button type="button" id="copy">Copy email</button><a href="https://github.com/" target="_blank" rel="noopener">GitHub</a><a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a><a href="#work">Selected work</a></div>
+      <p class="note fade" style="--i:3">Sample persona: a senior / SDE-2 full-stack engineer. Every shape on this page is generated in code.</p>
+    </div></div>
+  </section>
+</main>
+
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const $ = (id) => document.getElementById(id);
+const root = document.documentElement;
+const small = matchMedia('(max-width: 760px)').matches;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const Q = small ? 0.5 : 1; // geometry density
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+
+/* ================================================================ content wiring (works even without WebGL) */
+const secs = [...document.querySelectorAll('main > section')];
+const H = secs.map((s) => +s.style.getPropertyValue('--h'));
+let tops = [], hs = [], vh = innerHeight;
+const measure = () => { vh = innerHeight; tops = secs.map((s) => s.offsetTop); hs = secs.map((s) => s.offsetHeight); };
+measure();
+addEventListener('resize', measure);
+$('copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('mail').textContent); $('copy').textContent = 'Copied'; } catch { $('copy').textContent = 'alex@example.com'; } setTimeout(() => ($('copy').textContent = 'Copy email'), 1800); });
+
+/* ================================================================ sound: nothing plays before the visitor turns it on */
+let actx, windBp, windGain, master;
+function ping(freq) {
+  if (!actx || actx.state !== 'running') return;
+  const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime;
+  o.type = 'sine'; o.frequency.value = freq; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.06, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
+  o.connect(g).connect(master); o.start(t); o.stop(t + 2.3);
+}
+$('snd').addEventListener('click', async () => {
+  if (!actx) {
+    actx = new AudioContext(); master = actx.createGain(); master.gain.value = 0; master.connect(actx.destination);
+    const lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 360; lp.connect(master);
+    for (const f of [55, 55.35, 82.4]) { const o = actx.createOscillator(), g = actx.createGain(); o.type = 'sawtooth'; o.frequency.value = f; g.gain.value = 0.025; o.connect(g).connect(lp); o.start(); }
+    const buf = actx.createBuffer(1, actx.sampleRate * 2, actx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const src = actx.createBufferSource(); src.buffer = buf; src.loop = true;
+    windBp = actx.createBiquadFilter(); windBp.type = 'bandpass'; windBp.Q.value = 0.8; windBp.frequency.value = 400;
+    windGain = actx.createGain(); windGain.gain.value = 0; src.connect(windBp).connect(windGain).connect(master); src.start();
+  }
+  const on = $('snd').getAttribute('aria-pressed') !== 'true';
+  if (on) { await actx.resume(); master.gain.setTargetAtTime(0.9, actx.currentTime, 0.4); } else master.gain.setTargetAtTime(0, actx.currentTime, 0.15);
+  $('snd').setAttribute('aria-pressed', on); $('snd').textContent = on ? 'Sound on' : 'Sound off';
+});
+
+/* ================================================================ renderer */
+const canvas = $('gl');
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' }); } catch { root.classList.add('nogl'); }
+
+const ZONE = ['#ffffff', '#8fd3ff', '#ffb35c', '#ff7ad9', '#7af0ff', '#ffffff'];
+const RING_COL = ['#ff7ad9', '#a58bff', '#5fe3ff', '#ffb35c'];
+const FOG = 0.0115, FOG_COL = new THREE.Color('#05070d');
+
+if (renderer) {
+  const PR = Math.min(devicePixelRatio, small ? 1.5 : 1.75);
+  renderer.setPixelRatio(PR);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.95;
+  const scene = new THREE.Scene();
+  scene.background = FOG_COL.clone();
+  scene.fog = new THREE.FogExp2(FOG_COL, FOG);
+  const camera = new THREE.PerspectiveCamera(small ? 72 : 58, 1, 0.1, 6000);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+  scene.add(new THREE.HemisphereLight(0x8fb4ff, 0x05070d, 0.25));
+
+  /* shared uniforms + GLSL helpers */
+  const S = { uTime: { value: 0 }, uPacket: { value: new THREE.Vector3() }, uFog: { value: FOG }, uFogColor: { value: FOG_COL }, uPR: { value: PR } };
+  const GL = /* glsl */ `
+    uniform float uTime; uniform vec3 uPacket; uniform float uFog; uniform vec3 uFogColor; uniform float uPR;
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    vec3 fogIt(vec3 c, float d) { float f = 1.0 - exp(-uFog * uFog * d * d); return mix(c, uFogColor, clamp(f, 0.0, 1.0)); }
+    float glowAt(vec3 w, float r) { vec3 d = w - uPacket; return exp(-dot(d, d) / (r * r)); }`;
+  const mat = (vertex, fragment, extra = {}, opts = {}) => new THREE.ShaderMaterial({ uniforms: { ...S, ...extra }, vertexShader: GL + vertex, fragmentShader: GL + fragment, ...opts });
+  const ADD = { transparent: true, depthWrite: false, blending: THREE.AdditiveBlending };
+
+  /* ================================================================ the route */
+  const P = [], v3 = (x, y, z) => P.push(new THREE.Vector3(x, y, z));
+  for (let i = 0; i <= 8; i++) v3(Math.sin(i * 0.8) * 5, Math.sin(i * 0.5) * 2.5, -i * 40);           // wire  z 0 → -320
+  [14, -22, 26, -10, 20, -26, 8].forEach((x, i) => v3(x, 8 + (i % 2) * 10, -370 - i * 55));          // edge  z -370 → -700
+  for (let i = 0; i < 6; i++) v3(0, 4, -750 - i * 55);                                               // services z -750 → -1025
+  for (let i = 1; i <= 6; i++) v3(Math.sin(i) * 7, 4 - i * 32, -1025 - i * 50);                      // data  y 4 → -188
+  const curve = new THREE.CatmullRomCurve3(P, false, 'centripetal');
+  const LEN = curve.getLength();
+  const uAtZ = (z) => { let lo = 0, hi = 1; for (let k = 0; k < 32; k++) { const m = (lo + hi) / 2; curve.getPointAt(m).z > z ? (lo = m) : (hi = m); } return (lo + hi) / 2; };
+  const UZ = { wire: uAtZ(-340), edge: uAtZ(-725), svc: uAtZ(-1025) };
+  const SEG = [0.004, 0.03, UZ.wire, UZ.edge, UZ.svc, 1]; // section i maps path SEG[i] → SEG[i+1]
+  const pinFrac = (h) => (h - 100) / h; // share of a section that is pinned
+  const samples = Array.from({ length: 900 }, (_, i) => curve.getPointAt(i / 899));
+  const distToPath = (x, y, z, flat) => { let m = 1e9; for (const p of samples) { const dx = p.x - x, dz = p.z - z, dy = flat ? 0 : p.y - y; const d = dx * dx + dy * dy + dz * dz; if (d < m) m = d; } return Math.sqrt(m); };
+  const frame = (u) => { const t = curve.getTangentAt(u), up = new THREE.Vector3(0, 1, 0), n1 = new THREE.Vector3().crossVectors(t, up).normalize(), n2 = new THREE.Vector3().crossVectors(n1, t); return { t, n1, n2 }; };
+  const box = new THREE.BoxGeometry(1, 1, 1), M = new THREE.Matrix4(), Qn = new THREE.Quaternion(), V = new THREE.Vector3(), Sc = new THREE.Vector3();
+
+  /* ================================================================ 1 · wire: a tunnel of fibres, pulses racing forward */
+  {
+    const n = Math.round(2600 * Q), geo = box.clone(), rand = new Float32Array(n);
+    const mesh = new THREE.InstancedMesh(geo, mat(
+      `attribute float aRand; varying float vZ, vR, vD; varying vec3 vW;
+       void main() { vZ = position.z; vR = aRand; vec4 w = modelMatrix * instanceMatrix * vec4(position, 1.0); vW = w.xyz; vec4 mv = viewMatrix * w; vD = -mv.z; gl_Position = projectionMatrix * mv; }`,
+      `varying float vZ, vR, vD; varying vec3 vW;
+       void main() {
+         float ph = fract(vZ - uTime * (0.25 + vR * 0.6) + vR * 7.0);
+         float pulse = pow(ph, 9.0) * 4.5;
+         vec3 base = mix(vec3(0.25, 0.6, 1.0), vec3(0.62, 0.45, 1.0), smoothstep(0.55, 1.0, vR));
+         base = mix(base, vec3(1.0), step(0.93, vR));
+         vec3 col = base * (0.05 + pulse) + vec3(0.85, 0.92, 1.0) * glowAt(vW, 6.0) * 0.5;
+         gl_FragColor = vec4(fogIt(col, vD), 1.0);
+       }`), n);
+    for (let i = 0; i < n; i++) {
+      const u = rnd() * (UZ.wire + 0.01), p = curve.getPointAt(u), { t, n1, n2 } = frame(u);
+      const a = rnd() * Math.PI * 2, r = 3.2 + Math.pow(rnd(), 1.7) * 20;
+      V.copy(p).addScaledVector(n1, Math.cos(a) * r).addScaledVector(n2, Math.sin(a) * r);
+      Qn.setFromUnitVectors(new THREE.Vector3(0, 0, 1), t);
+      const w = 0.035 + rnd() * 0.08; Sc.set(w, w, 6 + rnd() * 30);
+      mesh.setMatrixAt(i, M.compose(V, Qn, Sc)); rand[i] = rnd();
+    }
+    geo.setAttribute('aRand', new THREE.InstancedBufferAttribute(rand, 1));
+    mesh.frustumCulled = false; scene.add(mesh);
+  }
+
+  /* ================================================================ 2 · edge: a night city of servers, traffic made of other requests */
+  const FLOOR = -60;
+  {
+    const list = [];
+    for (let k = -13; k <= 13; k++) for (let j = 0; j < 24; j++) {
+      const x = k * 18 + (rnd() - 0.5) * 3, z = -326 - j * 18 + (rnd() - 0.5) * 3;
+      if (distToPath(x, 0, z, true) < 17) continue;
+      const far = Math.abs(x) / 240, h = 22 + Math.pow(rnd(), 1.8) * 175 * (1 - far * 0.5), w = 8 + rnd() * 5, d = 8 + rnd() * 5;
+      list.push([x, FLOOR + h / 2, z, w, h, d]);
+    }
+    const geo = box.clone(), rand = new Float32Array(list.length);
+    const mesh = new THREE.InstancedMesh(geo, mat(
+      `attribute float aRand; varying vec3 vW, vN; varying float vR, vD;
+       void main() { vN = normal; vR = aRand; vec4 w = modelMatrix * instanceMatrix * vec4(position, 1.0); vW = w.xyz; vec4 mv = viewMatrix * w; vD = -mv.z; gl_Position = projectionMatrix * mv; }`,
+      `varying vec3 vW, vN; varying float vR, vD;
+       void main() {
+         vec3 n = normalize(vN);
+         float side = 1.0 - step(0.5, abs(n.y));
+         vec2 f = abs(n.x) > 0.5 ? vec2(vW.z, vW.y) : vec2(vW.x, vW.y);
+         vec2 cs = vec2(1.9, 3.1), cell = floor(f / cs), g = fract(f / cs);
+         float win = step(0.16, g.x) * step(g.x, 0.84) * step(0.2, g.y) * step(g.y, 0.72);
+         float h = hash(cell + vR * 91.7);
+         float floorBand = step(0.55, hash(vec2(cell.y, vR * 13.0)));
+         float lit = step(0.6, h) * win * side * mix(0.35, 1.0, floorBand);
+         float flick = 0.8 + 0.2 * sin(uTime * (1.5 + h * 5.0) + h * 40.0);
+         vec3 warm = mix(vec3(1.0, 0.58, 0.22), vec3(1.0, 0.86, 0.66), fract(h * 7.3));
+         vec3 wc = mix(warm, vec3(0.5, 0.78, 1.0), step(0.88, fract(h * 13.1)));
+         float hgt = clamp((vW.y + 60.0) / 210.0, 0.0, 1.0);
+         vec3 facade = mix(vec3(0.012, 0.016, 0.028), vec3(0.05, 0.06, 0.09), hgt) * (0.7 + 0.3 * abs(n.x));
+         vec3 col = facade + wc * lit * 2.2 * flick;
+         col += step(0.5, n.y) * vec3(0.04, 0.05, 0.08);
+         col += vec3(1.0, 0.86, 0.7) * glowAt(vW, 20.0) * 0.18;
+         gl_FragColor = vec4(fogIt(col, vD), 1.0);
+       }`), list.length);
+    list.forEach(([x, y, z, w, h, d], i) => { mesh.setMatrixAt(i, M.compose(V.set(x, y, z), Qn.identity(), Sc.set(w, h, d))); rand[i] = rnd(); });
+    geo.setAttribute('aRand', new THREE.InstancedBufferAttribute(rand, 1));
+    mesh.frustumCulled = false; scene.add(mesh);
+
+    // street floor: dark asphalt, faint lane lines, a pool of light under the request
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(700, 600).rotateX(-Math.PI / 2), mat(
+      `varying vec3 vW; varying float vD; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; vec4 mv = viewMatrix * w; vD = -mv.z; gl_Position = projectionMatrix * mv; }`,
+      `varying vec3 vW; varying float vD;
+       void main() {
+         vec2 q = abs(fract((vW.xz - 9.0) / 18.0) - 0.5) * 18.0;
+         float lane = smoothstep(0.45, 0.0, min(q.x, q.y));
+         vec3 col = vec3(0.008, 0.011, 0.02) + vec3(0.25, 0.4, 0.75) * lane * 0.12;
+         vec3 lp = vec3(uPacket.x, vW.y, uPacket.z);
+         col += vec3(1.0, 0.75, 0.5) * exp(-dot(vW - lp, vW - lp) / 900.0) * 0.12;
+         gl_FragColor = vec4(fogIt(col, vD), 1.0);
+       }`));
+    floor.position.set(0, FLOOR, -530); scene.add(floor);
+
+    // traffic: other requests moving along the streets (head and tail lights)
+    const n = Math.round(900 * Q), g = new THREE.InstancedBufferGeometry();
+    g.setIndex(box.index); g.setAttribute('position', box.attributes.position); g.instanceCount = n;
+    const base = new Float32Array(n * 3), dir = new Float32Array(n * 3), sp = new Float32Array(n * 2), col = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const alongZ = rnd() < 0.55, fwd = rnd() < 0.5 ? 1 : -1, side = fwd * 1.6;
+      if (alongZ) { const k = Math.floor(rnd() * 26) - 13; base.set([k * 18 + 9 + side, FLOOR + 0.6, -530], i * 3); dir.set([0, 0, fwd], i * 3); sp.set([8 + rnd() * 22, 430], i * 2); }
+      else { const j = Math.floor(rnd() * 23); base.set([0, FLOOR + 0.6, -326 - j * 18 - 9 + side], i * 3); dir.set([fwd, 0, 0], i * 3); sp.set([8 + rnd() * 22, 480], i * 2); }
+      col.set(fwd > 0 ? [2.6, 2.2, 1.7] : [2.6, 0.35, 0.22], i * 3);
+      dir[i * 3 + 1] = rnd() * 1000; // phase, stored in the unused y of the direction
+    }
+    g.setAttribute('aBase', new THREE.InstancedBufferAttribute(base, 3));
+    g.setAttribute('aDir', new THREE.InstancedBufferAttribute(dir, 3));
+    g.setAttribute('aSp', new THREE.InstancedBufferAttribute(sp, 2));
+    g.setAttribute('aCol', new THREE.InstancedBufferAttribute(col, 3));
+    const cars = new THREE.Mesh(g, mat(
+      `attribute vec3 aBase, aDir, aCol; attribute vec2 aSp; varying vec3 vC; varying float vD;
+       void main() {
+         vec3 d = vec3(aDir.x, 0.0, aDir.z);
+         vec3 lp = abs(d.x) > 0.5 ? position.zyx : position;
+         lp *= vec3(0.35, 0.18, 2.2);
+         float s = mod(uTime * aSp.x + aDir.y, aSp.y) - aSp.y * 0.5;
+         vec3 w = aBase + d * s + lp;
+         vC = aCol; vec4 mv = viewMatrix * vec4(w, 1.0); vD = -mv.z; gl_Position = projectionMatrix * mv;
+       }`,
+      `varying vec3 vC; varying float vD; void main() { gl_FragColor = vec4(fogIt(vC, vD), 1.0); }`));
+    cars.frustumCulled = false; scene.add(cars);
+  }
+
+  /* ================================================================ 3 · services: gyroscopes that align as the request arrives */
+  const workPin = pinFrac(H[3]);
+  const rings = RING_COL.map((c, k) => {
+    const u = lerp(SEG[3], SEG[4], workPin * (k + 0.5) / 4), p = curve.getPointAt(u);
+    const g = new THREE.Group(); g.position.copy(p); scene.add(g);
+    const chrome = new THREE.MeshStandardMaterial({ color: '#c8d0dc', metalness: 1, roughness: 0.2, envMapIntensity: 0.55 });
+    const glow = new THREE.MeshBasicMaterial({ color: new THREE.Color(c) });
+    const parts = [
+      new THREE.Mesh(new THREE.TorusGeometry(15, 0.5, 20, 180), chrome),
+      new THREE.Mesh(new THREE.TorusGeometry(12, 0.32, 16, 160), chrome),
+      new THREE.Mesh(new THREE.TorusGeometry(9.6, 0.09, 8, 200), glow),
+    ];
+    const beads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.42, 12, 10), glow, 8);
+    for (let b = 0; b < 8; b++) beads.setMatrixAt(b, M.compose(V.set(Math.cos(b / 8 * Math.PI * 2) * 15, Math.sin(b / 8 * Math.PI * 2) * 15, 0), Qn.identity(), Sc.set(1, 1, 1)));
+    parts[0].add(beads);
+    parts.forEach((m) => g.add(m));
+    const rates = parts.map(() => [0.2 + rnd() * 0.5, 0.15 + rnd() * 0.45, 0.1 + rnd() * 0.3].map((r) => r * (rnd() < 0.5 ? -1 : 1)));
+    return { u, p, g, parts, rates, glow, col: new THREE.Color(c), passed: false, align: 0 };
+  });
+  const E = new THREE.Euler(), QA = new THREE.Quaternion();
+
+  /* ================================================================ 4 · data: a crystal lattice of records, a query scan, one lit record per role */
+  const dataPin = pinFrac(H[4]);
+  const records = [0, 1, 2, 3].map((k) => { const u = lerp(SEG[4], SEG[5], dataPin * (k + 0.5) / 4); const p = curve.getPointAt(u), { n1 } = frame(u); return p.clone().addScaledVector(n1, k % 2 ? -9 : 9).add(new THREE.Vector3(0, 2, 0)); });
+  const cellMat = (hotAttr) => mat(
+    `attribute float aRand; ${hotAttr ? 'attribute float aHot;' : ''} varying vec3 vL, vW; varying float vR, vD, vH;
+     void main() { vL = position; vR = aRand; vH = ${hotAttr ? 'aHot' : '0.0'}; vec4 w = modelMatrix * instanceMatrix * vec4(position, 1.0); vW = w.xyz; vec4 mv = viewMatrix * w; vD = -mv.z; gl_Position = projectionMatrix * mv; }`,
+    `uniform float uScan; varying vec3 vL, vW; varying float vR, vD, vH;
+     void main() {
+       vec3 a = abs(vL) * 2.0;
+       float e1 = smoothstep(0.82, 0.97, a.x), e2 = smoothstep(0.82, 0.97, a.y), e3 = smoothstep(0.82, 0.97, a.z);
+       float edge = max(max(e1 * e2, e2 * e3), e1 * e3);
+       float occ = step(0.82, vR);
+       float scan = exp(-pow((vW.y - uScan) / 3.5, 2.0));
+       vec3 c = mix(vec3(0.35, 0.85, 1.0), vec3(0.7, 0.6, 1.0), step(0.94, vR));
+       vec3 col = c * (0.02 + edge * (0.22 + occ * 0.9)) + c * scan * (0.08 + edge * 1.2) * (0.4 + occ);
+       col += vec3(0.9, 0.97, 1.0) * glowAt(vW, 10.0) * (0.05 + edge * 0.6);
+       col += vec3(1.0) * vH * (0.25 + edge * 3.0);
+       float f = 1.0 - exp(-uFog * uFog * vD * vD);
+       gl_FragColor = vec4(col * (1.0 - f), 1.0);
+     }`, { uScan: S.uScan || (S.uScan = { value: 0 }) }, ADD);
+  {
+    const step = small ? 13 : 9.5, list = [];
+    for (let x = -66; x <= 66; x += step) for (let y = -236; y <= 28; y += step) for (let z = -1032; z >= -1345; z -= step) {
+      if (rnd() > 0.5) continue;
+      if (distToPath(x, y, z) < 10) continue;
+      list.push([x + (rnd() - 0.5) * 1.5, y, z]);
+    }
+    const geo = box.clone(), rand = new Float32Array(list.length);
+    const mesh = new THREE.InstancedMesh(geo, cellMat(false), list.length);
+    list.forEach(([x, y, z], i) => { const s = 1.6 + rnd() * 1.2; mesh.setMatrixAt(i, M.compose(V.set(x, y, z), Qn.identity(), Sc.set(s, s, s))); rand[i] = rnd(); });
+    geo.setAttribute('aRand', new THREE.InstancedBufferAttribute(rand, 1));
+    mesh.frustumCulled = false; scene.add(mesh);
+  }
+  const hotGeo = box.clone(), hot = new Float32Array(4), hotAttr = new THREE.InstancedBufferAttribute(hot, 1);
+  hotAttr.setUsage(THREE.DynamicDrawUsage);
+  hotGeo.setAttribute('aRand', new THREE.InstancedBufferAttribute(new Float32Array([0.9, 0.9, 0.9, 0.9]), 1));
+  hotGeo.setAttribute('aHot', hotAttr);
+  const hotMesh = new THREE.InstancedMesh(hotGeo, cellMat(true), 4);
+  records.forEach((p, i) => hotMesh.setMatrixAt(i, M.compose(p, Qn.identity(), Sc.set(3.4, 3.4, 3.4))));
+  hotMesh.frustumCulled = false; scene.add(hotMesh);
+
+  /* ================================================================ dust: depth and parallax everywhere */
+  {
+    const n = Math.round(3000 * Q), pos = new Float32Array(n * 3), aS = new Float32Array(n), aR = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      const p = curve.getPointAt(rnd()), d = new THREE.Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).normalize().multiplyScalar(4 + Math.pow(rnd(), 0.8) * 70);
+      pos.set([p.x + d.x, p.y + d.y, p.z + d.z], i * 3); aS[i] = 0.6 + rnd() * 1.8; aR[i] = rnd();
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('aSize', new THREE.BufferAttribute(aS, 1)); g.setAttribute('aRand', new THREE.BufferAttribute(aR, 1));
+    const pts = new THREE.Points(g, mat(
+      `attribute float aSize, aRand; varying float vA, vD;
+       void main() { vec4 mv = modelViewMatrix * vec4(position + vec3(0.0, sin(uTime * 0.3 + aRand * 20.0) * 0.8, 0.0), 1.0); vD = -mv.z; gl_PointSize = min(14.0, aSize * uPR * 30.0 / vD); vA = 0.45 + 0.55 * (0.5 + 0.5 * sin(uTime * (0.6 + aRand) + aRand * 30.0)); gl_Position = projectionMatrix * mv; }`,
+      `varying float vA, vD; void main() { float a = smoothstep(0.5, 0.0, length(gl_PointCoord - 0.5)); float f = 1.0 - exp(-uFog * uFog * vD * vD); gl_FragColor = vec4(vec3(0.75, 0.86, 1.0) * a * vA * 0.32 * (1.0 - f), 1.0); }`, {}, ADD));
+    pts.frustumCulled = false; scene.add(pts);
+  }
+
+  /* ================================================================ the request: a hot core, a halo, a light that lights the world, a trail */
+  const glowTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.18, 'rgba(255,255,255,.8)'); gr.addColorStop(0.45, 'rgba(255,255,255,.16)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+  const sprite = (scale, color, opacity = 1) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color, ...ADD, opacity, fog: false })); s.scale.setScalar(scale); scene.add(s); return s; };
+  const core = sprite(1.3, new THREE.Color(5, 5, 5)), halo = sprite(4.5, new THREE.Color(ZONE[1]), 0.28);
+  const light = new THREE.PointLight(0xdfe9ff, 700, 0, 2); scene.add(light);
+  const TN = 120, trailPos = new Float32Array(TN * 3), trailI = new Float32Array(TN).map((_, i) => i / (TN - 1));
+  const trailGeo = new THREE.BufferGeometry(); trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPos, 3)); trailGeo.setAttribute('aI', new THREE.BufferAttribute(trailI, 1));
+  const trailMat = mat(
+    `attribute float aI; varying float vI; void main() { vI = aI; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = min(26.0, uPR * (0.15 + aI) * 110.0 / -mv.z); gl_Position = projectionMatrix * mv; }`,
+    `uniform vec3 uCol; varying float vI; void main() { float a = smoothstep(0.5, 0.0, length(gl_PointCoord - 0.5)); gl_FragColor = vec4(uCol * a * vI * vI * 0.55, 1.0); }`, { uCol: { value: new THREE.Color(ZONE[1]) } }, ADD);
+  const trail = new THREE.Points(trailGeo, trailMat); trail.frustumCulled = false; scene.add(trail);
+
+  /* ================================================================ 200 OK: the whole route as a map, the response flying home */
+  const routeMat = mat(
+    `varying float vU; varying float vD; void main() { vU = uv.x; vec4 mv = modelViewMatrix * vec4(position, 1.0); vD = -mv.z; gl_Position = projectionMatrix * mv; }`,
+    `uniform float uResp, uOp; varying float vU;
+     void main() {
+       vec3 c = mix(vec3(0.56, 0.83, 1.0), vec3(1.0, 0.7, 0.36), smoothstep(0.18, 0.4, vU));
+       c = mix(c, vec3(1.0, 0.48, 0.85), smoothstep(0.45, 0.62, vU));
+       c = mix(c, vec3(0.48, 0.94, 1.0), smoothstep(0.7, 0.85, vU));
+       float back = step(uResp, vU);
+       float head = exp(-pow((vU - uResp) * 60.0, 2.0));
+       gl_FragColor = vec4(c * (0.35 + back * 1.4) * uOp + vec3(1.0) * head * 5.0 * uOp, 1.0);
+     }`, { uResp: { value: 1 }, uOp: { value: 0 } }, ADD);
+  const routeMesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 1400, 1.1, 6, false), routeMat);
+  routeMesh.frustumCulled = false; routeMesh.visible = false; scene.add(routeMesh);
+  const resp = sprite(30, new THREE.Color(3.5, 3.5, 3.5)); resp.visible = false;
+
+  /* ================================================================ post: bloom, chromatic aberration on speed, grain, vignette */
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), small ? 0.55 : 0.7, 0.45, 0.42);
+  composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+  const fin = new ShaderPass({
+    uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uVel: { value: 0 } },
+    vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime, uVel; varying vec2 vUv;
+      float h(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+      void main() {
+        vec2 c = vUv - 0.5; float r = length(c);
+        vec2 off = c * (0.0012 + uVel * 0.014) * (0.4 + r);
+        vec3 col = vec3(texture2D(tDiffuse, vUv + off).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - off).b);
+        col *= 1.0 - smoothstep(0.42, 1.05, r) * 0.6;
+        col += (h(vUv * 1000.0 + fract(uTime) * 91.0) - 0.5) * 0.04;
+        col += (h(gl_FragCoord.xy) - 0.5) / 255.0;
+        gl_FragColor = vec4(col, 1.0);
+      }`,
+  });
+  composer.addPass(fin);
+
+  function resize() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    renderer.setSize(w, h, false); composer.setSize(w, h);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  let lastW = 0, lastH = 0;
+  const maybeResize = () => { const w = canvas.clientWidth, h = canvas.clientHeight; if (w !== lastW || Math.abs(h - lastH) > 140) { lastW = w; lastH = h; resize(); } };
+  maybeResize();
+
+  /* ================================================================ labels pinned to rings and records */
+  const mkTag = (html) => { const el = document.createElement('div'); el.className = 'tag'; el.innerHTML = html; el.setAttribute('aria-hidden', 'true'); document.body.append(el); return el; };
+  const ringTags = [...document.querySelectorAll('.proj h3')].map((h, k) => mkTag(`${h.textContent} <small>· svc-0${k + 1}</small>`));
+  const recTags = [...document.querySelectorAll('.roles li')].map((li) => mkTag(`${li.querySelector('b').textContent} <small>· ${li.querySelector('time').textContent}</small>`));
+  const place = (el, p, on) => {
+    V.copy(p).project(camera);
+    const sx = ((V.x + 1) / 2) * innerWidth, sy = ((1 - V.y) / 2) * innerHeight;
+    const clear = small ? sy < innerHeight * 0.42 && sy > 70 && sx > 0 && sx < innerWidth - 170 : sx > innerWidth * 0.52 && sx < innerWidth - 220;
+    const vis = on && V.z < 1 && clear;
+    el.classList.toggle('on', vis);
+    if (vis) el.style.transform = `translate(${sx + 14}px, ${sy - 8}px)`;
+  };
+
+  /* ================================================================ the loop: scroll → path → camera */
+  const pathU = (y) => { for (let i = 0; i < 5; i++) if (y < tops[i + 1]) return lerp(SEG[i], SEG[i + 1], clamp((y - tops[i]) / (tops[i + 1] - tops[i]))); return 1; };
+  const OV = { pos: new THREE.Vector3(), look: new THREE.Vector3(0, -50, -690) };
+  const setOV = () => (camera.aspect < 1 ? OV.pos.set(150, 1150, 230) : OV.pos.set(860, 540, 140));
+  let uS = pathU(scrollY), prevU = uS, vel = 0, roll = 0, fov = camera.fov, mx = 0, my = 0, pmx = 0, pmy = 0, t = 0, last = performance.now(), zoneNow = -1, firstFrame = true;
+  addEventListener('pointermove', (e) => { mx = (e.clientX / innerWidth - 0.5) * 2; my = (e.clientY / innerHeight - 0.5) * 2; }, { passive: true });
+  const P0 = new THREE.Vector3(), P1 = new THREE.Vector3(), LOOK = new THREE.Vector3(), T0 = new THREE.Vector3(), T1 = new THREE.Vector3();
+  const routeLis = [...document.querySelectorAll('.route li')], layerLis = [...$('layers').children], roleLis = [...$('roles').children], projs = [...$('projects').children], countIs = [...$('count').children];
+  const msEls = { 1: $('ms-wire'), 2: $('ms-edge'), 3: $('ms-svc'), 4: $('ms-data') };
+  let lastIdx = {};
+  const setOn = (list, idx, key) => { if (lastIdx[key] === idx) return; lastIdx[key] = idx; list.forEach((el, i) => el.classList.toggle('on', i === idx)); };
+
+  function loop(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now; t += dt;
+    maybeResize();
+    const y = scrollY;
+    root.classList.toggle('scrolled', y > 40);
+
+    // which section, how far in
+    let sec = 0; for (let i = 0; i < secs.length; i++) if (y >= tops[i] - vh * 0.5) sec = i;
+    secs.forEach((s, i) => s.classList.toggle('in', y >= tops[i] - vh * 0.4 && y < tops[i] + hs[i] - vh * 0.45));
+    const q = (i) => clamp((y - tops[i]) / Math.max(1, hs[i] - vh));
+
+    // path position (damped), speed, overview blend
+    const target = pathU(y);
+    uS += (target - uS) * (reduce ? 1 : 1 - Math.exp(-dt * 5));
+    const speed = Math.abs(uS - prevU) * LEN / Math.max(dt, 1e-3); prevU = uS;
+    vel += (Math.min(1, speed / 160) - vel) * (1 - Math.exp(-dt * 4));
+    const ovq = q(5), ov = smooth(0, 0.55, ovq), ovE = ov;
+    const respU = 1 - smooth(0.3, 0.92, ovq);
+
+    // request + trail
+    curve.getPointAt(uS, P0);
+    S.uPacket.value.copy(P0); core.position.copy(P0); halo.position.copy(P0); light.position.copy(P0);
+    for (let j = 0; j < TN; j++) { curve.getPointAt(clamp(uS - (1 - trailI[j]) * (36 / LEN)), P1); trailPos.set([P1.x, P1.y, P1.z], j * 3); }
+    trailGeo.attributes.position.needsUpdate = true;
+    const zone = ov > 0.02 ? 5 : uS < SEG[1] + 0.002 && sec === 0 ? 0 : uS < UZ.wire ? 1 : uS < UZ.edge ? 2 : uS < UZ.svc ? 3 : 4;
+    const zc = new THREE.Color(zone === 3 ? RING_COL[clamp(Math.floor(q(3) * 4), 0, 3)] : ZONE[zone === 0 ? 1 : zone]);
+    halo.material.color.lerp(zc, 0.06); trailMat.uniforms.uCol.value.lerp(zc, 0.06); light.color.lerp(zc.clone().lerp(new THREE.Color('#ffffff'), 0.5), 0.06);
+    core.scale.setScalar(1.3 + Math.sin(t * 3) * 0.12 + vel * 0.8);
+
+    // camera: trail the request along the route, bank into turns, breathe with the pointer
+    pmx += (mx - pmx) * 0.05; pmy += (my - pmy) * 0.05;
+    curve.getPointAt(clamp(uS - 10 / LEN), P1); P1.y += 1.8;
+    const { n1 } = frame(clamp(uS - 10 / LEN));
+    P1.addScaledVector(n1, pmx * 1.4); P1.y -= pmy * 0.9;
+    curve.getPointAt(clamp(uS + 28 / LEN), LOOK);
+    if (zone === 0) { P1.y += Math.sin(t * 0.6) * 0.3; }
+    setOV();
+    camera.position.lerpVectors(P1, OV.pos, ovE);
+    LOOK.lerp(OV.look, ovE);
+    camera.up.set(0, 1, 0); camera.lookAt(LOOK);
+    curve.getTangentAt(clamp(uS), T0); curve.getTangentAt(clamp(uS + 0.025), T1);
+    const turn = T0.x * T1.z - T0.z * T1.x;
+    roll += (clamp(-turn * 5, -0.32, 0.32) * (1 - ovE) * (reduce ? 0 : 1) - roll) * (1 - Math.exp(-dt * 3));
+    camera.rotateZ(roll);
+    const baseFov = small ? 72 : 58;
+    fov += (lerp(baseFov + (reduce ? 0 : vel * 16), small ? 46 : 38, ovE) - fov) * (1 - Math.exp(-dt * 5));
+    camera.fov = fov; camera.updateProjectionMatrix();
+
+    // fog opens up for the map
+    const fogD = FOG * Math.pow(0.00055 / FOG, Math.pow(ovE, 0.35)); scene.fog.density = fogD; S.uFog.value = fogD;
+    light.intensity = lerp(700, 0, ovE);
+
+    // services: rings spin freely, then lock into a portal as the request arrives
+    rings.forEach((r, k) => {
+      const d = Math.abs(uS - r.u) * LEN;
+      const a = smooth(80, 14, d) * (1 - ovE * 0.6);
+      r.align += (a - r.align) * (1 - Math.exp(-dt * 4));
+      r.parts.forEach((m, i) => { const rt = r.rates[i]; E.set(t * rt[0] + k, t * rt[1] + i, t * rt[2]); QA.setFromEuler(E); m.quaternion.slerpQuaternions(QA, Qn.identity(), r.align); });
+      r.parts[2].rotation.z += dt * 0.8;
+      r.glow.color.copy(r.col).multiplyScalar(0.7 + r.align * 2.2);
+      if (!r.passed && uS > r.u) { r.passed = true; ping([523.25, 587.33, 659.25, 783.99][k]); }
+      if (uS < r.u - 0.002) r.passed = false;
+      place(ringTags[k], r.p.clone().add(V.set(16, 10, 0)), sec === 3 && d < 160 && ovE < 0.1);
+    });
+
+    // data: the scan follows the request; each role's record lights as it passes, and stays lit
+    S.uScan.value = P0.y;
+    records.forEach((p, k) => { const d = P0.distanceTo(p); hot[k] = Math.max(smooth(40, 6, d) * 1.6, uS > lerp(SEG[4], SEG[5], dataPin * (k + 0.5) / 4) ? 0.45 : 0); place(recTags[k], p, sec === 4 && d < 120 && ovE < 0.1); });
+    hotAttr.needsUpdate = true;
+
+    // 200 OK
+    routeMesh.visible = resp.visible = ovE > 0.01;
+    routeMat.uniforms.uOp.value = ovE; routeMat.uniforms.uResp.value = respU;
+    if (resp.visible) { curve.getPointAt(respU, P1); resp.position.copy(P1); resp.material.opacity = ovE; }
+    core.visible = halo.visible = trail.visible = ovE < 0.98;
+
+    // HUD + panels
+    if (zone !== zoneNow) { zoneNow = zone; routeLis.forEach((li) => { const r = +li.dataset.r; li.classList.toggle('on', r === zone); li.classList.toggle('past', r < zone); li.style.setProperty('--z', ZONE[r]); }); }
+    const ms = Math.round(uS * 180 + (1 - respU) * 58);
+    $('req').innerHTML = `GET /alex <em>· ${ms} ms</em>`;
+    if (msEls[zone]) msEls[zone].textContent = `· ${ms} ms`;
+    setOn(layerLis, clamp(Math.floor(q(2) * 4), 0, 3), 'layers');
+    const pi = clamp(Math.floor(q(3) * 4), 0, 3); setOn(projs, pi, 'proj'); setOn(countIs, pi, 'count');
+    setOn(roleLis, clamp(Math.floor(q(4) * 4), 0, 3), 'roles');
+
+    // sound follows speed
+    if (actx && windGain) { windGain.gain.setTargetAtTime(0.015 + vel * 0.2, actx.currentTime, 0.1); windBp.frequency.setTargetAtTime(280 + vel * 2200, actx.currentTime, 0.1); }
+
+    S.uTime.value = t; fin.uniforms.uTime.value = t; fin.uniforms.uVel.value = reduce ? 0 : vel;
+    composer.render();
+    if (firstFrame) { firstFrame = false; root.classList.add('ready'); }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+} else {
+  // No WebGL: the panels still reveal as you scroll.
+  const tick = () => { const y = scrollY; secs.forEach((s, i) => s.classList.toggle('in', y >= tops[i] - vh * 0.4 && y < tops[i] + hs[i] - vh * 0.45)); requestAnimationFrame(tick); };
+  tick();
+}
+</script>

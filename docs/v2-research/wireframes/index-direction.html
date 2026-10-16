@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wireframe A · Index</title>
+<style>
+  :root {
+    --bg: #ecebe8; --ink: #121212; --muted: #6b6862; --line: #cfccc5; --accent: #ff5a1f;
+    --note: #fff3a8; --note-ink: #4a3f00;
+    --display: "Helvetica Neue", "Inter", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--display); }
+  a { color: inherit; }
+  .mono { font-family: var(--mono); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+
+  /* ---- annotations */
+  .note { position: absolute; z-index: 30; max-width: 260px; padding: 8px 10px; background: var(--note); color: var(--note-ink);
+          font: 12px/1.4 var(--mono); border-radius: 6px; box-shadow: 0 2px 0 rgba(0,0,0,.08); }
+  .note b { display: block; margin-bottom: 2px; text-transform: uppercase; letter-spacing: .06em; font-size: 10.5px; }
+  body.clean .note, body.clean .tag { display: none; }
+  .gl { outline: 1.5px dashed #9a958c; outline-offset: -1.5px; }
+  .tag { position: absolute; font: 10.5px var(--mono); background: var(--ink); color: #fff; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+
+  /* ---- chrome */
+  .bar { position: fixed; inset: 16px 20px auto; display: flex; justify-content: space-between; align-items: center; z-index: 40; pointer-events: none; }
+  .bar > * { pointer-events: auto; }
+  .brand { font-weight: 800; font-size: 18px; letter-spacing: -.02em; }
+  .pill { display: flex; gap: 4px; padding: 4px; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); border-radius: 999px; border: 1px solid var(--line); }
+  .pill a { padding: 8px 14px; border-radius: 999px; text-decoration: none; font: 12px var(--mono); text-transform: uppercase; }
+  .pill a.on { background: var(--ink); color: #fff; }
+  .toggle { font: 11px var(--mono); padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+  .legend { position: fixed; left: 20px; bottom: 16px; z-index: 40; display: flex; gap: 8px; align-items: center; }
+
+  /* ---- robot placeholder: the one 3D actor, positioned by section */
+  #robot { position: fixed; z-index: 25; width: 110px; height: 150px; left: 0; top: 0; transition: transform .9s cubic-bezier(.2,.8,.2,1); pointer-events: none; }
+  #robot svg { width: 100%; height: 100%; }
+  #robot .tag { left: 50%; top: -22px; transform: translateX(-50%); background: var(--accent); }
+
+  section { position: relative; padding: 0 20px; }
+
+  /* ---- hero */
+  .hero { min-height: 100svh; display: grid; align-content: end; padding-bottom: 7vh; }
+  .meta { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; border-top: 1px solid var(--line); padding-top: 14px; margin-bottom: 2vh; }
+  .meta div span { display: block; color: var(--muted); margin-bottom: 4px; }
+  .name { margin: 0; font-weight: 800; font-size: clamp(64px, 17.5vw, 290px); line-height: .84; letter-spacing: -.055em; }
+  .role { margin-top: 2vh; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .cta { display: inline-flex; gap: 10px; align-items: center; padding: 14px 20px; border-radius: 999px; background: var(--ink); color: #fff; text-decoration: none; font: 13px var(--mono); text-transform: uppercase; }
+  .cta i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  /* ---- work: sticky horizontal gallery, cards skew with scroll velocity */
+  .work { height: 360vh; padding: 0; }
+  .work .stick { position: sticky; top: 0; height: 100svh; overflow: hidden; display: grid; grid-template-rows: auto 1fr; padding: 90px 0 40px; }
+  .work header { display: flex; justify-content: space-between; align-items: end; padding: 0 20px; }
+  .work h2 { margin: 0; font-size: clamp(40px, 7vw, 110px); letter-spacing: -.05em; line-height: .9; }
+  .track { display: flex; gap: 4vw; align-items: center; padding: 0 30vw 0 20px; will-change: transform; perspective: 1400px; }
+  .card { flex: 0 0 auto; width: min(34vw, 460px); transform-style: preserve-3d; }
+  .shot { aspect-ratio: 4 / 5; border-radius: 14px; position: relative; overflow: hidden; display: grid; place-items: center;
+          font: 600 13px var(--mono); color: rgba(255,255,255,.9); text-transform: uppercase; letter-spacing: .08em; }
+  .shot::after { content: "screenshot of the live demo"; position: absolute; bottom: 12px; left: 12px; font-size: 10px; opacity: .8; }
+  .num { font-weight: 800; font-size: clamp(60px, 9vw, 140px); letter-spacing: -.06em; line-height: .8; margin: 0 0 10px; }
+  .card h3 { margin: 12px 0 4px; font-size: 22px; letter-spacing: -.02em; }
+  .card p { margin: 0 0 8px; color: var(--muted); font-size: 14px; max-width: 34ch; }
+  .links { display: flex; gap: 12px; }
+
+  /* ---- experience index */
+  .exp { padding-top: 16vh; padding-bottom: 16vh; }
+  .exp h2, .skills h2 { font-size: clamp(36px, 6vw, 90px); letter-spacing: -.05em; margin: 0 0 4vh; line-height: .9; }
+  .row { display: grid; grid-template-columns: 70px 1.3fr 1.2fr 1fr; gap: 16px; padding: 20px 0; border-top: 1px solid var(--line); align-items: baseline; transition: background .2s, padding .2s; }
+  .row:last-child { border-bottom: 1px solid var(--line); }
+  .row:hover { background: #fff; padding-left: 12px; }
+  .row strong { font-size: clamp(20px, 2.4vw, 34px); letter-spacing: -.03em; }
+  .row.now strong::after { content: " · now"; color: var(--accent); font: 12px var(--mono); }
+
+  /* ---- skills */
+  .skills { padding-bottom: 14vh; }
+  .grp { display: grid; grid-template-columns: 220px 1fr; gap: 16px; padding: 16px 0; border-top: 1px solid var(--line); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips span { padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; background: #f6f5f2; }
+
+  /* ---- contact */
+  .contact { min-height: 90svh; display: grid; align-content: center; background: var(--ink); color: #fff; padding-top: 10vh; padding-bottom: 10vh; }
+  .contact .big { font-weight: 800; font-size: clamp(34px, 8.5vw, 150px); letter-spacing: -.05em; line-height: .9; text-decoration: none; word-break: break-all; }
+  .contact .mono { color: #aaa; }
+
+  @media (max-width: 760px) {
+    .meta { grid-template-columns: 1fr 1fr; }
+    .card { width: 74vw; }
+    .row { grid-template-columns: 44px 1fr; }
+    .row span.mono:last-child, .row .role2 { grid-column: 2; }
+    .grp { grid-template-columns: 1fr; }
+    .pill a { padding: 8px 10px; }
+    #robot { width: 80px; height: 110px; }
+  }
+  @media (max-width: 760px) { .note { position: relative !important; inset: auto !important; display: block; margin: 10px 0; max-width: none; } }
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="brand">AR</div>
+  <nav class="pill" aria-label="Sections"><a href="#top" class="on">Index</a><a href="#work">Work</a><a href="#exp">Experience</a><a href="#contact">Contact</a></nav>
+  <button class="toggle" type="button">♪ Sound off</button>
+</div>
+<div class="legend"><button class="toggle" id="clean" type="button">Hide notes</button><span class="mono" style="color:var(--muted)">Wireframe A · Index</span></div>
+
+<div id="robot" aria-hidden="true"><span class="tag" id="clip">Robot · Jump → Wave</span>
+  <svg viewBox="0 0 110 150"><g fill="#f2f0eb" stroke="#121212" stroke-width="2.5">
+    <rect x="22" y="8" width="66" height="50" rx="16"/><circle cx="43" cy="33" r="6" fill="#121212"/><circle cx="67" cy="33" r="6" fill="#121212"/>
+    <line x1="55" y1="8" x2="55" y2="0"/><circle cx="55" cy="0" r="3" fill="#ff5a1f"/>
+    <rect x="30" y="62" width="50" height="52" rx="12"/><rect x="10" y="66" width="16" height="38" rx="8"/><rect x="84" y="66" width="16" height="38" rx="8"/>
+    <rect x="34" y="114" width="16" height="32" rx="7"/><rect x="60" y="114" width="16" height="32" rx="7"/></g></svg>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="note" style="top:96px; left:20px"><b>First paint</b>Real HTML type, no loader. The WebGL layer fades in behind it after the name is on screen (LCP target under 1 s).</div>
+  <div class="note" style="top:96px; right:20px"><b>Signature</b>The CC0 robot drops in from above and lands on the top of the "J" (clips Jump → Wave). Its head follows the pointer.</div>
+  <div class="meta mono">
+    <div><span>Role</span>Senior Software Development Engineer</div>
+    <div><span>Based</span>Bengaluru, India</div>
+    <div><span>Status</span>Open to new roles</div>
+    <div><span>Focus</span>React · Next.js · TypeScript · performance</div>
+  </div>
+  <h1 class="name" id="name">ADITYA RAJ</h1>
+  <div class="role"><span class="mono" style="color:var(--muted)">~4.5+ years · fintech · e-commerce · enterprise</span><a class="cta" href="#work"><i></i>See the work</a></div>
+</section>
+
+<!-- WORK -->
+<section class="work" id="work">
+  <div class="stick">
+    <header><h2>Selected<br/>work</h2><span class="mono" style="color:var(--muted)">scroll ↓ moves the row →</span></header>
+    <div class="note" style="top:150px; left:36%"><b>3D gallery</b>Each card is a WebGL plane with a screenshot of the live demo. Cards tilt and skew with scroll speed, then spring flat when you stop (try a fast scroll).</div>
+    <div class="note" style="bottom:42px; right:20px"><b>Robot</b>Walks to the card in the middle, points, thumbs-up on hover (clips Walking → ThumbsUp).</div>
+    <div class="track" id="track">
+      <article class="card"><p class="num">01</p><div class="shot gl" style="background:linear-gradient(135deg,#3f5fd0,#7e9cf7)">Eidos</div><h3>Eidos</h3><p>A declarative offline-first abstraction layer for Service Workers.</p><div class="links mono"><a href="#">Code</a><a href="#">Live</a><a href="#">npm</a></div></article>
+      <article class="card"><p class="num">02</p><div class="shot gl" style="background:linear-gradient(135deg,#c73a2c,#f58c6c)">mcp-ui</div><h3>mcp-ui</h3><p>A dynamic MCP UI generator, built as a full-stack MCP UI demo.</p><div class="links mono"><a href="#">Code</a><a href="#">Live</a></div></article>
+      <article class="card"><p class="num">03</p><div class="shot gl" style="background:linear-gradient(135deg,#1f7a57,#59c49a)">spatial</div><h3>spatial</h3><p>A client-side UI performance optimizer that detects UI performance problems at dev time.</p><div class="links mono"><a href="#">Code</a><a href="#">Live</a></div></article>
+      <article class="card"><p class="num">04</p><div class="shot gl" style="background:linear-gradient(135deg,#222,#666)">Mouse Follow</div><h3>Mouse Follow</h3><p>A mouse-follow component for React.</p><div class="links mono"><a href="#">Code</a><a href="#">Live</a></div></article>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="exp" id="exp">
+  <div class="note" style="top:8vh; right:20px"><b>Robot</b>Sits on the current role's row (clip Sitting). Rows lift on hover.</div>
+  <h2>Experience</h2>
+  <div class="row now"><span class="mono">05</span><strong>Cashfree Payments</strong><span class="role2">Frontend Engineer II</span><span class="mono">Mar 2025 – May 2026</span></div>
+  <div class="row"><span class="mono">04</span><strong>Moresand Technologies</strong><span class="role2">Software Engineer</span><span class="mono">Aug 2024 – Mar 2025</span></div>
+  <div class="row"><span class="mono">03</span><strong>Tata 1mg</strong><span class="role2">Software Development Engineer II</span><span class="mono">Apr 2023 – Jul 2024</span></div>
+  <div class="row"><span class="mono">02</span><strong>Tata 1mg</strong><span class="role2">Software Development Engineer I</span><span class="mono">Dec 2021 – Mar 2023</span></div>
+  <div class="row"><span class="mono">01</span><strong>IIIT Lucknow</strong><span class="role2">B.Tech, Information Technology</span><span class="mono">Aug 2017 – Jun 2021</span></div>
+</section>
+
+<!-- SKILLS -->
+<section class="skills" id="skills">
+  <h2>Tools</h2>
+  <div class="grp"><span class="mono">Languages</span><div class="chips"><span>JavaScript (ES2022+)</span><span>TypeScript</span></div></div>
+  <div class="grp"><span class="mono">Frontend</span><div class="chips"><span>React</span><span>Next.js</span><span>Zustand</span><span>React Query</span><span>Tailwind CSS</span><span>Radix UI</span><span>PWA</span><span>Storybook</span><span>Micro-frontends</span></div></div>
+  <div class="grp"><span class="mono">Performance</span><div class="chips"><span>Webpack 5</span><span>Code Splitting</span><span>Tree Shaking</span><span>Core Web Vitals</span><span>Lighthouse</span><span>Service Workers</span></div></div>
+  <div class="grp"><span class="mono">Backend &amp; Infra</span><div class="chips"><span>Python</span><span>Node.js</span><span>Express.js</span><span>Redis</span><span>SSE</span><span>WebPush</span><span>PostgreSQL</span><span>Turborepo</span><span>Docker</span></div></div>
+  <div class="grp"><span class="mono">Testing &amp; Tooling</span><div class="chips"><span>Jest</span><span>React Testing Library</span><span>Playwright</span><span>Git</span><span>GitHub Actions</span><span>Figma</span><span>pnpm workspaces</span></div></div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="note" style="top:8vh; right:20px"><b>Robot</b>Waves; hover the email and it dances (clips Wave, Dance).</div>
+  <span class="mono">Open to new roles · Bengaluru</span>
+  <a class="big" href="mailto:adityaraj92.20@gmail.com">adityaraj92.20<br/>@gmail.com</a>
+  <div class="links mono" style="margin-top:3vh; gap:20px"><a href="#">+91 72578 07070</a><a href="#">GitHub</a><a href="#">LinkedIn</a></div>
+</section>
+
+<script>
+  // Notes on/off.
+  document.getElementById('clean').onclick = (e) => { document.body.classList.toggle('clean'); e.target.textContent = document.body.classList.contains('clean') ? 'Show notes' : 'Hide notes'; };
+
+  // Work: vertical scroll drives the row sideways; scroll speed tilts and skews the cards.
+  const work = document.getElementById('work'), track = document.getElementById('track');
+  const cards = [...track.children];
+  let last = scrollY, vel = 0;
+  const robot = document.getElementById('robot'), clip = document.getElementById('clip');
+  const place = (x, y, label) => { robot.style.transform = `translate(${x}px, ${y}px)`; clip.textContent = 'Robot · ' + label; };
+  function frame() {
+    const dy = scrollY - last; last = scrollY;
+    vel += (dy - vel) * 0.12;
+    const r = work.getBoundingClientRect();
+    const span = work.offsetHeight - innerHeight;
+    const p = Math.min(1, Math.max(0, -r.top / span));
+    const max = track.scrollWidth - innerWidth;
+    track.style.transform = `translateX(${-p * max}px)`;
+    const tilt = Math.max(-18, Math.min(18, vel * 0.6));
+    for (const c of cards) c.style.transform = `rotateY(${-tilt}deg) skewX(${tilt * 0.35}deg)`;
+    // Robot: where it is in each section.
+    const vh = innerHeight, vw = innerWidth;
+    const sec = (id) => document.getElementById(id).getBoundingClientRect();
+    if (sec('contact').top < vh * 0.5) place(vw - 170, vh * 0.55, vel > 2 ? 'Running' : 'Wave');
+    else if (sec('exp').top < vh * 0.6 && sec('skills').top > vh * 0.4) { const row = document.querySelector('.row.now').getBoundingClientRect(); place(Math.min(vw - 130, row.left + row.width * 0.62), row.top - 120, 'Sitting'); }
+    else if (sec('skills').top < vh * 0.4) place(vw - 150, vh * 0.3, 'Idle · nods "Yes" on hover');
+    else if (r.top < vh * 0.5 && r.bottom > vh * 0.5) { const mid = cards.reduce((a, c) => Math.abs(c.getBoundingClientRect().left + c.offsetWidth / 2 - vw / 2) < Math.abs(a.getBoundingClientRect().left + a.offsetWidth / 2 - vw / 2) ? c : a); const b = mid.getBoundingClientRect(); place(b.right - 30, b.bottom - 200, Math.abs(vel) > 2 ? 'Walking' : 'ThumbsUp'); }
+    else { const n = document.getElementById('name').getBoundingClientRect(); place(n.right - (vw < 760 ? 96 : 170), n.top - (vw < 760 ? 92 : 130), 'Jump → Wave'); }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  // Nav highlight.
+  const links = [...document.querySelectorAll('.pill a')];
+  addEventListener('scroll', () => { const ids = ['top', 'work', 'exp', 'contact']; let on = 0; ids.forEach((id, i) => { if (document.getElementById(id).getBoundingClientRect().top < innerHeight * 0.5) on = i; }); links.forEach((l, i) => l.classList.toggle('on', i === on)); }, { passive: true });
+</script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Hold the Line wireframe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root { --bg: #0f1216; --panel: #171b21; --line: #2a313b; --ink: #e9edf2; --muted: #8b95a3; --green: #4ade80; --blue: #60a5fa; --yellow: #facc15; --red: #f87171; --violet: #a78bfa; --orange: #fb923c;
+          --body: Inter, system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: var(--body); overflow: hidden; }
+  body { display: grid; grid-template-rows: auto 1fr auto; height: 100svh; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  .brand { font: 800 18px var(--body); letter-spacing: -.02em; }
+  .brand small { display: block; font: 600 11px var(--mono); color: var(--muted); letter-spacing: .04em; }
+  .stat { font: 700 12px var(--mono); color: var(--muted); }
+  .stat b { display: block; font-size: 17px; color: var(--ink); }
+  .gauge { width: 130px; height: 7px; background: #0b0d10; border: 1px solid var(--line); margin-top: 5px; }
+  .gauge i { display: block; height: 100%; width: 100%; background: var(--green); transition: width .2s, background .2s; }
+  .grow { flex: 1; }
+  .chip { background: #222833; border: 1px solid var(--line); border-radius: 999px; padding: 8px 13px; font: 700 12px var(--mono); }
+  .chip.y { background: var(--yellow); color: #111; border-color: transparent; }
+  main { position: relative; min-height: 0; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: manipulation; }
+  footer { display: flex; gap: 8px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--panel); overflow-x: auto; }
+  .tower { flex: 1 0 auto; min-width: 104px; display: grid; gap: 2px; text-align: left; background: #1d232b; border: 2px solid var(--line); border-radius: 12px; padding: 9px 11px; }
+  .tower.sel { border-color: var(--yellow); background: #262b22; }
+  .tower.poor { opacity: .45; }
+  .tower b { font: 800 14px var(--body); display: flex; align-items: center; gap: 7px; }
+  .tower b i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .tower span { font: 11px var(--mono); color: var(--muted); }
+  .card { position: fixed; inset: 0; z-index: 30; background: rgba(5,7,9,.7); display: none; place-items: center; padding: 16px; }
+  .card.open { display: grid; }
+  .card .in { width: min(560px, 100%); max-height: 86svh; overflow: auto; background: #f4f2ec; color: #111; padding: 24px; border-radius: 4px; }
+  .card .k { font: 700 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: #6b6458; }
+  .card h2 { font: 800 clamp(28px, 6vw, 42px)/1 var(--body); letter-spacing: -.03em; margin: 6px 0 12px; }
+  .card p { line-height: 1.55; margin: 0 0 10px; }
+  .card dl { display: grid; grid-template-columns: 92px 1fr; gap: 6px 12px; font-size: 14px; margin: 12px 0; }
+  .card dt { font: 700 11px var(--mono); text-transform: uppercase; color: #6b6458; padding-top: 2px; }
+  .card .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .btn { border: 0; padding: 12px 18px; font: 700 13px var(--mono); background: #111; color: #fff; }
+  .btn.y { background: var(--yellow); color: #111; }
+  .btn.ghost { background: transparent; color: #111; box-shadow: inset 0 0 0 2px #111; }
+  .r-row { display: grid; gap: 2px; padding: 7px 0; border-top: 1px solid #ddd8cc; font-size: 14px; }
+  .r-row span { color: #555; }
+  .r-proj { padding: 7px 0; border-top: 1px solid #ddd8cc; font-size: 14px; }
+  .r-proj small { color: #666; }
+  .r-role { color: #555; }
+  .card a { color: #0b5cad; }
+  .tip { position: fixed; z-index: 20; max-width: 260px; background: #f4f2ec; color: #111; padding: 12px 14px; border-radius: 6px; font-size: 13.5px; line-height: 1.45; display: none; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+  .tip b { display: block; font-size: 15px; margin-bottom: 2px; }
+  .tip small { font: 11px var(--mono); color: #6b6458; }
+  .notes { position: fixed; inset: 0 auto 0 0; width: min(420px, 92vw); z-index: 40; background: #fff8c9; color: #3b3300; padding: 22px; overflow: auto; transform: translateX(-105%); transition: transform .3s; font: 13.5px/1.55 var(--mono); }
+  .notes.open { transform: none; }
+  .notes h2 { font: 800 22px var(--body); color: #111; margin: 0 0 8px; }
+  .notes h3 { font: 700 11px var(--mono); text-transform: uppercase; letter-spacing: .1em; margin: 16px 0 4px; color: #6a5d00; }
+  .notes ul { padding-left: 18px; margin: 0; } .notes li, .notes p { margin: 0 0 6px; }
+  @media (max-width: 640px) { header { display: grid; grid-template-columns: repeat(4, auto) 1fr; gap: 6px 10px; padding: 8px 10px; } .brand { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; font-size: 15px; } .brand small { display: none; } .grow { display: none; } .stat { font-size: 10px; } .stat b { font-size: 13px; } .gauge { width: 64px; } .chip { padding: 6px 9px; font-size: 11px; } .long { display: none; } .tower { min-width: 88px; padding: 7px 8px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">HOLD THE LINE<small id="who"></small></div>
+  <div class="stat">WAVE<b id="wave">1 / 4</b></div>
+  <div class="stat">CREDITS<b id="credits">120</b></div>
+  <div class="stat">p99 LATENCY<b id="p99">80 ms</b><div class="gauge"><i id="p99g"></i></div></div>
+  <div class="stat">ERROR BUDGET<b id="budgetTxt">100%</b><div class="gauge"><i id="budget"></i></div></div>
+  <span class="grow"></span>
+  <button class="chip" id="speed" type="button">1×</button>
+  <button class="chip" id="notesBtn" type="button"><span class="long">How it becomes </span>3D</button>
+  <button class="chip y" id="resumeBtn" type="button">Résumé</button>
+</header>
+<main><canvas id="cv" aria-label="Game board: tap a free tile to place the selected service"></canvas></main>
+<footer id="tray"></footer>
+<div class="tip" id="tip" role="tooltip"></div>
+<section class="card" id="card"><div class="in" id="cardIn"></div></section>
+<aside class="notes" id="notes">
+  <button class="btn" id="notesClose" type="button" style="float:right">Close</button>
+  <h2>Hold the Line: the 3D build</h2>
+  <p>The greybox is flat. The real build is a tilted 3D board, like a tabletop.</p>
+  <h3>Look (free, CC0)</h3><ul><li>Kenney Tower Defense Kit (remade v2) for terrain, paths and tower bases, re-skinned: each tower is a little server rack, CDN dish, cache vault, toll gate, harbour crane.</li><li>Requests are Kenney Car Kit vehicles (or Mini Characters) on the path; one instanced mesh for hundreds.</li><li>Soft studio light, tilt-shift depth of field, the database glows hotter as load climbs.</li></ul>
+  <h3>The part that is hard to clone</h3><ul><li>A real queueing model: arrival rates per wave, service times per tower, a database whose latency curve bends like a real one under load (p99 is computed, not scripted).</li><li>Towers synergise like real systems: a load balancer speeds its neighbours, a queue smooths write bursts, a CDN only helps static traffic.</li><li>Each wave is a story beat (morning traffic, launch, bot attack, Black Friday) and ends with a postmortem card that tells a project.</li></ul>
+  <h3>Phones</h3><p>Tap only, no joystick. In portrait the path runs top to bottom; the tower tray sits under your thumb.</p>
+  <h3>Recruiter path</h3><p>"Résumé" opens the plain page any time; every postmortem is readable from the résumé without playing.</p>
+</aside>
+
+<script src="sample.js"></script>
+<script>
+(() => {
+const S = window.SAMPLE;
+const $ = (id) => document.getElementById(id);
+$('who').textContent = `${S.name} · ${S.role}`;
+
+/* ---------------- board: a path from USERS to the DATABASE, defined landscape and transposed for portrait */
+const COLS = 13, ROWS = 7;
+const TURNS = [[0, 1], [3, 1], [3, 5], [7, 5], [7, 1], [10, 1], [10, 4], [12, 4]];
+function cellsOf(turns) {
+  const out = [];
+  for (let i = 0; i < turns.length - 1; i++) {
+    let [x, y] = turns[i]; const [x2, y2] = turns[i + 1];
+    while (x !== x2 || y !== y2) { out.push([x, y]); x += Math.sign(x2 - x); y += Math.sign(y2 - y); }
+  }
+  out.push(turns[turns.length - 1]);
+  return out;
+}
+let portrait = false, cols = COLS, rows = ROWS, path = [], onPath = new Set(), slots = new Set();
+function layout() {
+  portrait = innerHeight > innerWidth * 1.05;
+  cols = portrait ? ROWS : COLS; rows = portrait ? COLS : ROWS;
+  path = cellsOf(TURNS).map(([x, y]) => (portrait ? [y, x] : [x, y]));
+  onPath = new Set(path.map(([x, y]) => `${x},${y}`));
+  slots = new Set();
+  for (const [x, y] of path) for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+    const k = `${x + dx},${y + dy}`;
+    if (x + dx >= 0 && y + dy >= 0 && x + dx < cols && y + dy < rows && !onPath.has(k)) slots.add(k);
+  }
+}
+
+/* ---------------- services you can place: each one is a skill */
+const TOWERS = {
+  cdn: { name: 'CDN', color: '#60a5fa', cost: 40, range: 1.8, rate: 4, dmg: 1, bonus: 'static', skill: 'Edge caching, HTTP cache headers, CDNs', fx: 'Fast and cheap; only great against static traffic.' },
+  cache: { name: 'Cache', color: '#4ade80', cost: 60, range: 2.2, rate: 1.5, dmg: 3, bonus: 'read', skill: 'Redis, read-through caching, invalidation', fx: 'Big hits on reads.' },
+  limiter: { name: 'Rate limiter', color: '#f87171', cost: 50, range: 2.0, rate: 0.9, dmg: 1, bonus: 'bot', skill: 'Auth, rate limiting, abuse protection', fx: 'Removes bots in one hit.' },
+  queue: { name: 'Queue', color: '#facc15', cost: 50, range: 1.6, rate: 0, dmg: 0, bonus: 'write', skill: 'Kafka, async jobs, backpressure', fx: 'Slows everything nearby and drains writes.' },
+  balancer: { name: 'Load balancer', color: '#a78bfa', cost: 70, range: 1.5, rate: 0, dmg: 0, bonus: null, skill: 'Kubernetes, autoscaling, load balancing', fx: 'Neighbouring services fire 60% faster.' },
+};
+const KINDS = {
+  read: { color: '#4ade80', hp: 3, speed: 1.5 },
+  static: { color: '#60a5fa', hp: 2, speed: 1.9 },
+  write: { color: '#facc15', hp: 5, speed: 1.1 },
+  bot: { color: '#f87171', hp: 2, speed: 2.3 },
+};
+const WAVES = [
+  { name: 'Morning traffic', mix: { read: 0.7, static: 0.3 }, count: 22, every: 0.62 },
+  { name: 'Product launch', mix: { read: 0.4, static: 0.35, write: 0.25 }, count: 38, every: 0.42 },
+  { name: 'Bot attack', mix: { bot: 0.6, read: 0.3, write: 0.1 }, count: 46, every: 0.34 },
+  { name: 'Black Friday', mix: { read: 0.35, static: 0.25, write: 0.25, bot: 0.15 }, count: 84, every: 0.2 },
+];
+
+const st = { credits: 120, wave: 0, spawned: 0, spawnT: 0, running: false, load: 0, budget: 100, sel: 'cache', speed: 1, over: false, towers: new Map(), reqs: [], shots: [] };
+
+/* ---------------- tray */
+function tray() {
+  $('tray').innerHTML = Object.entries(TOWERS).map(([id, t]) => `<button class="tower ${st.sel === id ? 'sel' : ''} ${st.credits < t.cost ? 'poor' : ''}" data-t="${id}"><b><i style="background:${t.color}"></i>${t.name}</b><span>${t.cost} cr · ${t.bonus ? 'vs ' + t.bonus : 'support'}</span></button>`).join('');
+}
+$('tray').addEventListener('click', (e) => { const b = e.target.closest('[data-t]'); if (!b) return; st.sel = b.dataset.t; tray(); showTip(null); });
+
+/* ---------------- canvas */
+const cv = $('cv'), g = cv.getContext('2d');
+let W = 0, H = 0, dpr = 1, cell = 40, ox = 0, oy = 0;
+function resize() {
+  layout();
+  const r = cv.getBoundingClientRect(); dpr = Math.min(devicePixelRatio, 2); W = r.width; H = r.height;
+  cv.width = W * dpr; cv.height = H * dpr;
+  cell = Math.floor(Math.min(W / cols, H / rows));
+  ox = (W - cell * cols) / 2; oy = (H - cell * rows) / 2;
+  // towers keep their slot in landscape coordinates; re-map them if the orientation changed
+  const kept = [...st.towers.values()]; st.towers = new Map();
+  for (const t of kept) { const [lx, ly] = t.l; const [x, y] = portrait ? [ly, lx] : [lx, ly]; st.towers.set(`${x},${y}`, { ...t, x, y }); }
+}
+addEventListener('resize', resize);
+const center = (x, y) => [ox + (x + 0.5) * cell, oy + (y + 0.5) * cell];
+// distance along the path → position
+function along(d) {
+  const i = Math.min(path.length - 1, Math.floor(d)), j = Math.min(path.length - 1, i + 1), f = d - i;
+  const [ax, ay] = center(...path[i]), [bx, by] = center(...path[j]);
+  return [ax + (bx - ax) * f, ay + (by - ay) * f];
+}
+
+cv.addEventListener('click', (e) => {
+  const r = cv.getBoundingClientRect();
+  const x = Math.floor((e.clientX - r.left - ox) / cell), y = Math.floor((e.clientY - r.top - oy) / cell), k = `${x},${y}`;
+  if (st.towers.has(k)) { const t = st.towers.get(k), T = TOWERS[t.id]; showTip(e.clientX, e.clientY, `<b>${T.name}</b>${T.fx}<br/><small>SKILL · ${T.skill}</small>`); return; }
+  if (!slots.has(k)) { showTip(null); return; }
+  const T = TOWERS[st.sel];
+  if (st.credits < T.cost) { showTip(e.clientX, e.clientY, `<b>Not enough credits</b>Serve more requests to earn them.`); return; }
+  st.credits -= T.cost;
+  const l = portrait ? [y, x] : [x, y];
+  st.towers.set(k, { id: st.sel, x, y, l, cd: 0 });
+  showTip(null); tray(); if (!st.running && !st.over) startWave();
+});
+function showTip(x, y, html) { const t = $('tip'); if (x == null) { t.style.display = 'none'; return; } t.innerHTML = html; t.style.display = 'block'; t.style.left = Math.min(innerWidth - 270, x + 12) + 'px'; t.style.top = Math.min(innerHeight - 120, y + 12) + 'px'; }
+
+/* ---------------- waves and postmortems */
+function startWave() { st.running = true; st.spawned = 0; st.spawnT = 0; }
+function pick(mix) { let r = Math.random(); for (const [k, p] of Object.entries(mix)) { if ((r -= p) <= 0) return k; } return Object.keys(mix)[0]; }
+function endWave() {
+  st.running = false;
+  const p = S.projects[st.wave % S.projects.length], w = WAVES[st.wave];
+  const last = st.wave === WAVES.length - 1;
+  card(`<div class="k">Postmortem · ${w.name} survived</div><h2>${p.title}</h2><p>${p.summary}</p><dl><dt>Problem</dt><dd>${p.problem}</dd><dt>Approach</dt><dd>${p.approach}</dd><dt>Outcome</dt><dd>${p.outcome}</dd><dt>Stack</dt><dd>${p.stack.join(' · ')}</dd></dl>
+    <div class="row">${last ? '<button class="btn y" data-a="hire">You held the line. Hire me</button>' : `<button class="btn y" data-a="next">Next wave: ${WAVES[st.wave + 1].name}</button>`}<button class="btn ghost" data-a="resume">Résumé</button></div>`);
+  st.credits += 60 + st.wave * 30; tray();
+}
+function gameOver() {
+  st.over = true; st.running = false;
+  card(`<div class="k">SEV-1 · error budget exhausted</div><h2>The database fell over</h2><p>Every outage is a lesson. Try a cache near the database, or a rate limiter before the bots arrive.</p><div class="row"><button class="btn y" data-a="restart">Restart</button><button class="btn ghost" data-a="resume">Résumé</button></div>`);
+}
+function card(html) { $('cardIn').innerHTML = html; $('card').classList.add('open'); }
+$('card').addEventListener('click', (e) => {
+  const a = e.target.closest('[data-a]')?.dataset.a; if (!a) return;
+  $('card').classList.remove('open');
+  if (a === 'next') { st.wave++; $('wave').textContent = `${st.wave + 1} / ${WAVES.length}`; startWave(); }
+  if (a === 'resume') card(`<button class="btn" data-a="close" style="float:right">Close</button>${window.resumeHTML()}`);
+  if (a === 'hire') card(`<div class="k">Contact</div><h2>${S.name}</h2><p>${S.role} · ${S.status}</p><p><a href="mailto:${S.email}">${S.email}</a></p><p>${S.links.map((l) => `<a href="${l.href}">${l.label}</a>`).join(' · ')}</p><div class="row"><button class="btn y" data-a="close">Close</button></div>`);
+  if (a === 'restart') { Object.assign(st, { credits: 120, wave: 0, load: 0, budget: 100, over: false, towers: new Map(), reqs: [] }); $('wave').textContent = `1 / ${WAVES.length}`; tray(); }
+});
+$('resumeBtn').onclick = () => card(`<button class="btn" data-a="close" style="float:right">Close</button>${window.resumeHTML()}`);
+$('speed').onclick = () => { st.speed = st.speed === 1 ? 2 : 1; $('speed').textContent = st.speed + '×'; };
+$('notesBtn').onclick = () => $('notes').classList.add('open');
+$('notesClose').onclick = () => $('notes').classList.remove('open');
+
+/* ---------------- simulation */
+function step(dt) {
+  if (st.over) return;
+  const w = WAVES[st.wave];
+  if (st.running && st.spawned < w.count) {
+    st.spawnT -= dt;
+    if (st.spawnT <= 0) { st.spawnT = w.every * (0.6 + Math.random() * 0.8); const kind = pick(w.mix); st.reqs.push({ kind, hp: KINDS[kind].hp, d: 0, slow: 1 }); st.spawned++; }
+  }
+  // queues slow traffic; balancers buff neighbours
+  for (const r of st.reqs) r.slow = 1;
+  const list = [...st.towers.values()];
+  for (const t of list) {
+    const T = TOWERS[t.id], [tx, ty] = center(t.x, t.y);
+    if (t.id === 'queue') for (const r of st.reqs) { const [x, y] = along(r.d); if (Math.hypot(x - tx, y - ty) < T.range * cell) { r.slow = 0.5; if (r.kind === 'write') r.hp -= dt * 1.6; } }
+  }
+  for (const t of list) {
+    const T = TOWERS[t.id]; if (!T.rate) continue;
+    const boost = list.some((o) => o.id === 'balancer' && Math.max(Math.abs(o.x - t.x), Math.abs(o.y - t.y)) <= 1) ? 1.6 : 1;
+    t.cd -= dt * boost; if (t.cd > 0) continue;
+    const [tx, ty] = center(t.x, t.y);
+    let best = null, bestD = -1;
+    for (const r of st.reqs) { const [x, y] = along(r.d); if (Math.hypot(x - tx, y - ty) <= T.range * cell && r.d > bestD) { best = r; bestD = r.d; } }
+    if (!best) continue;
+    t.cd = 1 / T.rate;
+    const dmg = t.id === 'limiter' && best.kind === 'bot' ? 99 : T.dmg * (best.kind === T.bonus ? (t.id === 'cdn' ? 3 : 2) : 1);
+    best.hp -= dmg;
+    st.shots.push({ from: [tx, ty], to: along(best.d), c: T.color, life: 0.12 });
+  }
+  for (const r of st.reqs) r.d += KINDS[r.kind].speed * r.slow * dt;
+  for (let i = st.reqs.length - 1; i >= 0; i--) {
+    const r = st.reqs[i];
+    if (r.hp <= 0) { st.credits += 4; st.reqs.splice(i, 1); continue; }
+    if (r.d >= path.length - 1) { st.load += r.kind === 'write' ? 14 : r.kind === 'bot' ? 9 : 8; st.reqs.splice(i, 1); }
+  }
+  st.load = Math.max(0, st.load - dt * 7);
+  const p99 = 80 + Math.pow(st.load, 1.55);
+  if (p99 > 400) st.budget -= ((p99 - 400) / 140) * dt;
+  else st.budget = Math.min(100, st.budget + dt * 0.6);
+  if (st.budget <= 0) { st.budget = 0; gameOver(); }
+  if (st.running && st.spawned >= w.count && !st.reqs.length) endWave();
+  for (const s of st.shots) s.life -= dt;
+  st.shots = st.shots.filter((s) => s.life > 0);
+  $('credits').textContent = st.credits;
+  $('p99').textContent = Math.round(p99) + ' ms';
+  const pg = Math.min(100, (p99 / 900) * 100); $('p99g').style.width = pg + '%'; $('p99g').style.background = p99 > 400 ? '#f87171' : p99 > 220 ? '#facc15' : '#4ade80';
+  $('budget').style.width = st.budget + '%'; $('budgetTxt').textContent = Math.round(st.budget) + '%';
+  $('budget').style.background = st.budget < 35 ? '#f87171' : st.budget < 70 ? '#facc15' : '#4ade80';
+}
+function draw(time) {
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, W, H);
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+    const k = `${x},${y}`, px = ox + x * cell, py = oy + y * cell;
+    g.fillStyle = onPath.has(k) ? '#2b313b' : slots.has(k) ? '#1b2128' : '#14181d';
+    g.fillRect(px + 1, py + 1, cell - 2, cell - 2);
+    if (slots.has(k) && !st.towers.has(k)) { g.strokeStyle = 'rgba(255,255,255,.07)'; g.strokeRect(px + 6, py + 6, cell - 12, cell - 12); }
+  }
+  // path line
+  g.strokeStyle = 'rgba(255,255,255,.12)'; g.lineWidth = cell * 0.18; g.lineCap = 'round'; g.lineJoin = 'round';
+  g.beginPath(); path.forEach((p, i) => { const [x, y] = center(...p); i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
+  // ends
+  const [sx, sy] = center(...path[0]), [ex, ey] = center(...path[path.length - 1]);
+  g.font = `800 ${Math.max(10, cell * 0.22)}px Inter, sans-serif`; g.textAlign = 'center';
+  g.fillStyle = '#8b95a3'; g.fillText('USERS', portrait ? sx + cell * 0.95 : sx, portrait ? sy + 4 : sy - cell * 0.5);
+  const heat = Math.min(1, st.load / 60);
+  g.fillStyle = `rgb(${120 + heat * 135}, ${130 - heat * 60}, ${150 - heat * 110})`;
+  g.beginPath(); g.ellipse(ex, ey, cell * 0.36, cell * 0.12, 0, 0, Math.PI * 2); g.fill();
+  g.fillRect(ex - cell * 0.36, ey - cell * 0.3, cell * 0.72, cell * 0.3);
+  g.beginPath(); g.ellipse(ex, ey - cell * 0.3, cell * 0.36, cell * 0.12, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#e9edf2'; g.fillText('DATABASE', ex, ey + cell * 0.48);
+  // towers
+  for (const t of st.towers.values()) {
+    const T = TOWERS[t.id], [x, y] = center(t.x, t.y), s = cell * 0.62;
+    if (t.id === 'queue' || t.id === 'balancer') { g.fillStyle = T.color + '18'; g.beginPath(); g.arc(x, y, T.range * cell, 0, Math.PI * 2); g.fill(); }
+    g.fillStyle = '#0b0d10'; g.fillRect(x - s / 2 + 3, y - s / 2 + 4, s, s);
+    g.fillStyle = T.color; g.fillRect(x - s / 2, y - s / 2, s, s);
+    g.fillStyle = 'rgba(0,0,0,.35)'; for (let i = 0; i < 3; i++) g.fillRect(x - s / 2 + 5, y - s / 2 + 6 + i * (s / 3.2), s - 10, 2);
+    g.fillStyle = '#0b0d10'; g.font = `800 ${Math.max(9, cell * 0.2)}px JetBrains Mono, monospace`; g.fillText(T.name.split(' ')[0].slice(0, 5).toUpperCase(), x, y + s / 2 + cell * 0.2);
+  }
+  // shots
+  for (const s of st.shots) { g.strokeStyle = s.c; g.globalAlpha = s.life / 0.12; g.lineWidth = 2.5; g.beginPath(); g.moveTo(...s.from); g.lineTo(...s.to); g.stroke(); }
+  g.globalAlpha = 1;
+  // requests
+  for (const r of st.reqs) {
+    const [x, y] = along(r.d), K = KINDS[r.kind], s = cell * (r.kind === 'write' ? 0.26 : 0.2);
+    g.fillStyle = K.color; g.beginPath(); g.arc(x, y, s, 0, Math.PI * 2); g.fill();
+    if (r.slow < 1) { g.strokeStyle = '#facc15'; g.lineWidth = 2; g.stroke(); }
+  }
+  if (!st.running && !st.over && st.wave === 0 && !st.towers.size) {
+    // Wrap the intro to the board width so it fits a phone.
+    const wrap = (text, font, max) => { g.font = font; const out = []; let line = ''; for (const w of text.split(' ')) { const t = line ? line + ' ' + w : w; if (g.measureText(t).width > max && line) { out.push(line); line = w; } else line = t; } out.push(line); return out; };
+    const big = `800 ${Math.min(24, W / 15)}px Inter, sans-serif`, small = `600 ${Math.min(14, W / 26)}px JetBrains Mono, monospace`;
+    const a = wrap('Traffic is coming. Place a service next to the path.', big, W - 40), b = wrap('Pick one below, then tap a free tile. The first wave starts when you place it.', small, W - 40);
+    const lh1 = Math.min(30, W / 12), lh2 = Math.min(20, W / 19), hgt = a.length * lh1 + b.length * lh2 + 36;
+    g.fillStyle = 'rgba(15,18,22,.82)'; g.fillRect(0, H / 2 - hgt / 2, W, hgt);
+    let y = H / 2 - hgt / 2 + 18 + lh1 * 0.8;
+    g.fillStyle = '#e9edf2'; g.font = big; for (const l of a) { g.fillText(l, W / 2, y); y += lh1; }
+    g.fillStyle = '#8b95a3'; g.font = small; for (const l of b) { g.fillText(l, W / 2, y); y += lh2; }
+  }
+}
+let last = performance.now();
+function loop(now) { const dt = Math.min(0.05, (now - last) / 1000) * st.speed; last = now; if (!$('card').classList.contains('open')) step(dt); draw(now / 1000); requestAnimationFrame(loop); }
+resize(); tray(); requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
