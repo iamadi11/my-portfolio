@@ -1,0 +1,11 @@
+# Uploaded by `vercel deploy`: only what the app needs to build.
+# Research, design sources and local tooling stay on this machine (and secrets never leave it).
+.env*
+docs
+assets-src
+graphify-out
+.obsidian
+.cursor
+.claude
+.agents
+*.pdf

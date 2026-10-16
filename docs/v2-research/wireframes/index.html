@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>/v2 wireframes</title>
+<style>
+  :root { --ink: #121212; --muted: #6b6862; --line: #dedbd4; --accent: #ff5a1f; --mono: ui-monospace, "SF Mono", Menlo, monospace; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 28px 24px 48px; background: #f4f3f0; color: var(--ink); font-family: "Helvetica Neue", Inter, Arial, sans-serif; }
+  h1 { margin: 0 0 6px; font-size: clamp(30px, 4vw, 52px); letter-spacing: -.04em; }
+  .sub { color: var(--muted); margin: 0 0 24px; max-width: 70ch; line-height: 1.5; }
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
+  .frame { position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-bottom: 1px solid var(--line); background: #ddd; }
+  .frame iframe { position: absolute; top: 0; left: 0; width: 1440px; height: 900px; border: 0; transform-origin: 0 0; pointer-events: none; }
+  .body { padding: 16px 18px 18px; display: grid; gap: 10px; }
+  .body h2 { margin: 0; font-size: 24px; letter-spacing: -.03em; }
+  .body h2 small { font: 12px var(--mono); color: var(--accent); margin-left: 6px; text-transform: uppercase; }
+  ul { margin: 0; padding-left: 18px; line-height: 1.55; color: #3a3833; font-size: 14px; }
+  .open { justify-self: start; padding: 10px 16px; border-radius: 999px; background: var(--ink); color: #fff; text-decoration: none; font: 12px var(--mono); text-transform: uppercase; }
+  .shared { margin-top: 22px; padding: 16px 18px; border: 1px dashed var(--line); border-radius: 14px; font-size: 14px; line-height: 1.6; color: #3a3833; }
+  @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<h1>/v2 directions, as wireframes</h1>
+<p class="sub">Three modern directions from the teardown of 12 award-level sites. Each wireframe is a scrolling page with your real content; yellow notes say what the WebGL layer and the robot do at that point, and the motion runs live (scroll fast on A, move the pointer on B and C). Open one full screen to judge it; "Hide notes" in its corner shows it clean.</p>
+<div class="grid">
+  <article class="card">
+    <div class="frame"><iframe src="index-direction.html" title="Wireframe A" loading="lazy"></iframe></div>
+    <div class="body">
+      <h2>A · Index <small>recommended</small></h2>
+      <ul><li>Light editorial: huge grotesk name, mono metadata, floating pill nav</li><li>Projects as 3D cards (screenshots of your live demos) that tilt and skew with scroll speed</li><li>Robot lands on your name, walks to the active card, sits on your current role</li><li>Closest to this month's SOTD portfolios; fastest first paint</li></ul>
+      <a class="open" href="index-direction.html">Open A</a>
+    </div>
+  </article>
+  <article class="card">
+    <div class="frame"><iframe src="dark-lab.html" title="Wireframe B" loading="lazy"></iframe></div>
+    <div class="body">
+      <h2>B · Dark lab</h2>
+      <ul><li>Near-black, mono type, engineer's terminal feel</li><li>A GPU dot field morphs into a shape per section: robot, cloud cache, UI blocks, frame graph, cursor, steps, envelope</li><li>The real robot steps out of the dots on load</li><li>Most dramatic; heaviest on phones</li></ul>
+      <a class="open" href="dark-lab.html">Open B</a>
+    </div>
+  </article>
+  <article class="card">
+    <div class="frame"><iframe src="glass-stage.html" title="Wireframe C" loading="lazy"></iframe></div>
+    <div class="body">
+      <h2>C · Glass stage</h2>
+      <ul><li>White page, one big rounded WebGL window beside the copy</li><li>Glass 3D type of each title, chrome and soft studio light; tilts with the pointer</li><li>Robot performs a different clip per section inside the window</li><li>Premium studio look; lightest 3D footprint</li></ul>
+      <a class="open" href="glass-stage.html">Open C</a>
+    </div>
+  </article>
+</div>
+<p class="shared"><b>Shared by all three:</b> the robot is <i>RobotExpressive</i> (CC0, 464 KB, from the three.js repo) with 14 real animation clips and face expressions, presented as your assistant; content comes only from <code>src/content/site.ts</code>; HTML paints first with no loader; the 3D streams in after; voice guide and captions stay optional; reduced motion gets a still.</p>
+<script>
+  const fit = () => document.querySelectorAll('.frame').forEach((f) => { const i = f.querySelector('iframe'); i.style.transform = `scale(${f.clientWidth / 1440})`; });
+  addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>

@@ -1,17 +1,13 @@
 {
     "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-    "entry": [
-        "src/index.{ts,tsx,js,jsx}",
-        "src/main.{ts,tsx,js,jsx}"
-    ],
+    "entry": ["src/index.{ts,tsx,js,jsx}", "src/main.{ts,tsx,js,jsx}"],
     "ignoreDependencies": [
         "eslint-config-next",
         "eslint-config-prettier",
         "eslint-plugin-prettier",
         "eslint-plugin-tailwindcss",
         "conventional-changelog-atom",
-        "inquirer",
-        "@met4citizen/headtts"
+        "inquirer"
     ],
     "duplicates": {
         "minOccurrences": 3
@@ -19,5 +15,6 @@
     "rules": {},
     "health": {
         "maxCrap": 420
-    }
+    },
+    "ignorePatterns": ["docs/**"]
 }

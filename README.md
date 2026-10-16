@@ -22,12 +22,11 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## Make it yours
 
-The site is driven by one file, so it works for any engineer (SDE-2, SDE-3, tech lead):
+The home page (Round trip) is driven by one file, so it works for any engineer (SDE-2, SDE-3, tech lead):
 
-1. Edit `src/content/site.ts`: profile, projects (pick a `mark` drawing and `hue` for each), experience, skills. Leave out what you can't back up; empty sections disappear.
-2. Guide on `/`: set `HOST.portrait` and `HOST.voice` (a Kokoro voice id). For the 3D head, export your avatar from a front-facing photo with the [LAM demo](https://www.modelscope.cn/studios/Damo_XR_Lab/LAM_Large_Avatar_Model), save it as `public/avatar/<you>.zip` and set `HOST.avatar`; without that file the guide stays a photo.
-3. `npm run voice` (needs `ffmpeg`) renders every line the host can say into `public/voice/`; `npm run check:host` checks the answers.
-4. `src/components/instrumented/content.ts` → `SAMPLE` shows every field with placeholder copy.
+1. Edit `src/content/site.ts`: profile, impact numbers, projects (pick a `hue` for each ring), skills, experience (highlights, tech, location), education. Leave out what you can't back up; empty sections disappear.
+2. `src/content/types.ts` → `SAMPLE` shows every field with placeholder copy.
+3. How the page works and how to tune the 3D: `docs/round-trip.md`.
 
 ## Learn More
 

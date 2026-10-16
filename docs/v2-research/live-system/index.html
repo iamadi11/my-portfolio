@@ -1,0 +1,630 @@
+<title>Live System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400;500;600&family=Martian+Mono:wght@400;500&display=swap" />
+<style>
+/* Layout: a live 3D production system fixed behind an editorial left column. Scrolling walks the camera
+   down the stack (edge → API → services → data); the incident console and trace inspector float on the right. */
+:root {
+  --bg: #eef1f5; --surface: #ffffff; --surface-2: #f5f7fa; --ink: #0f1524; --muted: #556075; --line: #d6dce6;
+  --accent: #d21f50; --on-accent: #ffffff; --healthy: #2b5fff; --warn: #b26a00; --crit: #d42a37; --scrim: rgba(238,241,245,.9);
+  --display: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Martian Mono", ui-monospace, Menlo, Consolas, monospace;
+  --gutter: clamp(16px, 4.5vw, 64px);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #080c17; --surface: #10162a; --surface-2: #0c1222; --ink: #edf1fb; --muted: #8f99b0; --line: #1f2944;
+  --accent: #ff5c86; --on-accent: #1a0710; --healthy: #6f97ff; --warn: #ffb547; --crit: #ff5d63; --scrim: rgba(8,12,23,.88); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #080c17; --surface: #10162a; --surface-2: #0c1222; --ink: #edf1fb; --muted: #8f99b0; --line: #1f2944;
+  --accent: #ff5c86; --on-accent: #1a0710; --healthy: #6f97ff; --warn: #ffb547; --crit: #ff5d63; --scrim: rgba(8,12,23,.88); color-scheme: dark }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.6 var(--body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+a { color: inherit; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+.mono { font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em; }
+.eyebrow { font: 500 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* ---------- the stage */
+#scene { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; display: block; }
+.scrim { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, var(--scrim) 0%, color-mix(in oklab, var(--scrim) 70%, transparent) 34%, transparent 58%); }
+#labels { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+.label { position: absolute; left: 0; top: 0; font: 500 10.5px var(--mono); letter-spacing: .03em; color: var(--ink); white-space: nowrap; padding: 3px 7px; border-radius: 5px; background: color-mix(in oklab, var(--surface) 82%, transparent); border: 1px solid var(--line); transition: opacity .3s; }
+.label.hot { color: var(--on-accent); background: var(--crit); border-color: transparent; }
+
+/* ---------- chrome */
+.bar { position: fixed; top: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: center; gap: 12px; padding: calc(14px + env(safe-area-inset-top, 0px)) var(--gutter) 14px; pointer-events: none; }
+.bar > * { pointer-events: auto; }
+.mark { font: 800 19px var(--display); letter-spacing: -.03em; text-decoration: none; margin-right: auto; white-space: nowrap; }
+.mark span { color: var(--muted); font-weight: 500; }
+.nav { display: flex; gap: 2px; padding: 4px; border-radius: 999px; background: color-mix(in oklab, var(--surface) 80%, transparent); border: 1px solid var(--line); backdrop-filter: blur(12px); }
+.nav a { text-decoration: none; padding: 7px 13px; border-radius: 999px; font: 500 13px var(--body); color: var(--muted); }
+.nav a.on { background: var(--ink); color: var(--bg); }
+.status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 999px; border: 1px solid var(--line); background: color-mix(in oklab, var(--surface) 80%, transparent); backdrop-filter: blur(12px); font: 500 11.5px var(--mono); white-space: nowrap; }
+.status i { width: 8px; height: 8px; border-radius: 50%; background: #1fae6a; box-shadow: 0 0 0 4px color-mix(in oklab, #1fae6a 22%, transparent); }
+.status.bad i { background: var(--crit); box-shadow: 0 0 0 4px color-mix(in oklab, var(--crit) 25%, transparent); animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .3; } }
+.icon-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: color-mix(in oklab, var(--surface) 80%, transparent); display: grid; place-items: center; backdrop-filter: blur(12px); }
+.icon-btn svg { width: 17px; height: 17px; }
+
+/* ---------- page */
+.page { position: relative; z-index: 2; padding-inline: var(--gutter); }
+.col { width: min(560px, 100%); }
+section { position: relative; }
+.hero { padding-block: clamp(120px, 20vh, 200px) 64px; min-height: 92svh; display: grid; align-content: center; }
+.hero h1 { font: 800 clamp(46px, 7.2vw, 104px)/.92 var(--display); letter-spacing: -.045em; margin: 14px 0 22px; text-wrap: balance; font-variation-settings: "opsz" 96; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.lede { font-size: clamp(17px, 1.5vw, 19px); color: var(--muted); max-width: 52ch; margin: 0 0 26px; }
+.ctas { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 20px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); text-decoration: none; font: 600 15px var(--body); transition: transform .15s, background .2s; }
+.btn:hover { transform: translateY(-1px); }
+.btn.primary { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+.btn.primary i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; margin-top: 40px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; max-width: 640px; }
+.metric { background: color-mix(in oklab, var(--surface) 88%, transparent); padding: 12px 14px; backdrop-filter: blur(10px); }
+.metric span { display: block; font: 500 10.5px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.metric b { display: block; font: 700 21px var(--display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.metric b.warn { color: var(--warn); } .metric b.crit { color: var(--crit); }
+.hint { margin-top: 14px; color: var(--muted); font-size: 13.5px; display: flex; gap: 8px; align-items: center; }
+.hint kbd { font: 500 11px var(--mono); padding: 2px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+
+.chapter { padding-block: 22vh; min-height: 92svh; display: grid; align-content: center; }
+.chapter h2, .block h2 { font: 800 clamp(36px, 4.8vw, 64px)/.95 var(--display); letter-spacing: -.04em; margin: 10px 0 14px; text-wrap: balance; }
+.chapter p.say { color: var(--muted); font-size: 17px; max-width: 46ch; margin: 0 0 18px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 22px; padding: 0; list-style: none; }
+.chips li { font: 500 12px var(--mono); padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); background: color-mix(in oklab, var(--surface) 86%, transparent); }
+.feature { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px; display: grid; gap: 8px; box-shadow: 0 18px 50px -30px rgba(15,21,36,.35); }
+.feature h3 { margin: 0; font: 700 22px var(--display); letter-spacing: -.02em; }
+.feature p { margin: 0; color: var(--muted); font-size: 15px; }
+.feature .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.link { background: none; border: 0; padding: 0; font: 600 14px var(--body); color: var(--accent); text-decoration: underline; text-underline-offset: 4px; }
+
+.block { padding-block: 16vh 10vh; }
+.cases { display: grid; gap: 10px; margin-top: 22px; }
+.case { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; }
+.case summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 16px 18px; }
+.case summary::-webkit-details-marker { display: none; }
+.case summary b { font: 700 19px var(--display); letter-spacing: -.02em; }
+.case summary span { grid-column: 1; color: var(--muted); font-size: 14.5px; }
+.case summary em { grid-row: 1 / span 2; grid-column: 2; align-self: center; font: 500 10.5px var(--mono); font-style: normal; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.case summary em.won { background: color-mix(in oklab, #1fae6a 16%, var(--surface)); color: #138a52; border-color: transparent; }
+.case dl { display: grid; grid-template-columns: 96px 1fr; gap: 8px 14px; margin: 0; padding: 0 18px 18px; font-size: 14.5px; }
+.case dt { font: 500 10.5px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding-top: 3px; }
+.case dd { margin: 0; }
+
+.log { margin-top: 22px; border-top: 1px solid var(--line); }
+.log li { list-style: none; display: grid; grid-template-columns: 56px 1fr auto; gap: 4px 16px; align-items: baseline; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.log { padding: 0; }
+.log .v { font: 500 12px var(--mono); color: var(--muted); }
+.log b { font: 700 20px var(--display); letter-spacing: -.02em; }
+.log .role { color: var(--muted); grid-column: 2; }
+.log time { font: 500 11.5px var(--mono); color: var(--muted); grid-row: 1; grid-column: 3; white-space: nowrap; }
+.log .now { color: var(--accent); }
+
+.contact { padding-block: 16vh 20vh; }
+.email { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 10px 0 18px; }
+.email a { font: 800 clamp(28px, 5vw, 64px)/1 var(--display); letter-spacing: -.04em; text-decoration: none; overflow-wrap: anywhere; }
+.footer { padding-block: 0 48px; color: var(--muted); font-size: 13px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+
+/* ---------- floating consoles */
+.console { position: fixed; z-index: 25; right: var(--gutter); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); width: min(400px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 30px 80px -30px rgba(10,14,28,.55); padding: 18px; display: grid; gap: 12px; }
+.console header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.sev { font: 500 10.5px var(--mono); padding: 4px 8px; border-radius: 999px; background: var(--crit); color: #fff; letter-spacing: .05em; }
+.console h3 { margin: 0; font: 700 22px/1.1 var(--display); letter-spacing: -.02em; }
+.console p { margin: 0; color: var(--muted); font-size: 14.5px; }
+.actions { display: grid; gap: 8px; }
+.actions button { text-align: left; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); font: 600 14px var(--body); transition: border-color .2s, transform .15s; }
+.actions button:hover { border-color: var(--ink); }
+.actions button.wrong { animation: shake .35s; border-color: var(--crit); color: var(--crit); }
+@keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.feedback { font: 500 11.5px var(--mono); color: var(--muted); min-height: 1.4em; }
+.close { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface-2); display: grid; place-items: center; font-size: 16px; line-height: 1; }
+.spans { display: grid; gap: 5px; font: 500 11px var(--mono); }
+.span { display: grid; grid-template-columns: 92px 1fr 54px; gap: 8px; align-items: center; }
+.span .track { position: relative; height: 10px; background: var(--surface-2); border-radius: 3px; }
+.span .track i { position: absolute; top: 0; bottom: 0; border-radius: 3px; background: var(--healthy); }
+.span .track i.slow { background: var(--warn); } .span .track i.err { background: var(--crit); }
+.span em { font-style: normal; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.modal { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: color-mix(in oklab, var(--bg) 55%, transparent); backdrop-filter: blur(6px); }
+.modal .in { width: min(600px, 100%); max-height: 88svh; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 26px; box-shadow: 0 40px 100px -40px rgba(10,14,28,.6); }
+.modal h2 { font: 800 clamp(30px, 5vw, 46px)/1 var(--display); letter-spacing: -.035em; margin: 8px 0 12px; }
+.modal dl { display: grid; grid-template-columns: 100px 1fr; gap: 10px 14px; font-size: 15px; margin: 16px 0; }
+.modal dt { font: 500 10.5px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding-top: 3px; }
+.modal dd { margin: 0; }
+.stamp { display: inline-flex; gap: 8px; align-items: center; font: 500 11px var(--mono); padding: 5px 10px; border-radius: 999px; background: color-mix(in oklab, #1fae6a 16%, var(--surface)); color: #138a52; }
+
+@media (max-width: 860px) {
+  .scrim { background: linear-gradient(180deg, transparent 0%, transparent 18%, var(--scrim) 52%, var(--scrim) 100%); }
+  .nav { display: none; }
+  .mark span { display: none; }
+  .status { min-width: 0; }
+  .status span { max-width: 44vw; overflow: hidden; text-overflow: ellipsis; }
+  .hero { padding-top: 46svh; min-height: auto; padding-bottom: 40px; }
+  .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .metric:nth-child(n+4) { display: none; }
+  .chapter { padding-block: 40svh 10vh; min-height: auto; }
+  .chapter .col, .block .col, .contact .col { background: color-mix(in oklab, var(--bg) 86%, transparent); backdrop-filter: blur(10px); border-radius: 18px; padding: 16px; margin-inline: -16px; width: calc(100% + 32px); }
+  .console { left: 12px; right: 12px; width: auto; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+  .log li { grid-template-columns: 44px 1fr; } .log time { grid-row: auto; grid-column: 2; }
+  .case dl, .modal dl { grid-template-columns: 1fr; gap: 2px 0; } .case dt, .modal dt { padding-top: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .status.bad i { animation: none; } }
+</style>
+
+<canvas id="scene" aria-hidden="true"></canvas>
+<div class="scrim" aria-hidden="true"></div>
+<div id="labels" aria-hidden="true"></div>
+
+<header class="bar">
+  <a class="mark" href="#top">Your Name <span>· full-stack</span></a>
+  <nav class="nav" aria-label="Sections"><a href="#top" class="on">Live</a><a href="#stack">Stack</a><a href="#work">Work</a><a href="#experience">Experience</a><a href="#contact">Contact</a></nav>
+  <span class="status" id="status" role="status"><i></i><span id="statusText">All systems normal</span></span>
+  <button class="icon-btn" id="theme" type="button" aria-label="Switch light or dark theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+</header>
+
+<main class="page">
+  <section class="hero" id="top" data-focus="all">
+    <div class="col">
+      <div class="eyebrow">Senior Software Engineer · Full-stack · Your City</div>
+      <h1>Systems that stay up when <em>traffic</em> doesn't.</h1>
+      <p class="lede">React and TypeScript in front; Node, Go and Postgres behind; and the production experience to keep it all running. The system behind this text is a live simulation of the kind I build. Poke it.</p>
+      <div class="ctas">
+        <button class="btn primary" id="breakBtn" type="button"><i></i>Break production</button>
+        <a class="btn" href="#work">Read the case studies</a>
+      </div>
+      <div class="metrics" aria-label="Simulated live metrics">
+        <div class="metric"><span>req/s</span><b id="mRps">0</b></div>
+        <div class="metric"><span>p50</span><b id="mP50">0 ms</b></div>
+        <div class="metric"><span>p99</span><b id="mP99">0 ms</b></div>
+        <div class="metric"><span>errors</span><b id="mErr">0.0%</b></div>
+        <div class="metric"><span>served</span><b id="mServed">0</b></div>
+      </div>
+      <div class="hint">Tip: click any moving dot to trace that request through the stack.</div>
+    </div>
+  </section>
+
+  <section id="stack">
+    <div class="chapter" data-focus="edge">
+      <div class="col">
+        <div class="eyebrow">Layer 1 of 4 · Edge &amp; interface</div>
+        <h2>Fast, accessible front ends.</h2>
+        <p class="say">The part people touch. Server rendering where it helps, careful caching at the edge, and components that work with a keyboard and a screen reader.</p>
+        <ul class="chips"><li>React</li><li>Next.js</li><li>TypeScript</li><li>Accessibility</li><li>Core Web Vitals</li><li>CDN caching</li></ul>
+        <article class="feature"><span class="eyebrow">Featured</span><h3>Design system</h3><p>One component library and token set shared by every product team.</p><div class="row"><span class="mono">React · Storybook · Radix UI</span><button class="link" type="button" data-case="design-system">Open case study</button></div></article>
+      </div>
+    </div>
+    <div class="chapter" data-focus="api">
+      <div class="col">
+        <div class="eyebrow">Layer 2 of 4 · API</div>
+        <h2>Contracts other teams can rely on.</h2>
+        <p class="say">Gateways, auth and backend-for-frontend layers with versioned contracts, rate limits and errors that tell you what to do next.</p>
+        <ul class="chips"><li>Node.js</li><li>REST</li><li>GraphQL</li><li>gRPC</li><li>OAuth / OIDC</li><li>Rate limiting</li></ul>
+        <article class="feature"><span class="eyebrow">Featured</span><h3>Payments API</h3><p>Retries, webhooks and reconciliation that never double-charge.</p><div class="row"><span class="mono">Node.js · PostgreSQL · Kafka</span><button class="link" type="button" data-case="payments">Open case study</button></div></article>
+      </div>
+    </div>
+    <div class="chapter" data-focus="svc">
+      <div class="col">
+        <div class="eyebrow">Layer 3 of 4 · Services</div>
+        <h2>Services that fail gracefully.</h2>
+        <p class="say">Small services with timeouts, retries with backoff, idempotent writes, and enough tracing to find the slow hop in one look.</p>
+        <ul class="chips"><li>Go</li><li>Node.js</li><li>Queues</li><li>Idempotency</li><li>OpenTelemetry</li><li>Kubernetes</li></ul>
+        <article class="feature"><span class="eyebrow">Featured</span><h3>Search service</h3><p>Typo-tolerant product search with caching and relevance tuning.</p><div class="row"><span class="mono">Go · OpenSearch · Redis</span><button class="link" type="button" data-case="search">Open case study</button></div></article>
+      </div>
+    </div>
+    <div class="chapter" data-focus="data">
+      <div class="col">
+        <div class="eyebrow">Layer 4 of 4 · Data</div>
+        <h2>Data that stays correct under load.</h2>
+        <p class="say">Schemas that migrate without downtime, caches with an invalidation story, and event streams that feed dashboards in real time.</p>
+        <ul class="chips"><li>PostgreSQL</li><li>Redis</li><li>Kafka</li><li>ClickHouse</li><li>AWS</li><li>Terraform</li></ul>
+        <article class="feature"><span class="eyebrow">Featured</span><h3>Realtime ops dashboard</h3><p>Order and system events streamed live to support and ops.</p><div class="row"><span class="mono">React · WebSockets · ClickHouse</span><button class="link" type="button" data-case="realtime">Open case study</button></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="work" data-focus="all">
+    <div class="col">
+      <div class="eyebrow">Case studies · readable without playing</div>
+      <h2>Incidents I'd want you to ask me about.</h2>
+      <p class="say" style="color:var(--muted);max-width:46ch">Each one is also an incident in the simulation above. Resolve it there and it gets a stamp here.</p>
+      <div class="cases" id="cases"></div>
+    </div>
+  </section>
+
+  <section class="block" id="experience" data-focus="all">
+    <div class="col">
+      <div class="eyebrow">Experience · release history</div>
+      <h2>Shipped, in order.</h2>
+      <ol class="log" id="log"></ol>
+    </div>
+  </section>
+
+  <section class="contact" id="contact" data-focus="all">
+    <div class="col">
+      <div class="eyebrow">Contact · open to new roles</div>
+      <h2 style="font:800 clamp(36px,4.8vw,64px)/.95 var(--display);letter-spacing:-.04em;margin:10px 0 6px">Page me.</h2>
+      <div class="email"><a href="mailto:you@example.com" id="email">you@example.com</a><button class="btn" id="copy" type="button">Copy email</button></div>
+      <div class="ctas"><a class="btn" href="https://github.com/" target="_blank" rel="noopener">GitHub</a><a class="btn" href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a><a class="btn" href="#work">Résumé highlights</a></div>
+    </div>
+  </section>
+  <footer class="footer"><span>Sample profile: a senior / SDE-2 full-stack engineer.</span><span id="servedFoot">0 simulated requests served since you arrived.</span></footer>
+</main>
+
+<div class="console" id="incident" hidden role="dialog" aria-labelledby="incTitle">
+  <header><span class="sev" id="incSev">SEV-2</span><span class="mono" id="incClock">00:00</span></header>
+  <h3 id="incTitle"></h3>
+  <p id="incSymptom"></p>
+  <div class="actions" id="incActions"></div>
+  <div class="feedback" id="incFeedback" aria-live="polite">Look where the requests pile up.</div>
+</div>
+
+<div class="console" id="trace" hidden role="dialog" aria-labelledby="trTitle">
+  <header><span class="eyebrow" id="trId">trace</span><button class="close" id="trClose" type="button" aria-label="Close trace">×</button></header>
+  <h3 id="trTitle" style="font-family:var(--mono);font-size:15px;font-weight:500"></h3>
+  <div class="spans" id="trSpans"></div>
+  <p class="mono" id="trTotal"></p>
+</div>
+
+<div class="modal" id="modal" hidden><div class="in" id="modalIn" role="dialog" aria-modal="true"></div></div>
+
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+/* ================================================================ content (sample slots) */
+const PROJECTS = {
+  payments: { title: 'Payments API', summary: 'An idempotent payments service: retries, webhooks and reconciliation that never double-charge.', stack: 'Node.js · TypeScript · PostgreSQL · Redis · Kafka', problem: 'Retries from clients and the provider created duplicate charges.', approach: 'Idempotency keys at the edge, an outbox table, webhooks replayed from a queue.', outcome: 'Duplicate charges stopped; payments stopped paging on-call.' },
+  realtime: { title: 'Realtime ops dashboard', summary: 'A live dashboard streaming order and system events to support and ops teams.', stack: 'React · Next.js · WebSockets · Kafka · ClickHouse', problem: 'Teams refreshed stale reports to see what was happening right now.', approach: 'An event stream fanned out over WebSockets, windowed aggregates in ClickHouse.', outcome: 'Incidents spotted from the dashboard instead of from customer tickets.' },
+  'design-system': { title: 'Design system', summary: 'One component library and token set shared by every product team.', stack: 'React · TypeScript · Storybook · Radix UI', problem: 'Every page shipped its own buttons, spacing and accessibility bugs.', approach: 'Tokens first, accessible primitives, visual regression tests in CI.', outcome: 'New screens assembled from parts; accessibility fixed once.' },
+  search: { title: 'Search service', summary: 'Typo-tolerant product search with caching and relevance tuning.', stack: 'Go · OpenSearch · Redis · gRPC', problem: 'Search timed out under load and missed misspelled queries.', approach: 'A read-through cache, query rewriting, offline relevance evaluation.', outcome: 'Faster results under peak traffic; fewer zero-result searches.' },
+};
+const RELEASES = [
+  { v: 'v4', org: 'Company A', role: 'Senior Software Engineer', when: '2024 – now', now: true },
+  { v: 'v3', org: 'Company B', role: 'Software Engineer II (SDE-2)', when: '2021 – 2024' },
+  { v: 'v2', org: 'Company C', role: 'Software Engineer', when: '2019 – 2021' },
+  { v: 'v1', org: 'University', role: 'B.Tech / B.S., Computer Science', when: '2015 – 2019' },
+];
+const INCIDENTS = [
+  { node: 'payments', title: 'Retry storm at checkout', symptom: 'Clients and the payment provider both retry failed calls. Customers are being charged twice.', actions: ['Add idempotency keys', 'Scale out the payments service', 'Add a database index', 'Roll back the last deploy'], fix: 0, project: 'payments', why: 'Scaling makes duplicates faster. An idempotency key makes a retry safe.' },
+  { node: 'kafka', title: 'Dashboard minutes behind', symptom: 'Consumer lag on the events topic keeps growing. Support is looking at numbers from ten minutes ago.', actions: ['Roll back the last deploy', 'Partition the topic and scale consumers', 'Add a CDN rule', 'Add idempotency keys'], fix: 1, project: 'realtime', why: 'One partition means one consumer. More partitions, more consumers.' },
+  { node: 'web', title: 'Checkout button broken', symptom: 'Right after a deploy, a shared component change broke the checkout button in Safari.', actions: ['Scale out the web tier', 'Add a cache in front of it', 'Roll back, then add visual tests', 'Partition the topic'], fix: 2, project: 'design-system', why: 'Roll back first to stop the bleeding, then make the regression impossible to ship again.' },
+  { node: 'index', title: 'Search timing out at peak', symptom: 'Every evening the search cluster saturates and queries time out. The cache was bypassed.', actions: ['Add a read-through cache', 'Roll back the last deploy', 'Add idempotency keys', 'Add a WAF rule'], fix: 0, project: 'search', why: 'Most queries repeat. Serve them from cache and the cluster only sees the long tail.' },
+];
+
+/* ================================================================ page bits */
+const $ = (id) => document.getElementById(id);
+const resolved = new Set();
+function renderCases() {
+  $('cases').innerHTML = INCIDENTS.map((inc) => { const p = PROJECTS[inc.project]; const won = resolved.has(inc.project);
+    return `<details class="case"><summary><b>${p.title}</b><span>${p.summary}</span><em class="${won ? 'won' : ''}">${won ? 'Resolved in sim' : 'Incident: ' + inc.title}</em></summary>
+      <dl><dt>Problem</dt><dd>${p.problem}</dd><dt>Approach</dt><dd>${p.approach}</dd><dt>Outcome</dt><dd>${p.outcome}</dd><dt>Stack</dt><dd>${p.stack}</dd></dl></details>`; }).join('');
+}
+renderCases();
+$('log').innerHTML = RELEASES.map((r) => `<li><span class="v">${r.v}</span><b>${r.org}</b><time class="${r.now ? 'now' : ''}">${r.when}</time><span class="role">${r.role}</span></li>`).join('');
+function openModal(html) { $('modalIn').innerHTML = html + '<div class="ctas" style="margin-top:18px"><button class="btn primary" type="button" data-close>Back to the system</button></div>'; $('modal').hidden = false; $('modalIn').querySelector('[data-close]').focus(); }
+$('modal').addEventListener('click', (e) => { if (e.target === $('modal') || e.target.closest('[data-close]')) $('modal').hidden = true; });
+function caseHTML(id, extra = '') { const p = PROJECTS[id]; return `${extra}<div class="eyebrow">Case study</div><h2>${p.title}</h2><p style="color:var(--muted);margin:0">${p.summary}</p><dl><dt>Problem</dt><dd>${p.problem}</dd><dt>Approach</dt><dd>${p.approach}</dd><dt>Outcome</dt><dd>${p.outcome}</dd><dt>Stack</dt><dd>${p.stack}</dd></dl>`; }
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-case]'); if (b) openModal(caseHTML(b.dataset.case)); });
+$('copy').addEventListener('click', async () => { const t = $('email').textContent; try { await navigator.clipboard.writeText(t); $('copy').textContent = 'Copied'; } catch { const r = document.createRange(); r.selectNodeContents($('email')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('copy').textContent = 'Selected: press Copy'; } setTimeout(() => ($('copy').textContent = 'Copy email'), 2000); });
+addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('modal').hidden = true; closeTrace(); } });
+
+/* ================================================================ theme */
+const root = document.documentElement;
+const tok = (n) => getComputedStyle(root).getPropertyValue(n).trim();
+const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+$('theme').addEventListener('click', () => { root.dataset.theme = isDark() ? 'light' : 'dark'; applyTheme(); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyTheme());
+
+/* ================================================================ 3D */
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const narrow = () => innerWidth <= 860;
+const canvas = $('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, narrow() ? 1.6 : 2));
+renderer.toneMapping = THREE.NoToneMapping; // keep the scene background identical to the page background
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 200);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8899bb, 1.4));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(6, 12, 8); scene.add(sun);
+
+const LAYERS = [
+  { id: 'edge', name: 'EDGE', y: 4.2, nodes: [['cdn', 'CDN', -2.8, 0.2], ['web', 'Web app', 0, -0.7], ['waf', 'WAF', 2.8, 0.3]] },
+  { id: 'api', name: 'API', y: 1.4, nodes: [['gw', 'Gateway', -1.8, 0.2], ['auth', 'Auth', 1.9, -0.5], ['bff', 'BFF', 0.2, 1.3]] },
+  { id: 'svc', name: 'SERVICES', y: -1.4, nodes: [['orders', 'Orders', -3.1, 0.3], ['payments', 'Payments', -1.0, -0.9], ['search', 'Search', 1.2, 0.7], ['notify', 'Notify', 3.1, -0.3]] },
+  { id: 'data', name: 'DATA', y: -4.2, nodes: [['pg', 'Postgres', -2.6, 0], ['redis', 'Redis', -0.5, 0.9], ['kafka', 'Kafka', 1.5, -0.7], ['index', 'Search index', 3.2, 0.5]] },
+];
+const MS = { cdn: 3, web: 9, waf: 2, gw: 5, auth: 11, bff: 12, orders: 24, payments: 38, search: 16, notify: 9, pg: 13, redis: 1.4, kafka: 6, index: 31 };
+const NODES = {};
+const plates = [], plateEdges = [], nodeMeshes = [];
+const plateGeo = new RoundedBoxGeometry(10.4, 0.12, 6.2, 3, 0.06);
+const plateEdgeGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(10.4, 0.12, 6.2));
+for (const L of LAYERS) {
+  const plate = new THREE.Mesh(plateGeo, new THREE.MeshStandardMaterial({ transparent: true, opacity: 0.55, roughness: 0.4, metalness: 0.1 }));
+  plate.position.y = L.y; scene.add(plate); plates.push(plate); L.plate = plate;
+  const edges = new THREE.LineSegments(plateEdgeGeo, new THREE.LineBasicMaterial({ transparent: true, opacity: 0.6 }));
+  edges.position.y = L.y; scene.add(edges); plateEdges.push(edges);
+  const grid = new THREE.GridHelper(10, 20); grid.scale.z = 6 / 10; grid.position.y = L.y + 0.065; grid.material.transparent = true; grid.material.opacity = 0.12; scene.add(grid); L.grid = grid;
+  for (const [id, label, x, z] of L.nodes) {
+    const isData = L.id === 'data';
+    const geo = isData ? new THREE.CylinderGeometry(0.42, 0.42, 0.7, 40) : new RoundedBoxGeometry(0.95, 0.5, 0.95, 4, 0.12);
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0.15, emissive: 0x000000 }));
+    const h = isData ? 0.35 : 0.25;
+    mesh.position.set(x, L.y + 0.06 + h, z); scene.add(mesh); nodeMeshes.push(mesh);
+    NODES[id] = { id, label, layer: L.id, pos: new THREE.Vector3(x, L.y + 0.06 + h * 2 + 0.05, z), mesh, hot: 0 };
+  }
+}
+// Faint connections along the routes requests take.
+const ROUTES = [
+  { name: 'GET /assets/app.js', w: 4, hops: ['cdn'] },
+  { name: 'GET /products', w: 3, hops: ['cdn', 'web', 'gw', 'bff', 'orders', 'pg'] },
+  { name: 'GET /search?q=', w: 4, hops: ['cdn', 'gw', 'search', 'redis'] },
+  { name: 'POST /checkout', w: 2, hops: ['waf', 'gw', 'auth', 'payments', 'pg'] },
+  { name: 'POST /webhooks/payment', w: 1, hops: ['waf', 'gw', 'payments', 'kafka'] },
+  { name: 'WS /live/orders', w: 2, hops: ['web', 'gw', 'orders', 'kafka'] },
+  { name: 'POST /notify', w: 1, hops: ['gw', 'auth', 'notify', 'kafka'] },
+];
+const pairs = new Set();
+for (const r of ROUTES) for (let i = 0; i < r.hops.length - 1; i++) pairs.add([r.hops[i], r.hops[i + 1]].sort().join('|'));
+pairs.add('index|search');
+const linkPts = [];
+for (const p of pairs) { const [a, b] = p.split('|'); linkPts.push(NODES[a].pos, NODES[b].pos); }
+const links = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(linkPts), new THREE.LineBasicMaterial({ transparent: true, opacity: 0.18 }));
+scene.add(links);
+
+// Requests: one instanced mesh for all of them.
+const CAP = narrow() ? 380 : 900;
+const dotGeo = new THREE.SphereGeometry(0.075, 10, 8);
+const dotMat = new THREE.MeshBasicMaterial({ toneMapped: false });
+const dots = new THREE.InstancedMesh(dotGeo, dotMat, CAP);
+dots.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+dots.setColorAt(0, new THREE.Color()); dots.instanceColor.setUsage(THREE.DynamicDrawUsage);
+{ const hide = new THREE.Object3D(); hide.scale.setScalar(0); hide.updateMatrix(); for (let i = 0; i < CAP; i++) dots.setMatrixAt(i, hide.matrix); }
+scene.add(dots);
+const free = Array.from({ length: CAP }, (_, i) => CAP - 1 - i);
+const reqs = [];
+const tmp = new THREE.Object3D(), col = new THREE.Color();
+const C = { healthy: new THREE.Color(), warn: new THREE.Color(), crit: new THREE.Color(), accent: new THREE.Color() };
+
+// Traced request highlight.
+const traceLine = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ transparent: true, opacity: 0.95, toneMapped: false }));
+traceLine.visible = false; scene.add(traceLine);
+const halo = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.025, 8, 40), new THREE.MeshBasicMaterial({ toneMapped: false })); halo.visible = false; scene.add(halo);
+// Resolve burst.
+const burst = new THREE.Mesh(new THREE.RingGeometry(0.4, 0.5, 64), new THREE.MeshBasicMaterial({ transparent: true, side: THREE.DoubleSide, toneMapped: false, color: 0x1fae6a }));
+burst.rotation.x = -Math.PI / 2; burst.visible = false; scene.add(burst);
+
+// Bloom in the dark theme only: glowing dots on a light page look muddy.
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.9, 0.45, 0.62);
+composer.addPass(bloom); composer.addPass(new OutputPass());
+
+function applyTheme() {
+  const dark = isDark();
+  scene.background = new THREE.Color(tok('--bg'));
+  for (const L of LAYERS) { L.plate.material.color.set(tok('--surface')); L.plate.material.opacity = dark ? 0.5 : 0.62; L.grid.material.color = new THREE.Color(tok('--ink')); }
+  for (const e of plateEdges) e.material.color.set(tok(dark ? '--healthy' : '--line')), (e.material.opacity = dark ? 0.35 : 0.9);
+  for (const m of nodeMeshes) m.material.color.set(dark ? '#1b2442' : '#ffffff');
+  links.material.color.set(tok('--ink')); links.material.opacity = dark ? 0.16 : 0.2;
+  C.healthy.set(tok('--healthy')); C.warn.set(tok('--warn')); C.crit.set(tok('--crit')); C.accent.set(tok('--accent'));
+  if (dark) C.healthy.multiplyScalar(1.6);
+  traceLine.material.color.copy(C.accent); halo.material.color.copy(C.accent);
+  dotMat.blending = dark ? THREE.AdditiveBlending : THREE.NormalBlending; dotMat.needsUpdate = true;
+  sun.intensity = dark ? 0.9 : 1.6;
+}
+
+/* ================================================================ simulation */
+const SPEED = reduce ? 1.6 : 6.5;      // world units per second between hops
+const VIS = 0.006;                     // seconds on screen per ms of service time
+const stats = { served: 0, errors: 0, rOk: 0, rErr: 0, window: [], spawned: 0 };
+let incident = null, incStart = 0, wrongs = 0;
+let clock = 0;
+const entryPoint = () => { const a = Math.random() * Math.PI * 2, r = 3 + Math.random() * 2.2; return new THREE.Vector3(Math.cos(a) * r, 7.6 + Math.random() * 0.8, Math.sin(a) * r * 0.6); };
+function pickRoute() { const total = ROUTES.reduce((s, r) => s + r.w, 0); let x = Math.random() * total; for (const r of ROUTES) { if ((x -= r.w) <= 0) return r; } return ROUTES[0]; }
+function spawn() {
+  if (!free.length) return;
+  const r = pickRoute(); const hops = [...r.hops];
+  // Cache misses fall through to the index; during the search incident everything does.
+  if (r.hops.includes('redis') && (Math.random() < 0.28 || incident?.node === 'index')) hops.push('index');
+  const entry = entryPoint();
+  const fwd = hops.map((h) => NODES[h].pos);
+  const path = [entry, ...fwd, ...fwd.slice(0, -1).reverse(), entry.clone().add(new THREE.Vector3(0, 0.4, 0))];
+  const hopAt = [null, ...hops, ...hops.slice(0, -1).reverse().map(() => null), null];
+  reqs.push({ slot: free.pop(), route: r, hops, path, hopAt, i: 0, t: 0, dwell: 0, phase: 'move', pos: entry.clone(), spans: [], ms: 0, born: clock, status: 'ok', id: (++stats.spawned).toString(16).padStart(6, '0'), jitter: new THREE.Vector3((Math.random() - 0.5) * 0.5, Math.random() * 0.25, (Math.random() - 0.5) * 0.5) });
+}
+function serviceMs(node) { const base = MS[node] * (0.6 + Math.random() * 0.9); return incident?.node === node ? base * (14 + Math.random() * 10) : base; }
+function step(dt) {
+  clock += dt;
+  const rate = (narrow() ? 26 : 60) * (reduce ? 0.35 : 1);
+  stats.acc = (stats.acc || 0) + dt * rate;
+  while (stats.acc >= 1) { stats.acc -= 1; spawn(); }
+  for (const q of reqs) {
+    if (q.phase === 'fall') { q.vy -= 9 * dt; q.pos.y += q.vy * dt; q.fall += dt; if (q.fall > 1.4) q.done = true; continue; }
+    if (q.phase === 'dwell') {
+      q.dwell -= dt;
+      const n = NODES[q.hopAt[q.i]];
+      // Requests waiting at a broken node visibly pile up around it.
+      const spread = incident?.node === n.id ? 0.9 : 0.25;
+      q.pos.copy(n.pos).addScaledVector(q.jitter, spread);
+      if (q.dwell <= 0) {
+        const sp = q.spans[q.spans.length - 1]; sp.end = clock;
+        if (incident?.node === n.id && Math.random() < 0.3) { q.status = 'err'; q.phase = 'fall'; q.vy = 0.5; q.fall = 0; stats.errors++; stats.rErr++; sp.err = true; continue; }
+        q.phase = 'move';
+      }
+      continue;
+    }
+    const a = q.path[q.i], b = q.path[q.i + 1];
+    if (!b) { q.done = true; stats.served++; stats.rOk++; stats.window.push(q.ms + q.spans.length * 1.2); if (stats.window.length > 400) stats.window.shift(); continue; }
+    const L = a.distanceTo(b) || 0.001;
+    q.t += (SPEED * dt) / L;
+    if (q.t >= 1) {
+      q.i++; q.t = 0; q.pos.copy(b);
+      const node = q.hopAt[q.i];
+      if (node) { const ms = serviceMs(node); q.ms += ms; q.spans.push({ node, start: clock, end: null, ms }); q.dwell = ms * VIS; q.phase = 'dwell'; }
+    } else q.pos.lerpVectors(a, b, q.t);
+  }
+  for (let i = reqs.length - 1; i >= 0; i--) if (reqs[i].done) { const q = reqs[i]; free.push(q.slot); tmp.scale.setScalar(0); tmp.updateMatrix(); dots.setMatrixAt(q.slot, tmp.matrix); if (traced === q) traced = null; reqs.splice(i, 1); }
+  for (const q of reqs) {
+    tmp.position.copy(q.pos);
+    tmp.scale.setScalar(q === traced ? 1.9 : q.status === 'err' ? 1.3 : 1);
+    tmp.updateMatrix(); dots.setMatrixAt(q.slot, tmp.matrix);
+    const slow = q.phase === 'dwell' && incident?.node === q.hopAt[q.i];
+    dots.setColorAt(q.slot, q === traced ? C.accent : q.status === 'err' ? C.crit : slow ? C.warn : C.healthy);
+  }
+  dots.instanceMatrix.needsUpdate = true; dots.instanceColor.needsUpdate = true;
+  for (const n of Object.values(NODES)) {
+    const target = incident?.node === n.id ? 1 : 0; n.hot += (target - n.hot) * Math.min(1, dt * 4);
+    n.mesh.material.emissive.copy(C.crit).multiplyScalar(n.hot * (0.55 + 0.45 * Math.sin(clock * 6)));
+  }
+}
+function pct(arr, p) { if (!arr.length) return 0; const s = [...arr].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; }
+
+/* ================================================================ camera: follows the section you are reading */
+const FOCUS = { all: { y: 0.9, dist: 24 }, edge: { y: 4.2, dist: 11 }, api: { y: 1.4, dist: 11 }, svc: { y: -1.4, dist: 11.5 }, data: { y: -4.2, dist: 11.5 } };
+let focus = 'all';
+const dir = new THREE.Vector3(0.62, 0.48, 0.62).normalize();
+const camTarget = new THREE.Vector3(), camPos = new THREE.Vector3();
+const pointer = { x: 0, y: 0, nx: 0, ny: 0 };
+addEventListener('pointermove', (e) => { pointer.x = e.clientX; pointer.y = e.clientY; pointer.nx = e.clientX / innerWidth - 0.5; pointer.ny = e.clientY / innerHeight - 0.5; }, { passive: true });
+function aimCamera(dt, snap) {
+  const f = FOCUS[incident ? NODES[incident.node].layer : focus]; const dist = f.dist * (narrow() ? 1.35 : 1);
+  const want = new THREE.Vector3(0, f.y, 0);
+  const sway = reduce ? 0 : 1;
+  const d = dir.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), pointer.nx * 0.35 * sway + Math.sin(clock * 0.08) * 0.12 * sway);
+  d.y += -pointer.ny * 0.18 * sway;
+  const wantPos = want.clone().addScaledVector(d.normalize(), dist);
+  const k = snap ? 1 : 1 - Math.exp(-dt * 2.2);
+  camTarget.lerp(want, k); camPos.lerp(wantPos, k);
+  camera.position.copy(camPos); camera.lookAt(camTarget);
+}
+const sections = [...document.querySelectorAll('[data-focus]')];
+const navLinks = [...document.querySelectorAll('.nav a')];
+const io = new IntersectionObserver((entries) => {
+  const vis = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+  if (vis) focus = vis.target.dataset.focus;
+}, { threshold: [0.2, 0.4, 0.6] });
+sections.forEach((s) => io.observe(s));
+addEventListener('scroll', () => { const ids = ['top', 'stack', 'work', 'experience', 'contact']; let on = 0; ids.forEach((id, i) => { if ($(id).getBoundingClientRect().top < innerHeight * 0.45) on = i; }); navLinks.forEach((a, i) => a.classList.toggle('on', i === on)); }, { passive: true });
+
+/* ================================================================ labels */
+const labelEls = {};
+for (const n of Object.values(NODES)) { const el = document.createElement('div'); el.className = 'label'; el.textContent = n.label; $('labels').appendChild(el); labelEls[n.id] = el; }
+const v = new THREE.Vector3();
+function placeLabels() {
+  for (const n of Object.values(NODES)) {
+    const el = labelEls[n.id]; v.copy(n.pos).add(new THREE.Vector3(0, 0.35, 0)).project(camera);
+    const x = (v.x * 0.5 + 0.5) * innerWidth, y = (-v.y * 0.5 + 0.5) * innerHeight;
+    const show = v.z < 1 && (focus === 'all' ? !narrow() : n.layer === focus) || incident?.node === n.id;
+    el.style.opacity = show ? 1 : 0;
+    el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
+    el.classList.toggle('hot', incident?.node === n.id);
+  }
+}
+
+/* ================================================================ trace inspector: click a dot */
+let traced = null, traceT = 0;
+addEventListener('pointerdown', (e) => {
+  if (e.target.closest('a,button,input,details,.feature,.case,.console,.modal,.metrics,.bar,h1,h2,p,li')) return;
+  let best = null, bd = 30 * 30;
+  for (const q of reqs) { if (q.phase === 'fall') continue; v.copy(q.pos).project(camera); const x = (v.x * 0.5 + 0.5) * innerWidth, y = (-v.y * 0.5 + 0.5) * innerHeight; const d = (x - e.clientX) ** 2 + (y - e.clientY) ** 2; if (d < bd) { bd = d; best = q; } }
+  if (best) { traced = best; openTrace(); }
+});
+function openTrace() { $('incident').hidden = true; $('trace').hidden = false; traceLine.visible = true; halo.visible = true; traceLine.geometry.setFromPoints(traced.path); renderTrace(); }
+function closeTrace() { traced = null; $('trace').hidden = true; traceLine.visible = false; halo.visible = false; if (incident) $('incident').hidden = false; }
+$('trClose').addEventListener('click', closeTrace);
+let lastTrace = null;
+function renderTrace() {
+  const q = traced || lastTrace; if (!q) return; lastTrace = q;
+  $('trId').textContent = `trace ${q.id}`; $('trTitle').textContent = q.route.name;
+  const total = Math.max(1, q.ms);
+  let at = 0;
+  $('trSpans').innerHTML = q.spans.map((s) => { const left = (at / total) * 100, w = Math.max(1.5, (s.ms / total) * 100); at += s.ms;
+    const cls = s.err ? 'err' : s.ms > MS[s.node] * 4 ? 'slow' : '';
+    return `<div class="span"><span>${NODES[s.node].label}</span><div class="track"><i class="${cls}" style="left:${left}%;width:${Math.min(100 - left, w)}%"></i></div><em>${s.ms.toFixed(1)} ms</em></div>`; }).join('') || '<p class="mono">Waiting at the edge…</p>';
+  const state = q.status === 'err' ? '500 · failed at ' + NODES[q.spans[q.spans.length - 1].node].label : q.done || !traced ? '200 · complete' : q.i < q.hops.length + 1 ? 'in flight' : 'returning';
+  $('trTotal').textContent = `${q.ms.toFixed(1)} ms so far · ${state}`;
+}
+
+/* ================================================================ incidents: break it, then fix it */
+const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+$('breakBtn').addEventListener('click', () => {
+  if (incident) return;
+  const next = INCIDENTS.find((x) => !resolved.has(x.project)) || INCIDENTS[Math.floor(Math.random() * INCIDENTS.length)];
+  incident = next; incStart = clock; wrongs = 0;
+  closeTrace();
+  $('incTitle').textContent = next.title; $('incSymptom').textContent = next.symptom;
+  $('incFeedback').textContent = 'Watch where the requests pile up, then pick a fix.';
+  $('incActions').innerHTML = next.actions.map((a, i) => `<button type="button" data-fix="${i}">${a}</button>`).join('');
+  $('incident').hidden = false;
+  $('status').classList.add('bad'); $('statusText').textContent = `SEV-2 · ${next.title}`;
+  $('breakBtn').disabled = true;
+  focus = NODES[next.node].layer;
+  if (narrow()) scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+});
+$('incActions').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-fix]'); if (!b || !incident) return;
+  if (Number(b.dataset.fix) !== incident.fix) {
+    wrongs++; b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong');
+    $('incFeedback').textContent = wrongs >= 2 ? `Hint: ${incident.why}` : 'p99 did not move. The fault is somewhere else.';
+    return;
+  }
+  const inc = incident, took = clock - incStart;
+  incident = null; resolved.add(inc.project); renderCases();
+  burst.position.copy(NODES[inc.node].pos); burst.visible = true; burst.scale.setScalar(0.2); burst.material.opacity = 1; burst.t = 0;
+  $('incident').hidden = true; $('status').classList.remove('bad'); $('statusText').textContent = `All systems normal · ${resolved.size}/4 resolved`;
+  $('breakBtn').disabled = false; $('breakBtn').lastChild.textContent = resolved.size >= INCIDENTS.length ? 'Break it again' : 'Break production';
+  setTimeout(() => openModal(caseHTML(inc.project, `<span class="stamp">Resolved in ${fmt(took)} · ${wrongs ? wrongs + ' wrong ' + (wrongs > 1 ? 'tries' : 'try') : 'first try'}</span><p style="color:var(--muted);margin:12px 0 0">${inc.why}</p>`) + (resolved.size >= INCIDENTS.length ? '<p style="margin:0"><b>All four incidents resolved.</b> That is the job. <a href="#contact" data-close>Page me</a>.</p>' : '')), reduce ? 0 : 900);
+});
+
+/* ================================================================ loop */
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false); composer.setSize(w, h); bloom.setSize(w / 2, h / 2);
+  camera.aspect = w / h;
+  // Push the stack to the right of the reading column on wide screens.
+  if (w > 860) camera.setViewOffset(w, h, -w * 0.2, 0, w, h); else camera.setViewOffset(w, h, 0, h * 0.2, w, h);
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+applyTheme(); resize(); aimCamera(0, true);
+for (let i = 0; i < 240; i++) step(1 / 30);
+let last = performance.now(), uiT = 0;
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  step(dt); aimCamera(dt, false); placeLabels();
+  if (traced) { halo.position.copy(traced.pos); halo.lookAt(camera.position); }
+  if (burst.visible) { burst.t += dt; burst.scale.setScalar(0.2 + burst.t * 9); burst.material.opacity = Math.max(0, 1 - burst.t / 1.1); if (burst.t > 1.1) burst.visible = false; }
+  uiT += dt;
+  if (uiT > 0.25) {
+    uiT = 0;
+    // Requests stuck at a broken node count toward latency now, not only when they finally finish.
+    const stuck = incident ? reqs.filter((q) => q.phase === 'dwell' && q.hopAt[q.i] === incident.node).map((q) => q.ms) : [];
+    const lat = stats.window.concat(stuck);
+    const p50 = pct(lat, 0.5), p99 = pct(lat, 0.99);
+    const recent = stats.rErr / Math.max(1, stats.rOk + stats.rErr);
+    $('mRps').textContent = Math.round((narrow() ? 26 : 60) * 21 * (reduce ? 0.35 : 1) + (Math.random() - 0.5) * 40).toLocaleString();
+    $('mP50').textContent = `${Math.round(p50)} ms`;
+    $('mP99').textContent = `${Math.round(p99)} ms`; $('mP99').className = p99 > 800 ? 'crit' : p99 > 300 ? 'warn' : '';
+    $('mErr').textContent = `${(recent * 100).toFixed(1)}%`; $('mErr').className = recent > 0.02 ? 'crit' : '';
+    $('mServed').textContent = stats.served.toLocaleString();
+    $('servedFoot').textContent = `${stats.served.toLocaleString()} simulated requests served since you arrived.`;
+    if (incident) $('incClock').textContent = fmt(clock - incStart);
+    if (!$('trace').hidden) renderTrace();
+    // A decaying window, so the rate reflects the last few seconds, not the whole visit.
+    stats.rOk *= 0.85; stats.rErr *= 0.85;
+  }
+  if (isDark()) composer.render(); else renderer.render(scene, camera);
+}
+renderer.setAnimationLoop(frame);
+document.addEventListener('visibilitychange', () => { if (document.hidden) renderer.setAnimationLoop(null); else { last = performance.now(); renderer.setAnimationLoop(frame); } });
+</script>

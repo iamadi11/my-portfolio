@@ -44,5 +44,6 @@ next-env.d.ts
 *.pdf
 .fallow/
 
-# LAM sample avatar for local development only (MIT, aigc3d/LAM_WebRender)
-public/avatar/sample.zip
+
+# Source assets for generated models (photos, concepts, raw GLBs); only optimised outputs ship from public/
+assets-src/

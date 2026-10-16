@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>On Call wireframe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root { --ink: #0c0d10; --paper: #f4f1ea; --yellow: #ffd23f; --blue: #3ec5ff; --red: #ff4d4d; --green: #49e08a; --panel: rgba(12,13,16,.86);
+          --disp: Anton, Impact, "Arial Narrow", sans-serif; --body: Inter, system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #23262b; color: #fff; font-family: var(--body); touch-action: none; }
+  canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  .hud { position: fixed; z-index: 10; pointer-events: none; }
+  .hud * { pointer-events: auto; }
+  /* top right: incident level and error budget (GTA's wanted stars, re-read as severity) */
+  .status { top: 14px; right: 16px; text-align: right; }
+  .stars { font: 28px var(--disp); letter-spacing: 4px; color: rgba(255,255,255,.25); text-shadow: 0 2px 0 #000; }
+  .stars b { color: var(--yellow); font-weight: 400; }
+  .budget { margin-top: 4px; font: 700 12px var(--mono); text-shadow: 0 1px 0 #000; }
+  .bar { width: 170px; height: 8px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.4); margin: 4px 0 0 auto; }
+  .bar i { display: block; height: 100%; background: var(--green); transition: width .3s, background .3s; }
+  .clock { font: 700 22px var(--mono); text-shadow: 0 2px 0 #000; margin-bottom: 2px; }
+  /* bottom centre: mission subtitle */
+  .subtitle { left: 50%; bottom: 22px; transform: translateX(-50%); max-width: min(720px, 86vw); text-align: center; font: 600 18px/1.35 var(--body); text-shadow: 0 2px 2px #000, 0 0 8px #000; }
+  .subtitle em { color: var(--yellow); font-style: normal; }
+  .subtitle .blue { color: var(--blue); }
+  /* top left: buttons */
+  .tl { top: 14px; left: 16px; display: flex; gap: 8px; }
+  .chip { background: var(--panel); border: 1px solid rgba(255,255,255,.18); border-radius: 999px; padding: 9px 14px; font: 700 12px var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+  .chip.y { background: var(--yellow); color: #111; border-color: transparent; }
+  /* minimap (radar) bottom-left */
+  #radar { position: fixed; left: 16px; bottom: 16px; width: 190px; height: 190px; border-radius: 50%; z-index: 10; box-shadow: 0 0 0 4px rgba(0,0,0,.6), 0 6px 20px rgba(0,0,0,.5); cursor: crosshair; }
+  /* phone */
+  .phone-btn { position: fixed; right: 18px; bottom: 18px; z-index: 11; width: 64px; height: 64px; border-radius: 18px; background: var(--panel); border: 1px solid rgba(255,255,255,.2); display: grid; place-items: center; }
+  .phone-btn svg { width: 28px; height: 28px; }
+  .phone-btn .dot { position: absolute; top: 8px; right: 8px; width: 10px; height: 10px; border-radius: 50%; background: var(--red); }
+  .phone { position: fixed; right: 22px; bottom: 96px; z-index: 20; width: 340px; height: min(620px, calc(100vh - 130px)); border-radius: 38px; background: #0b0c0f; border: 10px solid #1b1d22; box-shadow: 0 30px 80px rgba(0,0,0,.6); display: none; flex-direction: column; overflow: hidden; color: #f2f2f2; }
+  .phone.open { display: flex; animation: up .28s cubic-bezier(.2,.9,.2,1); }
+  @keyframes up { from { transform: translateY(40px); opacity: 0; } }
+  .ph-top { display: flex; justify-content: space-between; padding: 12px 18px 6px; font: 700 12px var(--mono); color: #aaa; }
+  .ph-body { flex: 1; overflow: auto; padding: 8px 16px 16px; }
+  .apps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 10px; padding-top: 18px; }
+  .app { display: grid; justify-items: center; gap: 6px; background: none; border: 0; font: 600 11.5px var(--body); color: #ddd; }
+  .app i { width: 58px; height: 58px; border-radius: 16px; display: grid; place-items: center; font: 22px var(--disp); color: #111; font-style: normal; }
+  .ph-body h2 { font: 30px/1 var(--disp); letter-spacing: .02em; margin: 6px 0 10px; text-transform: uppercase; }
+  .ph-body h3 { font: 700 11px var(--mono); color: #9aa; text-transform: uppercase; letter-spacing: .08em; margin: 16px 0 6px; }
+  .ph-body p { color: #c9c9c9; font-size: 14px; line-height: 1.5; margin: 0 0 8px; }
+  .ph-body a { color: var(--blue); }
+  .r-row { display: grid; gap: 2px; padding: 8px 0; border-top: 1px solid #23252b; font-size: 13.5px; }
+  .r-row span { color: #aaa; }
+  .r-proj { padding: 8px 0; border-top: 1px solid #23252b; font-size: 13.5px; color: #ccc; }
+  .r-proj small { color: #8a8f99; }
+  .r-role { color: #aaa !important; }
+  .mrow { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 11px 0; border-top: 1px solid #23252b; width: 100%; background: none; border-left: 0; border-right: 0; border-bottom: 0; text-align: left; font-size: 14px; }
+  .mrow small { display: block; color: #8a8f99; font-size: 12px; }
+  .tag { font: 700 10px var(--mono); padding: 3px 7px; border-radius: 4px; background: #262a31; color: #ccc; white-space: nowrap; }
+  .tag.done { background: var(--green); color: #062; }
+  .tag.live { background: var(--yellow); color: #111; }
+  .back { background: none; border: 0; color: var(--blue); font: 700 12px var(--mono); padding: 4px 0; }
+  /* mission cards */
+  .card { position: fixed; inset: 0; z-index: 30; display: none; place-items: center; background: rgba(0,0,0,.45); }
+  .card.open { display: grid; }
+  .card .in { width: min(560px, 92vw); max-height: 86vh; overflow: auto; background: var(--paper); color: var(--ink); padding: 26px 26px 22px; box-shadow: 0 30px 80px rgba(0,0,0,.6); transform: rotate(-.6deg); }
+  .card .kicker { font: 700 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: #6b6458; }
+  .card h2 { font: clamp(34px, 6vw, 56px)/.95 var(--disp); text-transform: uppercase; margin: 6px 0 12px; }
+  .card h2.passed { color: #1e9e5a; }
+  .card p { line-height: 1.5; margin: 0 0 10px; }
+  .card dl { display: grid; grid-template-columns: 96px 1fr; gap: 6px 12px; margin: 14px 0; font-size: 14px; }
+  .card dt { font: 700 11px var(--mono); text-transform: uppercase; color: #6b6458; padding-top: 2px; }
+  .card .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .btn { border: 0; padding: 12px 18px; font: 700 13px var(--mono); text-transform: uppercase; letter-spacing: .04em; background: var(--ink); color: #fff; }
+  .btn.y { background: var(--yellow); color: #111; }
+  .btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
+  /* title screen */
+  .title { position: fixed; inset: 0; z-index: 40; display: grid; align-content: end; padding: 6vh 6vw; background:
+           linear-gradient(180deg, rgba(10,10,14,.15), rgba(10,10,14,.92) 70%), repeating-linear-gradient(115deg, #ff6a3d 0 60px, #ff8a3d 60px 120px); }
+  .title.hide { display: none; }
+  .title h1 { font: clamp(80px, 17vw, 230px)/.82 var(--disp); margin: 0; letter-spacing: .01em; color: #fff; text-shadow: 6px 6px 0 #000; }
+  .title p { font: 600 clamp(16px, 2vw, 22px) var(--body); margin: 14px 0 22px; max-width: 46ch; }
+  .title .who { font: 700 13px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--yellow); margin-bottom: 14px; }
+  .title .keys { font: 12px var(--mono); color: #bbb; margin-top: 14px; }
+  /* notes panel */
+  .notes { position: fixed; top: 0; left: 0; bottom: 0; width: min(420px, 92vw); z-index: 35; background: #fff8c9; color: #3b3300; padding: 22px 22px 40px; overflow: auto; transform: translateX(-105%); transition: transform .3s; font: 13.5px/1.5 var(--mono); }
+  .notes.open { transform: none; }
+  .notes h2 { font: 28px var(--disp); margin: 0 0 8px; color: #111; }
+  .notes h3 { font: 700 11px var(--mono); text-transform: uppercase; letter-spacing: .1em; margin: 18px 0 4px; color: #6a5d00; }
+  .notes p, .notes li { margin: 0 0 6px; }
+  .notes ul { padding-left: 18px; margin: 0; }
+  /* touch controls */
+  .stick { position: fixed; left: 24px; bottom: 24px; width: 132px; height: 132px; border-radius: 50%; background: rgba(0,0,0,.35); border: 2px solid rgba(255,255,255,.25); z-index: 12; display: none; }
+  .stick i { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: rgba(255,255,255,.8); }
+  .gps { position: fixed; right: 18px; bottom: 96px; z-index: 11; display: none; }
+  @media (pointer: coarse), (max-width: 760px) {
+    #radar { left: auto; right: 12px; top: 64px; bottom: auto; width: 120px; height: 120px; }
+    .stick, .gps { display: block; }
+    .gps { bottom: 96px; }
+    .phone { left: 10px; right: 10px; width: auto; bottom: 92px; height: calc(100vh - 170px); border-radius: 30px; }
+    .subtitle { bottom: 172px; font-size: 15px; }
+    .status { top: 10px; right: 12px; } .stars { font-size: 22px; } .bar { width: 120px; }
+    .tl { top: 10px; left: 12px; } .clock { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<canvas id="world" aria-hidden="true"></canvas>
+
+<div class="hud tl"><button class="chip" id="notesBtn" type="button">How it becomes 3D</button><button class="chip y" id="resumeBtn" type="button">Résumé</button></div>
+<div class="hud status" aria-live="polite">
+  <div class="clock" id="clock">09:00</div>
+  <div class="stars" id="stars" aria-label="Incident severity"><b></b>★★★★★</div>
+  <div class="budget">ERROR BUDGET <span id="budgetTxt">100%</span></div>
+  <div class="bar"><i id="budget" style="width:100%"></i></div>
+</div>
+<div class="hud subtitle" id="sub" aria-live="polite"></div>
+<canvas id="radar" aria-label="Map: tap to set GPS"></canvas>
+<button class="phone-btn" id="phoneBtn" type="button" aria-label="Open phone"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="3"/><line x1="10" y1="18" x2="14" y2="18"/></svg><span class="dot" id="dot"></span></button>
+<button class="chip y gps" id="autoBtn" type="button">Auto-drive</button>
+<div class="stick" id="stick" aria-hidden="true"><i></i></div>
+
+<section class="phone" id="phone" aria-label="Phone"><div class="ph-top"><span id="phClock">09:00</span><span>ON-CALL · 5G</span></div><div class="ph-body" id="phBody"></div></section>
+<section class="card" id="card"><div class="in" id="cardIn"></div></section>
+
+<aside class="notes" id="notes" aria-label="Notes">
+  <button class="chip" id="notesClose" type="button" style="float:right;background:#111;color:#fff">Close</button>
+  <h2>On Call: the 3D build</h2>
+  <p>This greybox is 2D top-down so you can play the loop. The real build is the same game in 3D.</p>
+  <h3>Camera</h3><p>Three-quarter chase camera (35 mm), lower and closer on foot, lifts when you speed; slow-motion and a cut to a close shot when a mission passes.</p>
+  <h3>World (free, CC0)</h3><ul><li>Kenney City Kit Roads, Commercial, Suburban and Industrial for streets, towers and the harbour.</li><li>Kenney Car Kit for your car and every request car.</li><li>Quaternius Modular Characters + Universal Animation Library when you step out on foot.</li><li>Kenney Interface and Impact sounds; radio beds from CC0 music.</li></ul>
+  <h3>The part that is hard to clone</h3><ul><li>Traffic is a live request simulation: every car is a request travelling client → CDN → gateway → service → cache / database and back. Thousands of them drawn as one instanced mesh.</li><li>An incident is a real fault in that sim: a slow cache turns traffic into a jam you can see, a bad deploy makes cars crash in red. Fixing it clears the jam.</li><li>Click any car to freeze time and see its trace drawn across the city, hop by hop with latency.</li><li>Day turns to night and the city lights up as severity rises.</li></ul>
+  <h3>Recruiter path</h3><p>The phone is real HTML (résumé, projects, skills, contact) and opens before the 3D loads. "Résumé" is always one tap away. Nothing is locked behind a mission; missions add trophies, not access.</p>
+  <h3>Phone (portrait)</h3><p>The joystick steers by direction. Tap the map or a mission to set GPS, then Auto-drive follows the road graph. The phone fills the screen as a native-feeling app.</p>
+  <h3>Performance</h3><p>HTML phone paints first; the city streams in tiles (KTX2 textures, Meshopt geometry); one draw call for all traffic; target ≤ 3 MB before the first mission.</p>
+</aside>
+
+<section class="title" id="title">
+  <div class="who" id="who"></div>
+  <h1>ON<br/>CALL</h1>
+  <p>Your pager just went off. Drive the city, fix the incidents, and find out who you'd be hiring.</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn y" id="playBtn" type="button">Press start</button><button class="btn" id="titleResume" type="button" style="background:#fff;color:#111">Skip to résumé</button></div>
+  <div class="keys">Keyboard: arrows / WASD drive · M map · P phone. Touch: joystick, tap the map for GPS.</div>
+</section>
+
+<script src="sample.js"></script>
+<script>
+(() => {
+const S = window.SAMPLE;
+const $ = (id) => document.getElementById(id);
+$('who').textContent = `${S.name} · ${S.role}`;
+
+/* ---------------- city layout: a 4 × 4 grid of blocks between roads */
+const ROAD = 110, BLOCK = 430, STEP = ROAD + BLOCK, N = 4, WORLD = N * STEP + ROAD;
+const rc = (i) => ROAD / 2 + i * STEP;                 // road centre line i (0..N)
+const bx0 = (b) => ROAD + b * STEP;                   // block left/top edge
+const DISTRICTS = [
+  ['CLIENTS', '#cfd8dc'], ['EDGE · CDN', '#9fd6ff'], ['AUTH', '#c9b8ff'], ['CLIENTS', '#cfd8dc'],
+  ['FRONTEND BLVD', '#ffd0a8'], ['API GATEWAY', '#ffe08a'], ['SERVICES', '#ffb3b3'], ['SERVICES', '#ffb3b3'],
+  ['DESIGN SYSTEM', '#f7c6e8'], ['CACHE', '#a8f0c6'], ['QUEUE HARBOUR', '#9ee6e6'], ['WORKERS', '#d7e3a8'],
+  ['OBSERVATORY', '#bfc8ff'], ['DATA VAULT', '#c8c0b0'], ['DATA VAULT', '#c8c0b0'], ['HIRING HQ', '#ffd23f'],
+].map(([name, color], k) => ({ name, color, bx: k % N, by: Math.floor(k / N) }));
+const district = (name) => DISTRICTS.find((d) => d.name === name);
+/** The kerb in front of a district: the middle of the road under the block. */
+const door = (d) => ({ x: bx0(d.bx) + BLOCK / 2, y: rc(d.by + 1) });
+const solid = (x, y) => {
+  if (x < 0 || y < 0 || x > WORLD || y > WORLD) return true;
+  const lx = (x - ROAD) % STEP, ly = (y - ROAD) % STEP;
+  return x > ROAD && y > ROAD && lx < BLOCK && ly < BLOCK && x < WORLD - ROAD && y < WORLD - ROAD;
+};
+// Deterministic buildings per block.
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+for (const d of DISTRICTS) {
+  d.buildings = [];
+  const n = 3 + Math.floor(rnd() * 4);
+  for (let i = 0; i < n; i++) {
+    const w = 90 + rnd() * 140, h = 90 + rnd() * 140;
+    d.buildings.push({ x: bx0(d.bx) + 20 + rnd() * (BLOCK - w - 40), y: bx0(d.by) + 20 + rnd() * (BLOCK - h - 40), w, h, tall: 0.4 + rnd() * 0.6 });
+  }
+}
+
+/* ---------------- road graph and routes */
+const node = (i, j) => ({ x: rc(i), y: rc(j) });
+const nearestNode = (p) => ({ i: Math.max(0, Math.min(N, Math.round((p.x - ROAD / 2) / STEP))), j: Math.max(0, Math.min(N, Math.round((p.y - ROAD / 2) / STEP))) });
+/** Manhattan route through intersections: along x, then along y. */
+function route(from, to) {
+  const a = nearestNode(from), b = nearestNode(to), pts = [from];
+  let i = a.i, j = a.j;
+  pts.push(node(i, j));
+  while (i !== b.i) { i += Math.sign(b.i - i); pts.push(node(i, j)); }
+  while (j !== b.j) { j += Math.sign(b.j - j); pts.push(node(i, j)); }
+  pts.push(to);
+  return pts;
+}
+
+/* ---------------- traffic = requests travelling through the stack */
+const HOPS = [['CLIENTS'], ['EDGE · CDN'], ['API GATEWAY'], ['SERVICES', 'AUTH'], ['CACHE', 'DATA VAULT', 'QUEUE HARBOUR']];
+const cars = [];
+function spawnRequest() {
+  const chain = HOPS.map((opts) => opts[Math.floor(Math.random() * opts.length)]);
+  const clients = DISTRICTS.filter((d) => d.name === 'CLIENTS');
+  const start = door(clients[Math.floor(Math.random() * clients.length)]);
+  let path = [start];
+  for (const name of chain.slice(1)) { const d = DISTRICTS.filter((x) => x.name === name); path = path.concat(route(path[path.length - 1], door(d[Math.floor(Math.random() * d.length)])).slice(1)); }
+  path = path.concat(route(path[path.length - 1], start).slice(1));
+  cars.push({ path, seg: 0, t: 0, speed: 160 + Math.random() * 90, hue: chain[4] });
+}
+const carColor = { CACHE: '#49e08a', 'DATA VAULT': '#f0b35a', 'QUEUE HARBOUR': '#3ec5ff' };
+
+/* ---------------- missions = incidents; each one is a case study */
+const MISSIONS = [
+  { id: 0, from: 'SERVICES', to: 'QUEUE HARBOUR', title: 'Double charges at checkout', brief: 'Payments are retrying into duplicate charges. Get to the Queue Harbour and replay the webhooks safely.', project: 'payments' },
+  { id: 1, from: 'OBSERVATORY', to: 'QUEUE HARBOUR', title: 'The dashboard is lying', brief: 'Support sees stale numbers during an outage. Stream the events from the harbour.', project: 'realtime' },
+  { id: 2, from: 'DESIGN SYSTEM', to: 'FRONTEND BLVD', title: 'Every button is different', brief: 'Six teams, six button styles, one accessibility audit. Ship the shared components.', project: 'design-system' },
+  { id: 3, from: 'CACHE', to: 'DATA VAULT', title: 'Search times out at peak', brief: 'The search cluster melts every evening. Put a cache in front of the vault.', project: 'search' },
+];
+const state = { active: null, done: new Set(), timer: 0, budget: 100, sev: 0, gps: null, auto: false, started: false, paused: false, clock: 9 * 60 };
+
+/* ---------------- player car */
+const car = { x: door(district('HIRING HQ')).x - 120, y: rc(4), a: Math.PI, v: 0 };
+const keys = new Set();
+addEventListener('keydown', (e) => {
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
+  keys.add(e.key.toLowerCase());
+  if (e.key.toLowerCase() === 'p') togglePhone();
+  if (e.key === 'Escape') { closeCard(); closePhone(); $('notes').classList.remove('open'); }
+});
+addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
+const stick = { on: false, x: 0, y: 0 };
+const stickEl = $('stick');
+stickEl.addEventListener('pointerdown', (e) => { stick.on = true; stickEl.setPointerCapture(e.pointerId); moveStick(e); state.auto = false; });
+stickEl.addEventListener('pointermove', (e) => stick.on && moveStick(e));
+stickEl.addEventListener('pointerup', () => { stick.on = false; stick.x = stick.y = 0; stickEl.firstElementChild.style.transform = ''; });
+function moveStick(e) {
+  const r = stickEl.getBoundingClientRect();
+  let dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+  const m = Math.hypot(dx, dy), max = r.width / 2 - 20;
+  if (m > max) { dx *= max / m; dy *= max / m; }
+  stick.x = dx / max; stick.y = dy / max;
+  stickEl.firstElementChild.style.transform = `translate(${dx}px, ${dy}px)`;
+}
+const angleTo = (from, to) => Math.atan2(Math.sin(to - from), Math.cos(to - from));
+
+function drive(dt) {
+  let throttle = 0, steer = 0;
+  if (keys.has('arrowup') || keys.has('w')) throttle += 1;
+  if (keys.has('arrowdown') || keys.has('s')) throttle -= 0.7;
+  if (keys.has('arrowleft') || keys.has('a')) steer -= 1;
+  if (keys.has('arrowright') || keys.has('d')) steer += 1;
+  if (stick.on && Math.hypot(stick.x, stick.y) > 0.15) {
+    // Touch: point where you want to go; the car turns toward it.
+    const want = Math.atan2(stick.y, stick.x);
+    steer = Math.max(-1, Math.min(1, angleTo(car.a, want) * 2));
+    throttle = Math.min(1, Math.hypot(stick.x, stick.y)) * (Math.abs(angleTo(car.a, want)) > 2.4 ? -0.5 : 1);
+  }
+  if (state.auto && state.gps) {
+    const next = state.gps.path[state.gps.k];
+    if (next) {
+      if (Math.hypot(next.x - car.x, next.y - car.y) < 46) state.gps.k++;
+      const want = Math.atan2(next.y - car.y, next.x - car.x);
+      steer = Math.max(-1, Math.min(1, angleTo(car.a, want) * 2.4));
+      throttle = Math.abs(angleTo(car.a, want)) > 1 ? 0.35 : 0.85;
+    } else state.auto = false;
+  }
+  car.v += throttle * 520 * dt;
+  car.v *= Math.pow(throttle ? 0.55 : 0.2, dt);
+  car.v = Math.max(-180, Math.min(520, car.v));
+  car.a += steer * dt * 2.6 * Math.min(1, Math.abs(car.v) / 140) * Math.sign(car.v || 1);
+  const nx = car.x + Math.cos(car.a) * car.v * dt, ny = car.y + Math.sin(car.a) * car.v * dt;
+  if (!solid(nx, ny)) { car.x = nx; car.y = ny; }
+  else if (!solid(nx, car.y)) { car.x = nx; car.v *= 0.6; }
+  else if (!solid(car.x, ny)) { car.y = ny; car.v *= 0.6; }
+  else car.v *= -0.3;
+}
+
+/* ---------------- missions */
+function subtitle(html) { $('sub').innerHTML = html; }
+function nextHint() {
+  if (state.active) return;
+  const left = MISSIONS.filter((m) => !state.done.has(m.id));
+  if (!left.length) { subtitle('All incidents resolved. Drive to <em>Hiring HQ</em> to make an offer.'); return; }
+  subtitle(`Your pager is buzzing. Drive to a <em>yellow marker</em>: <em>${left[0].from}</em> has an incident.`);
+}
+function startMission(m) {
+  state.active = m; state.timer = 75; state.sev = 3;
+  openCard(`<div class="kicker">Incident · Sev ${state.sev}</div><h2>${m.title}</h2><p>${m.brief}</p>
+    <dl><dt>Objective</dt><dd>Drive to <b>${m.to}</b> before the error budget runs out.</dd><dt>Time</dt><dd>75 s</dd></dl>
+    <div class="row"><button class="btn y" data-act="go">Accept</button><button class="btn ghost" data-act="read">Just show me the project</button></div>`);
+  setGps(door(district(m.to)));
+}
+function passMission(m) {
+  state.done.add(m.id); state.active = null; state.sev = 0; state.gps = null; state.auto = false;
+  const p = S.projects.find((x) => x.id === m.project);
+  openCard(`<div class="kicker">Mission passed · +1 trophy</div><h2 class="passed">Resolved</h2><p><b>${p.title}</b>: ${p.summary}</p>
+    <dl><dt>Problem</dt><dd>${p.problem}</dd><dt>Approach</dt><dd>${p.approach}</dd><dt>Outcome</dt><dd>${p.outcome}</dd><dt>Stack</dt><dd>${p.stack.join(' · ')}</dd></dl>
+    <div class="row"><button class="btn y" data-act="close">Back to the city</button><button class="btn ghost" data-act="phone">Open the phone</button></div>`);
+  $('dot').style.display = 'none';
+  nextHint();
+}
+function failMission() {
+  const m = state.active; state.active = null; state.sev = 0; state.gps = null; state.auto = false;
+  openCard(`<div class="kicker">Error budget exhausted</div><h2 style="color:#c62828">Paged again</h2><p>The incident escalated. It happens; the postmortem is blameless.</p><div class="row"><button class="btn y" data-act="retry" data-id="${m.id}">Retry</button><button class="btn ghost" data-act="read-${m.project}">Read the case study</button></div>`);
+}
+function projectCard(id) {
+  const p = S.projects.find((x) => x.id === id);
+  openCard(`<div class="kicker">Case study</div><h2>${p.title}</h2><p>${p.summary}</p><dl><dt>Problem</dt><dd>${p.problem}</dd><dt>Approach</dt><dd>${p.approach}</dd><dt>Outcome</dt><dd>${p.outcome}</dd><dt>Stack</dt><dd>${p.stack.join(' · ')}</dd></dl><div class="row"><button class="btn y" data-act="close">Close</button></div>`);
+}
+function openCard(html) { $('cardIn').innerHTML = html; $('card').classList.add('open'); state.paused = true; }
+function closeCard() { $('card').classList.remove('open'); state.paused = false; }
+$('card').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'go' || act === 'close') closeCard();
+  if (act === 'read') { const m = state.active; state.active = null; state.gps = null; state.sev = 0; projectCard(m.project); nextHint(); }
+  if (act === 'phone') { closeCard(); openPhone('projects'); }
+  if (act === 'retry') { closeCard(); startMission(MISSIONS[Number(b.dataset.id)]); }
+  if (act.startsWith('read-')) projectCard(act.slice(5));
+});
+function checkMissions(dt) {
+  if (state.active) {
+    state.timer -= dt;
+    state.budget = Math.max(0, state.budget - dt * 0.9);
+    const t = door(district(state.active.to));
+    subtitle(`Get to <span class="blue">${state.active.to}</span> · ${Math.ceil(state.timer)} s`);
+    if (Math.hypot(t.x - car.x, t.y - car.y) < 70) passMission(state.active);
+    else if (state.timer <= 0 || state.budget <= 0) failMission();
+    return;
+  }
+  state.budget = Math.min(100, state.budget + dt * 2);
+  for (const m of MISSIONS) {
+    if (state.done.has(m.id)) continue;
+    const d = door(district(m.from));
+    if (Math.hypot(d.x - car.x, d.y - car.y) < 60) { startMission(m); return; }
+  }
+  const hq = door(district('HIRING HQ'));
+  if (state.done.size === MISSIONS.length && Math.hypot(hq.x - car.x, hq.y - car.y) < 60 && !state.offered) {
+    state.offered = true; openPhone('contact');
+  }
+}
+function setGps(target) { state.gps = { path: route({ x: car.x, y: car.y }, target), k: 1, target }; }
+
+/* ---------------- phone: the real content, always one tap away */
+const APPS = [
+  ['missions', 'Missions', '#ffd23f', '!'], ['resume', 'Résumé', '#ffffff', 'CV'], ['projects', 'Projects', '#3ec5ff', '{}'],
+  ['skills', 'Skills', '#49e08a', '</>'], ['contact', 'Contact', '#ff8a65', '@'], ['radio', 'Radio', '#c9b8ff', '♫'],
+];
+function phoneScreen(app) {
+  const back = '<button class="back" data-app="home">‹ Home</button>';
+  if (app === 'home') return `<div style="font:700 12px var(--mono);color:#888;margin-top:6px">${S.name}</div><div style="font:28px var(--disp);margin:4px 0 0">${S.role.toUpperCase()}</div>
+    <div class="apps">${APPS.map(([id, label, c, g]) => `<button class="app" data-app="${id}"><i style="background:${c}">${g}</i>${label}</button>`).join('')}</div>`;
+  if (app === 'resume') return back + `<div>${window.resumeHTML()}</div>`;
+  if (app === 'missions') return back + `<h2>Missions</h2>` + MISSIONS.map((m) => `<button class="mrow" data-gps="${m.id}"><span>${m.title}<small>${m.from} → ${m.to}</small></span><span class="tag ${state.done.has(m.id) ? 'done' : state.active === m ? 'live' : ''}">${state.done.has(m.id) ? 'DONE' : state.active === m ? 'LIVE' : 'SET GPS'}</span></button>`).join('');
+  if (app === 'projects') return back + `<h2>Projects</h2>` + S.projects.map((p) => `<button class="mrow" data-proj="${p.id}"><span>${p.title}<small>${p.stack.slice(0, 3).join(' · ')}</small></span><span class="tag ${MISSIONS.some((m) => m.project === p.id && state.done.has(m.id)) ? 'done' : ''}">${MISSIONS.some((m) => m.project === p.id && state.done.has(m.id)) ? 'TROPHY' : 'READ'}</span></button>`).join('');
+  if (app === 'skills') return back + `<h2>Skills</h2>` + S.skills.map((g) => `<h3>${g.group}</h3><p>${g.items.join(' · ')}</p>`).join('');
+  if (app === 'contact') return back + `<h2>Hire me</h2><p>${S.status} · ${S.city}</p><p><a href="mailto:${S.email}">${S.email}</a></p>${S.links.map((l) => `<p><a href="${l.href}">${l.label}</a></p>`).join('')}`;
+  if (app === 'radio') return back + `<h2>Radio</h2><p>Stations play CC0 music beds while you drive. Off by default.</p>` + ['Deploy FM · lo-fi', 'Stack Talk · tech podcasts', 'Off'].map((r) => `<button class="mrow"><span>${r}</span><span class="tag">TUNE</span></button>`).join('');
+  return '';
+}
+function openPhone(app = 'home') { $('phone').classList.add('open'); $('phBody').innerHTML = phoneScreen(app); }
+function closePhone() { $('phone').classList.remove('open'); }
+function togglePhone() { $('phone').classList.contains('open') ? closePhone() : openPhone(); }
+$('phoneBtn').onclick = togglePhone;
+$('resumeBtn').onclick = () => openPhone('resume');
+$('phBody').addEventListener('click', (e) => {
+  const a = e.target.closest('[data-app]'); if (a) { $('phBody').innerHTML = phoneScreen(a.dataset.app); return; }
+  const g = e.target.closest('[data-gps]'); if (g) { const m = MISSIONS[Number(g.dataset.gps)]; setGps(door(district(state.active ? state.active.to : m.from))); state.auto = matchMedia('(pointer: coarse)').matches; closePhone(); subtitle(`GPS set: <em>${m.from}</em>.`); return; }
+  const p = e.target.closest('[data-proj]'); if (p) { closePhone(); projectCard(p.dataset.proj); }
+});
+$('autoBtn').onclick = () => { if (!state.gps) { const m = MISSIONS.find((x) => !state.done.has(x.id)); if (m) setGps(door(district(m.from))); } state.auto = !!state.gps; };
+$('notesBtn').onclick = () => $('notes').classList.add('open');
+$('notesClose').onclick = () => $('notes').classList.remove('open');
+$('playBtn').onclick = () => { $('title').classList.add('hide'); state.started = true; nextHint(); };
+$('titleResume').onclick = () => { $('title').classList.add('hide'); state.started = true; nextHint(); openPhone('resume'); };
+
+/* ---------------- drawing */
+const cv = $('world'), g = cv.getContext('2d');
+const rv = $('radar'), r = rv.getContext('2d');
+let W = 0, H = 0, dpr = 1, zoom = 1;
+function resize() {
+  dpr = Math.min(devicePixelRatio, 2); W = innerWidth; H = innerHeight;
+  cv.width = W * dpr; cv.height = H * dpr;
+  rv.width = rv.clientWidth * dpr; rv.height = rv.clientHeight * dpr;
+  zoom = W < 760 ? 0.62 : 0.9;
+}
+addEventListener('resize', resize); resize();
+const cam = { x: car.x, y: car.y };
+function drawWorld(time) {
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.fillStyle = '#2b2e33'; g.fillRect(0, 0, W, H);
+  const lead = Math.min(1, Math.abs(car.v) / 520) * 160;
+  cam.x += (car.x + Math.cos(car.a) * lead - cam.x) * 0.08; cam.y += (car.y + Math.sin(car.a) * lead - cam.y) * 0.08;
+  const z = zoom * (1 - Math.min(0.18, Math.abs(car.v) / 520 * 0.18));
+  g.setTransform(dpr * z, 0, 0, dpr * z, dpr * (W / 2 - cam.x * z), dpr * (H / 2 - cam.y * z));
+  // asphalt and lane marks
+  g.fillStyle = '#3a3e45'; g.fillRect(0, 0, WORLD, WORLD);
+  g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 3; g.setLineDash([26, 26]);
+  for (let i = 0; i <= N; i++) { g.beginPath(); g.moveTo(rc(i), 0); g.lineTo(rc(i), WORLD); g.moveTo(0, rc(i)); g.lineTo(WORLD, rc(i)); g.stroke(); }
+  g.setLineDash([]);
+  // blocks: pavement, then buildings with a fake height offset (the 3D version is real height)
+  for (const d of DISTRICTS) {
+    const x = bx0(d.bx), y = bx0(d.by);
+    g.fillStyle = '#5d6168'; g.fillRect(x, y, BLOCK, BLOCK);
+    g.fillStyle = d.color; g.globalAlpha = 0.35; g.fillRect(x + 8, y + 8, BLOCK - 16, BLOCK - 16); g.globalAlpha = 1;
+    for (const b of d.buildings) {
+      const off = 14 * b.tall;
+      g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(b.x + off, b.y + off, b.w, b.h);
+      g.fillStyle = d.color; g.fillRect(b.x, b.y, b.w, b.h);
+      g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(b.x + 6, b.y + 6, b.w - 12, 6);
+    }
+    g.fillStyle = 'rgba(12,13,16,.85)'; g.font = '34px Anton, Impact, sans-serif'; g.textAlign = 'center';
+    g.fillText(d.name, x + BLOCK / 2, y + BLOCK / 2 + 12);
+  }
+  // GPS route
+  if (state.gps) {
+    g.strokeStyle = state.active ? '#3ec5ff' : '#ffd23f'; g.lineWidth = 10; g.globalAlpha = 0.7; g.lineJoin = 'round';
+    g.beginPath(); g.moveTo(car.x, car.y); for (const p of state.gps.path.slice(state.gps.k)) g.lineTo(p.x, p.y); g.stroke(); g.globalAlpha = 1;
+  }
+  // mission markers (pulse)
+  const pulse = 1 + Math.sin(time * 4) * 0.12;
+  for (const m of MISSIONS) {
+    if (state.done.has(m.id)) continue;
+    const live = state.active === m;
+    const p = door(district(live ? m.to : m.from));
+    if (state.active && !live) continue;
+    g.fillStyle = live ? 'rgba(62,197,255,.35)' : 'rgba(255,210,63,.35)';
+    g.beginPath(); g.arc(p.x, p.y, 48 * pulse, 0, Math.PI * 2); g.fill();
+    g.fillStyle = live ? '#3ec5ff' : '#ffd23f'; g.beginPath(); g.arc(p.x, p.y, 16, 0, Math.PI * 2); g.fill();
+  }
+  // request cars, lane-offset to the right of travel
+  for (const c of cars) {
+    const a = c.path[c.seg], b = c.path[c.seg + 1]; if (!b) continue;
+    const L = Math.hypot(b.x - a.x, b.y - a.y) || 1, ux = (b.x - a.x) / L, uy = (b.y - a.y) / L;
+    const x = a.x + ux * c.t - uy * 22, y = a.y + uy * c.t + ux * 22;
+    g.save(); g.translate(x, y); g.rotate(Math.atan2(uy, ux));
+    const jam = state.active && state.timer < 25;
+    g.fillStyle = jam && Math.random() < 0.02 ? '#ff4d4d' : carColor[c.hue] || '#fff';
+    g.fillRect(-15, -8, 30, 16); g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(4, -6, 7, 12);
+    g.restore();
+  }
+  // player car
+  g.save(); g.translate(car.x, car.y); g.rotate(car.a);
+  g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(-24, -12, 52, 30);
+  g.fillStyle = '#ff6a3d'; g.fillRect(-26, -14, 52, 28);
+  g.fillStyle = '#1b1d22'; g.fillRect(4, -11, 12, 22); g.fillRect(-20, -11, 9, 22);
+  g.fillStyle = '#fff6a8'; g.fillRect(23, -12, 4, 6); g.fillRect(23, 6, 4, 6);
+  g.restore();
+}
+function drawRadar() {
+  const w = rv.width, h = rv.height, s = (w / dpr) / 900;
+  r.setTransform(dpr, 0, 0, dpr, 0, 0);
+  r.save(); r.beginPath(); r.arc(w / dpr / 2, h / dpr / 2, w / dpr / 2, 0, Math.PI * 2); r.clip();
+  r.fillStyle = '#1f2a24'; r.fillRect(0, 0, w, h);
+  r.translate(w / dpr / 2, h / dpr / 2); r.scale(s, s); r.translate(-car.x, -car.y);
+  r.fillStyle = '#6b7a72'; r.fillRect(0, 0, WORLD, WORLD);
+  for (const d of DISTRICTS) { r.fillStyle = d.color; r.globalAlpha = 0.55; r.fillRect(bx0(d.bx), bx0(d.by), BLOCK, BLOCK); }
+  r.globalAlpha = 1;
+  // live requests on the radar
+  for (const c of cars) { const a = c.path[c.seg], b = c.path[c.seg + 1]; if (!b) continue; const L = Math.hypot(b.x - a.x, b.y - a.y) || 1; r.fillStyle = carColor[c.hue] || '#fff'; r.fillRect(a.x + ((b.x - a.x) / L) * c.t - 12, a.y + ((b.y - a.y) / L) * c.t - 12, 24, 24); }
+  if (state.gps) { r.strokeStyle = state.active ? '#3ec5ff' : '#ffd23f'; r.lineWidth = 34; r.beginPath(); r.moveTo(car.x, car.y); for (const p of state.gps.path.slice(state.gps.k)) r.lineTo(p.x, p.y); r.stroke(); }
+  for (const m of MISSIONS) { if (state.done.has(m.id) || (state.active && state.active !== m)) continue; const p = door(district(state.active === m ? m.to : m.from)); r.fillStyle = state.active === m ? '#3ec5ff' : '#ffd23f'; r.beginPath(); r.arc(p.x, p.y, 60, 0, Math.PI * 2); r.fill(); }
+  r.restore();
+  r.save(); r.translate(w / dpr / 2, h / dpr / 2); r.rotate(car.a + Math.PI / 2);
+  r.fillStyle = '#fff'; r.beginPath(); r.moveTo(0, -11); r.lineTo(8, 8); r.lineTo(0, 4); r.lineTo(-8, 8); r.closePath(); r.fill(); r.restore();
+}
+rv.addEventListener('click', (e) => {
+  const rect = rv.getBoundingClientRect(), s = rect.width / 900;
+  const wx = car.x + (e.clientX - rect.left - rect.width / 2) / s, wy = car.y + (e.clientY - rect.top - rect.height / 2) / s;
+  const n = nearestNode({ x: wx, y: wy });
+  setGps(node(n.i, n.j)); state.auto = matchMedia('(pointer: coarse)').matches;
+});
+
+/* ---------------- loop */
+let last = performance.now(), spawnT = 0;
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (!state.paused && state.started) {
+    drive(dt); checkMissions(dt);
+    state.clock += dt * 2;
+  }
+  spawnT += dt; if (spawnT > 0.07 && cars.length < 200) { spawnT = 0; spawnRequest(); }
+  const slow = state.active ? Math.max(0.25, state.timer / 75) : 1;
+  for (const c of cars) {
+    const a = c.path[c.seg], b = c.path[c.seg + 1]; if (!b) { c.dead = true; continue; }
+    c.t += c.speed * slow * dt;
+    const L = Math.hypot(b.x - a.x, b.y - a.y);
+    if (c.t >= L) { c.t -= L; c.seg++; }
+  }
+  for (let i = cars.length - 1; i >= 0; i--) if (cars[i].dead) cars.splice(i, 1);
+  drawWorld(now / 1000); drawRadar();
+  const sev = state.sev; $('stars').innerHTML = `<b>${'★'.repeat(sev)}</b>${'★'.repeat(5 - sev)}`;
+  $('budget').style.width = state.budget + '%'; $('budget').style.background = state.budget < 35 ? '#ff4d4d' : state.budget < 65 ? '#ffd23f' : '#49e08a';
+  $('budgetTxt').textContent = Math.round(state.budget) + '%';
+  const hh = Math.floor(state.clock / 60) % 24, mm = Math.floor(state.clock % 60);
+  const t = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`; $('clock').textContent = t; $('phClock').textContent = t;
+  requestAnimationFrame(frame);
+}
+for (let i = 0; i < 150; i++) { spawnRequest(); const c = cars[cars.length - 1]; c.seg = Math.floor(Math.random() * (c.path.length - 2)); }
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
