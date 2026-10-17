@@ -16,6 +16,8 @@ export type ShipIn = {
     hero: boolean;
     /** 0–1: re-entry heat. */
     heat: number;
+    /** 0–1: a warm key from the camera's side, for the finale when the sun is behind the ship. */
+    key: number;
     /** 0–1: the pool of its landing light on the ground; `ground` is the height it lands on. */
     beam: number;
     ground: number;
@@ -62,7 +64,7 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
     [nose, ...engines, ...strobes].forEach((g) => body.add(g));
 
     // A little light of its own so it reads against the dark.
-    const fill = new THREE.PointLight('#ffe6c4', 1.4, 10, 2);
+    const fill = new THREE.PointLight('#ffe6c4', 1.4, 14, 2);
     scene.add(fill);
 
     const uOn = { value: 0 };
@@ -143,11 +145,15 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
         body.rotation.set(-Math.min(0.2, f.speed * 0.25), 0, roll + Math.sin(now * 0.9) * 0.04);
         kick = Math.max(0, kick - f.dt * 1.5);
         uThrust.value = 0.7 + f.speed * 0.9 + kick + (Math.random() - 0.5) * 0.08;
-        engines.forEach((e) => e.scale.setScalar(0.5 + uThrust.value * 0.45));
+        // Hard thrust flares the engines, so a ship burning away reads as a bright point from afar.
+        engines.forEach((e) =>
+            e.scale.setScalar((0.5 + uThrust.value * 0.45) * (1 + f.speed * f.speed * 2.5))
+        );
         nose.material.opacity = f.heat;
         nose.scale.setScalar(2 + f.heat * 5 + Math.random() * 0.4);
         strobes.forEach((g, i) => (g.material.opacity = (now + i * 0.7) % 1.4 < 0.07 ? 1 : 0));
         fill.position.copy(rig.position).add(look.set(0, 2.2, 0));
+        fill.intensity = 1.4 + f.key * 9;
         uOn.value += (f.beam - uOn.value) * (1 - Math.exp(-f.dt * 3));
         const h = rig.position.y - 0.6 - f.ground;
         if (f.beam > 0.01 && h > 0.5)

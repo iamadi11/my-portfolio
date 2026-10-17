@@ -332,7 +332,7 @@ export function createWorld(o: WorldOptions): World {
      * the drop out of the cloud deck onto the city, the climb off the ice, and the rise away from
      * Earth once back in orbit.
      */
-    const beat = { dive: 0, drop: 0, climb: 0, rise: 0, skim: 0, over: 0 };
+    const beat = { dive: 0, drop: 0, climb: 0, rise: 0, skim: 0, over: 0, leave: 0 };
     const shot: Shot = { tilt: 0, lift: 0, shake: 0 };
     let kicked = false;
     const heading = new THREE.Vector3();
@@ -346,7 +346,7 @@ export function createWorld(o: WorldOptions): World {
         fog.color.copy(sky.uniforms.uHorizon.value);
         sky.uniforms.uSpace.value = air.space ? 1 : 0;
         sky.uniforms.uAurora.value = air.aurora ?? 0;
-        sky.uniforms.uStars.value = (air.stars ?? 1) * (1 - cloud);
+        sky.uniforms.uStars.value = (air.stars ?? 1) * (1 - cloud) * (1 + thin * 0.9);
     };
 
     /** Only the place on screen is drawn; the rest wait for their jump. */
@@ -373,27 +373,33 @@ export function createWorld(o: WorldOptions): World {
      * climb above the eye line pulling off the ice and leaving orbit. Sets `heading`; returns the
      * height offset.
      */
-    /** At the end it leaves towards the sunrise, not down the route, lit by the sun. */
+    /** At the end it climbs away, up and ahead over the Earth, shrinking in frame, lit by the sun. */
     const depart = (sun: THREE.Vector3 | null, leave: number, dawn: number): void => {
         sunlight.intensity = sun ? 3.2 * dawn : 0;
         if (!sun) return;
         if (leave > 0) {
-            const gone = Math.pow(leave, 2.2) * 900;
-            toSun.copy(sun).sub(at).normalize();
-            at.addScaledVector(toSun, gone).addScaledVector(tangent, -gone);
+            // Away along the view, rising a little: it shrinks against the Earth, not out of frame.
+            const gone = Math.pow(leave, 1.4) * 160;
+            toSun
+                .copy(tangent)
+                .setY(tangent.y + 0.14)
+                .normalize();
+            at.addScaledVector(toSun, gone);
             heading.lerp(toSun, leave).normalize();
         }
+        // The key comes from the camera's side and above (the sun is behind the ship, which would
+        // leave it a black silhouette on black space), so it reads however far it has gone.
         sunlight.target.position.copy(at);
-        sunlight.position.copy(sun);
+        sunlight.position.copy(camera.position).addScaledVector(camera.up, 40);
     };
 
     const moves = (orbit: boolean): number => {
         const away = orbit ? 1 - beat.rise : 0;
         heading
             .copy(tangent)
-            .setY(tangent.y - 0.9 * beat.dive - 0.55 * beat.drop + 0.6 * beat.climb + 0.4 * away)
+            .setY(tangent.y - 0.9 * beat.dive - 0.55 * beat.drop + 0.9 * beat.climb + 0.4 * away)
             .normalize();
-        return shot.lift * 0.97 - beat.dive * 9 + beat.climb * 7 - away * 6;
+        return shot.lift * 0.97 - beat.dive * 9 + beat.climb * 30 - away * 6;
     };
 
     /**
@@ -418,10 +424,10 @@ export function createWorld(o: WorldOptions): World {
         const hero = 1 - smooth(route.seg[1] * 0.6, route.seg[1] * 1.6, u);
         const leave = orbit ? smooth(0.35, 1, 1 - resp) : 0;
         // Runs ahead of the eye when it dives, skims, crosses the pole or rushes a gate.
-        const lead = beat.dive * 14 + beat.skim * 10 + beat.over * 18 + rushNow * 6;
+        const lead = beat.dive * 14 + beat.skim * 10 + beat.over * 18 + beat.climb * 22 + rushNow * 6;
         at.copy(p)
             .add(side)
-            .addScaledVector(tangent, hero * 5 + lead + Math.pow(leave, 2.2) * 900);
+            .addScaledVector(tangent, hero * 5 + lead);
         at.y += hero * 1.1 + leave * 6 + moves(orbit);
         depart(sun, leave, dawn);
         ship.update({
@@ -431,6 +437,7 @@ export function createWorld(o: WorldOptions): World {
             dt,
             hero: u < route.seg[1] + 0.002 || (orbit && leave < 0.08),
             heat,
+            key: dawn,
             beam: air.space ? 0 : 1,
             ground: place === 'city' ? FLOOR : isLand(place) ? GROUND[place] : SEA,
         });
@@ -439,7 +446,8 @@ export function createWorld(o: WorldOptions): World {
     };
 
     /** The beats for the place on screen, and the shot they make. */
-    const beats = (shown: Place, map: number): void => {
+    const beats = (shown: Place, map: number, resp: number): void => {
+        beat.leave = shown === 'orbit' ? smooth(0.35, 1, 1 - resp) : 0;
         // The long way in: a slow roll onto the globe, then the dive proper, the air thickening.
         beat.dive = shown === 'space' ? smooth(0.38, 0.96, u / city0) : 0;
         beat.drop = shown === 'city' ? 1 - smooth(city0, lerp(city0, svc, 0.34), u) : 0;
@@ -450,9 +458,12 @@ export function createWorld(o: WorldOptions): World {
         const bump = (from: number, span: number): number => Math.sin(Math.PI * clamp((u - from) / span));
         beat.skim = shown === 'ocean' ? bump(data, (1 - data) * 0.16) : 0;
         beat.over = shown === 'ice' ? bump(iceAt, (1 - data) * 0.14) : 0;
-        shot.tilt = beat.dive * 0.8 - beat.climb * 0.55 + (shown === 'orbit' ? (1 - beat.rise) * 0.55 : 0);
+        shot.tilt =
+            beat.dive * 0.8 -
+            beat.climb * 0.9 +
+            (shown === 'orbit' ? (1 - beat.rise) * 0.55 - beat.leave * 0.1 : 0);
         shot.lift =
-            beat.drop * beat.drop * 230 + beat.climb * beat.climb * 90 + beat.over * 22 - beat.skim * 12;
+            beat.drop * beat.drop * 230 + beat.climb * beat.climb * 40 + beat.over * 22 - beat.skim * 12;
         // The afterburner lights once on the way out.
         if (beat.climb > 0.45 && !kicked) {
             kicked = true;
@@ -497,7 +508,7 @@ export function createWorld(o: WorldOptions): World {
         s.uPacket.value.copy(p);
         s.uScan.value = p.y;
         s.uTime.value = t;
-        beats(shown, f.map);
+        beats(shown, f.map, f.resp);
         applyAir(AIR[shown], beat.drop * 0.6 + beat.climb * 0.85, beat.drop);
         s.uDrop.value = beat.drop;
         const { heat, sun, dawn } = showPlace(shown);
@@ -509,7 +520,7 @@ export function createWorld(o: WorldOptions): World {
         landmarks.show(zone);
         flyShip(shown, dt, f.resp, heat, sun, dawn);
         records.update(p, u);
-        warp.update(jump, tint);
+        warp.update(Math.max(jump, beat.climb > 0.45 ? (beat.climb - 0.45) * 1.4 : 0), tint);
         // Seen from above through cloud, a city of small lights would bloom into mush.
         post.finish(
             t,
