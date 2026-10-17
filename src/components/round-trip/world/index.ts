@@ -102,8 +102,8 @@ const FLASH = {
 const CLOUD = new THREE.Color(0.06, 0.05, 0.05);
 /** How long a jump takes (s) and where in it the scene is swapped: portals are quick, the two
  * passages through the air (into the cloud deck, out of the last of the air) linger. */
-const JUMP = { portal: 1.1, air: 1.9 };
-const PEAK = { portal: 0.32, air: 0.42 };
+const JUMP = { portal: 1.45, air: 1.9 };
+const PEAK = { portal: 0.36, air: 0.42 };
 
 function renderer(canvas: HTMLCanvasElement, small: boolean): THREE.WebGLRenderer {
     const r = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
@@ -245,6 +245,14 @@ export function createWorld(o: WorldOptions): World {
     const rig = createRig(camera, route, o.small, o.reduce);
     const post = createPost(gl, scene, camera, o.small);
 
+    // Where the open sea gives way to the pack ice: halfway through the records.
+    const half =
+        o.recordAt.length > 1
+            ? (o.recordAt[Math.floor(o.recordAt.length / 2) - 1] +
+                  o.recordAt[Math.floor(o.recordAt.length / 2)]) /
+              2
+            : 0.5;
+    const iceAt = lerp(data, 1, half);
     const stopAt = (u: number, map: number): Stop => {
         if (map > 0.5) return 'orbit';
         if (u < city0) return 'space';
@@ -253,13 +261,7 @@ export function createWorld(o: WorldOptions): World {
             const k = zoneOf((u - svc) / (data - svc), ringEnds);
             return `${LANDS[k % LANDS.length]}#${k}`;
         }
-        const half =
-            o.recordAt.length > 1
-                ? (o.recordAt[Math.floor(o.recordAt.length / 2) - 1] +
-                      o.recordAt[Math.floor(o.recordAt.length / 2)]) /
-                  2
-                : 0.5;
-        return (u - data) / (1 - data) < half ? 'ocean' : 'ice';
+        return u < iceAt ? 'ocean' : 'ice';
     };
 
     let w = 0;
@@ -302,7 +304,7 @@ export function createWorld(o: WorldOptions): World {
      * the drop out of the cloud deck onto the city, the climb off the ice, and the rise away from
      * Earth once back in orbit.
      */
-    const beat = { dive: 0, drop: 0, climb: 0, rise: 0 };
+    const beat = { dive: 0, drop: 0, climb: 0, rise: 0, skim: 0, over: 0 };
     const shot: Shot = { tilt: 0, lift: 0, shake: 0 };
     let kicked = false;
     const heading = new THREE.Vector3();
@@ -419,8 +421,13 @@ export function createWorld(o: WorldOptions): World {
         // The long way out: pull up off the ice, burn, then the globe falls away in orbit.
         beat.climb = shown === 'ice' ? smooth(0.06, 0.5, f.map) : 0;
         beat.rise = shown === 'orbit' ? smooth(0.5, 1, f.map) : 0;
+        // Arrivals at sea: a skim low over the waves; at the pole: a lift to take in the ice.
+        const bump = (from: number, span: number): number => Math.sin(Math.PI * clamp((u - from) / span));
+        beat.skim = shown === 'ocean' ? bump(data, (1 - data) * 0.16) : 0;
+        beat.over = shown === 'ice' ? bump(iceAt, (1 - data) * 0.14) : 0;
         shot.tilt = beat.dive * 0.8 - beat.climb * 0.55 + (shown === 'orbit' ? (1 - beat.rise) * 0.55 : 0);
-        shot.lift = beat.drop * beat.drop * 230 + beat.climb * beat.climb * 90;
+        shot.lift =
+            beat.drop * beat.drop * 230 + beat.climb * beat.climb * 90 + beat.over * 22 - beat.skim * 12;
         // The afterburner lights once on the way out.
         if (beat.climb > 0.45 && !kicked) {
             kicked = true;

@@ -57,8 +57,10 @@ export function createRig(
         // Lifted (coming down onto the city, or climbing off the ice), it looks further ahead, down
         // at the path. Past the end of the route the look point carries on along the last tangent.
         camera.position.y += shot.lift;
-        const ahead = (28 + shot.lift * 1.6) / route.len;
+        const ahead = (28 + Math.max(0, shot.lift) * 1.6) / route.len;
         route.curve.getPointAt(clamp(u + ahead), look);
+        // Dropped below the path (skimming the sea), it keeps looking level, not up at the path.
+        look.y += Math.min(0, shot.lift);
         if (u + ahead > 1) look.addScaledVector(route.curve.getTangentAt(1, t1), (u + ahead - 1) * route.len);
         // Tall screens: the text sits low, so ride higher and look down to fill the top with land.
         if (camera.aspect < 1 && ground) {
