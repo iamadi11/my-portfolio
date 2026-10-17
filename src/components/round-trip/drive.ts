@@ -100,6 +100,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const coarse = matchMedia('(pointer: coarse)').matches;
     const pointer = { x: 0, y: 0 };
+    const tilted = tilt(pointer, root.querySelector<HTMLButtonElement>('[data-tilt]'));
     const active = new Map<string, number>();
     let world: World | null = null;
     let phase: 'idle' | 'building' | 'live' | 'flat' = 'idle';
@@ -153,6 +154,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     const hud = (sec: number, ms: number): void => {
         if (active.get('zone') !== sec) {
             active.set('zone', sec);
+            // A tick in the hand at each hop while tilt is scrolling.
+            if (tilted.scrolling()) navigator.vibrate?.(10);
             els.route.forEach((li) => {
                 const r = Number(li.dataset.r);
                 li.classList.toggle('on', r === sec);
@@ -178,6 +181,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
             // A small tick in the hand as the request flies through a project's ring.
             if (coarse) navigator.vibrate?.(12);
         }
+        // A longer pulse in the hand as the ship jumps to the next place.
+        if (out.jumped && coarse) navigator.vibrate?.([8, 30, 16]);
         sound?.wind(out.speed);
         root.classList.add('rt-live');
     };
@@ -224,7 +229,6 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     addEventListener('pointermove', onPointer, { passive: true });
     root.addEventListener('click', onClick);
     root.addEventListener('focusin', onFocus);
-    const stopTilt = tilt(pointer, root.querySelector<HTMLButtonElement>('[data-tilt]'));
 
     const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1200));
     const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
@@ -240,7 +244,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         removeEventListener('pointermove', onPointer);
         root.removeEventListener('click', onClick);
         root.removeEventListener('focusin', onFocus);
-        stopTilt();
+        tilted.stop();
         (world as World | null)?.dispose();
     };
 }

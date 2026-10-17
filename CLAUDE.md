@@ -107,9 +107,9 @@ Examples:
 
 ## 10. HOME (/) RULES
 
-`/` is **Round trip**: scrolling sends one request through a full-stack world built in code with three.js (fibre tunnel → server city → one gyroscope per project → a lattice with one record per role → `200 OK` and the whole route as a map). Spec: `docs/round-trip.md`; next pass: `docs/round-trip-next.md`. `/v2` redirects to `/`.
+`/` is **Round trip**: scrolling flies an alien ship (three.js) from orbit down to Earth at night: a city, then one endless landscape per project (each with its gyroscope), the sea and the pole (one ice block per role), with a film-style jump between places, ending back in orbit at sunrise for `200 OK`. Spec, assets and licences: `docs/round-trip.md`. `/v2` redirects to `/`.
 
 1. **Content:** all copy for `/` lives in `src/content/site.ts` (`SITE`; types and `SAMPLE` in `src/content/types.ts`). Same truth rules as §0. Optional fields are dropped from the page when empty; never fill them to fill a layout.
-2. **Layout:** `src/components/round-trip/*`: `trip.ts` reshapes `SITE`, `drive.ts` runs the page (scroll, panels, HUD, tilt), `world/*` is the three.js scene.
+2. **Layout:** `src/components/round-trip/*`: `trip.ts` reshapes `SITE`, `drive.ts` runs the page (scroll, panels, HUD, tilt), `world/*` is the three.js scene. Models and textures in `public/models` and `public/env` are rebuilt by `scripts/assets.sh` from git-ignored `assets-src/`; keep the credits line on the `200 OK` panel in step with them.
 3. **Performance gates:** three.js and the world are fetched on idle but built only on Start or scroll (a CSS poster stands in before); first-load JS for `/` stays ≤ 120 kB; no layout shift (panels stack items in one grid cell; the world is a fixed canvas).
 4. **Sound:** nothing plays before Sound is switched on. Tilt on iOS starts only from the Tilt button.

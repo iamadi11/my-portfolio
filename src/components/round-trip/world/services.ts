@@ -23,20 +23,33 @@ export type Rings = {
 const BEADS = 8;
 const IDENTITY = new THREE.Quaternion();
 
-function gyroscope(scene: THREE.Scene, center: THREE.Vector3, colour: string): Pick<Ring, 'parts' | 'glow'> {
+function gyroscope(
+    scene: THREE.Object3D,
+    center: THREE.Vector3,
+    colour: string
+): Pick<Ring, 'parts' | 'glow'> {
     const g = new THREE.Group();
     g.position.copy(center);
     scene.add(g);
-    const chrome = new THREE.MeshStandardMaterial({
-        color: '#c8d0dc',
+    // Satin chrome outside, brushed aluminium inside, an LED strip at the core; all catch the moon.
+    const chrome = new THREE.MeshPhysicalMaterial({
+        color: '#b9c0cc',
         metalness: 1,
-        roughness: 0.2,
-        envMapIntensity: 0.55,
+        roughness: 0.3,
+        clearcoat: 0.2,
+        clearcoatRoughness: 0.25,
+        envMapIntensity: 0.12,
+    });
+    const brushed = new THREE.MeshPhysicalMaterial({
+        color: '#8f97a5',
+        metalness: 1,
+        roughness: 0.36,
+        envMapIntensity: 0.1,
     });
     const glow = new THREE.MeshBasicMaterial({ color: colour });
     const parts = [
         new THREE.Mesh(new THREE.TorusGeometry(15, 0.5, 20, 180), chrome),
-        new THREE.Mesh(new THREE.TorusGeometry(12, 0.32, 16, 160), chrome),
+        new THREE.Mesh(new THREE.TorusGeometry(12, 0.32, 16, 160), brushed),
         new THREE.Mesh(new THREE.TorusGeometry(9.6, 0.09, 8, 200), glow),
     ];
     const beads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.42, 12, 10), glow, BEADS);
@@ -55,7 +68,7 @@ function gyroscope(scene: THREE.Scene, center: THREE.Vector3, colour: string): P
  * request arrives (the rings lie across the path, so "aligned" is no rotation at all).
  */
 export function addRings(
-    scene: THREE.Scene,
+    scene: THREE.Object3D,
     route: Route,
     colours: string[],
     us: number[],
@@ -88,7 +101,7 @@ export function addRings(
                 e.set(t * r.rates[i][0] + k, t * r.rates[i][1] + i, t * r.rates[i][2]);
                 p.quaternion.slerpQuaternions(q.setFromEuler(e), IDENTITY, r.align);
             });
-            r.glow.color.copy(r.colour).multiplyScalar(0.7 + r.align * 2.2);
+            r.glow.color.copy(r.colour).multiplyScalar(0.4 + r.align * 0.85);
             if (!r.passed && u > r.u) {
                 r.passed = true;
                 hit = k;

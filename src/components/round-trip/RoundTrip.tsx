@@ -148,6 +148,30 @@ function Work({ trip }: { trip: Trip }): React.JSX.Element {
     );
 }
 
+/** Two highlights on screen; the rest one tap away, so the panel stays light. */
+function Highlights({ items }: { items: string[] }): React.JSX.Element {
+    const [shown, more] = [items.slice(0, 2), items.slice(2)];
+    return (
+        <>
+            <ul className="rt-bullets">
+                {shown.map((h) => (
+                    <li key={h}>{h}</li>
+                ))}
+            </ul>
+            {more.length > 0 && (
+                <details className="rt-more">
+                    <summary>{more.length} more</summary>
+                    <ul className="rt-bullets">
+                        {more.map((h) => (
+                            <li key={h}>{h}</li>
+                        ))}
+                    </ul>
+                </details>
+            )}
+        </>
+    );
+}
+
 function Career({ trip }: { trip: Trip }): React.JSX.Element {
     return (
         <>
@@ -169,13 +193,7 @@ function Career({ trip }: { trip: Trip }): React.JSX.Element {
                         <p className="rt-meta">
                             {[r.role, r.period, r.location].filter(Boolean).join(' · ')}
                         </p>
-                        {r.highlights && (
-                            <ul className="rt-bullets">
-                                {r.highlights.map((h) => (
-                                    <li key={h}>{h}</li>
-                                ))}
-                            </ul>
-                        )}
+                        {r.highlights && <Highlights items={r.highlights} />}
                         {r.stack && <p className="rt-tech">{r.stack.split(', ').join(' · ')}</p>}
                     </article>
                 ))}
@@ -216,7 +234,7 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                 ))}
             </div>
             <p className="rt-note rt-fade" style={stagger(3)}>
-                Every shape on this page is generated in code.
+                Ship: Intergalactic Spaceship by Dennis Haupt (3DHaupt). Earth and stars: NASA.
             </p>
         </>
     );
@@ -277,8 +295,8 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                     {trip.name}
                 </a>
                 <Route label="Request route" />
-                <button className="rt-snd" type="button" data-tilt hidden aria-label="Tilt to steer">
-                    Tilt
+                <button className="rt-snd rt-tilt" type="button" data-tilt aria-pressed="false" hidden>
+                    Tilt to scroll
                 </button>
                 <button className="rt-snd" type="button" aria-pressed={soundOn} onClick={toggleSound}>
                     {soundOn ? 'Sound on' : 'Sound off'}
