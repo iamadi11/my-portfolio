@@ -3,7 +3,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 
 import { clamp, lerp, smooth } from '@/components/round-trip/math';
-import { addCity, FLOOR } from '@/components/round-trip/world/city';
+import { addCity, type Env, FLOOR } from '@/components/round-trip/world/city';
 import { FOG, MOON, rng, shared } from '@/components/round-trip/world/gl';
 import { glowMaker } from '@/components/round-trip/world/glow';
 import { addLand, GROUND, type LandKind, LANDS } from '@/components/round-trip/world/land';
@@ -193,12 +193,18 @@ export function createWorld(o: WorldOptions): World {
     const pmrem = new THREE.PMREMGenerator(gl);
     // A studio light until the night-city HDRI (Poly Haven, CC0) arrives; then metal has a night to reflect.
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    // The city's glass reflects the same HDRI by direction, so it is kept.
+    const env: Env = { tEnv: { value: null }, uEnvOn: { value: 0 } };
     new HDRLoader()
         .loadAsync('/env/night.hdr')
         .then((hdr) => {
             scene.environment = pmrem.fromEquirectangular(hdr).texture;
             scene.environmentIntensity = 0.35;
-            hdr.dispose();
+            hdr.generateMipmaps = true;
+            hdr.minFilter = THREE.LinearMipmapLinearFilter;
+            hdr.needsUpdate = true;
+            env.tEnv.value = hdr;
+            env.uEnvOn.value = 1;
         })
         .catch(() => undefined);
     scene.add(new THREE.HemisphereLight(0x8fb4ff, 0x05070d, 0.25));
@@ -221,7 +227,7 @@ export function createWorld(o: WorldOptions): World {
     const space = addSpace(scene, route, s, density, o.small, glow, rand);
     const cityGroup = new THREE.Group();
     scene.add(cityGroup);
-    const city = addCity(cityGroup, s, density, rand);
+    const city = addCity(cityGroup, s, density, rand, env);
     const land = addLand(scene, s, o.small, rand);
     const sea = addSea(scene, s, sky.uniforms.uHorizon, o.small, rand);
     const ringGroup = new THREE.Group();

@@ -27,6 +27,7 @@ const TOWER_VERT = WRAP_VERT.replace('varying float vR, vD;', 'varying float vR,
  * Works for walls facing any way, so octagonal towers get windows and rooms too.
  */
 const TOWER_FRAG = /* glsl */ `
+    uniform sampler2D tEnv; uniform float uEnvOn;
     varying vec3 vW, vN, vL, vWN; varying float vR, vD, vTop;
     void main() {
         vec3 n = normalize(vWN);
@@ -61,9 +62,14 @@ const TOWER_FRAG = /* glsl */ `
         float slats = mix(1.0, 0.55 + 0.45 * step(0.45, fract(g.y * 10.0)), blinds);
         vec3 room = wc * (0.3 + 0.95 * backWall) * (0.8 + 0.35 * ceilingLight) * flick * slats;
 
-        float fres = pow(1.0 - clamp(abs(dot(V, n)), 0.0, 1.0), 3.0);
+        // Glass: the night city's own HDRI by reflection (blurred for roughness), Schlick Fresnel,
+        // so face-on glass goes near-black and grazing glass carries the skyline.
         vec3 sky = mix(vec3(0.045, 0.06, 0.1), vec3(0.14, 0.17, 0.26), clamp(0.5 - V.y * 0.6, 0.0, 1.0));
-        vec3 glass = sky * (0.35 + 1.7 * fres);
+        vec3 Rr = reflect(V, n);
+        vec2 euv = vec2(atan(Rr.z, Rr.x) / 6.2831853 + 0.5, asin(clamp(Rr.y, -1.0, 1.0)) / 3.1415927 + 0.5);
+        vec3 env = mix(sky, min(texture2D(tEnv, euv, 3.0).rgb, vec3(1.2)) * 0.9, uEnvOn);
+        float F = 0.04 + 0.96 * pow(1.0 - clamp(abs(dot(V, n)), 0.0, 1.0), 5.0);
+        vec3 glass = env * (0.2 + 2.4 * F);
         float hgt = clamp((vW.y + 60.0) / 210.0, 0.0, 1.0);
         vec3 concrete = mix(vec3(0.02, 0.022, 0.03), vec3(0.06, 0.064, 0.078), hgt) * (0.78 + 0.22 * abs(nh.x));
         concrete *= 0.9 + 0.2 * hash(floor(f * 0.5));
@@ -96,7 +102,7 @@ const TOWER_FRAG = /* glsl */ `
         vec3 crownCol = mix(vec3(1.0, 0.82, 0.55), vec3(0.6, 0.85, 1.0), step(0.5, fract(vR * 3.7)));
         col += crownCol * (band * 0.55 + parapet * 1.3) * crowned;
         col += vec3(1.0, 0.86, 0.7) * glowAt(vW, 18.0) * 0.1;
-        gl_FragColor = vec4(fogIt(col, vD), 1.0);
+        gl_FragColor = vec4(fogAt(col, vD, vW), 1.0);
     }
 `;
 
@@ -179,11 +185,11 @@ function addSpires(
 }
 
 /** One tile of blocks; the shader repeats it around the camera and keeps the flight path clear. */
-function addTowers(scene: THREE.Object3D, s: Shared, rand: () => number): Tower[] {
+function addTowers(scene: THREE.Object3D, s: Shared, rand: () => number, env: Env): Tower[] {
     const towers = planTowers(rand);
     const q = new THREE.Quaternion();
     const wrap = { uTile: { value: TILE }, uClear: { value: CLEAR } };
-    const material = shader(s, TOWER_VERT, TOWER_FRAG, wrap);
+    const material = shader(s, TOWER_VERT, TOWER_FRAG, { ...wrap, tEnv: env.tEnv, uEnvOn: env.uEnvOn });
     shapes().forEach((geo, kind) => {
         const mine = towers.filter((t) => t.kind === kind);
         if (!mine.length) return;
@@ -240,11 +246,10 @@ const STREET_FRAG = /* glsl */ `
         vec2 ripple = (vec2(fbm(vW.xz * 0.8 + uTime * 0.04), fbm(vW.xz * 0.8 - uTime * 0.04)) - 0.5) * 0.035;
         vec4 uv = vRuv;
         uv.xy += ripple * uv.w * (1.0 - puddle * 0.75);
-        float spread = mix(0.012, 0.003, puddle) * uv.w;
-        vec3 refl = (texture2DProj(tReflect, uv).rgb + texture2DProj(tReflect, uv + vec4(spread, 0.0, 0.0, 0.0)).rgb
-            + texture2DProj(tReflect, uv - vec4(spread, 0.0, 0.0, 0.0)).rgb + texture2DProj(tReflect, uv + vec4(0.0, spread * 2.0, 0.0, 0.0)).rgb) * 0.25;
+        // One tap, blurrier on rough asphalt than in the puddles (the target has mips).
+        vec3 refl = texture2DProj(tReflect, uv, mix(4.0, 0.5, puddle)).rgb;
         vec3 V = normalize(vW - cameraPosition);
-        float fres = 0.25 + 0.75 * pow(1.0 - abs(V.y), 4.0);
+        float fres = 0.03 + 0.97 * pow(1.0 - abs(V.y), 5.0);
         vec3 asphalt = vec3(0.01, 0.012, 0.018) * (0.6 + 0.8 * grain);
         vec2 q = abs(fract((vW.xz - 9.0) / 18.0) - 0.5) * 18.0;
         float lane = smoothstep(0.4, 0.0, min(q.x, q.y)) * (1.0 - puddle * 0.6);
@@ -254,7 +259,7 @@ const STREET_FRAG = /* glsl */ `
         vec2 lb = vec2(q.y, abs(fract(vW.x / 9.0) - 0.5) * 9.0);
         float pools = exp(-dot(la, la) / 14.0) + exp(-dot(lb, lb) / 14.0);
         col += vec3(1.0, 0.72, 0.38) * pools * 0.2 * (1.0 - puddle * 0.4);
-        col += refl * uMirror * mix(0.22, 0.95, puddle) * fres;
+        col += refl * uMirror * mix(0.3, 1.0, puddle) * fres;
         vec3 lp = vec3(uPacket.x, vW.y, uPacket.z);
         col += vec3(1.0, 0.75, 0.5) * exp(-dot(vW - lp, vW - lp) / 900.0) * 0.1;
         gl_FragColor = vec4(fogIt(col, vD), 1.0);
@@ -266,12 +271,20 @@ export type City = {
     update: (eye: THREE.Vector3, on: boolean) => void;
 };
 
+/** The night HDRI, once it has loaded, for the glass to reflect. */
+export type Env = { tEnv: THREE.IUniform<THREE.Texture | null>; uEnvOn: THREE.IUniform<number> };
+
 function addStreets(scene: THREE.Object3D, s: Shared, mirror: boolean): City {
     const geo = new THREE.PlaneGeometry(900, 900);
     // The reflector renders the mirrored city; its own material is swapped for the asphalt above.
     const floor = mirror
         ? new Reflector(geo, { textureWidth: 1024, textureHeight: 640, clipBias: 0.003 })
         : new THREE.Mesh(geo);
+    if (mirror) {
+        const target = (floor as Reflector).getRenderTarget();
+        target.texture.generateMipmaps = true;
+        target.texture.minFilter = THREE.LinearMipmapLinearFilter;
+    }
     const reflectUniforms = mirror
         ? ((floor as Reflector).material as THREE.ShaderMaterial).uniforms
         : { tDiffuse: { value: null }, textureMatrix: { value: new THREE.Matrix4() } };
@@ -357,8 +370,14 @@ function addTraffic(scene: THREE.Object3D, s: Shared, density: number, rand: () 
 }
 
 /** 2 · Edge: an endless night city of towers the ship weaves above, in the rain. */
-export function addCity(scene: THREE.Object3D, s: Shared, density: number, rand: () => number): City {
-    const towers = addTowers(scene, s, rand);
+export function addCity(
+    scene: THREE.Object3D,
+    s: Shared,
+    density: number,
+    rand: () => number,
+    env: Env
+): City {
+    const towers = addTowers(scene, s, rand, env);
     addBeacons(scene, towers, s, rand);
     addTraffic(scene, s, density, rand);
     addMotes(

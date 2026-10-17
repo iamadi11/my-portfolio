@@ -54,8 +54,13 @@ const SEA_FRAG = /* glsl */ `
         vec3 R = reflect(V, n);
         float fres = 0.02 + 0.98 * pow(1.0 - max(dot(-V, n), 0.0), 5.0);
         vec3 sky = mix(uHorizon, vec3(0.004, 0.007, 0.018), smoothstep(0.0, 0.5, R.y));
-        float m = max(dot(R, uMoon), 0.0);
-        vec3 water = mix(vec3(0.002, 0.007, 0.012), sky, fres) + uMoonCol * (pow(m, 1400.0) * 2.5 + pow(m, 220.0) * 0.06);
+        // The moon path: a tight lobe on per-cell jittered facets, so it breaks into glitter instead
+        // of one rubber-sheet highlight; the lobe widens with distance so it never aliases.
+        vec2 cellId = floor(p * 3.0);
+        vec3 nj = normalize(n + (vec3(hash(cellId), 0.0, hash(cellId + 7.1)) - 0.5) * 0.12 * near);
+        float m = max(dot(reflect(V, nj), uMoon), 0.0);
+        float ex = mix(1400.0, 150.0, smoothstep(40.0, 600.0, vD));
+        vec3 water = mix(vec3(0.002, 0.007, 0.012), sky, fres) + uMoonCol * (pow(m, ex) * 2.5 * (ex / 1400.0) + pow(max(dot(R, uMoon), 0.0), 220.0) * 0.06);
         water += beamAt(vW) * 0.12;
 
         // Floes: snow on top, lit by the moon, sparkling; blue where they crack and meet the water.
@@ -65,7 +70,7 @@ const SEA_FRAG = /* glsl */ `
         float sparkle = step(0.988, hash(floor(p * 5.0))) * pow(max(dot(reflect(-uMoon, iN), -V), 0.0), 4.0);
         snow += uMoonCol * sparkle * 1.6 * exp(-vD * 0.012) + beamAt(vW) * albedo * 4.0;
         vec3 col = mix(water, snow, fl.x);
-        gl_FragColor = vec4(fogIt(col, vD), 1.0);
+        gl_FragColor = vec4(fogAt(col, vD, vW), 1.0);
     }
 `;
 

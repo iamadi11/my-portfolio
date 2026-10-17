@@ -61,7 +61,7 @@ const HEIGHT = /* glsl */ `
 
 const FRAG = /* glsl */ `
     uniform vec3 uMoon, uMoonCol;
-    varying vec3 vW, vN; varying float vD;
+    varying vec3 vW, vN; varying float vD, vSh;
     void main() {
         vec3 n = normalize(vN);
         vec2 p = vW.xz;
@@ -103,14 +103,14 @@ const FRAG = /* glsl */ `
             glow = vec3(3.2, 0.85, 0.16) * max(max(river, crack), crater) * pulse;
         }
         vec3 V = normalize(cameraPosition - vW);
-        float lit = max(dot(n, uMoon), 0.0);
+        float lit = max(dot(n, uMoon), 0.0) * vSh;
         vec3 amb = vec3(0.016, 0.024, 0.042) * (0.6 + 0.4 * n.y);
         vec3 col = albedo * (uMoonCol * lit + amb) + glow;
         vec3 R = reflect(-uMoon, n);
         float sparkle = step(0.985, hash(floor(p * 6.0))) * pow(max(dot(R, V), 0.0), 6.0);
         col += uMoonCol * (pow(max(dot(R, V), 0.0), 30.0) * 0.25 * snow + sparkle * snow * 1.2 * close);
         col += beamAt(vW) * (albedo * 4.0 + 0.04);
-        gl_FragColor = vec4(fogIt(col, vD), 1.0);
+        gl_FragColor = vec4(fogAt(col, vD, vW), 1.0);
     }
 `;
 
@@ -275,13 +275,20 @@ export function addLand(scene: THREE.Object3D, s: Shared, small: boolean, rand: 
         shader(
             s,
             HEIGHT +
-                /* glsl */ `uniform float uCell; varying vec3 vW, vN; varying float vD;
+                /* glsl */ `uniform float uCell; uniform vec3 uMoon; varying vec3 vW, vN; varying float vD, vSh;
             void main() {
                 vec4 w = modelMatrix * vec4(position, 1.0);
                 float hx = landH(w.xz + vec2(uCell, 0.0)) - landH(w.xz - vec2(uCell, 0.0));
                 float hz = landH(w.xz + vec2(0.0, uCell)) - landH(w.xz - vec2(0.0, uCell));
                 vN = normalize(vec3(-hx, 2.0 * uCell, -hz));
                 w.y = landH(w.xz);
+                // Shadow: does the ground rise into the moon's line within 12, 40 and 120 m?
+                float sh = 1.0;
+                for (int k = 0; k < 3; k++) {
+                    float r = k == 0 ? 12.0 : k == 1 ? 40.0 : 120.0;
+                    sh = min(sh, smoothstep(0.0, 0.25, (w.y + uMoon.y * r - landH(w.xz + uMoon.xz * r)) / r * 2.0));
+                }
+                vSh = 0.25 + 0.75 * sh;
                 vW = w.xyz;
                 vec4 mv = viewMatrix * w;
                 vD = -mv.z;

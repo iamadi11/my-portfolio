@@ -58,6 +58,14 @@ const HEAD =
     uniform float uTime; uniform vec3 uPacket; uniform float uFog; uniform vec3 uFogColor; uniform float uPR; uniform float uScan;
     uniform vec4 uBeam; uniform float uDrop;
     vec3 fogIt(vec3 c, float d) { float f = 1.0 - exp(-uFog * uFog * d * d); return mix(c, uFogColor, clamp(f, 0.0, 1.0)); }
+    // Fog with aerial perspective: the haze is brighter along the horizon and towards the moon, darker overhead.
+    const vec3 MOON_DIR = vec3(0.319, 0.359, -0.877);
+    vec3 fogAt(vec3 c, float d, vec3 w) {
+        vec3 V = normalize(w - cameraPosition);
+        vec3 ins = uFogColor * mix(0.4, 1.15, smoothstep(0.35, -0.05, V.y)) * (1.0 + 0.7 * pow(max(dot(V, MOON_DIR), 0.0), 8.0));
+        float f = 1.0 - exp(-uFog * uFog * d * d);
+        return mix(c, ins, clamp(f, 0.0, 1.0));
+    }
     float fade(float d) { return exp(-uFog * uFog * d * d); }
     float glowAt(vec3 w, float r) { vec3 d = w - uPacket; return exp(-dot(d, d) / (r * r)); }
 ` +
