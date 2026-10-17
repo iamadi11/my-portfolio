@@ -2,8 +2,8 @@ import { clamp } from '@/components/round-trip/math';
 
 type Ask = { requestPermission?: () => Promise<'granted' | 'denied'> };
 
-const DEAD = 6; // degrees of forward/back tilt ignored around "level"
-const FULL = 24; // degrees past the dead zone for full speed
+const DEAD = 3; // degrees of forward/back tilt ignored around "level"
+const FULL = 12; // degrees past the dead zone for full speed (so ~15° in all)
 const MAX = 1500; // px per second at full tilt
 /** Flip to -1 if a device reports pitch the other way round. */
 const FORWARD = 1;
@@ -52,7 +52,7 @@ export function tilt(pointer: { x: number; y: number }, button: HTMLButtonElemen
         const d = level === null ? 0 : pitch - level;
         const over = Math.max(0, Math.abs(d) - DEAD);
         // Tilting forward makes the pitch smaller, which scrolls down.
-        const target = touching ? 0 : -Math.sign(d) * FORWARD * MAX * Math.pow(clamp(over / FULL), 1.6);
+        const target = touching ? 0 : -Math.sign(d) * FORWARD * MAX * Math.pow(clamp(over / FULL), 1.4);
         vel += (target - vel) * (1 - Math.exp(-dt * 6));
         // Instant steps: the page's smooth scrolling would restart every frame and never move.
         if (Math.abs(vel) > 2) scrollBy({ top: vel * dt, behavior: 'instant' });

@@ -55,6 +55,10 @@ export type FrameOut = {
     jumped: boolean;
     /** The stop on screen: a place, plus which project's stretch for a landscape ("desert#1"). */
     place: string;
+    /** Where the ship is on screen, for the sound of its engine. */
+    ship: Mark;
+    /** 0–1: rushing at a portal or burning through the air, for the roar. */
+    rush: number;
 };
 
 export type World = {
@@ -454,6 +458,8 @@ export function createWorld(o: WorldOptions): World {
             speed,
             jumped,
             place: stop,
+            ship: project(at, 1e9),
+            rush: Math.max(rush, heat),
         };
     };
 

@@ -116,7 +116,11 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     const els = find(root);
     const small = matchMedia('(max-width: 760px)').matches;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const coarse = matchMedia('(pointer: coarse)').matches;
+    // Haptics only once the visitor has touched the page (the browser refuses them before).
+    let coarse = false;
+    const onTouch = (): void => {
+        coarse = matchMedia('(pointer: coarse)').matches;
+    };
     const pointer = { x: 0, y: 0 };
     const tilted = tilt(pointer, root.querySelector<HTMLButtonElement>('[data-tilt]'));
     const active = new Map<string, number>();
@@ -219,14 +223,19 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         els.ringTags.forEach((el, k) => place(el, out.rings[k], s.sec === 3 && map < 0.1, small, top));
         els.recordTags.forEach((el, k) => place(el, out.records[k], s.sec === 4 && map < 0.1, small, top));
         const sound = o.sound();
+        const panOf = (m: Mark): number => (m ? (m.x / innerWidth - 0.5) * 2 : 0);
         if (out.passed !== null) {
-            sound?.ping(out.passed);
+            sound?.ping(out.passed, panOf(out.rings[out.passed]));
             // A small tick in the hand as the request flies through a project's ring.
             if (coarse) navigator.vibrate?.(12);
         }
         // A longer pulse in the hand as the ship jumps to the next place.
         if (out.jumped && coarse) navigator.vibrate?.([8, 30, 16]);
+        if (out.jumped) sound?.jump();
         sound?.wind(out.speed);
+        sound?.engine(panOf(out.ship), Math.min(1, out.speed + out.rush));
+        sound?.roar(out.rush);
+        sound?.place(out.place);
         root.classList.add('rt-live');
     };
 
@@ -271,6 +280,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     addEventListener('keydown', onKey);
     addEventListener('wheel', wake, { passive: true });
     addEventListener('touchstart', wake, { passive: true });
+    addEventListener('touchstart', onTouch, { passive: true, once: true });
     addEventListener('pointermove', onPointer, { passive: true });
     root.addEventListener('click', onClick);
     root.addEventListener('focusin', onFocus);
@@ -286,6 +296,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         removeEventListener('keydown', onKey);
         removeEventListener('wheel', wake);
         removeEventListener('touchstart', wake);
+        removeEventListener('touchstart', onTouch);
         removeEventListener('pointermove', onPointer);
         root.removeEventListener('click', onClick);
         root.removeEventListener('focusin', onFocus);
