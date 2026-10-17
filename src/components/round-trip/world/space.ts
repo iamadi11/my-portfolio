@@ -25,9 +25,13 @@ const EARTH_FRAG = /* glsl */ `
     void main() {
         vec3 n = normalize(vN), V = normalize(cameraPosition - vW);
         vec3 day = texture2D(tDay, vUv).rgb;
-        // Up close the map's pixels would show as squares: read a blurrier level the lower we are.
-        float lights = texture2D(tLights, vUv, uNear * 3.0).r;
-        float cloud = smoothstep(0.12, 0.85, texture2D(tClouds, vUv + vec2(uTime * 0.0004, 0.0)).r);
+        float lights = texture2D(tLights, vUv).r;
+        // Low down, the map's blocks are broken up into clusters of street grids and dark gaps.
+        // (The map's texels are ~10 km: finer than a texel, so each one breaks into streets.)
+        lights *= mix(1.0, (0.15 + 1.4 * fbm(vUv * 9000.0)) * (0.25 + 0.75 * vnoise(vUv * 22000.0)), uNear);
+        // Low down the cloud map's texels would show as soft squares: fine noise breaks them up.
+        float cloud = smoothstep(0.12, 0.85, texture2D(tClouds, vUv + vec2(uTime * 0.0004, 0.0)).r
+            + (fbm(vUv * 1600.0 + uTime * 0.02) - 0.5) * 0.7 * uNear);
         float moon = max(dot(n, uMoon), 0.0);
         // Moonlit land and sea in blue-grey, as the night side looks from orbit, cities burning on it.
         // City lights: brilliant from high orbit, held back on the way down so they do not bloom.
