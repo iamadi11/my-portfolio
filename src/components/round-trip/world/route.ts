@@ -20,15 +20,16 @@ const CITY = 420;
 const PER_RING = 280;
 const PER_RECORD = 100;
 
-/** Sideways sway at depth z; `pathX` in gl.ts is the same curve. */
-const swayX = (z: number): number => Math.sin(-z * 0.0175) * 6;
+/** Sideways sway at depth z (a quick weave over a wide banked curve); `pathX` in gl.ts matches. */
+const swayX = (z: number): number => Math.sin(-z * 0.0175) * 6 + Math.sin(-z * 0.0061) * 16;
+/** Height at depth z: a gentle wave over long swells the ship climbs over and sinks back from. */
+const riseY = (z: number): number => Math.sin(-z * 0.011) * 2 + (0.5 - 0.5 * Math.cos(-z * 0.0035)) * 8;
 
 export function createRoute(rings: number, records: number): Route {
     const lens = [SPACE, CITY, Math.max(1, rings) * PER_RING, Math.max(1, records) * PER_RECORD];
     const total = lens.reduce((a, b) => a + b, 0);
     const points: THREE.Vector3[] = [];
-    for (let z = 0; z >= -total - STEP; z -= STEP)
-        points.push(new THREE.Vector3(swayX(z), Math.sin(-z * 0.011) * 2, z));
+    for (let z = 0; z >= -total - STEP; z -= STEP) points.push(new THREE.Vector3(swayX(z), riseY(z), z));
     const curve = new THREE.CatmullRomCurve3(points, false, 'centripetal');
     const len = curve.getLength();
     let at = 0;

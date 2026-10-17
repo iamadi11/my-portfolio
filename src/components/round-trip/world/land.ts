@@ -189,28 +189,33 @@ function bladeGeometry(n: number, tile: number, rand: () => number): THREE.Insta
     return g;
 }
 
-/** Things drifting in the air: fireflies over grass, embers over lava, snow in the mountains. */
-type Motes = {
+/** Things in the air: fireflies (0), rising embers (1), falling snow or rain (2), blown sand (3). */
+export type Motes = {
     n: number;
     tile: number;
     y: [number, number];
     colour: THREE.Color;
     size: number;
     mode: number;
+    /** Fall speed for mode 2 (snow drifts, rain drops). */
+    fall?: number;
 };
 
 const MOTE_VERT = /* glsl */ `
-    uniform vec2 uTile, uY; uniform float uSize, uMode;
+    uniform vec2 uTile, uY; uniform float uSize, uMode, uFall;
     attribute vec4 aSeed; varying float vA, vD;
     void main() {
         float r = aSeed.w, span = uY.y - uY.x;
-        float y = uMode > 1.5 ? uY.y - mod(aSeed.z * span + uTime * (1.2 + r * 1.5), span)
+        float y = uMode > 2.5 ? uY.x + aSeed.z * span + sin(uTime * 2.0 + r * 30.0) * 0.6
+                : uMode > 1.5 ? uY.y - mod(aSeed.z * span + uTime * (uFall + r * uFall * 1.2), span)
                 : uMode > 0.5 ? uY.x + mod(aSeed.z * span + uTime * (3.0 + r * 6.0), span)
                 : uY.x + aSeed.z * span + sin(uTime * (0.5 + r) + r * 20.0) * 1.5;
-        vec3 p = vec3(aSeed.x + sin(uTime * (0.3 + r * 0.5) + r * 31.0) * 3.0, y, aSeed.y + cos(uTime * (0.25 + r * 0.4) + r * 17.0) * 3.0);
+        float blow = uMode > 2.5 ? uTime * (18.0 + r * 14.0) : 0.0;
+        vec3 p = vec3(aSeed.x + blow + sin(uTime * (0.3 + r * 0.5) + r * 31.0) * 3.0, y, aSeed.y + cos(uTime * (0.25 + r * 0.4) + r * 17.0) * 3.0);
         p.xz = wrapAround(p.xz, uTile);
         vA = uMode < 0.5 ? smoothstep(0.55, 1.0, sin(uTime * (0.8 + r * 1.7) + r * 40.0))
-           : uMode < 1.5 ? (0.6 + 0.4 * sin(uTime * 9.0 + r * 50.0)) * (1.0 - (y - uY.x) / span) : 0.8;
+           : uMode < 1.5 ? (0.6 + 0.4 * sin(uTime * 9.0 + r * 50.0)) * (1.0 - (y - uY.x) / span)
+           : uMode < 2.5 ? 0.8 : 0.35 + 0.35 * sin(uTime * 3.0 + r * 60.0);
         vec4 mv = viewMatrix * vec4(p, 1.0);
         vD = -mv.z;
         gl_PointSize = min(18.0, uSize * uPR * 40.0 / vD);
@@ -218,7 +223,7 @@ const MOTE_VERT = /* glsl */ `
     }
 `;
 
-function addMotes(group: THREE.Object3D, s: Shared, m: Motes, rand: () => number): void {
+export function addMotes(group: THREE.Object3D, s: Shared, m: Motes, rand: () => number): void {
     const g = new THREE.BufferGeometry();
     const seed = new Float32Array(m.n * 4);
     for (let i = 0; i < m.n; i++) seed.set([rand() * m.tile, rand() * m.tile, rand(), rand()], i * 4);
@@ -236,6 +241,7 @@ function addMotes(group: THREE.Object3D, s: Shared, m: Motes, rand: () => number
                 uY: { value: new THREE.Vector2(...m.y) },
                 uSize: { value: m.size },
                 uMode: { value: m.mode },
+                uFall: { value: m.fall ?? 1.2 },
                 uCol: { value: m.colour },
             },
             ADD
@@ -301,6 +307,7 @@ export function addLand(scene: THREE.Object3D, s: Shared, small: boolean, rand: 
 
     const motes: Partial<Record<LandKind, THREE.Group>> = {
         grass: new THREE.Group(),
+        desert: new THREE.Group(),
         volcano: new THREE.Group(),
         alpine: new THREE.Group(),
     };
@@ -315,6 +322,17 @@ export function addLand(scene: THREE.Object3D, s: Shared, small: boolean, rand: 
                 colour: new THREE.Color(2.2, 1.9, 0.6),
                 size: 2.2,
                 mode: 0,
+            },
+        ],
+        [
+            'desert',
+            {
+                n: 500 * k,
+                tile: 170,
+                y: [-15, -6],
+                colour: new THREE.Color(0.55, 0.45, 0.32),
+                size: 1.5,
+                mode: 3,
             },
         ],
         [

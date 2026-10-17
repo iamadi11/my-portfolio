@@ -43,7 +43,7 @@ const NOISE = /* glsl */ `
     }
     float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int k = 0; k < 4; k++) { v += a * vnoise(p); p *= 2.03; a *= 0.5; } return v; }
     // The path's sideways sway at depth z (route.ts builds the same curve).
-    float pathX(float z) { return sin(-z * 0.0175) * 6.0; }
+    float pathX(float z) { return sin(-z * 0.0175) * 6.0 + sin(-z * 0.0061) * 16.0; }
     // Shift a point by whole tiles so it stays within half a tile of the camera: endless scenery.
     vec2 wrapAround(vec2 c, vec2 tile) { return cameraPosition.xz + mod(c - cameraPosition.xz + tile * 0.5, tile) - tile * 0.5; }
     float ridged(vec2 p) {

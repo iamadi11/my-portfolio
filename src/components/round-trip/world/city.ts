@@ -3,6 +3,7 @@ import { Reflector } from 'three/addons/objects/Reflector.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 import { ADD, boxes, type Shared, shader, WRAP_VERT } from '@/components/round-trip/world/gl';
+import { addMotes } from '@/components/round-trip/world/land';
 
 /** Street level, below the path; the grid the blocks sit on, and one tile of the endless city. */
 export const FLOOR = -60;
@@ -355,10 +356,24 @@ function addTraffic(scene: THREE.Object3D, s: Shared, density: number, rand: () 
     scene.add(cars);
 }
 
-/** 2 · Edge: an endless night city of towers the ship weaves above. */
+/** 2 · Edge: an endless night city of towers the ship weaves above, in the rain. */
 export function addCity(scene: THREE.Object3D, s: Shared, density: number, rand: () => number): City {
     const towers = addTowers(scene, s, rand);
     addBeacons(scene, towers, s, rand);
     addTraffic(scene, s, density, rand);
+    addMotes(
+        scene,
+        s,
+        {
+            n: Math.round(2200 * density),
+            tile: 120,
+            y: [FLOOR, 70],
+            colour: new THREE.Color(0.55, 0.65, 0.8),
+            size: 0.6,
+            mode: 2,
+            fall: 24,
+        },
+        rand
+    );
     return addStreets(scene, s, density >= 1);
 }
