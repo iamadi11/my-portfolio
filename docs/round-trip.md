@@ -6,11 +6,11 @@ Scrolling flies an alien ship down to Earth at night and across it. It comes in 
 
 1. **First paint (no 3D yet):** name, role, statement, availability and city in HTML over a CSS poster (stars over the curve of the night Earth), with **Send a request** and **Email me**. The world's code is fetched on idle.
 2. **First scroll, wheel, swipe, scroll key or Send a request:** the world builds and fades in over the poster.
-3. **Hero and Wire (space):** the ship hovers over Earth at night, real stars and the Milky Way behind. Through `practice.impact` it closes in, plasma building on the hull, then jumps (a fiery flash) into the atmosphere.
-4. **Edge (city):** an endless night city of lit towers, traffic and wet streets; the skill groups from `practice.skills`.
+3. **Hero and Wire (space):** the ship hovers over Earth at night, real stars and the Milky Way behind. Through `practice.impact` it closes in; then it noses down and dives at the moonlit globe, plasma building on the hull, the camera pitching down after it, until the cloud deck whites the screen out.
+4. **Edge (city):** out of the cloud high over an endless night city, sinking between the towers as the fog thins: lit rooms, LED billboards, street lamps, traffic and wet streets; the skill groups from `practice.skills`. A title card names each place as the ship arrives in it.
 5. **Services (one landscape per project):** grassland (wind in the grass, fireflies), desert dunes, red-rock canyon, alpine peaks in falling snow, a volcanic field with lava rivers and embers; then they repeat if there are more projects. Each landscape is a long stretch with one portal at its end, the only one in view: a sci-fi gateway standing on the ground, lined with the project's colour, an event horizon swirling inside it. Flying through it (with a barrel roll) is the jump to the next landscape. The panel shows that project.
 6. **Data:** experience then education, one record at a time; the first half over the open sea under the moon, the second over pack ice and icebergs under the aurora. Each role is a block of glowing ice beside the path.
-7. **200 OK:** a jump back to orbit at sunrise. The ship turns to greet you, then leaves towards the sun. Email, copy, phone and profile links, and the credits.
+7. **200 OK:** the ship pulls up off the ice, the air thins and the stars come back; a cut through the last of the air, and it climbs away from Earth into orbit at sunrise, the globe falling away below. The ship turns to greet you, then leaves towards the sun. Email, copy, phone and profile links, and the credits.
 
 The ship's search beam sweeps the ground on Earth. Sound (drone, wind that follows speed, a chime per ring) stays off until the visitor turns it on. Phones buzz briefly on each jump and ring.
 
@@ -30,6 +30,7 @@ The ship's search beam sweeps the ground on Earth. Sound (drone, wind that follo
 | `world/city.ts` | The endless city: towers, aviation lights, traffic, the wet street (mirrored on desktop). |
 | `world/land.ts` | The landscapes: one GLSL terrain with five kinds, grass blades, fireflies, embers, snow. |
 | `world/sea.ts` | Open sea with a moon path; at the pole, pack ice and icebergs. |
+| `world/landmarks.ts` | One real terrain model (Sketchfab, CC BY) on the horizon of some landscapes, beyond the exit portal. |
 | `world/services.ts`, `world/records.ts` | The project portals (gateway model, light strip, event horizon; one visible at a time); one ice-glass block per role. |
 | `world/ship.ts` | The ship: PBR model, engine plasma, search beam, re-entry glow, wingtip strobes, banking and barrel rolls. |
 | `world/warp.ts` | Light streaks rushing past the camera during a jump. |
@@ -54,6 +55,9 @@ The ship's search beam sweeps the ground on Earth. Sound (drone, wind that follo
 | `env/earth-*.jpg` | Earth model textures supplied by the owner (`59-earth.zip`) | As supplied |
 | `env/stars-*.jpg` | NASA/Goddard SVS Deep Star Maps 2020 | NASA/GSFC SVS; ESA/Gaia/DPAC |
 | `env/night.hdr` | Modern Buildings Night, Poly Haven | CC0 |
+| `models/terrain/mountain_range_01-*.glb` | Mountain Range 01, solararchitect, Sketchfab | CC BY 4.0; on the grassland and alpine horizons |
+| `models/terrain/snowy_volcano-*.glb` | Snowy Volcano, Pukar Shiwakoti, Sketchfab | CC BY 4.0; on the volcanic horizon |
+| `models/terrain/horseshoe-*.glb` | Horseshoe bend near Grand Canyon, Ignazio Pillitteri, Sketchfab | CC BY 4.0; on the canyon horizon |
 
 ## Make it yours
 

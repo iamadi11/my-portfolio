@@ -16,7 +16,7 @@ export type ShipIn = {
     hero: boolean;
     /** 0–1: re-entry heat. */
     heat: number;
-    /** 0–1: the search beam; `ground` is the height it lands on. */
+    /** 0–1: the pool of its landing light on the ground; `ground` is the height it lands on. */
     beam: number;
     ground: number;
 };
@@ -38,23 +38,11 @@ const FLAME_FRAG = /* glsl */ `
     }
 `;
 
-/** The search beam: a soft cone of light with bands drifting down it. */
-const BEAM_FRAG = /* glsl */ `
-    uniform float uOn; varying vec3 vL, vWN, vW; varying vec2 vUv;
-    void main() {
-        vec3 V = normalize(cameraPosition - vW);
-        float edge = pow(1.0 - abs(dot(normalize(vWN), V)), 1.5);
-        float bands = 0.75 + 0.25 * sin(vUv.y * 40.0 + uTime * 6.0);
-        float fall = smoothstep(0.0, 0.15, vUv.y) * pow(vUv.y, 0.6);
-        float a = (0.025 + edge * 0.16) * bands * fall * uOn;
-        gl_FragColor = vec4(vec3(0.45, 1.0, 0.88) * a, 1.0);
-    }
-`;
-
 /**
  * The visitor: the Intergalactic Spaceship by Dennis Haupt (3DHaupt, free3d.com; personal,
- * non-commercial licence), with its own PBR maps. Blue plasma from the engines, a search beam
- * underneath once it is over land, a plasma glow on re-entry, strobes on the wingtips.
+ * non-commercial licence), with its own PBR maps, graded to graphite with warm-lit panels. Blue
+ * plasma from the engines, a pool of landing light on the ground below it (no visible cone: the
+ * model carries its own lights), a plasma glow on re-entry, strobes on the wingtips.
  */
 export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glow): Ship {
     const rig = new THREE.Group();
@@ -74,23 +62,10 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
     [nose, ...engines, ...strobes].forEach((g) => body.add(g));
 
     // A little light of its own so it reads against the dark.
-    const fill = new THREE.PointLight('#cfe0ff', 1.2, 10, 2);
+    const fill = new THREE.PointLight('#ffe6c4', 1.4, 10, 2);
     scene.add(fill);
 
     const uOn = { value: 0 };
-    const beam = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.3, 3.6, 1, 48, 1, true).translate(0, -0.5, 0),
-        shader(
-            s,
-            /* glsl */ `varying vec3 vL, vWN, vW; varying vec2 vUv;
-            void main() { vL = position; vUv = uv; vWN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
-            BEAM_FRAG,
-            { uOn },
-            { ...ADD, side: THREE.DoubleSide }
-        )
-    );
-    beam.frustumCulled = false;
-    scene.add(beam);
 
     new GLTFLoader()
         .setMeshoptDecoder(MeshoptDecoder)
@@ -111,11 +86,14 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
             const k = LEN / hullBox.getSize(new THREE.Vector3()).z;
             model.scale.setScalar(k);
             model.position.copy(hullBox.getCenter(new THREE.Vector3())).multiplyScalar(-k);
+            // Premium grade: graphite hull, sharp night reflections, panels lit warm gold.
             const mat = (hull as THREE.Mesh).material as THREE.MeshStandardMaterial;
-            mat.envMapIntensity = 0.45;
-            mat.color.multiplyScalar(0.55);
-            mat.emissive.setRGB(0.5, 0.75, 1);
-            mat.emissiveIntensity = 2;
+            mat.envMapIntensity = 1.1;
+            mat.color.setRGB(0.46, 0.47, 0.5);
+            mat.metalness = 1;
+            mat.roughness = Math.min(mat.roughness, 0.5);
+            mat.emissive.setRGB(1, 0.8, 0.5);
+            mat.emissiveIntensity = 1.3;
             for (const f of flames) {
                 const box = new THREE.Box3().setFromBufferAttribute(
                     f.geometry.attributes.position as THREE.BufferAttribute
@@ -150,7 +128,6 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
     let spin = 1;
     let kick = 0;
     const update = (f: ShipIn): void => {
-        beam.visible = f.beam > 0.01;
         const now = performance.now() / 1000;
         rig.position.copy(f.at);
         rig.position.y += Math.sin(now * 1.4) * 0.08;
@@ -173,11 +150,9 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
         fill.position.copy(rig.position).add(look.set(0, 2.2, 0));
         uOn.value += (f.beam - uOn.value) * (1 - Math.exp(-f.dt * 3));
         const h = rig.position.y - 0.6 - f.ground;
-        if (beam.visible && h > 0.5) {
-            beam.position.set(rig.position.x, rig.position.y - 0.6, rig.position.z);
-            beam.scale.set(1 + h * 0.03, h, 1 + h * 0.03);
-            s.uBeam.value.set(rig.position.x, f.ground, rig.position.z, uOn.value * smooth(0.5, 3, h));
-        } else s.uBeam.value.w = 0;
+        if (f.beam > 0.01 && h > 0.5)
+            s.uBeam.value.set(rig.position.x, f.ground, rig.position.z, uOn.value * smooth(0.5, 3, h) * 0.6);
+        else s.uBeam.value.w = 0;
     };
     return {
         update,

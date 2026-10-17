@@ -799,3 +799,71 @@ html:has(.rt) body {
         animation: none !important;
     }
 }
+
+/* title card: one per place, as the jump lands */
+.rt-slate {
+    position: fixed;
+    z-index: 5;
+    left: 50%;
+    top: 17vh;
+    transform: translate(-50%, 10px);
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+}
+.rt-slate small {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--muted);
+    font: 500 12px/1 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.rt-slate b {
+    display: block;
+    color: var(--ink);
+    font: 600 clamp(26px, 4vw, 44px) / 1.05 var(--display);
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 30px rgb(0 0 0 / 0.6);
+}
+.rt-slate.on {
+    animation: rt-slate 3s var(--ease) forwards;
+}
+@keyframes rt-slate {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, 10px);
+    }
+    14% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    78% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -6px);
+    }
+}
+@media (max-width: 760px) {
+    /* phones: a single small line just under the HUD, clear of the panel's own label */
+    .rt-slate {
+        top: 60px;
+        width: calc(100% - 32px);
+    }
+    .rt-slate small {
+        margin-bottom: 4px;
+        font-size: 10.5px;
+    }
+    .rt-slate b {
+        font-size: 17px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .rt-slate,
+    .rt-slate.on {
+        transform: translate(-50%, 0);
+    }
+}

@@ -235,7 +235,8 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
             </div>
             <p className="rt-note rt-fade" style={stagger(3)}>
                 Ship: Intergalactic Spaceship by Dennis Haupt (3DHaupt). Portals: Sci-Fi Portal Gateway by
-                Igrium (CC BY 4.0). Earth and stars: NASA.
+                Igrium. Landmarks: Mountain Range 01 by solararchitect, Snowy Volcano by Pukar Shiwakoti,
+                Horseshoe bend by Ignazio Pillitteri (all Sketchfab, CC BY 4.0). Earth and stars: NASA.
             </p>
         </>
     );
@@ -273,6 +274,7 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
         if (!root.current || !canvas.current) return undefined;
         const h = heights(trip);
         return drive(root.current, canvas.current, {
+            titles: trip.projects.map((p) => p.title),
             rings: trip.projects.map((p) => p.colour),
             ringAt: itemsAt(h[3], trip.projects.length),
             recordAt: itemsAt(h[4], trip.records.length),
@@ -332,6 +334,10 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                 </Section>
             </main>
 
+            <div className="rt-slate" data-slate aria-hidden="true">
+                <small />
+                <b />
+            </div>
             {trip.projects.map((p, k) => (
                 <div className="rt-tag" data-ring-tag key={p.id} aria-hidden="true">
                     {p.title} <small>· svc-{nn(k)}</small>

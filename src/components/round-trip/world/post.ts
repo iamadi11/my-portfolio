@@ -46,8 +46,8 @@ const FINISH = {
 
 export type Post = {
     composer: EffectComposer;
-    /** `jump` 0–1 is the cut between scenes; `tint` colours its flash. */
-    finish: (t: number, speed: number, jump: number, tint: THREE.Color) => void;
+    /** `jump` 0–1 is the cut between scenes; `tint` colours its flash; `glow` scales the bloom. */
+    finish: (t: number, speed: number, jump: number, tint: THREE.Color, glow: number) => void;
 };
 
 export function createPost(
@@ -58,13 +58,16 @@ export function createPost(
 ): Post {
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
-    composer.addPass(new UnrealBloomPass(new THREE.Vector2(256, 256), small ? 0.5 : 0.6, 0.4, 0.7));
+    const strength = small ? 0.5 : 0.6;
+    const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), strength, 0.4, 0.7);
+    composer.addPass(bloom);
     composer.addPass(new OutputPass());
     // Clean edges on towers, rings and fibres (the renderer itself runs without MSAA).
     composer.addPass(new SMAAPass());
     const pass = new ShaderPass(FINISH);
     composer.addPass(pass);
-    const finish = (t: number, speed: number, jump: number, tint: THREE.Color): void => {
+    const finish = (t: number, speed: number, jump: number, tint: THREE.Color, glow: number): void => {
+        bloom.strength = strength * glow;
         pass.uniforms.uTime.value = t;
         pass.uniforms.uVel.value = speed;
         pass.uniforms.uJump.value = jump;

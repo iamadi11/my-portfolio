@@ -7,9 +7,10 @@ import { addCity, FLOOR } from '@/components/round-trip/world/city';
 import { FOG, MOON, rng, shared } from '@/components/round-trip/world/gl';
 import { glowMaker } from '@/components/round-trip/world/glow';
 import { addLand, GROUND, type LandKind, LANDS } from '@/components/round-trip/world/land';
+import { addLandmarks } from '@/components/round-trip/world/landmarks';
 import { createPost } from '@/components/round-trip/world/post';
 import { addRecords } from '@/components/round-trip/world/records';
-import { createRig } from '@/components/round-trip/world/rig';
+import { createRig, type Shot } from '@/components/round-trip/world/rig';
 import { createRoute } from '@/components/round-trip/world/route';
 import { addSea, SEA } from '@/components/round-trip/world/sea';
 import { addRings } from '@/components/round-trip/world/services';
@@ -52,6 +53,8 @@ export type FrameOut = {
     speed: number;
     /** True on the frame a jump to a new scene begins. */
     jumped: boolean;
+    /** The stop on screen: a place, plus which project's stretch for a landscape ("desert#1"). */
+    place: string;
 };
 
 export type World = {
@@ -85,12 +88,14 @@ const AIR: Record<Place, Air> = {
 };
 const isLand = (p: Place): p is LandKind => (LANDS as readonly string[]).includes(p);
 
-/** The cut itself: fiery into the atmosphere, gold back into orbit, cold blue-white otherwise. */
+/** The cut itself: the cloud deck on the way in, thin blue air on the way out, blue-white otherwise. */
 const FLASH = {
-    entry: new THREE.Color(1, 0.45, 0.15),
-    orbit: new THREE.Color(1, 0.8, 0.5),
+    entry: new THREE.Color(0.9, 0.84, 0.8),
+    orbit: new THREE.Color(0.75, 0.88, 1),
     other: new THREE.Color(0.7, 0.85, 1),
 };
+/** Night cloud, lit from below by the city, for the fog while dropping through the deck. */
+const CLOUD = new THREE.Color(0.06, 0.05, 0.05);
 const JUMP = 0.95;
 const PEAK = 0.32;
 
@@ -208,6 +213,14 @@ export function createWorld(o: WorldOptions): World {
         ringEnds.map((f) => lerp(svc, data, f)),
         o.small
     );
+    const landmarks = addLandmarks(
+        scene,
+        ringEnds.map((f) => {
+            const at = lerp(svc, data, f);
+            return { center: route.curve.getPointAt(at), tangent: route.curve.getTangentAt(at) };
+        }),
+        o.small
+    );
     const recordGroup = new THREE.Group();
     scene.add(recordGroup);
     const records = addRecords(
@@ -273,16 +286,25 @@ export function createWorld(o: WorldOptions): World {
     let t = 0;
     let last = performance.now();
 
-    /** Fog, horizon and sky for the place on screen. */
-    const applyAir = (air: Air): void => {
+    /**
+     * The designed moves of the trip, each 0–1: the dive at Earth before the cut into the air,
+     * the drop out of the cloud deck onto the city, the climb off the ice, and the rise away from
+     * Earth once back in orbit.
+     */
+    const beat = { dive: 0, drop: 0, climb: 0, rise: 0 };
+    const shot: Shot = { tilt: 0, lift: 0 };
+    const heading = new THREE.Vector3();
+
+    /** Fog, horizon and sky for the place on screen; `thin` is high air, `cloud` the deck. */
+    const applyAir = (air: Air, thin: number, cloud: number): void => {
         const fog = scene.fog as THREE.FogExp2;
-        fog.density = s.uFog.value = air.fog;
-        sky.uniforms.uHorizon.value.setRGB(...air.horizon);
+        fog.density = s.uFog.value = air.fog * (1 - thin);
+        sky.uniforms.uHorizon.value.setRGB(...air.horizon).lerp(CLOUD, cloud);
         s.uFogColor.value.copy(sky.uniforms.uHorizon.value);
         fog.color.copy(sky.uniforms.uHorizon.value);
         sky.uniforms.uSpace.value = air.space ? 1 : 0;
         sky.uniforms.uAurora.value = air.aurora ?? 0;
-        sky.uniforms.uStars.value = air.stars ?? 1;
+        sky.uniforms.uStars.value = (air.stars ?? 1) * (1 - cloud);
     };
 
     /** Only the place on screen is drawn; the rest wait for their jump. */
@@ -300,7 +322,22 @@ export function createWorld(o: WorldOptions): World {
             eye: camera.position,
             tall: camera.aspect < 1,
             finale: place === 'orbit',
+            rise: beat.rise,
         });
+    };
+
+    /**
+     * The moves: nose down and drop away as it dives at Earth and sinks onto the city; nose up and
+     * climb above the eye line pulling off the ice and leaving orbit. Sets `heading`; returns the
+     * height offset.
+     */
+    const moves = (orbit: boolean): number => {
+        const away = orbit ? 1 - beat.rise : 0;
+        heading
+            .copy(tangent)
+            .setY(tangent.y - 0.9 * beat.dive - 0.55 * beat.drop + 0.6 * beat.climb + 0.4 * away)
+            .normalize();
+        return shot.lift * 0.97 - beat.dive * 9 + beat.climb * 7 - away * 6;
     };
 
     /**
@@ -326,7 +363,7 @@ export function createWorld(o: WorldOptions): World {
         at.copy(p)
             .add(side)
             .addScaledVector(tangent, hero * 5 + Math.pow(leave, 2.2) * 900);
-        at.y += hero * 1.1 + leave * 6;
+        at.y += hero * 1.1 + leave * 6 + moves(orbit);
         sunlight.intensity = sun ? 3.2 : 0;
         if (sun) {
             sunlight.target.position.copy(at);
@@ -334,7 +371,7 @@ export function createWorld(o: WorldOptions): World {
         }
         ship.update({
             at,
-            heading: tangent,
+            heading,
             speed: Math.max(speed, leave),
             dt,
             hero: u < route.seg[1] + 0.002 || (orbit && leave < 0.08),
@@ -364,24 +401,33 @@ export function createWorld(o: WorldOptions): World {
         s.uPacket.value.copy(p);
         s.uScan.value = p.y;
         s.uTime.value = t;
-        applyAir(AIR[shown]);
-        rig.update(u, t, dt, speed, jump, f.pointer, !AIR[shown].space);
+        beat.dive = shown === 'space' ? smooth(0.5, 0.98, u / city0) : 0;
+        beat.drop = shown === 'city' ? 1 - smooth(city0, lerp(city0, svc, 0.3), u) : 0;
+        beat.climb = shown === 'ice' ? smooth(0.08, 0.5, f.map) : 0;
+        beat.rise = shown === 'orbit' ? smooth(0.5, 1, f.map) : 0;
+        shot.tilt = beat.dive * 0.8 - beat.climb * 0.5 + (shown === 'orbit' ? (1 - beat.rise) * 0.55 : 0);
+        shot.lift = beat.drop * beat.drop * 230 + beat.climb * beat.climb * 60;
+        applyAir(AIR[shown], beat.drop * 0.6 + beat.climb * 0.8, beat.drop);
+        rig.update(u, t, dt, speed, jump, f.pointer, !AIR[shown].space, shot);
         const { heat, sun } = showPlace(shown);
         const passed = rings.update(u, t, dt, zone);
+        landmarks.show(zone);
         flyShip(shown, dt, f.resp, heat, sun);
         if (passed !== null) ship.roll();
         records.update(p, u);
         warp.update(jump, tint);
-        post.finish(t, o.reduce ? 0 : speed, jump, tint);
+        // Seen from above through cloud, a city of small lights would bloom into mush.
+        post.finish(t, o.reduce ? 0 : speed, jump, tint, 1 - beat.drop * 0.8);
         post.composer.render();
         return {
             rings: rings.centers.map((c, k) =>
                 k === zone ? project(v.copy(c).add(RING_TAG).clone(), 260) : null
             ),
-            records: records.points.map((r) => (recordGroup.visible ? project(r, 120) : null)),
+            records: records.points.map((r) => (recordGroup.visible ? project(r, 240) : null)),
             passed,
             speed,
             jumped,
+            place: stop,
         };
     };
 

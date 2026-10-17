@@ -13,9 +13,13 @@ export type Rig = {
         jump: number,
         pointer: { x: number; y: number },
         /** Over land or sea (not in space): tall screens look down at it. */
-        ground: boolean
+        ground: boolean,
+        /** The shot: `tilt` pitches the camera down (radians, negative = up); `lift` raises it. */
+        shot: Shot
     ) => void;
 };
+
+export type Shot = { tilt: number; lift: number };
 
 export function createRig(
     camera: THREE.PerspectiveCamera,
@@ -28,6 +32,7 @@ export function createRig(
     const t1 = new THREE.Vector3();
     const base = small ? 72 : 58;
     let roll = 0;
+    let tilt = 0;
     let fov = base;
     let px = 0;
     let py = 0;
@@ -40,7 +45,8 @@ export function createRig(
         speed: number,
         jump: number,
         pointer: { x: number; y: number },
-        ground: boolean
+        ground: boolean,
+        shot: Shot
     ): void => {
         px += (pointer.x - px) * 0.05;
         py += (pointer.y - py) * 0.05;
@@ -48,7 +54,9 @@ export function createRig(
         route.curve.getPointAt(back, camera.position);
         camera.position.addScaledVector(route.frame(back).n1, px * 1.4);
         camera.position.y += 1.8 - py * 0.9 + (u < route.seg[1] + 0.002 ? Math.sin(t * 0.6) * 0.3 : 0);
-        route.curve.getPointAt(clamp(u + 28 / route.len), look);
+        // Lifted (coming down onto the city), it looks further ahead, down at the path.
+        camera.position.y += shot.lift;
+        route.curve.getPointAt(clamp(u + (28 + shot.lift * 1.6) / route.len), look);
         // Tall screens: the text sits low, so ride higher and look down to fill the top with land.
         if (camera.aspect < 1 && ground) {
             camera.position.y += 5;
@@ -56,6 +64,9 @@ export function createRig(
         }
         camera.up.set(0, 1, 0);
         camera.lookAt(look);
+        // Pitch for the dive onto Earth and the climb back out, eased so the cut never snaps it.
+        tilt += (shot.tilt - tilt) * ease(dt, 4);
+        camera.rotateX(-tilt);
         // Look around a little with the mouse or the phone's tilt; shake through a jump.
         const shake = reduce ? 0 : jump * jump * 0.012;
         camera.rotateY(-px * 0.1 + Math.sin(t * 53) * shake);

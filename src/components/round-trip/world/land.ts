@@ -32,9 +32,11 @@ const HEIGHT = /* glsl */ `
             return -10.0 + hills * (0.2 + 0.8 * smoothstep(12.0, 110.0, d)) + far;
         }
         if (uKind == 1) {
+            // Long transverse dunes with sharp crests, smaller ones crossing them, mesas far off.
             float warp = fbm(p * 0.008) * 6.0;
             float crest = 1.0 - abs(sin((p.x * 0.8 + p.y * 0.6) * 0.035 + warp));
-            float dunes = pow(crest, 2.2) * (5.0 + 12.0 * fbm(p * 0.011 + 5.0)) * (0.3 + 0.7 * smoothstep(8.0, 40.0, d));
+            float cross = 1.0 - abs(sin((p.x * -0.5 + p.y * 0.87) * 0.09 + fbm(p * 0.02) * 4.0));
+            float dunes = (pow(crest, 1.6) * (9.0 + 18.0 * fbm(p * 0.011 + 5.0)) + pow(cross, 2.5) * 3.5) * (0.3 + 0.7 * smoothstep(8.0, 40.0, d));
             float mesas = smoothstep(0.55, 0.62, fbm(p * 0.0035 + 2.0)) * 70.0 * smoothstep(120.0, 260.0, d);
             return -16.0 + dunes + mesas;
         }
@@ -79,7 +81,8 @@ const FRAG = /* glsl */ `
         } else if (uKind == 1) {
             float rip = sin(dot(p, vec2(0.8, 0.6)) * 2.4 + fbm(p * 0.2) * 5.0);
             n = normalize(n + vec3(0.8, 0.0, 0.6) * rip * 0.07 * (1.0 - rocky) * close);
-            albedo = mix(vec3(0.4, 0.29, 0.18) * (0.85 + 0.3 * fbm(p * 0.02)), vec3(0.2, 0.11, 0.07), rocky);
+            // Pale sand under the moon, dark on the slip faces away from it, dark rock on the mesas.
+            albedo = mix(vec3(0.52, 0.42, 0.3) * (0.85 + 0.3 * fbm(p * 0.02)), vec3(0.2, 0.11, 0.07), rocky);
         } else if (uKind == 2) {
             // Red sandstone in bands, pale dust on the shelves.
             float band = 0.5 + 0.5 * sin(vW.y * 0.45 + fbm(p * 0.02) * 3.0);

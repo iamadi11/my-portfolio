@@ -28,8 +28,9 @@ const EARTH_FRAG = /* glsl */ `
         float lights = texture2D(tLights, vUv).r;
         float cloud = smoothstep(0.12, 0.85, texture2D(tClouds, vUv + vec2(uTime * 0.0004, 0.0)).r);
         float moon = max(dot(n, uMoon), 0.0);
-        vec3 col = day * (0.02 + 0.05 * moon) + vec3(1.0, 0.7, 0.36) * pow(lights, 0.85) * 10.0 * (1.0 - cloud * 0.75);
-        col = mix(col, vec3(0.045, 0.055, 0.075) * (0.4 + 0.9 * moon), cloud * 0.8);
+        // Moonlit land and sea in blue-grey, as the night side looks from orbit, cities burning on it.
+        vec3 col = day * vec3(0.3, 0.38, 0.55) * (0.2 + 0.8 * moon) + vec3(1.0, 0.7, 0.36) * pow(lights, 0.85) * 10.0 * (1.0 - cloud * 0.75);
+        col = mix(col, vec3(0.2, 0.23, 0.29) * (0.3 + 0.9 * moon), cloud * 0.8);
         float sunLit = smoothstep(-0.04, 0.3, dot(n, uSun)) * uDay;
         float ocean = smoothstep(0.04, 0.18, day.b - max(day.r, day.g));
         vec3 H = normalize(uSun + V);
@@ -71,7 +72,7 @@ const STREAK_FRAG = /* glsl */ `
         float along = fract(vL.z * 0.5 + 0.5 - uTime * (1.2 + vR));
         vec3 c = mix(vec3(1.0, 0.38, 0.1), vec3(1.0, 0.85, 0.6), smoothstep(0.6, 1.0, vR));
         float a = pow(along, 6.0) * (0.6 + vR);
-        gl_FragColor = vec4(c * a * uHeat * 2.4, 1.0);
+        gl_FragColor = vec4(c * a * uHeat * 1.4, 1.0);
     }
 `;
 
@@ -84,6 +85,8 @@ export type SpaceIn = {
     tall: boolean;
     /** Back in orbit at the end, as the sun comes up over the rim. */
     finale: boolean;
+    /** 0–1 in the finale: just clear of the air, then climbing away until Earth is a globe again. */
+    rise: number;
 };
 /** `sun`: where the sun is rising at the end (null otherwise), to light the ship from. */
 export type Space = { update: (f: SpaceIn) => { heat: number; sun: THREE.Vector3 | null } };
@@ -113,7 +116,8 @@ function addStreaks(scene: THREE.Scene, route: Route, s: Shared, n: number, rand
         const u = lerp(0.45, 1.02, rand()) * route.seg[2];
         const { t, n1, n2 } = route.frame(u);
         const a = rand() * Math.PI * 2;
-        const rad = 2.5 + Math.pow(rand(), 1.5) * 16;
+        // A sheath around the ship, clear of the eye: none closer than 5 m to the path.
+        const rad = 5 + Math.pow(rand(), 1.5) * 22;
         pos.copy(route.curve.getPointAt(u))
             .addScaledVector(n1, Math.cos(a) * rad)
             .addScaledVector(n2, Math.sin(a) * rad);
@@ -192,7 +196,7 @@ export function addSpace(
     scene.add(globe);
     globe.traverse((o) => (o.frustumCulled = false));
 
-    const uHeat = addStreaks(scene, route, s, Math.round(900 * density), rand);
+    const uHeat = addStreaks(scene, route, s, Math.round(280 * density), rand);
     // The sun about to clear the rim at the end: a hot white core, a wide gold glare.
     const sun = [
         glow(34, new THREE.Color(8, 7, 6)),
@@ -214,7 +218,7 @@ export function addSpace(
         uHeat.value = 0;
         if (!f.on) return { heat: 0, sun: null };
         // Higher up the globe sits ahead and below; diving in, it fills the floor of the view.
-        const k = f.finale ? 0.1 : clamp(f.e);
+        const k = f.finale ? lerp(1, 0.1, f.rise) : clamp(f.e);
         const alt = R * (f.tall ? 0.25 : 0.42) * Math.pow(f.tall ? 0.12 : 0.08, k);
         const pitch = THREE.MathUtils.degToRad(lerp(f.tall ? 44 : 52, f.tall ? 70 : 76, k));
         dir.set(0, -Math.sin(pitch), -Math.cos(pitch));

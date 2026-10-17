@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Reflector } from 'three/addons/objects/Reflector.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 import { ADD, boxes, type Shared, shader, WRAP_VERT } from '@/components/round-trip/world/gl';
 
@@ -11,19 +12,27 @@ const ROWS = 24;
 const TILE = new THREE.Vector2(COLS * GRID, ROWS * GRID);
 const CLEAR = 20;
 
+/** The wrapping vertex shader, plus where each tower's roof is (for its lit crown). */
+const TOWER_VERT = WRAP_VERT.replace('varying float vR, vD;', 'varying float vR, vD, vTop;').replace(
+    'vW = w.xyz;',
+    'vW = w.xyz; vTop = (modelMatrix * instanceMatrix * vec4(0.0, 0.5, 0.0, 1.0)).y;'
+);
+
 /**
  * Facades. Two kinds of tower: concrete with punched windows, and glass curtain walls. Unlit glass
  * reflects the sky (stronger at grazing angles). Lit windows are fake rooms: the back wall shifts
  * with the camera, so each window reads as a lit room with depth, some with blinds, a few flickering
- * like a TV. Street level glows like shopfronts; the request lights the walls as it passes.
+ * like a TV. Street level glows like shopfronts; some towers wear a lit crown on their top floors.
+ * Works for walls facing any way, so octagonal towers get windows and rooms too.
  */
 const TOWER_FRAG = /* glsl */ `
-    varying vec3 vW, vN, vL; varying float vR, vD;
+    varying vec3 vW, vN, vL, vWN; varying float vR, vD, vTop;
     void main() {
-        vec3 n = normalize(vN);
+        vec3 n = normalize(vWN);
         float side = 1.0 - step(0.5, abs(n.y));
-        bool xFace = abs(n.x) > 0.5;
-        vec2 f = xFace ? vec2(vW.z, vW.y) : vec2(vW.x, vW.y);
+        vec2 nh = normalize(n.xz + vec2(1e-4, 0.0));
+        vec3 T = vec3(-nh.y, 0.0, nh.x);
+        vec2 f = vec2(dot(vW, T), vW.y);
         float glassy = step(0.58, vR);
         vec2 cs = mix(vec2(2.4, 3.4), vec2(1.7, 3.1), glassy);
         vec2 cell = floor(f / cs), g = fract(f / cs);
@@ -31,16 +40,19 @@ const TOWER_FRAG = /* glsl */ `
         float win = step(lo.x, g.x) * step(g.x, 1.0 - lo.x) * step(lo.y, g.y) * step(g.y, 1.0 - lo.y) * side;
         float h = hash(cell + vR * 91.7);
         float floorOn = step(0.45, hash(vec2(cell.y, vR * 13.0)));
-        float lit = step(0.72 - 0.2 * floorOn, h) * win;
+        // Each tower keeps its own hours: some nearly dark, some busy, whole floors on or off.
+        float occ = 0.12 + 0.45 * fract(vR * 5.17);
+        float lit = step(1.0 - occ - 0.2 * floorOn, h) * win;
 
         vec3 V = normalize(vW - cameraPosition);
-        vec3 T = xFace ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
         float into = max(dot(V, -n), 0.15);
         vec2 bp = (g - 0.5) + vec2(dot(V, T), V.y) / into * (1.3 / cs);
         float backWall = 1.0 - smoothstep(0.36, 0.5, max(abs(bp.x), abs(bp.y)));
         float ceilingLight = smoothstep(-0.3, 0.6, bp.y);
         vec3 warm = mix(vec3(1.0, 0.6, 0.3), vec3(1.0, 0.85, 0.64), fract(h * 7.3));
         vec3 wc = mix(warm, vec3(0.6, 0.8, 1.0), step(0.86, fract(h * 13.1)));
+        // Offices run cool white; a third of the towers lean that way throughout.
+        wc = mix(wc, vec3(0.72, 0.84, 1.0), step(0.68, fract(vR * 2.9)) * 0.7);
         float tv = step(0.94, fract(h * 3.7));
         float flick = mix(1.0, 0.75 + 0.25 * sin(uTime * (6.0 + h * 9.0) + h * 40.0), tv);
         wc = mix(wc, vec3(0.45, 0.65, 1.0), tv);
@@ -52,50 +64,145 @@ const TOWER_FRAG = /* glsl */ `
         vec3 sky = mix(vec3(0.045, 0.06, 0.1), vec3(0.14, 0.17, 0.26), clamp(0.5 - V.y * 0.6, 0.0, 1.0));
         vec3 glass = sky * (0.35 + 1.7 * fres);
         float hgt = clamp((vW.y + 60.0) / 210.0, 0.0, 1.0);
-        vec3 concrete = mix(vec3(0.02, 0.022, 0.03), vec3(0.06, 0.064, 0.078), hgt) * (0.78 + 0.22 * abs(n.x));
+        vec3 concrete = mix(vec3(0.02, 0.022, 0.03), vec3(0.06, 0.064, 0.078), hgt) * (0.78 + 0.22 * abs(nh.x));
         concrete *= 0.9 + 0.2 * hash(floor(f * 0.5));
-        vec3 curtain = vec3(0.016, 0.024, 0.04) + glass * 0.55;
+        vec3 curtain = (vec3(0.016, 0.024, 0.04) + glass * 0.55) * mix(1.0, 0.5, step(g.y, lo.y) * glassy);
         vec3 col = mix(concrete, curtain, glassy);
         col += (1.0 - smoothstep(0.0, 0.05, g.y)) * side * (1.0 - glassy) * vec3(0.03);
         col = mix(col, glass, win * (1.0 - lit));
         col = mix(col, room * 1.15 + glass * 0.2, lit);
         float shop = side * step(0.35, vR) * smoothstep(-60.0, -59.0, vW.y) * (1.0 - smoothstep(-56.0, -55.0, vW.y));
         col += shop * mix(vec3(1.0, 0.62, 0.32), vec3(0.6, 0.85, 1.0), step(0.8, vR)) * 1.1;
-        col = mix(col, vec3(0.025, 0.03, 0.042), step(0.5, n.y));
+        // Roofs: a parapet rim and a plant room in the middle, not a flat lid.
+        float hut = step(abs(vL.x), 0.2) * step(abs(vL.z), 0.2);
+        float rim = step(0.44, max(abs(vL.x), abs(vL.z)));
+        col = mix(col, vec3(0.025, 0.03, 0.042) * (1.0 + 0.8 * rim) + vec3(0.03, 0.028, 0.025) * hut, step(0.5, n.y));
+        // LED billboards on a few of the taller towers: colour drifting across a dark-framed panel.
+        float board = step(0.82, fract(vR * 11.3)) * side * step(60.0, vTop + 60.0);
+        float horiz = dot(vL.xz, vec2(T.x, T.z));
+        vec2 buv = vec2((horiz + 0.36) / 0.72, (vL.y + 0.25 - 0.3 * fract(vR * 3.9)) / 0.07);
+        float onBoard = step(0.0, buv.x) * step(buv.x, 1.0) * step(0.0, buv.y) * step(buv.y, 1.0) * board;
+        float frameB = step(0.04, buv.x) * step(buv.x, 0.96) * step(0.08, buv.y) * step(buv.y, 0.92);
+        vec3 hueA = mix(vec3(1.0, 0.25, 0.5), vec3(0.2, 0.7, 1.0), step(0.5, fract(vR * 6.7)));
+        vec3 hueB = mix(vec3(1.0, 0.6, 0.15), vec3(0.5, 1.0, 0.7), step(0.5, fract(vR * 4.3)));
+        vec3 screen = mix(hueA, hueB, fbm(buv * vec2(3.0, 1.5) + uTime * 0.15 + vR * 7.0)) * (0.5 + 0.5 * fbm(buv * 6.0 - uTime * 0.1));
+        col = mix(col, vec3(0.01), onBoard);
+        col += screen * 1.7 * onBoard * frameB;
+        // A lit crown on some towers: a band of light around the top floors and a bright parapet.
+        float crowned = step(0.62, fract(vR * 7.31)) * side;
+        float band = smoothstep(vTop - 9.0, vTop - 8.0, vW.y) * (1.0 - smoothstep(vTop - 3.0, vTop - 2.4, vW.y));
+        float parapet = smoothstep(vTop - 0.9, vTop - 0.4, vW.y);
+        vec3 crownCol = mix(vec3(1.0, 0.82, 0.55), vec3(0.6, 0.85, 1.0), step(0.5, fract(vR * 3.7)));
+        col += crownCol * (band * 0.55 + parapet * 1.3) * crowned;
         col += vec3(1.0, 0.86, 0.7) * glowAt(vW, 18.0) * 0.1;
         gl_FragColor = vec4(fogIt(col, vD), 1.0);
     }
 `;
 
-type Tower = { x: number; z: number; h: number; w: number; d: number };
+type Tower = { x: number; z: number; h: number; w: number; d: number; kind: number; spire: number };
 
-/** One tile of blocks; the shader repeats it around the camera and keeps the flight path clear. */
-function addTowers(scene: THREE.Object3D, s: Shared, rand: () => number): Tower[] {
+/** Tower shapes, each one unit tall around its centre: a plain slab, a setback, an octagon. */
+function shapes(): THREE.BufferGeometry[] {
+    const box = (w: number, h: number, y: number): THREE.BufferGeometry =>
+        new THREE.BoxGeometry(w, h, w).translate(0, y, 0);
+    const oct = (r: number, h: number, y: number): THREE.BufferGeometry =>
+        new THREE.CylinderGeometry(r, r, h, 8, 1)
+            .rotateY(Math.PI / 8)
+            .translate(0, y, 0)
+            .toNonIndexed();
+    const setback = mergeGeometries(
+        [box(1, 0.22, -0.39), box(0.78, 0.5, -0.03), box(0.52, 0.28, 0.36)].map((g) => g.toNonIndexed())
+    );
+    const octagon = mergeGeometries([oct(0.56, 0.82, -0.09), oct(0.4, 0.18, 0.41)]);
+    return [new THREE.BoxGeometry(1, 1, 1), setback, octagon];
+}
+
+/** Tall towers step back or turn octagonal (a few short ones step back too). */
+const shapeFor = (h: number, pick: number): number => {
+    if (h <= 90) return pick < 0.2 ? 1 : 0;
+    return pick < 0.45 ? 1 : pick < 0.75 ? 2 : 0;
+};
+
+function tower(x: number, z: number, rand: () => number): Tower {
+    // A few supertalls stand clear of the rest.
+    const h =
+        (22 + Math.pow(rand(), 1.8) * 175 * (1 - (Math.abs(x) / 240) * 0.4)) * (rand() < 0.05 ? 1.55 : 1);
+    const kind = shapeFor(h, rand());
+    const w = 8 + rand() * 5;
+    const d = kind === 2 ? w : 8 + rand() * 5;
+    // The tallest shaped towers carry a spire.
+    const spire = h > 120 && kind > 0 ? 8 + rand() * 14 : 0;
+    return { x, z, h, w, d, kind, spire };
+}
+
+/** Lays out one tile of blocks. */
+function planTowers(rand: () => number): Tower[] {
     const towers: Tower[] = [];
-    const q = new THREE.Quaternion();
     for (let k = 0; k < COLS; k++)
         for (let j = 0; j < ROWS; j++) {
             const x = (k - (COLS - 1) / 2) * GRID + (rand() - 0.5) * 3;
             const z = -j * GRID + (rand() - 0.5) * 3;
-            const h = 22 + Math.pow(rand(), 1.8) * 175 * (1 - (Math.abs(x) / 240) * 0.4);
-            towers.push({ x, z, h, w: 8 + rand() * 5, d: 8 + rand() * 5 });
+            towers.push(tower(x, z, rand));
         }
-    const transforms = towers.map((t) =>
-        new THREE.Matrix4().compose(
-            new THREE.Vector3(t.x, FLOOR + t.h / 2, t.z),
-            q,
-            new THREE.Vector3(t.w, t.h, t.d)
-        )
+    return towers;
+}
+
+/** Slim dark masts on the tallest setback and octagonal towers. */
+function addSpires(
+    scene: THREE.Object3D,
+    towers: Tower[],
+    s: Shared,
+    wrap: Record<string, THREE.IUniform>,
+    rand: () => number
+): void {
+    const q = new THREE.Quaternion();
+    const spires = towers
+        .filter((t) => t.spire > 0)
+        .map((t) =>
+            new THREE.Matrix4().compose(
+                new THREE.Vector3(t.x, FLOOR + t.h + t.spire / 2, t.z),
+                q,
+                new THREE.Vector3(0.9, t.spire, 0.9)
+            )
+        );
+    if (!spires.length) return;
+    const material = shader(
+        s,
+        WRAP_VERT,
+        /* glsl */ `varying vec3 vW, vN, vL, vWN; varying float vR, vD;
+        void main() { vec3 V = normalize(vW - cameraPosition); float rim = pow(1.0 - abs(dot(normalize(vWN), V)), 3.0);
+            gl_FragColor = vec4(fogIt(vec3(0.03, 0.035, 0.045) + vec3(0.12, 0.15, 0.22) * rim, vD), 1.0); }`,
+        wrap
     );
+    scene.add(boxes(material, spires, rand, new THREE.CylinderGeometry(0.05, 0.5, 1, 6)));
+}
+
+/** One tile of blocks; the shader repeats it around the camera and keeps the flight path clear. */
+function addTowers(scene: THREE.Object3D, s: Shared, rand: () => number): Tower[] {
+    const towers = planTowers(rand);
+    const q = new THREE.Quaternion();
     const wrap = { uTile: { value: TILE }, uClear: { value: CLEAR } };
-    scene.add(boxes(shader(s, WRAP_VERT, TOWER_FRAG, wrap), transforms, rand));
+    const material = shader(s, TOWER_VERT, TOWER_FRAG, wrap);
+    shapes().forEach((geo, kind) => {
+        const mine = towers.filter((t) => t.kind === kind);
+        if (!mine.length) return;
+        const transforms = mine.map((t) =>
+            new THREE.Matrix4().compose(
+                new THREE.Vector3(t.x, FLOOR + t.h / 2, t.z),
+                q,
+                new THREE.Vector3(t.w, t.h, t.d)
+            )
+        );
+        scene.add(boxes(material, transforms, rand, geo));
+    });
+    addSpires(scene, towers, s, wrap, rand);
     return towers;
 }
 
 /** Blinking red aviation lights on the masts of the tallest towers. */
 function addBeacons(scene: THREE.Object3D, towers: Tower[], s: Shared, rand: () => number): void {
     const lights: number[] = [];
-    for (const t of towers) if (t.h > 115) lights.push(t.x, FLOOR + t.h + 6 + rand() * 10, t.z);
+    for (const t of towers) if (t.h > 115) lights.push(t.x, FLOOR + t.h + (t.spire || 1.5 + rand()), t.z);
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(lights, 3));
     const blink = new THREE.Points(
@@ -141,6 +248,11 @@ const STREET_FRAG = /* glsl */ `
         vec2 q = abs(fract((vW.xz - 9.0) / 18.0) - 0.5) * 18.0;
         float lane = smoothstep(0.4, 0.0, min(q.x, q.y)) * (1.0 - puddle * 0.6);
         vec3 col = asphalt + vec3(0.32, 0.36, 0.42) * lane * 0.05;
+        // Street lamps: sodium pools every 9 m along both sets of roads.
+        vec2 la = vec2(q.x, abs(fract(vW.z / 9.0) - 0.5) * 9.0);
+        vec2 lb = vec2(q.y, abs(fract(vW.x / 9.0) - 0.5) * 9.0);
+        float pools = exp(-dot(la, la) / 14.0) + exp(-dot(lb, lb) / 14.0);
+        col += vec3(1.0, 0.72, 0.38) * pools * 0.2 * (1.0 - puddle * 0.4);
         col += refl * uMirror * mix(0.22, 0.95, puddle) * fres;
         vec3 lp = vec3(uPacket.x, vW.y, uPacket.z);
         col += vec3(1.0, 0.75, 0.5) * exp(-dot(vW - lp, vW - lp) / 900.0) * 0.1;

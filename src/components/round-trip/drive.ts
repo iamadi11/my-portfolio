@@ -7,6 +7,8 @@ import type { FrameOut, Mark, World } from '@/components/round-trip/world';
 const prefetchWorld = (): Promise<unknown> => import('@/components/round-trip/world');
 
 export type DriveOptions = {
+    /** Project titles, for the title card of each landscape. */
+    titles: string[];
     rings: string[];
     ringAt: number[];
     recordAt: number[];
@@ -25,7 +27,22 @@ type Els = {
     chips: HTMLElement[];
     ringTags: HTMLElement[];
     recordTags: HTMLElement[];
+    slate: HTMLElement | null;
 };
+
+/** Where each stop is, for the title card that opens it (the hero and space need none). */
+const PLACES: Record<string, [hop: number, name: string]> = {
+    city: [2, 'Night city'],
+    grass: [3, 'Grassland'],
+    desert: [3, 'Dunes'],
+    canyon: [3, 'Canyon'],
+    alpine: [3, 'Peaks'],
+    volcano: [3, 'Lava fields'],
+    ocean: [4, 'Open sea'],
+    ice: [4, 'Pack ice'],
+    orbit: [5, 'Orbit, sunrise'],
+};
+const HOPS = ['Browser', 'Wire', 'Edge', 'Services', 'Data', '200 OK'];
 
 const ZONES = ['#ffffff', '#8fd3ff', '#ffb35c', '#ff7ad9', '#7af0ff', '#ffffff'];
 const SCROLL_KEYS = new Set([' ', 'ArrowDown', 'PageDown', 'End']);
@@ -44,6 +61,7 @@ function find(root: HTMLElement): Els {
         chips: all('[data-chip]'),
         ringTags: all('[data-ring-tag]'),
         recordTags: all('[data-record-tag]'),
+        slate: root.querySelector('[data-slate]'),
     };
 }
 
@@ -106,6 +124,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     let phase: 'idle' | 'building' | 'live' | 'flat' = 'idle';
     let forced: number | null = null;
     let lastPick = -1;
+    let lastPlace: string | null = null;
     let raf = 0;
     let dead = false;
 
@@ -170,9 +189,30 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         if (tag) tag.textContent = `· ${text}`;
     };
 
+    /** A title card as each new place comes on screen: hop, place, and the project it holds. */
+    const slate = (stop: string): void => {
+        if (stop === lastPlace) return;
+        const first = lastPlace === null;
+        lastPlace = stop;
+        const [kind, zone] = stop.split('#');
+        const at = PLACES[kind];
+        const el = els.slate;
+        if (first || !at || !el) return;
+        const [hop, name] = at;
+        const k = zone === undefined ? -1 : Number(zone);
+        const title = k >= 0 ? o.titles[k] : '';
+        const count = k >= 0 ? ` · ${k + 1}/${o.titles.length}` : '';
+        el.children[0].textContent = `${String(hop).padStart(2, '0')} · ${HOPS[hop]}${count}`;
+        el.children[1].textContent = title ? `${name} · ${title}` : name;
+        el.classList.remove('on');
+        void el.offsetWidth;
+        el.classList.add('on');
+    };
+
     const draw = (s: ReturnType<typeof scrollState>, map: number, resp: number): void => {
         if (!world) return;
         const out: FrameOut = world.frame({ u: s.pathU(world.seg), map, resp, pointer });
+        slate(out.place);
         els.ringTags.forEach((el, k) => place(el, out.rings[k], s.sec === 3 && map < 0.1, small));
         els.recordTags.forEach((el, k) => place(el, out.records[k], s.sec === 4 && map < 0.1, small));
         const sound = o.sound();

@@ -113,13 +113,13 @@ export const WRAP_VERT = /* glsl */ `
     }
 `;
 
-/** One draw call for many boxes, each with its own transform and random. */
+/** One draw call for many copies of a shape (a box by default), each with its own transform and random. */
 export function boxes(
     material: THREE.Material,
     transforms: THREE.Matrix4[],
-    rand: () => number
+    rand: () => number,
+    geo: THREE.BufferGeometry = new THREE.BoxGeometry(1, 1, 1)
 ): THREE.InstancedMesh {
-    const geo = new THREE.BoxGeometry(1, 1, 1);
     const mesh = new THREE.InstancedMesh(geo, material, transforms.length);
     const r = new Float32Array(transforms.length);
     transforms.forEach((m, i) => {
