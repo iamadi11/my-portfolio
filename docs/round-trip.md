@@ -8,7 +8,7 @@ Scrolling flies an alien ship down to Earth at night and across it. It comes in 
 2. **First scroll, wheel, swipe, scroll key or Send a request:** the world builds and fades in over the poster.
 3. **Hero and Wire (space):** the ship hovers over Earth at night, real stars and the Milky Way behind. Through `practice.impact` it closes in, plasma building on the hull, then jumps (a fiery flash) into the atmosphere.
 4. **Edge (city):** an endless night city of lit towers, traffic and wet streets; the skill groups from `practice.skills`.
-5. **Services (one landscape per project):** grassland (wind in the grass, fireflies), desert dunes, red-rock canyon, alpine peaks in falling snow, a volcanic field with lava rivers and embers; then they repeat if there are more projects. Each project's gyroscope stands in its landscape and locks into a portal as the ship arrives (it barrel-rolls through). The panel shows that project.
+5. **Services (one landscape per project):** grassland (wind in the grass, fireflies), desert dunes, red-rock canyon, alpine peaks in falling snow, a volcanic field with lava rivers and embers; then they repeat if there are more projects. Each landscape is a long stretch with one portal at its end, the only one in view: a sci-fi gateway standing on the ground, lined with the project's colour, an event horizon swirling inside it. Flying through it (with a barrel roll) is the jump to the next landscape. The panel shows that project.
 6. **Data:** experience then education, one record at a time; the first half over the open sea under the moon, the second over pack ice and icebergs under the aurora. Each role is a block of glowing ice beside the path.
 7. **200 OK:** a jump back to orbit at sunrise. The ship turns to greet you, then leaves towards the sun. Email, copy, phone and profile links, and the credits.
 
@@ -30,7 +30,7 @@ The ship's search beam sweeps the ground on Earth. Sound (drone, wind that follo
 | `world/city.ts` | The endless city: towers, aviation lights, traffic, the wet street (mirrored on desktop). |
 | `world/land.ts` | The landscapes: one GLSL terrain with five kinds, grass blades, fireflies, embers, snow. |
 | `world/sea.ts` | Open sea with a moon path; at the pole, pack ice and icebergs. |
-| `world/services.ts`, `world/records.ts` | Project gyroscopes; one ice-glass block per role. |
+| `world/services.ts`, `world/records.ts` | The project portals (gateway model, light strip, event horizon; one visible at a time); one ice-glass block per role. |
 | `world/ship.ts` | The ship: PBR model, engine plasma, search beam, re-entry glow, wingtip strobes, banking and barrel rolls. |
 | `world/warp.ts` | Light streaks rushing past the camera during a jump. |
 | `world/rig.ts` | Camera: follows the ship, banks into turns, widens with speed, punches out and shakes on a jump. |
@@ -50,6 +50,7 @@ The ship's search beam sweeps the ground on Earth. Sound (drone, wind that follo
 | Asset | Source | Licence / credit |
 | --- | --- | --- |
 | `models/ship.glb`, `ship-1k.glb` | Intergalactic Spaceship, Dennis Haupt (3DHaupt), free3d.com | Personal, non-commercial use; supplied by the owner |
+| `models/portal.glb`, `portal-1k.glb` | Sci-Fi Portal Gateway, Igrium, Sketchfab | CC BY 4.0; supplied by the owner |
 | `env/earth-*.jpg` | Earth model textures supplied by the owner (`59-earth.zip`) | As supplied |
 | `env/stars-*.jpg` | NASA/Goddard SVS Deep Star Maps 2020 | NASA/GSFC SVS; ESA/Gaia/DPAC |
 | `env/night.hdr` | Modern Buildings Night, Poly Haven | CC0 |

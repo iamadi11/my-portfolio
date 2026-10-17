@@ -102,31 +102,43 @@ function renderer(canvas: HTMLCanvasElement, small: boolean): THREE.WebGLRendere
     return r;
 }
 
-/** Which place a share of the way through a section is in: split halfway between its items. */
-const zoneOf = (f: number, at: number[]): number => {
+/** Where each item's stretch of a section ends (halfway to the next item; the last runs to the end). */
+const endsOf = (at: number[]): number[] =>
+    at.map((f, k) => (k < at.length - 1 ? (f + at[k + 1]) / 2 : 0.998));
+
+/** Which item's stretch a share of the way through a section is in. */
+const zoneOf = (f: number, ends: number[]): number => {
     let k = 0;
-    while (k < at.length - 1 && f > (at[k] + at[k + 1]) / 2) k++;
+    while (k < ends.length - 1 && f > ends[k]) k++;
     return k;
 };
 
-type Jump = { shown: Place; jump: number; jumped: boolean; tint: THREE.Color };
+/**
+ * A stop on the trip: a place, plus which project's stretch it is for the landscapes ("desert#1"),
+ * so that every portal is a jump even when a landscape comes round again.
+ */
+type Stop = string;
+const placeOf = (stop: Stop): Place => stop.split('#')[0] as Place;
+const zoneIn = (stop: Stop): number => Number(stop.split('#')[1] ?? -1);
+
+type Jump = { shown: Stop; jump: number; jumped: boolean; tint: THREE.Color };
 
 /**
  * The jump between places: crossing into a new one starts a boost; the scene is swapped at its
  * peak, under the blur and the flash. Reduced motion cuts straight across.
  */
-function jumper(reduce: boolean, onStart: () => void): { step: (dt: number, target: Place) => Jump } {
+function jumper(reduce: boolean, onStart: () => void): { step: (dt: number, target: Stop) => Jump } {
     const out: Jump = { shown: 'space', jump: 0, jumped: false, tint: FLASH.other };
-    let next: Place = 'space';
+    let next: Stop = 'space';
     let clock = -1;
-    const start = (target: Place): void => {
+    const start = (target: Stop): void => {
         next = target;
         clock = 0;
         out.jumped = true;
         out.tint = out.shown === 'space' ? FLASH.entry : target === 'orbit' ? FLASH.orbit : FLASH.other;
         onStart();
     };
-    const step = (dt: number, target: Place): Jump => {
+    const step = (dt: number, target: Stop): Jump => {
         out.jumped = false;
         if (clock < 0 && target !== out.shown) {
             if (reduce) out.shown = target;
@@ -186,12 +198,15 @@ export function createWorld(o: WorldOptions): World {
     const sea = addSea(scene, s, sky.uniforms.uHorizon, o.small, rand);
     const ringGroup = new THREE.Group();
     scene.add(ringGroup);
+    // Each project's landscape ends at its portal: flying through it is the jump to the next.
+    const ringEnds = endsOf(o.ringAt);
     const rings = addRings(
         ringGroup,
+        s,
         route,
         o.rings,
-        o.ringAt.map((f) => lerp(svc, data, f)),
-        rand
+        ringEnds.map((f) => lerp(svc, data, f)),
+        o.small
     );
     const recordGroup = new THREE.Group();
     scene.add(recordGroup);
@@ -206,11 +221,14 @@ export function createWorld(o: WorldOptions): World {
     const rig = createRig(camera, route, o.small, o.reduce);
     const post = createPost(gl, scene, camera, o.small);
 
-    const placeAt = (u: number, map: number): Place => {
+    const stopAt = (u: number, map: number): Stop => {
         if (map > 0.5) return 'orbit';
         if (u < city0) return 'space';
         if (u < svc) return 'city';
-        if (u < data) return LANDS[zoneOf((u - svc) / (data - svc), o.ringAt) % LANDS.length];
+        if (u < data) {
+            const k = zoneOf((u - svc) / (data - svc), ringEnds);
+            return `${LANDS[k % LANDS.length]}#${k}`;
+        }
         const half =
             o.recordAt.length > 1
                 ? (o.recordAt[Math.floor(o.recordAt.length / 2) - 1] +
@@ -339,7 +357,9 @@ export function createWorld(o: WorldOptions): World {
         speed +=
             (Math.min(1, (Math.abs(u - prev) * route.len) / Math.max(dt, 1e-3) / 160) - speed) *
             (1 - Math.exp(-dt * 4));
-        const { shown, jump, jumped, tint } = jumps.step(dt, placeAt(u, f.map));
+        const { shown: stop, jump, jumped, tint } = jumps.step(dt, stopAt(u, f.map));
+        const shown = placeOf(stop);
+        const zone = zoneIn(stop);
         route.curve.getPointAt(clamp(u), p);
         s.uPacket.value.copy(p);
         s.uScan.value = p.y;
@@ -347,7 +367,7 @@ export function createWorld(o: WorldOptions): World {
         applyAir(AIR[shown]);
         rig.update(u, t, dt, speed, jump, f.pointer, !AIR[shown].space);
         const { heat, sun } = showPlace(shown);
-        const passed = rings.update(u, t, dt, 0);
+        const passed = rings.update(u, t, dt, zone);
         flyShip(shown, dt, f.resp, heat, sun);
         if (passed !== null) ship.roll();
         records.update(p, u);
@@ -355,8 +375,8 @@ export function createWorld(o: WorldOptions): World {
         post.finish(t, o.reduce ? 0 : speed, jump, tint);
         post.composer.render();
         return {
-            rings: rings.centers.map((c) =>
-                isLand(shown) ? project(v.copy(c).add(RING_TAG).clone(), 170) : null
+            rings: rings.centers.map((c, k) =>
+                k === zone ? project(v.copy(c).add(RING_TAG).clone(), 260) : null
             ),
             records: records.points.map((r) => (recordGroup.visible ? project(r, 120) : null)),
             passed,

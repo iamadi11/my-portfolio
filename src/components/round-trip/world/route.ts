@@ -17,8 +17,8 @@ const UP = new THREE.Vector3(0, 1, 0);
 const STEP = 40;
 const SPACE = 340;
 const CITY = 420;
-const PER_RING = 130;
-const PER_RECORD = 75;
+const PER_RING = 280;
+const PER_RECORD = 100;
 
 /** Sideways sway at depth z; `pathX` in gl.ts is the same curve. */
 const swayX = (z: number): number => Math.sin(-z * 0.0175) * 6;

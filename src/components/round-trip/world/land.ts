@@ -39,7 +39,8 @@ const HEIGHT = /* glsl */ `
             return -16.0 + dunes + mesas;
         }
         if (uKind == 2) {
-            float m = fbm(p * 0.005 + 4.0) * 1.3 - 0.45 + smoothstep(30.0, 140.0, d) * 0.85;
+            // Mesas everywhere except a dry wash along the path; walls rise on both sides of it.
+            float m = (fbm(p * 0.005 + 4.0) * 1.3 - 0.45) * smoothstep(22.0, 70.0, d) + smoothstep(30.0, 140.0, d) * 0.85;
             float t = clamp(m, 0.0, 1.4) * 150.0 / 16.0;
             float h = (floor(t) + smoothstep(0.72, 1.0, fract(t))) * 16.0;
             return -14.0 + h + (fbm(p * 0.06) - 0.5) * 2.5;
@@ -52,7 +53,7 @@ const HEIGHT = /* glsl */ `
         float keep = smoothstep(70.0, 160.0, abs(c.x - pathX(c.y)));
         float cone = pow(max(0.0, 1.0 - r / 230.0), 1.6) * 240.0 - smoothstep(30.0, 8.0, r) * 45.0;
         float plain = (fbm(p * 0.01) - 0.5) * 14.0 + ridged(p * 0.02) * 4.0;
-        return -16.0 + plain * (0.4 + 0.6 * smoothstep(10.0, 60.0, d)) + cone * keep;
+        return -16.0 + plain * (0.4 + 0.6 * smoothstep(10.0, 60.0, d)) + cone * keep * smoothstep(25.0, 110.0, d);
     }
 `;
 

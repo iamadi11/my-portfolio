@@ -61,8 +61,8 @@ export const heights = (trip: Trip): number[] => [
     130,
     230,
     270,
-    100 + 85 * trip.projects.length,
-    100 + 75 * trip.records.length,
+    100 + 170 * trip.projects.length,
+    100 + 95 * trip.records.length,
     250,
 ];
 

@@ -234,7 +234,8 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                 ))}
             </div>
             <p className="rt-note rt-fade" style={stagger(3)}>
-                Ship: Intergalactic Spaceship by Dennis Haupt (3DHaupt). Earth and stars: NASA.
+                Ship: Intergalactic Spaceship by Dennis Haupt (3DHaupt). Portals: Sci-Fi Portal Gateway by
+                Igrium (CC BY 4.0). Earth and stars: NASA.
             </p>
         </>
     );

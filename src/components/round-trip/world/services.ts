@@ -1,114 +1,167 @@
 import * as THREE from 'three';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import { smooth } from '@/components/round-trip/math';
+import { ADD, type Shared, shader } from '@/components/round-trip/world/gl';
+import { GROUND, LANDS } from '@/components/round-trip/world/land';
 import type { Route } from '@/components/round-trip/world/route';
 
-type Ring = {
+/**
+ * The portal's event horizon: energy swirling inward in the project's colour, brightest at the
+ * rim, with a dark throat. It forms as the ship comes close and flashes as the ship crosses.
+ */
+const HORIZON_FRAG = /* glsl */ `
+    uniform vec3 uCol; uniform float uOn, uFlash; varying vec2 vUv; varying float vD;
+    void main() {
+        vec2 c = vUv - 0.5;
+        float r = max(length(c) * 2.0, 1e-3);
+        float a = atan(c.y, c.x) / 6.2831853;
+        // Spiral arms wound in log-polar space, drifting inward; fine streaks ride on them.
+        vec2 sp = vec2(a * 3.0 + log(r) * 0.9 + uTime * 0.12, log(r) * 1.6 - uTime * 0.35);
+        float arms = smoothstep(0.42, 0.78, fbm(sp * vec2(2.0, 1.4)));
+        float streaks = smoothstep(0.55, 0.9, fbm(sp * vec2(7.0, 3.0) + 3.1));
+        float depth = mix(0.15, 1.0, smoothstep(0.05, 0.75, r));
+        float rim = pow(smoothstep(0.8, 0.995, r), 3.0);
+        float inside = 1.0 - smoothstep(0.985, 1.0, r);
+        vec3 col = uCol * (0.015 + (arms * 0.32 + streaks * 0.55) * depth + rim * 1.2);
+        col += mix(uCol, vec3(1.0), 0.5) * streaks * arms * depth * 0.18;
+        col = col * uOn + mix(uCol, vec3(1.0), 0.5) * uFlash * (1.0 - r * 0.6);
+        gl_FragColor = vec4(col * inside * fade(vD), 1.0);
+    }
+`;
+
+type Portal = {
     u: number;
     center: THREE.Vector3;
-    parts: THREE.Mesh[];
-    rates: number[][];
+    /** The gateway's own group, its light strip and its event horizon. */
+    g: THREE.Group;
+    strip: THREE.Mesh;
+    disc: THREE.Mesh;
     glow: THREE.MeshBasicMaterial;
+    horizon: { uOn: THREE.IUniform<number>; uFlash: THREE.IUniform<number> };
     colour: THREE.Color;
-    align: number;
+    near: number;
     passed: boolean;
 };
 
 export type Rings = {
     centers: THREE.Vector3[];
-    /** Advances the rings; returns the index of a ring the request just flew through. */
-    update: (u: number, t: number, dt: number, map: number) => number | null;
+    /** Advances the portals, showing only `show` (the current landscape's exit; -1 for none). */
+    update: (u: number, t: number, dt: number, show: number) => number | null;
 };
 
-const BEADS = 8;
-const IDENTITY = new THREE.Quaternion();
+/** The gateway model: its ring is 5 m across, centred 2.5 m above its base. */
+const RING_Y = 2.5;
+/** Fallback inner radius of the ring (m) until the model has been measured. */
+const INNER = 2.05;
 
-function gyroscope(
-    scene: THREE.Object3D,
-    center: THREE.Vector3,
-    colour: string
-): Pick<Ring, 'parts' | 'glow'> {
-    const g = new THREE.Group();
-    g.position.copy(center);
-    scene.add(g);
-    // Satin chrome outside, brushed aluminium inside, an LED strip at the core; all catch the moon.
-    const chrome = new THREE.MeshPhysicalMaterial({
-        color: '#b9c0cc',
-        metalness: 1,
-        roughness: 0.3,
-        clearcoat: 0.2,
-        clearcoatRoughness: 0.25,
-        envMapIntensity: 0.12,
+/** Inner radius of the gateway's ring, measured from its own vertices (in metres). */
+function innerRadius(model: THREE.Object3D): number {
+    let best = Infinity;
+    const v = new THREE.Vector3();
+    model.updateMatrixWorld(true);
+    model.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh || !/portal_main/.test(m.name)) return;
+        const p = m.geometry.attributes.position;
+        for (let i = 0; i < p.count; i++) {
+            v.fromBufferAttribute(p, i).applyMatrix4(m.matrixWorld);
+            if (Math.abs(v.z) < 0.4) best = Math.min(best, Math.hypot(v.x, v.y - RING_Y));
+        }
     });
-    const brushed = new THREE.MeshPhysicalMaterial({
-        color: '#8f97a5',
-        metalness: 1,
-        roughness: 0.36,
-        envMapIntensity: 0.1,
-    });
-    const glow = new THREE.MeshBasicMaterial({ color: colour });
-    const parts = [
-        new THREE.Mesh(new THREE.TorusGeometry(15, 0.5, 20, 180), chrome),
-        new THREE.Mesh(new THREE.TorusGeometry(12, 0.32, 16, 160), brushed),
-        new THREE.Mesh(new THREE.TorusGeometry(9.6, 0.09, 8, 200), glow),
-    ];
-    const beads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.42, 12, 10), glow, BEADS);
-    const m = new THREE.Matrix4();
-    for (let b = 0; b < BEADS; b++) {
-        const a = (b / BEADS) * Math.PI * 2;
-        beads.setMatrixAt(b, m.makeTranslation(Math.cos(a) * 15, Math.sin(a) * 15, 0));
-    }
-    parts[0].add(beads);
-    parts.forEach((p) => g.add(p));
-    return { parts, glow };
+    return Number.isFinite(best) ? best : INNER;
 }
 
 /**
- * 3 · Services: one gyroscope per project. Each spins freely, then locks into a portal as the
- * request arrives (the rings lie across the path, so "aligned" is no rotation at all).
+ * 3 · Services: one gateway per project ("Sci-Fi Portal Gateway" by Igrium, CC BY 4.0), standing
+ * on the ground of that project's landscape and sized so the ship flies through the middle of its
+ * ring. A strip of light in the project's colour lines the ring; the event horizon fills it.
  */
 export function addRings(
     scene: THREE.Object3D,
+    s: Shared,
     route: Route,
     colours: string[],
     us: number[],
-    rand: () => number
+    small: boolean
 ): Rings {
-    const sign = (): number => (rand() < 0.5 ? -1 : 1);
-    const rings: Ring[] = colours.map((c, k) => {
+    const portals: Portal[] = colours.map((c, k) => {
         const center = route.curve.getPointAt(us[k]);
-        const rates = [0, 1, 2].map(() =>
-            [0.2 + rand() * 0.5, 0.15 + rand() * 0.45, 0.1 + rand() * 0.3].map((r) => r * sign())
+        const tangent = route.curve.getTangentAt(us[k]);
+        // Big enough to stand on this landscape's ground with its ring around the path.
+        const scale = Math.max(4, (center.y - GROUND[LANDS[k % LANDS.length]]) / RING_Y) * 1.05;
+        const g = new THREE.Group();
+        g.position.copy(center).add(new THREE.Vector3(0, -RING_Y * scale, 0));
+        g.lookAt(g.position.clone().sub(tangent.setY(0)));
+        g.scale.setScalar(scale);
+        scene.add(g);
+        const glow = new THREE.MeshBasicMaterial({ color: c });
+        const strip = new THREE.Mesh(new THREE.TorusGeometry(INNER, 0.025, 8, 160), glow);
+        strip.position.y = RING_Y;
+        const horizon = { uOn: { value: 0 }, uFlash: { value: 0 } };
+        const disc = new THREE.Mesh(
+            new THREE.CircleGeometry(INNER, 128),
+            shader(
+                s,
+                /* glsl */ `varying vec2 vUv; varying float vD; void main() { vUv = uv; vec4 mv = modelViewMatrix * vec4(position, 1.0); vD = -mv.z; gl_Position = projectionMatrix * mv; }`,
+                HORIZON_FRAG,
+                { uCol: { value: new THREE.Color(c) }, ...horizon },
+                { ...ADD, side: THREE.DoubleSide }
+            )
         );
+        disc.position.y = RING_Y;
+        g.add(strip, disc);
         return {
             u: us[k],
             center,
-            rates,
+            g,
+            strip,
+            disc,
+            glow,
+            horizon,
             colour: new THREE.Color(c),
-            align: 0,
+            near: 0,
             passed: false,
-            ...gyroscope(scene, center, c),
         };
     });
-    const e = new THREE.Euler();
-    const q = new THREE.Quaternion();
-    const update = (u: number, t: number, dt: number, map: number): number | null => {
-        let hit: number | null = null;
-        rings.forEach((r, k) => {
-            const d = Math.abs(u - r.u) * route.len;
-            r.align += (smooth(80, 14, d) * (1 - map * 0.6) - r.align) * (1 - Math.exp(-dt * 4));
-            r.parts.forEach((p, i) => {
-                e.set(t * r.rates[i][0] + k, t * r.rates[i][1] + i, t * r.rates[i][2]);
-                p.quaternion.slerpQuaternions(q.setFromEuler(e), IDENTITY, r.align);
+
+    new GLTFLoader()
+        .setMeshoptDecoder(MeshoptDecoder)
+        .loadAsync(small ? '/models/portal-1k.glb' : '/models/portal.glb')
+        .then((gltf) => {
+            const inner = innerRadius(gltf.scene);
+            gltf.scene.traverse((o) => {
+                const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
+                if (m?.isMeshStandardMaterial) m.envMapIntensity = 0.6;
             });
-            r.glow.color.copy(r.colour).multiplyScalar(0.4 + r.align * 0.85);
-            if (!r.passed && u > r.u) {
-                r.passed = true;
+            for (const p of portals as Array<
+                Portal & { strip: THREE.Mesh; disc: THREE.Mesh; g: THREE.Group }
+            >) {
+                p.g.add(gltf.scene.clone());
+                p.strip.scale.setScalar(inner / INNER);
+                p.disc.scale.setScalar((inner * 0.99) / INNER);
+            }
+        })
+        .catch(() => undefined);
+
+    const update = (u: number, _t: number, dt: number, show: number): number | null => {
+        let hit: number | null = null;
+        portals.forEach((p, k) => {
+            p.g.visible = k === show;
+            const d = Math.abs(u - p.u) * route.len;
+            p.near += (smooth(140, 20, d) - p.near) * (1 - Math.exp(-dt * 4));
+            p.glow.color.copy(p.colour).multiplyScalar(0.35 + p.near * 0.8);
+            p.horizon.uOn.value = smooth(0.15, 0.85, p.near);
+            p.horizon.uFlash.value *= Math.exp(-dt * 3.5);
+            if (!p.passed && u > p.u) {
+                p.passed = true;
+                p.horizon.uFlash.value = 0.45;
                 hit = k;
             }
-            if (u < r.u - 0.002) r.passed = false;
+            if (u < p.u - 0.002) p.passed = false;
         });
         return hit;
     };
-    return { centers: rings.map((r) => r.center), update };
+    return { centers: portals.map((p) => p.center), update };
 }

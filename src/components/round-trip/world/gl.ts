@@ -31,13 +31,9 @@ export const shared = (pr: number): Shared => ({
     uBeam: { value: new THREE.Vector4(0, -999, 0, 0) },
 });
 
-const HEAD = /* glsl */ `
-    uniform float uTime; uniform vec3 uPacket; uniform float uFog; uniform vec3 uFogColor; uniform float uPR; uniform float uScan;
-    uniform vec4 uBeam;
+/** Noise, the path's sway and endless-scenery wrapping: plain functions any shader can include. */
+const NOISE = /* glsl */ `
     float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-    vec3 fogIt(vec3 c, float d) { float f = 1.0 - exp(-uFog * uFog * d * d); return mix(c, uFogColor, clamp(f, 0.0, 1.0)); }
-    float fade(float d) { return exp(-uFog * uFog * d * d); }
-    float glowAt(vec3 w, float r) { vec3 d = w - uPacket; return exp(-dot(d, d) / (r * r)); }
     float vnoise(vec2 p) {
         vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
         return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
@@ -52,6 +48,18 @@ const HEAD = /* glsl */ `
         for (int k = 0; k < 5; k++) { float n = 1.0 - abs(vnoise(p) * 2.0 - 1.0); float r = n * n * w; v += r * a; w = clamp(r * 2.0, 0.0, 1.0); p *= 2.1; a *= 0.5; }
         return v;
     }
+`;
+
+const HEAD =
+    /* glsl */ `
+    uniform float uTime; uniform vec3 uPacket; uniform float uFog; uniform vec3 uFogColor; uniform float uPR; uniform float uScan;
+    uniform vec4 uBeam;
+    vec3 fogIt(vec3 c, float d) { float f = 1.0 - exp(-uFog * uFog * d * d); return mix(c, uFogColor, clamp(f, 0.0, 1.0)); }
+    float fade(float d) { return exp(-uFog * uFog * d * d); }
+    float glowAt(vec3 w, float r) { vec3 d = w - uPacket; return exp(-dot(d, d) / (r * r)); }
+` +
+    NOISE +
+    /* glsl */ `
     // The ship's search beam where it meets the ground: a soft pool with a brighter rim.
     vec3 beamAt(vec3 w) {
         float d = length(w.xz - uBeam.xz);
