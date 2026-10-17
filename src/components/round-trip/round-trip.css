@@ -106,9 +106,9 @@ html:has(.rt) body {
     background: linear-gradient(
         90deg,
         rgba(5, 7, 13, 0.88),
-        rgba(5, 7, 13, 0.62) 34%,
-        rgba(5, 7, 13, 0.25) 50%,
-        rgba(5, 7, 13, 0) 66%
+        rgba(5, 7, 13, 0.62) 44%,
+        rgba(5, 7, 13, 0.25) 56%,
+        rgba(5, 7, 13, 0) 70%
     );
 }
 
@@ -217,9 +217,9 @@ html:has(.rt) body {
     letter-spacing: -0.05em;
 }
 .rt-lede {
-    max-width: 52ch;
+    max-width: 40ch;
     margin: 0 0 14px;
-    color: var(--soft);
+    color: var(--ink);
     font-size: clamp(16px, 1.35vw, 20px);
 }
 .rt-lede + .rt-meta {
@@ -325,6 +325,14 @@ html:has(.rt) body {
     font-size: 14.5px;
     line-height: 1.4;
 }
+.rt-impact small {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font: 500 11px var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
 
 /* edge */
 .rt-h2 {
@@ -416,7 +424,7 @@ html:has(.rt) body {
     font-size: clamp(30px, 3.6vw, 52px);
 }
 .rt-copy {
-    max-width: 44ch;
+    max-width: 46ch;
     margin: 0;
     color: var(--soft);
 }
@@ -507,7 +515,7 @@ html:has(.rt) body {
 .rt-bullets {
     display: grid;
     gap: 8px;
-    max-width: 60ch;
+    max-width: 46ch;
     margin: 16px 0 0;
 }
 .rt-bullets li {
@@ -622,6 +630,7 @@ html:has(.rt) body {
 .rt-bottom {
     bottom: 0;
     padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(rgba(5, 7, 13, 0), rgba(5, 7, 13, 0.78));
 }
 .rt-brand {
     white-space: nowrap;
@@ -641,8 +650,16 @@ html:has(.rt) body {
 .rt-route li {
     display: flex;
     align-items: center;
-    gap: 8px;
     transition: color 0.4s;
+}
+.rt-route a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 24px;
+    padding: 0 4px;
+    color: inherit;
+    text-decoration: none;
 }
 .rt-route li + li::before {
     content: '';
@@ -818,9 +835,21 @@ html:has(.rt) body {
     .rt-js .rt-fade,
     .rt-item,
     .rt-cue b::after,
-    .rt-poster::before {
+    .rt-poster::before,
+    .rt-js .rt-layers li.on span,
+    .rt-count i,
+    .rt-req em {
         transition: none !important;
         animation: none !important;
+    }
+}
+/* the world is building after the first scroll: the readout pulses until it lands */
+.rt[data-phase='building'] .rt-req em {
+    animation: rt-blink 1s steps(2) infinite;
+}
+@keyframes rt-blink {
+    50% {
+        opacity: 0.35;
     }
 }
 
@@ -872,6 +901,10 @@ html:has(.rt) body {
     }
 }
 @media (max-width: 760px) {
+    /* phones: no "or scroll" cue; the page itself is the cue */
+    .rt-cue span {
+        display: none;
+    }
     /* phones: world labels keep the name only; the dates are in the panel */
     .rt-tag small {
         display: none;

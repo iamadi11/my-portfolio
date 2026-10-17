@@ -133,13 +133,18 @@ const placeOf = (stop: Stop): Place => stop.split('#')[0] as Place;
 const zoneIn = (stop: Stop): number => Number(stop.split('#')[1] ?? -1);
 
 type Jump = { shown: Stop; jump: number; jumped: boolean; tint: THREE.Color };
+type TintOf = (target: Stop) => THREE.Color | null;
 
 /**
  * The jump between places: crossing into a new one starts a boost; the scene is swapped at its
  * peak, under the blur and the flash. Reduced motion cuts straight across.
  */
-function jumper(reduce: boolean, onStart: () => void): { step: (dt: number, target: Stop) => Jump } {
-    const out: Jump = { shown: 'space', jump: 0, jumped: false, tint: FLASH.other };
+function jumper(
+    reduce: boolean,
+    tintOf: TintOf,
+    onStart: () => void
+): { step: (dt: number, target: Stop, back: boolean) => Jump } {
+    const out: Jump = { shown: 'space', jump: 0, jumped: false, tint: FLASH.other.clone() };
     let next: Stop = 'space';
     let clock = -1;
     let len = JUMP.portal;
@@ -151,13 +156,20 @@ function jumper(reduce: boolean, onStart: () => void): { step: (dt: number, targ
         const air = out.shown === 'space' || target === 'orbit';
         len = air ? JUMP.air : JUMP.portal;
         peak = air ? PEAK.air : PEAK.portal;
-        out.tint = out.shown === 'space' ? FLASH.entry : target === 'orbit' ? FLASH.orbit : FLASH.other;
+        out.tint.copy(
+            out.shown === 'space'
+                ? FLASH.entry
+                : target === 'orbit'
+                  ? FLASH.orbit
+                  : (tintOf(target) ?? FLASH.other)
+        );
         onStart();
     };
-    const step = (dt: number, target: Stop): Jump => {
+    const step = (dt: number, target: Stop, back: boolean): Jump => {
         out.jumped = false;
         if (clock < 0 && target !== out.shown) {
-            if (reduce) out.shown = target;
+            // Rewinding is a plain cut; only the way forward is a jump.
+            if (reduce || back) out.shown = target;
             else start(target);
         }
         out.jump = 0;
@@ -222,7 +234,8 @@ export function createWorld(o: WorldOptions): World {
         route,
         o.rings,
         ringEnds.map((f) => lerp(svc, data, f)),
-        o.small
+        o.small,
+        glow
     );
     const landmarks = addLandmarks(
         scene,
@@ -292,7 +305,15 @@ export function createWorld(o: WorldOptions): World {
     const at = new THREE.Vector3();
     const p = new THREE.Vector3();
     const DOWN = new THREE.Vector3(0, -0.7, 0);
-    const jumps = jumper(o.reduce, () => ship.boost());
+    // Each portal's jump flashes in its project's colour.
+    const jumps = jumper(
+        o.reduce,
+        (target) => (zoneIn(target) >= 0 ? new THREE.Color(o.rings[zoneIn(target)]) : null),
+        () => ship.boost()
+    );
+    let rushNow = 0;
+    let rolled = false;
+    const toSun = new THREE.Vector3();
     let leaveWas = 0;
     let u = 0.004;
     let speed = 0;
@@ -322,7 +343,7 @@ export function createWorld(o: WorldOptions): World {
     };
 
     /** Only the place on screen is drawn; the rest wait for their jump. */
-    const showPlace = (place: Place): { heat: number; sun: THREE.Vector3 | null } => {
+    const showPlace = (place: Place): { heat: number; sun: THREE.Vector3 | null; dawn: number } => {
         const atSea = place === 'ocean' || place === 'ice';
         city.update(camera.position, place === 'city');
         cityGroup.visible = place === 'city';
@@ -345,6 +366,20 @@ export function createWorld(o: WorldOptions): World {
      * climb above the eye line pulling off the ice and leaving orbit. Sets `heading`; returns the
      * height offset.
      */
+    /** At the end it leaves towards the sunrise, not down the route, lit by the sun. */
+    const depart = (sun: THREE.Vector3 | null, leave: number, dawn: number): void => {
+        sunlight.intensity = sun ? 3.2 * dawn : 0;
+        if (!sun) return;
+        if (leave > 0) {
+            const gone = Math.pow(leave, 2.2) * 900;
+            toSun.copy(sun).sub(at).normalize();
+            at.addScaledVector(toSun, gone).addScaledVector(tangent, -gone);
+            heading.lerp(toSun, leave).normalize();
+        }
+        sunlight.target.position.copy(at);
+        sunlight.position.copy(sun);
+    };
+
     const moves = (orbit: boolean): number => {
         const away = orbit ? 1 - beat.rise : 0;
         heading
@@ -364,7 +399,8 @@ export function createWorld(o: WorldOptions): World {
         dt: number,
         resp: number,
         heat: number,
-        sun: THREE.Vector3 | null
+        sun: THREE.Vector3 | null,
+        dawn: number
     ): void => {
         const orbit = place === 'orbit';
         const air = AIR[place];
@@ -374,15 +410,13 @@ export function createWorld(o: WorldOptions): World {
         route.curve.getTangentAt(clamp(u), tangent);
         const hero = 1 - smooth(route.seg[1] * 0.6, route.seg[1] * 1.6, u);
         const leave = orbit ? smooth(0.35, 1, 1 - resp) : 0;
+        // Runs ahead of the eye when it dives, skims, crosses the pole or rushes a gate.
+        const lead = beat.dive * 14 + beat.skim * 10 + beat.over * 18 + rushNow * 6;
         at.copy(p)
             .add(side)
-            .addScaledVector(tangent, hero * 5 + Math.pow(leave, 2.2) * 900);
+            .addScaledVector(tangent, hero * 5 + lead + Math.pow(leave, 2.2) * 900);
         at.y += hero * 1.1 + leave * 6 + moves(orbit);
-        sunlight.intensity = sun ? 3.2 : 0;
-        if (sun) {
-            sunlight.target.position.copy(at);
-            sunlight.position.copy(sun);
-        }
+        depart(sun, leave, dawn);
         ship.update({
             at,
             heading,
@@ -397,30 +431,14 @@ export function createWorld(o: WorldOptions): World {
         leaveWas = leave;
     };
 
-    const frame = (f: FrameIn): FrameOut => {
-        const now = performance.now();
-        const dt = Math.min(0.05, (now - last) / 1000);
-        last = now;
-        t += dt;
-        resize();
-        const prev = u;
-        u += (f.u - u) * (o.reduce ? 1 : 1 - Math.exp(-dt * 5));
-        speed +=
-            (Math.min(1, (Math.abs(u - prev) * route.len) / Math.max(dt, 1e-3) / 160) - speed) *
-            (1 - Math.exp(-dt * 4));
-        const { shown: stop, jump, jumped, tint } = jumps.step(dt, stopAt(u, f.map));
-        const shown = placeOf(stop);
-        const zone = zoneIn(stop);
-        route.curve.getPointAt(clamp(u), p);
-        s.uPacket.value.copy(p);
-        s.uScan.value = p.y;
-        s.uTime.value = t;
+    /** The beats for the place on screen, and the shot they make. */
+    const beats = (shown: Place, map: number): void => {
         // The long way in: a slow roll onto the globe, then the dive proper, the air thickening.
         beat.dive = shown === 'space' ? smooth(0.38, 0.96, u / city0) : 0;
         beat.drop = shown === 'city' ? 1 - smooth(city0, lerp(city0, svc, 0.34), u) : 0;
         // The long way out: pull up off the ice, burn, then the globe falls away in orbit.
-        beat.climb = shown === 'ice' ? smooth(0.06, 0.5, f.map) : 0;
-        beat.rise = shown === 'orbit' ? smooth(0.5, 1, f.map) : 0;
+        beat.climb = shown === 'ice' ? smooth(0.06, 0.5, map) : 0;
+        beat.rise = shown === 'orbit' ? smooth(0.5, 1, map) : 0;
         // Arrivals at sea: a skim low over the waves; at the pole: a lift to take in the ice.
         const bump = (from: number, span: number): number => Math.sin(Math.PI * clamp((u - from) / span));
         beat.skim = shown === 'ocean' ? bump(data, (1 - data) * 0.16) : 0;
@@ -434,17 +452,55 @@ export function createWorld(o: WorldOptions): World {
             ship.boost();
         }
         if (beat.climb < 0.1) kicked = false;
+    };
+
+    /**
+     * Rushing at a gate (a portal, the edge of the city, the edge of the ice) or burning through
+     * the air: the frame widens and shudders; the barrel roll is the wind-up. Returns 0–1.
+     */
+    const rushing = (shown: Place, heat: number, forward: boolean): number => {
+        const gate = Math.max(
+            rings.rush,
+            shown === 'city' ? smooth(90, 8, (svc - u) * route.len) : 0,
+            shown === 'ocean' ? smooth(90, 8, (iceAt - u) * route.len) : 0
+        );
+        if (gate > 0.5 && !rolled && forward) {
+            rolled = true;
+            ship.roll();
+        }
+        if (gate < 0.2) rolled = false;
+        return Math.max(gate, heat * 0.8, beat.climb > 0.45 ? (beat.climb - 0.45) * 1.6 : 0);
+    };
+
+    const frame = (f: FrameIn): FrameOut => {
+        const now = performance.now();
+        const dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        t += dt;
+        resize();
+        const prev = u;
+        u += (f.u - u) * (o.reduce ? 1 : 1 - Math.exp(-dt * 5));
+        speed +=
+            (Math.min(1, (Math.abs(u - prev) * route.len) / Math.max(dt, 1e-3) / 160) - speed) *
+            (1 - Math.exp(-dt * 4));
+        const { shown: stop, jump, jumped, tint } = jumps.step(dt, stopAt(u, f.map), u < prev);
+        const shown = placeOf(stop);
+        const zone = zoneIn(stop);
+        route.curve.getPointAt(clamp(u), p);
+        s.uPacket.value.copy(p);
+        s.uScan.value = p.y;
+        s.uTime.value = t;
+        beats(shown, f.map);
         applyAir(AIR[shown], beat.drop * 0.6 + beat.climb * 0.85, beat.drop);
         s.uDrop.value = beat.drop;
-        const { heat, sun } = showPlace(shown);
+        const { heat, sun, dawn } = showPlace(shown);
         const passed = rings.update(u, t, dt, zone);
-        // Rushing at a portal, or burning through the air: the frame widens and shudders.
-        const rush = Math.max(rings.rush, heat * 0.8, beat.climb > 0.45 ? (beat.climb - 0.45) * 1.6 : 0);
+        const rush = rushing(shown, heat, u >= prev);
+        rushNow = rush;
         shot.shake = o.reduce ? 0 : rush * 0.004;
         rig.update(u, t, dt, Math.min(1, speed + rush * 0.6), jump, f.pointer, !AIR[shown].space, shot);
         landmarks.show(zone);
-        flyShip(shown, dt, f.resp, heat, sun);
-        if (passed !== null) ship.roll();
+        flyShip(shown, dt, f.resp, heat, sun, dawn);
         records.update(p, u);
         warp.update(jump, tint);
         // Seen from above through cloud, a city of small lights would bloom into mush.

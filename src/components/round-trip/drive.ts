@@ -7,8 +7,6 @@ import type { FrameOut, Mark, World } from '@/components/round-trip/world';
 const prefetchWorld = (): Promise<unknown> => import('@/components/round-trip/world');
 
 export type DriveOptions = {
-    /** Project titles, for the title card of each landscape. */
-    titles: string[];
     rings: string[];
     ringAt: number[];
     recordAt: number[];
@@ -128,7 +126,10 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     let phase: 'idle' | 'building' | 'live' | 'flat' = 'idle';
     let forced: number | null = null;
     let lastPick = -1;
+    let forcedRecord: number | null = null;
+    let lastRecord = -1;
     let lastPlace: string | null = null;
+    let slateTimer = 0;
     let raf = 0;
     let dead = false;
 
@@ -156,10 +157,14 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         if (phase !== 'idle') return;
         if (!webgl()) {
             phase = 'flat';
+            root.dataset.phase = phase;
             return;
         }
         phase = 'building';
-        build().catch(() => (phase = 'flat'));
+        root.dataset.phase = phase;
+        build()
+            .catch(() => (phase = 'flat'))
+            .then(() => (root.dataset.phase = phase));
     };
 
     const panels = (q: (i: number) => number): void => {
@@ -170,8 +175,10 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         setOn('projects', els.projects, forced ?? p);
         setOn('dots', els.dots, forced ?? p);
         const r = pick(q(4), els.records.length);
-        setOn('records', els.records, r);
-        setOn('chips', els.chips, r);
+        if (r !== lastRecord) forcedRecord = null;
+        lastRecord = r;
+        setOn('records', els.records, forcedRecord ?? r);
+        setOn('chips', els.chips, forcedRecord ?? r);
     };
 
     const hud = (sec: number, ms: number): void => {
@@ -184,6 +191,9 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
                 li.classList.toggle('on', r === sec);
                 li.classList.toggle('past', r < sec);
                 li.style.setProperty('--z', ZONES[r]);
+                const a = li.querySelector('a');
+                if (r === sec) a?.setAttribute('aria-current', 'step');
+                else a?.removeAttribute('aria-current');
             });
         }
         const text = `${ms} ms`;
@@ -202,15 +212,18 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         const at = PLACES[kind];
         const el = els.slate;
         if (first || !at || !el) return;
+        // Hop and place only: the panel below already carries the project's name.
         const [hop, name] = at;
-        const k = zone === undefined ? -1 : Number(zone);
-        const title = k >= 0 ? o.titles[k] : '';
-        const count = k >= 0 ? ` · ${k + 1}/${o.titles.length}` : '';
-        el.children[0].textContent = `${String(hop).padStart(2, '0')} · ${HOPS[hop]}${count}`;
-        el.children[1].textContent = title ? `${name} · ${title}` : name;
+        void zone;
+        el.children[0].textContent = `${String(hop).padStart(2, '0')} · ${HOPS[hop]}`;
+        el.children[1].textContent = name;
         el.classList.remove('on');
-        void el.offsetWidth;
-        el.classList.add('on');
+        // After the cut's blur has settled, not under it.
+        clearTimeout(slateTimer);
+        slateTimer = window.setTimeout(() => {
+            void el.offsetWidth;
+            el.classList.add('on');
+        }, 500);
     };
 
     const draw = (s: ReturnType<typeof scrollState>, map: number, resp: number): void => {
@@ -267,15 +280,18 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     const onClick = (e: MouseEvent): void => {
         const start = (e.target as HTMLElement).closest<HTMLElement>('[data-start]');
         if (!start) return;
+        if (start instanceof HTMLAnchorElement) e.preventDefault();
         wake();
         document
             .getElementById(start.dataset.start ?? '')
             ?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
     };
     const onFocus = (e: FocusEvent): void => {
-        // A keyboard user tabbing into a project that is not on screen brings it forward.
-        const el = (e.target as HTMLElement).closest<HTMLElement>('[data-project]');
-        if (el) forced = els.projects.indexOf(el);
+        // A keyboard user tabbing into a project or record that is not on screen brings it forward.
+        const el = (e.target as HTMLElement).closest<HTMLElement>('[data-project], [data-record]');
+        if (!el) return;
+        if (el.hasAttribute('data-project')) forced = els.projects.indexOf(el);
+        else forcedRecord = els.records.indexOf(el);
     };
     addEventListener('keydown', onKey);
     addEventListener('wheel', wake, { passive: true });

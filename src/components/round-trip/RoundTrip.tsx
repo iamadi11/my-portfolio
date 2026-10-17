@@ -9,22 +9,27 @@ import { heights, itemsAt, type Trip } from '@/components/round-trip/trip';
 import '@/components/round-trip/round-trip.css';
 
 const HOPS = ['Browser', 'Wire', 'Edge', 'Services', 'Data', '200 OK'];
+/** Where each hop of the route goes: the route is the shortcut from the name to the work and contact. */
+const HOP_IDS = ['rt-hero', 'rt-wire', 'rt-edge', 'rt-work', 'rt-career', 'rt-contact'];
 const nn = (i: number): string => String(i + 1).padStart(2, '0');
 const sec = (h: number): React.CSSProperties => ({ '--h': h }) as React.CSSProperties;
 const stagger = (i: number): React.CSSProperties => ({ '--i': i }) as React.CSSProperties;
 const key = (r: { org: string; role: string }): string => `${r.org}-${r.role}`;
 
 function Route({ label }: { label?: string }): React.JSX.Element {
-    return (
-        <ol className="rt-route" data-route aria-label={label} aria-hidden={label ? undefined : true}>
+    const list = (
+        <ol className="rt-route" data-route aria-hidden={label ? undefined : true}>
             {HOPS.map((hop, r) => (
                 <li key={hop} data-r={r}>
-                    <i />
-                    <span>{hop}</span>
+                    <a href={`#${HOP_IDS[r]}`} data-start={HOP_IDS[r]} tabIndex={label ? undefined : -1}>
+                        <i />
+                        <span>{hop}</span>
+                    </a>
                 </li>
             ))}
         </ol>
     );
+    return label ? <nav aria-label={label}>{list}</nav> : list;
 }
 
 function Label({ n, zone }: { n: number; zone: string }): React.JSX.Element {
@@ -53,7 +58,10 @@ function Hero({ trip }: { trip: Trip }): React.JSX.Element {
             <h1 className="rt-name">
                 <Line i={0}>{trip.name}</Line>
             </h1>
-            <p className="rt-lede rt-fade">{trip.statement}</p>
+            <p className="rt-lede rt-fade">
+                {trip.lede}
+                {trip.rest && <span className="rt-sr">: {trip.rest}</span>}
+            </p>
             <p className="rt-meta rt-fade" style={stagger(1)}>
                 {trip.meta}
             </p>
@@ -80,12 +88,18 @@ function Impact({ trip }: { trip: Trip }): React.JSX.Element | null {
                 <Line i={0}>What changed when I shipped</Line>
             </h2>
             <dl className="rt-impact">
-                {trip.impact.map((m, i) => (
-                    <div key={m.label} className="rt-fade" style={stagger(i + 1)}>
-                        <dt>{m.label}</dt>
-                        <dd>{m.value}</dd>
-                    </div>
-                ))}
+                {trip.impact.map((m, i) => {
+                    const [what, org] = m.label.split(' · ');
+                    return (
+                        <div key={m.label} className="rt-fade" style={stagger(i + 1)}>
+                            <dt>
+                                {what}
+                                {org && <small>{org}</small>}
+                            </dt>
+                            <dd>{m.value}</dd>
+                        </div>
+                    );
+                })}
             </dl>
         </>
     );
@@ -281,7 +295,6 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
         if (!root.current || !canvas.current) return undefined;
         const h = heights(trip);
         return drive(root.current, canvas.current, {
-            titles: trip.projects.map((p) => p.title),
             rings: trip.projects.map((p) => p.colour),
             ringAt: itemsAt(h[3], trip.projects.length),
             recordAt: itemsAt(h[4], trip.records.length),
@@ -327,7 +340,7 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                 <Section zone="wire" h={hs[1]} id="rt-wire">
                     <Impact trip={trip} />
                 </Section>
-                <Section zone="edge" h={hs[2]}>
+                <Section zone="edge" h={hs[2]} id="rt-edge">
                     <Stack trip={trip} />
                 </Section>
                 <Section zone="services" h={hs[3]} id="rt-work">

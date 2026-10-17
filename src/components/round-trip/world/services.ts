@@ -4,6 +4,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import { smooth } from '@/components/round-trip/math';
 import { ADD, type Shared, shader } from '@/components/round-trip/world/gl';
+import type { Glow } from '@/components/round-trip/world/glow';
 import { GROUND, LANDS } from '@/components/round-trip/world/land';
 import type { Route } from '@/components/round-trip/world/route';
 
@@ -40,6 +41,8 @@ type Portal = {
     strip: THREE.Mesh;
     disc: THREE.Mesh;
     glow: THREE.MeshBasicMaterial;
+    /** A lighthouse in the project's colour, so the gate is something to aim at from far off. */
+    beacon: THREE.Sprite;
     horizon: { uOn: THREE.IUniform<number>; uFlash: THREE.IUniform<number> };
     colour: THREE.Color;
     near: number;
@@ -87,7 +90,8 @@ export function addRings(
     route: Route,
     colours: string[],
     us: number[],
-    small: boolean
+    small: boolean,
+    glowAt: Glow
 ): Rings {
     const portals: Portal[] = colours.map((c, k) => {
         const center = route.curve.getPointAt(us[k]);
@@ -115,6 +119,9 @@ export function addRings(
         );
         disc.position.y = RING_Y;
         g.add(strip, disc);
+        const beacon = glowAt(6, new THREE.Color(c), 0.85);
+        beacon.position.copy(center);
+        beacon.visible = false;
         return {
             u: us[k],
             center,
@@ -122,6 +129,7 @@ export function addRings(
             strip,
             disc,
             glow,
+            beacon,
             horizon,
             colour: new THREE.Color(c),
             near: 0,
@@ -157,7 +165,11 @@ export function addRings(
             // The run-up: the last 90 m before the ring, building until the ship is through.
             if (k === show && u < p.u) rings.rush = smooth(90, 8, (p.u - u) * route.len);
             const d = Math.abs(u - p.u) * route.len;
-            p.near += (smooth(140, 20, d) - p.near) * (1 - Math.exp(-dt * 4));
+            p.near += (smooth(400, 40, d) - p.near) * (1 - Math.exp(-dt * 4));
+            // The beacon holds its size on screen from far off and fades as the ring takes over.
+            p.beacon.visible = k === show && u < p.u;
+            p.beacon.scale.setScalar(3 + d * 0.03);
+            p.beacon.material.opacity = 0.85 * smooth(30, 120, d);
             p.glow.color.copy(p.colour).multiplyScalar(0.35 + p.near * 0.8);
             p.horizon.uOn.value = smooth(0.15, 0.85, p.near);
             p.horizon.uFlash.value *= Math.exp(-dt * 3.5);

@@ -7,6 +7,9 @@ export type Trip = {
     slug: string;
     role: string;
     statement: string;
+    /** The statement's first clause, the one line the hero shows; `rest` is read, not shown. */
+    lede: string;
+    rest: string;
     meta: string;
     impact: Impact[];
     skills: Array<{ group: string; items: string }>;
@@ -42,6 +45,8 @@ export function tripFrom(site: SiteContent): Trip {
         slug: profile.name.split(' ')[0].toLowerCase(),
         role: profile.role,
         statement: profile.statement,
+        lede: profile.statement.split(': ')[0],
+        rest: profile.statement.split(': ').slice(1).join(': '),
         meta: [profile.status, profile.location].filter(Boolean).join(' · '),
         impact: practice.impact ?? [],
         skills: practice.skills ?? [],

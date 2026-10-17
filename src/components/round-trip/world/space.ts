@@ -94,8 +94,10 @@ export type SpaceIn = {
     /** 0–1 in the finale: just clear of the air, then climbing away until Earth is a globe again. */
     rise: number;
 };
-/** `sun`: where the sun is rising at the end (null otherwise), to light the ship from. */
-export type Space = { update: (f: SpaceIn) => { heat: number; sun: THREE.Vector3 | null } };
+/** `sun`: where the sun is rising at the end (null otherwise), to light the ship from; `dawn` 0–1. */
+export type Space = {
+    update: (f: SpaceIn) => { heat: number; sun: THREE.Vector3 | null; dawn: number };
+};
 
 function addStreaks(scene: THREE.Scene, route: Route, s: Shared, n: number, rand: () => number) {
     const uHeat = { value: 0 };
@@ -206,25 +208,24 @@ export function addSpace(
 
     const uHeat = addStreaks(scene, route, s, Math.round(200 * density), rand);
     // The sun about to clear the rim at the end: a hot white core, a wide gold glare.
-    const sun = [
-        glow(34, new THREE.Color(8, 7, 6)),
-        glow(140, new THREE.Color(3, 2, 1.1), 0.8),
-        glow(520, new THREE.Color(1.1, 0.6, 0.3), 0.45),
-        glow(1, new THREE.Color(1.6, 1.1, 0.7), 0.55),
-    ];
-    // A lens streak across the frame through the sun.
-    sun[3].scale.set(1600, 22, 1);
+    const SUN_SIZE = [34, 140];
+    const sun = [glow(34, new THREE.Color(8, 7, 6)), glow(140, new THREE.Color(3, 2, 1.1), 0.5)];
     const sunAt = new THREE.Vector3();
     const dir = new THREE.Vector3();
     const up = new THREE.Vector3();
     const toEye = new THREE.Vector3();
     const rim = new THREE.Vector3();
     const X = new THREE.Vector3(1, 0, 0);
-    const update = (f: SpaceIn): { heat: number; sun: THREE.Vector3 | null } => {
+    const update = (f: SpaceIn): { heat: number; sun: THREE.Vector3 | null; dawn: number } => {
         globe.visible = f.on;
-        sun.forEach((g) => (g.visible = f.on && f.finale));
+        // The sunrise: the limb goes gold, then the disc breaks the curve, as the ship climbs away.
+        const dawn = f.finale ? smooth(0.04, 0.72, f.rise) : 0;
+        sun.forEach((g, i) => {
+            g.visible = f.on && dawn > 0.01;
+            g.scale.setScalar(SUN_SIZE[i] * (0.15 + 0.85 * dawn));
+        });
         uHeat.value = 0;
-        if (!f.on) return { heat: 0, sun: null };
+        if (!f.on) return { heat: 0, sun: null, dawn: 0 };
         // Higher up the globe sits ahead and below; diving in, it fills the floor of the view.
         const k = f.finale ? lerp(1, 0.1, f.rise) : clamp(f.e);
         uNear.value = smooth(0.5, 1, k);
@@ -247,16 +248,16 @@ export function addSpace(
             .applyAxisAngle(toEye, f.tall ? 0 : -0.32);
         if (f.finale) uSun.value.copy(rim).multiplyScalar(0.9).addScaledVector(toEye, -0.45).normalize();
         else uSun.value.copy(SUN);
-        uRise.value = f.finale ? 2.6 : 1;
-        uDay.value = f.finale ? 1 : 0;
+        uRise.value = 1 + 1.6 * smooth(0, 0.6, dawn);
+        uDay.value = dawn;
         sunAt
             .copy(globe.position)
-            .addScaledVector(rim, R * 1.003)
+            .addScaledVector(rim, R * lerp(0.984, 1.003, dawn))
             .addScaledVector(toEye, -R * 0.02);
         for (const g of sun) g.position.copy(sunAt);
         const heat = f.finale ? 0 : smooth(0.55, 0.95, f.e);
         uHeat.value = heat;
-        return { heat, sun: f.finale ? sunAt : null };
+        return { heat, sun: f.finale ? sunAt : null, dawn };
     };
     return { update };
 }

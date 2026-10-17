@@ -202,7 +202,7 @@ export type Motes = {
 };
 
 const MOTE_VERT = /* glsl */ `
-    uniform vec2 uTile, uY; uniform float uSize, uMode, uFall;
+    uniform vec2 uTile, uY; uniform float uSize, uMode, uFall, uStreak;
     attribute vec4 aSeed; varying float vA, vD;
     void main() {
         float r = aSeed.w, span = uY.y - uY.x;
@@ -218,7 +218,7 @@ const MOTE_VERT = /* glsl */ `
            : uMode < 2.5 ? 0.8 : 0.35 + 0.35 * sin(uTime * 3.0 + r * 60.0);
         vec4 mv = viewMatrix * vec4(p, 1.0);
         vD = -mv.z;
-        gl_PointSize = min(18.0, uSize * uPR * 40.0 / vD);
+        gl_PointSize = min(18.0 + uStreak * 20.0, uSize * uPR * 40.0 * (1.0 + uStreak * 1.5) / vD);
         gl_Position = projectionMatrix * mv;
     }
 `;
@@ -234,14 +234,19 @@ export function addMotes(group: THREE.Object3D, s: Shared, m: Motes, rand: () =>
         shader(
             s,
             MOTE_VERT,
-            /* glsl */ `uniform vec3 uCol; varying float vA, vD;
-            void main() { float a = smoothstep(0.5, 0.0, length(gl_PointCoord - 0.5)); gl_FragColor = vec4(uCol * a * vA * fade(vD), 1.0); }`,
+            /* glsl */ `uniform vec3 uCol; uniform float uStreak; varying float vA, vD;
+            void main() {
+                // Rain is a streak, not a flake: the point is squeezed sideways into a line.
+                vec2 q = (gl_PointCoord - 0.5) * mix(vec2(1.0), vec2(7.0, 1.0), uStreak);
+                float a = smoothstep(0.5, 0.0, length(q)) * mix(1.0, 0.35, uStreak);
+                gl_FragColor = vec4(uCol * a * vA * fade(vD), 1.0); }`,
             {
                 uTile: { value: new THREE.Vector2(m.tile, m.tile) },
                 uY: { value: new THREE.Vector2(...m.y) },
                 uSize: { value: m.size },
                 uMode: { value: m.mode },
                 uFall: { value: m.fall ?? 1.2 },
+                uStreak: { value: (m.fall ?? 0) > 10 ? 1 : 0 },
                 uCol: { value: m.colour },
             },
             ADD
