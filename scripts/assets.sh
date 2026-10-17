@@ -44,3 +44,12 @@ land() { # name, source, hi texture size, lo texture size
 land mountain_range_01 "$T/mountain_range_01.glb" 2048 1024
 land snowy_volcano "$T/snowy_volcano.glb" 2048 1024
 land horseshoe "$T/horseshoe/source/grancanyon.gltf" 512 256
+# "Snowy Mountain - Terrain" and "Death Valley - Terrain" (artfromheath, CC BY 4.0), 4k GLBs.
+land snowy_mountain "$T/snowy_mountain.glb" 2048 1024
+land death_valley "$T/death_valley.glb" 2048 1024
+# "Osaka downtown" (matousekfoto, CC BY 4.0): a scanned night skyline standing beside the city
+# path. 790k triangles in the source, so it is simplified hard; one tile per city block.
+C=$A/sketchfab/city
+base="--compress meshopt --texture-compress webp --flatten true --join true --instance false --palette false"
+npx -y @gltf-transform/cli@4 optimize "$C/osaka_downtown.glb" public/models/osaka-hi.glb $base --texture-size 2048 --simplify-ratio 0.35
+npx -y @gltf-transform/cli@4 optimize "$C/osaka_downtown.glb" public/models/osaka-lo.glb $base --texture-size 1024 --simplify-ratio 0.15

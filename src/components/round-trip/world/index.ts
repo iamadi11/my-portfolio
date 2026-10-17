@@ -80,7 +80,8 @@ type Air = {
 };
 const AIR: Record<Place, Air> = {
     space: { fog: 0.03, horizon: [0, 0, 0], space: true },
-    city: { fog: FOG, horizon: [0.05, 0.042, 0.05], stars: 0.35 },
+    // Thinner than the default so the downtown reads across the avenue.
+    city: { fog: FOG * 0.74, horizon: [0.05, 0.042, 0.05], stars: 0.35 },
     grass: { fog: 0.006, horizon: [0.025, 0.04, 0.055] },
     desert: { fog: 0.0055, horizon: [0.035, 0.04, 0.06] },
     canyon: { fog: 0.006, horizon: [0.045, 0.035, 0.04] },

@@ -7,10 +7,8 @@ import { GROUND, type LandKind, LANDS } from '@/components/round-trip/world/land
 /**
  * One real landmark on the horizon of some landscapes, standing beyond that scene's exit portal so
  * it grows as the ship closes in: "Mountain Range 01" by solararchitect, "Snowy Volcano" by
- * Pukar Shiwakoti and "Horseshoe bend near Grand Canyon" by Ignazio Pillitteri (all Sketchfab,
- * CC BY 4.0).
- * The alpine peaks borrow the mountain range, sunk deeper and further off, until a snowy range
- * of their own is added (`scripts/assets.sh`).
+ * Pukar Shiwakoti, "Horseshoe bend near Grand Canyon" by Ignazio Pillitteri, "Snowy Mountain -
+ * Terrain" and "Death Valley - Terrain" by artfromheath (all Sketchfab, CC BY 4.0).
  */
 type Landmark = {
     id: string;
@@ -25,8 +23,9 @@ type Landmark = {
 /** Width in metres; `ahead` past the exit portal; `sink` below the ground; `side` off the path. */
 const LANDMARKS: Partial<Record<LandKind, Landmark>> = {
     grass: { id: 'mountain_range_01', width: 1500, ahead: 1050, sink: 40, side: -80 },
+    desert: { id: 'death_valley', width: 1700, ahead: 1250, sink: 70, side: 110, tint: [0.5, 0.46, 0.44] },
     canyon: { id: 'horseshoe', width: 1300, ahead: 1350, sink: 110, side: 170, tint: [0.42, 0.36, 0.36] },
-    alpine: { id: 'mountain_range_01', width: 1900, ahead: 1150, sink: 20, side: 140 },
+    alpine: { id: 'snowy_mountain', width: 2100, ahead: 1150, sink: 30, side: 120 },
     volcano: { id: 'snowy_volcano', width: 1100, ahead: 900, sink: 30, side: 160 },
 };
 

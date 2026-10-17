@@ -55,9 +55,12 @@ The ship's search beam sweeps the ground on Earth. Sound (drone, wind that follo
 | `env/earth-*.jpg` | Earth model textures supplied by the owner (`59-earth.zip`) | As supplied |
 | `env/stars-*.jpg` | NASA/Goddard SVS Deep Star Maps 2020 | NASA/GSFC SVS; ESA/Gaia/DPAC |
 | `env/night.hdr` | Modern Buildings Night, Poly Haven | CC0 |
-| `models/terrain/mountain_range_01-*.glb` | Mountain Range 01, solararchitect, Sketchfab | CC BY 4.0; on the grassland and alpine horizons |
+| `models/terrain/mountain_range_01-*.glb` | Mountain Range 01, solararchitect, Sketchfab | CC BY 4.0; on the grassland horizon |
 | `models/terrain/snowy_volcano-*.glb` | Snowy Volcano, Pukar Shiwakoti, Sketchfab | CC BY 4.0; on the volcanic horizon |
 | `models/terrain/horseshoe-*.glb` | Horseshoe bend near Grand Canyon, Ignazio Pillitteri, Sketchfab | CC BY 4.0; on the canyon horizon |
+| `models/terrain/snowy_mountain-*.glb` | Snowy Mountain - Terrain, artfromheath, Sketchfab | CC BY 4.0; on the alpine horizon |
+| `models/terrain/death_valley-*.glb` | Death Valley - Terrain, artfromheath, Sketchfab | CC BY 4.0; on the desert horizon |
+| `models/osaka-*.glb` | Osaka downtown, matousekfoto, Sketchfab (night photogrammetry) | CC BY 4.0; the downtown left of the city path |
 
 ## Make it yours
 
@@ -70,7 +73,7 @@ The ship's search beam sweeps the ground on Earth. Sound (drone, wind that follo
 - First-load JS 109 kB (gate: ≤ 120 kB). The world is fetched on idle and built on the first scroll.
 - Lighthouse on `/`: performance 98 mobile / 100 desktop; accessibility, best practices and SEO 100; CLS 0.001.
 - 60 fps headless in every place at 1280×800 and 390×844 (GPU on; phones get lighter grass, motes, terrain and textures).
-- Downloads after Start: ship 1.3 MB (phones 0.6 MB), star map 2.8 MB (0.6 MB), Earth 1.6 MB (0.45 MB), night HDRI 1.6 MB.
+- Downloads after Start: ship 1.3 MB (phones 0.6 MB), star map 2.8 MB (0.6 MB), Earth 1.6 MB (0.45 MB), night HDRI 1.6 MB. Per place, as it comes on screen: downtown scan 5.4 MB (4.8 MB), landmarks 1.9–3.6 MB each (0.7–3.4 MB).
 
 ## Accessibility
 

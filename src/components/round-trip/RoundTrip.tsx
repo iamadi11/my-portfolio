@@ -255,8 +255,10 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                 <summary>Credits</summary>
                 <p className="rt-note">
                     Ship: Intergalactic Spaceship by Dennis Haupt (3DHaupt). Portals: Sci-Fi Portal Gateway by
-                    Igrium. Landmarks: Mountain Range 01 by solararchitect, Snowy Volcano by Pukar Shiwakoti,
-                    Horseshoe bend by Ignazio Pillitteri (all Sketchfab, CC BY 4.0). Earth and stars: NASA.
+                    Igrium. Downtown: Osaka downtown by matousekfoto. Landmarks: Mountain Range 01 by
+                    solararchitect, Snowy Volcano by Pukar Shiwakoti, Horseshoe bend by Ignazio Pillitteri,
+                    Snowy Mountain and Death Valley by artfromheath (all Sketchfab, CC BY 4.0). Earth and
+                    stars: NASA.
                 </p>
             </details>
         </>

@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
@@ -12,6 +14,8 @@ const COLS = 27;
 const ROWS = 24;
 const TILE = new THREE.Vector2(COLS * GRID, ROWS * GRID);
 const CLEAR = 20;
+/** The scanned downtown stands left of the path, from this x outward; no built towers there. */
+const DOWNTOWN_X = -55;
 
 /** The wrapping vertex shader, plus where each tower's roof is (for its lit crown). */
 const TOWER_VERT = WRAP_VERT.replace('varying float vR, vD;', 'varying float vR, vD, vTop;').replace(
@@ -142,16 +146,70 @@ function tower(x: number, z: number, rand: () => number): Tower {
     return { x, z, h, w, d, kind, spire };
 }
 
-/** Lays out one tile of blocks. */
+/** Lays out one tile of blocks, leaving the strip where the scanned downtown stands. */
 function planTowers(rand: () => number): Tower[] {
     const towers: Tower[] = [];
     for (let k = 0; k < COLS; k++)
         for (let j = 0; j < ROWS; j++) {
             const x = (k - (COLS - 1) / 2) * GRID + (rand() - 0.5) * 3;
             const z = -j * GRID + (rand() - 0.5) * 3;
-            towers.push(tower(x, z, rand));
+            const t = tower(x, z, rand);
+            if (x > DOWNTOWN_X) towers.push(t);
         }
     return towers;
+}
+
+/**
+ * The downtown: "Osaka downtown" by matousekfoto (Sketchfab, CC BY 4.0), a night photogrammetry
+ * scan of lit towers, standing on the left of the path. Its own night is baked into the texture,
+ * so it is drawn unlit. Three copies ride along the path so it never ends.
+ */
+function addDowntown(scene: THREE.Object3D, small: boolean): { update: (eye: THREE.Vector3) => void } {
+    const copies: THREE.Group[] = [0, 1, 2].map(() => {
+        const g = new THREE.Group();
+        scene.add(g);
+        return g;
+    });
+    let period = 500;
+    let x = DOWNTOWN_X - 220;
+    new GLTFLoader()
+        .setMeshoptDecoder(MeshoptDecoder)
+        .loadAsync(`/models/osaka-${small ? 'lo' : 'hi'}.glb`)
+        .then((gltf) => {
+            const model = gltf.scene;
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+            // Its tallest tower reaches 150 m; the block then runs ~470 m along the path.
+            const k = 150 / size.y;
+            period = size.z * k * 0.97;
+            x = DOWNTOWN_X - (size.x * k) / 2;
+            const center = box.getCenter(new THREE.Vector3());
+            model.traverse((o) => {
+                const m = o as THREE.Mesh;
+                if (!m.isMesh) return;
+                const old = m.material as THREE.MeshStandardMaterial;
+                // Lifted a little: the scan's own exposure is darker than the built towers.
+                m.material = new THREE.MeshBasicMaterial({
+                    map: old.map,
+                    color: new THREE.Color(1.35, 1.35, 1.45),
+                    fog: true,
+                });
+                m.frustumCulled = false;
+            });
+            copies.forEach((g) => {
+                const c = model.clone();
+                c.scale.setScalar(k);
+                c.position.set(-center.x * k, -box.min.y * k, -center.z * k);
+                g.add(c);
+            });
+        })
+        .catch(() => undefined);
+    return {
+        update: (eye) => {
+            const base = Math.round(eye.z / period) * period;
+            copies.forEach((g, i) => g.position.set(x, FLOOR - 1.5, base + (i - 1) * period));
+        },
+    };
 }
 
 /** Slim dark masts on the tallest setback and octagonal towers. */
@@ -378,6 +436,7 @@ export function addCity(
     env: Env
 ): City {
     const towers = addTowers(scene, s, rand, env);
+    const downtown = addDowntown(scene, density < 1);
     addBeacons(scene, towers, s, rand);
     addTraffic(scene, s, density, rand);
     addMotes(
@@ -394,5 +453,11 @@ export function addCity(
         },
         rand
     );
-    return addStreets(scene, s, density >= 1);
+    const streets = addStreets(scene, s, density >= 1);
+    return {
+        update: (eye, on) => {
+            streets.update(eye, on);
+            downtown.update(eye);
+        },
+    };
 }
