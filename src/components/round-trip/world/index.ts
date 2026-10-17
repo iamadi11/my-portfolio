@@ -109,8 +109,9 @@ const PEAK = { portal: 0.36, air: 0.42 };
 function renderer(canvas: HTMLCanvasElement, small: boolean): THREE.WebGLRenderer {
     const r = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
     r.setPixelRatio(Math.min(devicePixelRatio, small ? 1.5 : 1.75));
-    r.toneMapping = THREE.ACESFilmicToneMapping;
-    r.toneMappingExposure = 1.0;
+    // AgX: a filmic roll-off that keeps saturated lights from clipping to neon.
+    r.toneMapping = THREE.AgXToneMapping;
+    r.toneMappingExposure = 1.08;
     return r;
 }
 
@@ -497,7 +498,7 @@ export function createWorld(o: WorldOptions): World {
         t += dt;
         resize();
         const prev = u;
-        u += (f.u - u) * (o.reduce ? 1 : 1 - Math.exp(-dt * 5));
+        u += (f.u - u) * (o.reduce ? 1 : 1 - Math.exp(-dt * 3.6));
         speed +=
             (Math.min(1, (Math.abs(u - prev) * route.len) / Math.max(dt, 1e-3) / 160) - speed) *
             (1 - Math.exp(-dt * 4));

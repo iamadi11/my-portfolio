@@ -1,16 +1,17 @@
 import React from 'react';
 
 import type { Viewport } from 'next';
-import { Funnel_Display } from 'next/font/google';
+import { Instrument_Serif } from 'next/font/google';
 
 import RoundTrip from '@/components/round-trip/RoundTrip';
 import { tripFrom } from '@/components/round-trip/trip';
 import { SITE } from '@/content/site';
 
-/** Display face for the name and headings; body and mono come from the root layout (Geist). */
-const display = Funnel_Display({
+/** Display face for the name and headings (an editorial serif, one weight); body and mono come from the root layout (Geist). */
+const display = Instrument_Serif({
     subsets: ['latin'],
-    weight: ['600', '700', '800'],
+    weight: ['400'],
+    style: ['normal', 'italic'],
     variable: '--font-rt-display',
     display: 'swap',
 });

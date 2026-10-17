@@ -55,7 +55,7 @@ const TOWER_FRAG = /* glsl */ `
         vec2 bp = (g - 0.5) + vec2(dot(V, T), V.y) / into * (1.3 / cs);
         float backWall = 1.0 - smoothstep(0.36, 0.5, max(abs(bp.x), abs(bp.y)));
         float ceilingLight = smoothstep(-0.3, 0.6, bp.y);
-        vec3 warm = mix(vec3(1.0, 0.6, 0.3), vec3(1.0, 0.85, 0.64), fract(h * 7.3));
+        vec3 warm = mix(vec3(1.0, 0.72, 0.48), vec3(1.0, 0.88, 0.7), fract(h * 7.3));
         vec3 wc = mix(warm, vec3(0.6, 0.8, 1.0), step(0.86, fract(h * 13.1)));
         // Offices run cool white; a third of the towers lean that way throughout.
         wc = mix(wc, vec3(0.72, 0.84, 1.0), step(0.68, fract(vR * 2.9)) * 0.7);
@@ -83,7 +83,7 @@ const TOWER_FRAG = /* glsl */ `
         col = mix(col, glass, win * (1.0 - lit));
         col = mix(col, room * 1.15 + glass * 0.2, lit);
         float shop = side * step(0.35, vR) * smoothstep(-60.0, -59.0, vW.y) * (1.0 - smoothstep(-56.0, -55.0, vW.y));
-        col += shop * mix(vec3(1.0, 0.62, 0.32), vec3(0.6, 0.85, 1.0), step(0.8, vR)) * 1.1 * (1.0 - uDrop * 0.75);
+        col += shop * mix(vec3(1.0, 0.7, 0.45), vec3(0.6, 0.85, 1.0), step(0.8, vR)) * 0.8 * (1.0 - uDrop * 0.75);
         // Roofs: a parapet rim and a plant room in the middle, not a flat lid.
         float hut = step(abs(vL.x), 0.2) * step(abs(vL.z), 0.2);
         float rim = step(0.44, max(abs(vL.x), abs(vL.z)));
@@ -316,7 +316,7 @@ const STREET_FRAG = /* glsl */ `
         vec2 la = vec2(q.x, abs(fract(vW.z / 9.0) - 0.5) * 9.0);
         vec2 lb = vec2(q.y, abs(fract(vW.x / 9.0) - 0.5) * 9.0);
         float pools = exp(-dot(la, la) / 14.0) + exp(-dot(lb, lb) / 14.0);
-        col += vec3(1.0, 0.72, 0.38) * pools * 0.2 * (1.0 - puddle * 0.4);
+        col += vec3(1.0, 0.76, 0.48) * pools * 0.14 * (1.0 - puddle * 0.4);
         col += refl * uMirror * mix(0.3, 1.0, puddle) * fres;
         vec3 lp = vec3(uPacket.x, vW.y, uPacket.z);
         col += vec3(1.0, 0.75, 0.5) * exp(-dot(vW - lp, vW - lp) / 900.0) * 0.1;

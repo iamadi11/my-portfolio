@@ -192,7 +192,7 @@ function Career({ trip }: { trip: Trip }): React.JSX.Element {
         <>
             <Label n={4} zone="Data" />
             <h2 className="rt-h2 rt-h2-sm">
-                <Line i={0}>SELECT * FROM career</Line>
+                <Line i={0}>Career</Line>
             </h2>
             <p className="rt-chips rt-fade" aria-hidden="true">
                 {trip.records.map((r) => (
@@ -356,10 +356,6 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                 </Section>
             </main>
 
-            <div className="rt-slate" data-slate aria-hidden="true">
-                <small />
-                <b />
-            </div>
             {trip.projects.map((p, k) => (
                 <div className="rt-tag" data-ring-tag key={p.id} aria-hidden="true">
                     {p.title} <small>· svc-{nn(k)}</small>

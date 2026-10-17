@@ -16,7 +16,7 @@ html:has(.rt) body {
     --soft: #c9d0dc;
     --line: rgba(238, 242, 248, 0.16);
     --accent: #8fd3ff;
-    --display: var(--font-rt-display), 'Helvetica Neue', Arial, sans-serif;
+    --display: var(--font-rt-display), 'Times New Roman', Georgia, serif;
     --body: var(--font-geist-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
     --mono: var(--font-geist-mono), ui-monospace, Menlo, Consolas, monospace;
     --g: clamp(16px, 4vw, 56px);
@@ -156,8 +156,8 @@ html:has(.rt) body {
     gap: 10px;
     margin: 0 0 20px;
     color: var(--muted);
-    font: 500 12px/1 var(--mono);
-    letter-spacing: 0.12em;
+    font: 500 11px/1 var(--mono);
+    letter-spacing: 0.18em;
     text-transform: uppercase;
 }
 .rt-label i {
@@ -207,14 +207,14 @@ html:has(.rt) body {
 .rt-kicker {
     margin: 0 0 18px;
     color: var(--soft);
-    font: 500 12.5px var(--mono);
-    letter-spacing: 0.14em;
+    font: 500 11.5px var(--mono);
+    letter-spacing: 0.2em;
     text-transform: uppercase;
 }
 .rt-name {
-    margin: 0 0 24px;
-    font: 800 clamp(64px, 12.5vw, 216px) / 0.86 var(--display);
-    letter-spacing: -0.05em;
+    margin: 0 0 22px;
+    font: 400 clamp(64px, 11.5vw, 200px) / 0.9 var(--display);
+    letter-spacing: -0.025em;
 }
 .rt-lede {
     max-width: 40ch;
@@ -316,8 +316,8 @@ html:has(.rt) body {
 .rt-impact dd {
     margin: 0;
     color: var(--accent);
-    font: 700 clamp(28px, 3vw, 46px) / 1 var(--display);
-    letter-spacing: -0.03em;
+    font: 400 clamp(30px, 3.2vw, 50px) / 1 var(--display);
+    letter-spacing: -0.015em;
     font-variant-numeric: tabular-nums;
 }
 .rt-impact dt {
@@ -337,8 +337,8 @@ html:has(.rt) body {
 /* edge */
 .rt-h2 {
     margin: 0 0 22px;
-    font: 800 clamp(40px, 5.2vw, 84px) / 0.9 var(--display);
-    letter-spacing: -0.045em;
+    font: 400 clamp(40px, 5vw, 76px) / 0.95 var(--display);
+    letter-spacing: -0.02em;
 }
 .rt-layers,
 .rt-links,
@@ -384,8 +384,8 @@ html:has(.rt) body {
     }
 }
 .rt-layers b {
-    font: 600 clamp(19px, 1.8vw, 26px) / 1.05 var(--display);
-    letter-spacing: -0.02em;
+    font: 400 clamp(21px, 1.9vw, 28px) / 1.05 var(--display);
+    letter-spacing: 0;
 }
 .rt-layers li.on b {
     color: var(--accent);
@@ -416,8 +416,8 @@ html:has(.rt) body {
 }
 .rt-h3 {
     margin: 12px 0 16px;
-    font: 800 clamp(44px, 6vw, 96px) / 0.88 var(--display);
-    letter-spacing: -0.045em;
+    font: 400 clamp(44px, 5.6vw, 88px) / 0.92 var(--display);
+    letter-spacing: -0.02em;
 }
 .rt-h3-sm {
     margin: 0 0 8px;
@@ -431,8 +431,8 @@ html:has(.rt) body {
 .rt-meta {
     margin: 0;
     color: var(--muted);
-    font: 500 12px var(--mono);
-    letter-spacing: 0.1em;
+    font: 500 11.5px var(--mono);
+    letter-spacing: 0.14em;
     text-transform: uppercase;
 }
 .rt-links,
@@ -574,8 +574,8 @@ html:has(.rt) body {
 /* response */
 .rt-ok {
     margin: 0;
-    font: 800 clamp(84px, 15vw, 236px) / 0.82 var(--display);
-    letter-spacing: -0.065em;
+    font: 400 clamp(84px, 14vw, 220px) / 0.86 var(--display);
+    letter-spacing: -0.03em;
 }
 .rt-done {
     margin: 18px 0 26px;
@@ -588,8 +588,8 @@ html:has(.rt) body {
     display: inline-block;
     padding-bottom: 6px;
     border-bottom: 1px solid var(--line);
-    font: 600 clamp(24px, 3.2vw, 48px) / 1.1 var(--display);
-    letter-spacing: -0.03em;
+    font: 400 clamp(24px, 3vw, 44px) / 1.1 var(--display);
+    letter-spacing: -0.01em;
     text-decoration: none;
     overflow-wrap: anywhere;
 }
@@ -636,8 +636,8 @@ html:has(.rt) body {
     white-space: nowrap;
     margin-right: auto;
     color: var(--ink);
-    font: 700 16px var(--display);
-    letter-spacing: -0.01em;
+    font: 400 19px var(--display);
+    letter-spacing: 0;
     text-decoration: none;
     text-transform: none;
 }
@@ -853,53 +853,7 @@ html:has(.rt) body {
     }
 }
 
-/* title card: one per place, as the jump lands */
-.rt-slate {
-    position: fixed;
-    z-index: 5;
-    left: 50%;
-    top: 17vh;
-    transform: translate(-50%, 10px);
-    text-align: center;
-    pointer-events: none;
-    opacity: 0;
-}
-.rt-slate small {
-    display: block;
-    margin-bottom: 12px;
-    color: var(--muted);
-    font: 500 12px/1 var(--mono);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-}
-.rt-slate b {
-    display: block;
-    color: var(--ink);
-    font: 600 clamp(26px, 4vw, 44px) / 1.05 var(--display);
-    letter-spacing: -0.02em;
-    text-shadow: 0 2px 30px rgb(0 0 0 / 0.6);
-}
-.rt-slate.on {
-    animation: rt-slate 3s var(--ease) forwards;
-}
-@keyframes rt-slate {
-    0% {
-        opacity: 0;
-        transform: translate(-50%, 10px);
-    }
-    14% {
-        opacity: 1;
-        transform: translate(-50%, 0);
-    }
-    78% {
-        opacity: 1;
-        transform: translate(-50%, 0);
-    }
-    100% {
-        opacity: 0;
-        transform: translate(-50%, -6px);
-    }
-}
+
 @media (max-width: 760px) {
     /* phones: no "or scroll" cue; the page itself is the cue */
     .rt-cue span {
@@ -908,23 +862,5 @@ html:has(.rt) body {
     /* phones: world labels keep the name only; the dates are in the panel */
     .rt-tag small {
         display: none;
-    }
-    /* phones: a single small line just under the HUD, clear of the panel's own label */
-    .rt-slate {
-        top: 60px;
-        width: calc(100% - 32px);
-    }
-    .rt-slate small {
-        margin-bottom: 4px;
-        font-size: 10.5px;
-    }
-    .rt-slate b {
-        font-size: 17px;
-    }
-}
-@media (prefers-reduced-motion: reduce) {
-    .rt-slate,
-    .rt-slate.on {
-        transform: translate(-50%, 0);
     }
 }

@@ -41,7 +41,7 @@ const FINISH = {
             col *= 1.0 - smoothstep(0.42, 1.05, r) * 0.6;
             // Film grain: in the mid-tones, in screen space, never lifting the blacks.
             float lum = dot(col, vec3(0.3, 0.59, 0.11));
-            col += (h(gl_FragCoord.xy + fract(uTime) * 91.0) - 0.5) * 0.07 * sqrt(max(lum, 0.0)) * (1.0 - min(lum, 1.0));
+            col += (h(gl_FragCoord.xy + fract(uTime) * 91.0) - 0.5) * 0.05 * sqrt(max(lum, 0.0)) * (1.0 - min(lum, 1.0));
             col += (h(gl_FragCoord.xy) - 0.5) / 255.0;
             gl_FragColor = vec4(col, 1.0);
         }`,

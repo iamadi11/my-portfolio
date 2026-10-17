@@ -25,22 +25,7 @@ type Els = {
     chips: HTMLElement[];
     ringTags: HTMLElement[];
     recordTags: HTMLElement[];
-    slate: HTMLElement | null;
 };
-
-/** Where each stop is, for the title card that opens it (the hero and space need none). */
-const PLACES: Record<string, [hop: number, name: string]> = {
-    city: [2, 'Night city'],
-    grass: [3, 'Grassland'],
-    desert: [3, 'Dunes'],
-    canyon: [3, 'Canyon'],
-    alpine: [3, 'Peaks'],
-    volcano: [3, 'Lava fields'],
-    ocean: [4, 'Open sea'],
-    ice: [4, 'Pack ice'],
-    orbit: [5, 'Orbit, sunrise'],
-};
-const HOPS = ['Browser', 'Wire', 'Edge', 'Services', 'Data', '200 OK'];
 
 const ZONES = ['#ffffff', '#8fd3ff', '#ffb35c', '#ff7ad9', '#7af0ff', '#ffffff'];
 const SCROLL_KEYS = new Set([' ', 'ArrowDown', 'PageDown', 'End']);
@@ -59,7 +44,6 @@ function find(root: HTMLElement): Els {
         chips: all('[data-chip]'),
         ringTags: all('[data-ring-tag]'),
         recordTags: all('[data-record-tag]'),
-        slate: root.querySelector('[data-slate]'),
     };
 }
 
@@ -128,8 +112,6 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     let lastPick = -1;
     let forcedRecord: number | null = null;
     let lastRecord = -1;
-    let lastPlace: string | null = null;
-    let slateTimer = 0;
     let raf = 0;
     let dead = false;
 
@@ -203,33 +185,9 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         if (tag) tag.textContent = `· ${text}`;
     };
 
-    /** A title card as each new place comes on screen: hop, place, and the project it holds. */
-    const slate = (stop: string): void => {
-        if (stop === lastPlace) return;
-        const first = lastPlace === null;
-        lastPlace = stop;
-        const [kind, zone] = stop.split('#');
-        const at = PLACES[kind];
-        const el = els.slate;
-        if (first || !at || !el) return;
-        // Hop and place only: the panel below already carries the project's name.
-        const [hop, name] = at;
-        void zone;
-        el.children[0].textContent = `${String(hop).padStart(2, '0')} · ${HOPS[hop]}`;
-        el.children[1].textContent = name;
-        el.classList.remove('on');
-        // After the cut's blur has settled, not under it.
-        clearTimeout(slateTimer);
-        slateTimer = window.setTimeout(() => {
-            void el.offsetWidth;
-            el.classList.add('on');
-        }, 500);
-    };
-
     const draw = (s: ReturnType<typeof scrollState>, map: number, resp: number): void => {
         if (!world) return;
         const out: FrameOut = world.frame({ u: s.pathU(world.seg), map, resp, pointer });
-        slate(out.place);
         const top = small
             ? (els.secs[s.sec]?.querySelector('.rt-panel')?.getBoundingClientRect().top ?? innerHeight)
             : innerHeight;
