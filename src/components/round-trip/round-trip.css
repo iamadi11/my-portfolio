@@ -872,6 +872,10 @@ html:has(.rt) body {
     }
 }
 @media (max-width: 760px) {
+    /* phones: world labels keep the name only; the dates are in the panel */
+    .rt-tag small {
+        display: none;
+    }
     /* phones: a single small line just under the HUD, clear of the panel's own label */
     .rt-slate {
         top: 60px;
