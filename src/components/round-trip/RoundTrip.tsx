@@ -148,9 +148,9 @@ function Work({ trip }: { trip: Trip }): React.JSX.Element {
     );
 }
 
-/** Two highlights on screen; the rest one tap away, so the panel stays light. */
-function Highlights({ items }: { items: string[] }): React.JSX.Element {
-    const [shown, more] = [items.slice(0, 2), items.slice(2)];
+/** One highlight on screen; the rest, and the stack, one tap away, so the panel stays light. */
+function Highlights({ items, stack }: { items: string[]; stack?: string }): React.JSX.Element {
+    const [shown, more] = [items.slice(0, 1), items.slice(1)];
     return (
         <>
             <ul className="rt-bullets">
@@ -158,14 +158,15 @@ function Highlights({ items }: { items: string[] }): React.JSX.Element {
                     <li key={h}>{h}</li>
                 ))}
             </ul>
-            {more.length > 0 && (
+            {(more.length > 0 || stack) && (
                 <details className="rt-more">
-                    <summary>{more.length} more</summary>
+                    <summary>{more.length > 0 ? `${more.length} more` : 'Stack'}</summary>
                     <ul className="rt-bullets">
                         {more.map((h) => (
                             <li key={h}>{h}</li>
                         ))}
                     </ul>
+                    {stack && <p className="rt-tech">{stack.split(', ').join(' · ')}</p>}
                 </details>
             )}
         </>
@@ -193,8 +194,11 @@ function Career({ trip }: { trip: Trip }): React.JSX.Element {
                         <p className="rt-meta">
                             {[r.role, r.period, r.location].filter(Boolean).join(' · ')}
                         </p>
-                        {r.highlights && <Highlights items={r.highlights} />}
-                        {r.stack && <p className="rt-tech">{r.stack.split(', ').join(' · ')}</p>}
+                        {r.highlights ? (
+                            <Highlights items={r.highlights} stack={r.stack} />
+                        ) : (
+                            r.stack && <p className="rt-tech">{r.stack.split(', ').join(' · ')}</p>
+                        )}
                     </article>
                 ))}
             </div>
@@ -233,11 +237,14 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                     </a>
                 ))}
             </div>
-            <p className="rt-note rt-fade" style={stagger(3)}>
-                Ship: Intergalactic Spaceship by Dennis Haupt (3DHaupt). Portals: Sci-Fi Portal Gateway by
-                Igrium. Landmarks: Mountain Range 01 by solararchitect, Snowy Volcano by Pukar Shiwakoti,
-                Horseshoe bend by Ignazio Pillitteri (all Sketchfab, CC BY 4.0). Earth and stars: NASA.
-            </p>
+            <details className="rt-more rt-fade" style={stagger(3)}>
+                <summary>Credits</summary>
+                <p className="rt-note">
+                    Ship: Intergalactic Spaceship by Dennis Haupt (3DHaupt). Portals: Sci-Fi Portal Gateway by
+                    Igrium. Landmarks: Mountain Range 01 by solararchitect, Snowy Volcano by Pukar Shiwakoti,
+                    Horseshoe bend by Ignazio Pillitteri (all Sketchfab, CC BY 4.0). Earth and stars: NASA.
+                </p>
+            </details>
         </>
     );
 }

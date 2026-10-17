@@ -353,6 +353,28 @@ html:has(.rt) body {
 .rt-js .in .rt-layers li.on {
     opacity: 1;
 }
+/* text-light: only the group the ship is passing shows its items; the others keep their names
+   (the items stay in the DOM for readers and search) */
+.rt-js .rt-layers li {
+    min-height: 56px;
+}
+.rt-js .rt-layers li:not(.on) span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+.rt-js .rt-layers li.on span {
+    animation: rt-fade-in 0.5s var(--ease);
+}
+@keyframes rt-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
 .rt-layers b {
     font: 600 clamp(19px, 1.8vw, 26px) / 1.05 var(--display);
     letter-spacing: -0.02em;
