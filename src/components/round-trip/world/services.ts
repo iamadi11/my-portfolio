@@ -24,8 +24,9 @@ const HORIZON_FRAG = /* glsl */ `
         float depth = mix(0.15, 1.0, smoothstep(0.05, 0.75, r));
         float rim = pow(smoothstep(0.8, 0.995, r), 3.0);
         float inside = 1.0 - smoothstep(0.985, 1.0, r);
-        vec3 col = uCol * (0.015 + (arms * 0.32 + streaks * 0.55) * depth + rim * 1.2);
-        col += mix(uCol, vec3(1.0), 0.5) * streaks * arms * depth * 0.18;
+        // Kept dim inside: up close the disc fills the frame, and it must not wash the scene out.
+        vec3 col = uCol * (0.012 + (arms * 0.22 + streaks * 0.38) * depth + rim * 1.1);
+        col += mix(uCol, vec3(1.0), 0.5) * streaks * arms * depth * 0.1;
         col = col * uOn + mix(uCol, vec3(1.0), 0.5) * uFlash * (1.0 - r * 0.6);
         gl_FragColor = vec4(col * inside * fade(vD), 1.0);
     }

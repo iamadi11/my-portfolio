@@ -54,9 +54,12 @@ export function createRig(
         route.curve.getPointAt(back, camera.position);
         camera.position.addScaledVector(route.frame(back).n1, px * 1.4);
         camera.position.y += 1.8 - py * 0.9 + (u < route.seg[1] + 0.002 ? Math.sin(t * 0.6) * 0.3 : 0);
-        // Lifted (coming down onto the city), it looks further ahead, down at the path.
+        // Lifted (coming down onto the city, or climbing off the ice), it looks further ahead, down
+        // at the path. Past the end of the route the look point carries on along the last tangent.
         camera.position.y += shot.lift;
-        route.curve.getPointAt(clamp(u + (28 + shot.lift * 1.6) / route.len), look);
+        const ahead = (28 + shot.lift * 1.6) / route.len;
+        route.curve.getPointAt(clamp(u + ahead), look);
+        if (u + ahead > 1) look.addScaledVector(route.curve.getTangentAt(1, t1), (u + ahead - 1) * route.len);
         // Tall screens: the text sits low, so ride higher and look down to fill the top with land.
         if (camera.aspect < 1 && ground) {
             camera.position.y += 5;

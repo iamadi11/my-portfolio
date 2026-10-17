@@ -99,14 +99,14 @@ function scrollState(els: Els): {
     return { y, vh, sec, q, pathU };
 }
 
-/** Labels follow rings and records on screen, but never sit on the text panel. */
-function place(el: HTMLElement, m: Mark, show: boolean, small: boolean): void {
+/** Labels follow rings and records on screen, but never sit on the text panel (`top` is its edge). */
+function place(el: HTMLElement, m: Mark, show: boolean, small: boolean, top: number): void {
     const w = innerWidth;
     const h = innerHeight;
     const clear =
         m !== null &&
         (small
-            ? m.y > 70 && m.y < h * 0.42 && m.x > 0 && m.x < w - 170
+            ? m.y > 70 && m.y < Math.min(h * 0.42, top - 28) && m.x > 0 && m.x < w - 170
             : m.x > w * 0.52 && m.x < w - 220 && m.y > 60 && m.y < h - 60);
     el.classList.toggle('on', show && clear);
     if (show && clear && m) el.style.transform = `translate(${m.x + 14}px, ${m.y - 8}px)`;
@@ -213,8 +213,11 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         if (!world) return;
         const out: FrameOut = world.frame({ u: s.pathU(world.seg), map, resp, pointer });
         slate(out.place);
-        els.ringTags.forEach((el, k) => place(el, out.rings[k], s.sec === 3 && map < 0.1, small));
-        els.recordTags.forEach((el, k) => place(el, out.records[k], s.sec === 4 && map < 0.1, small));
+        const top = small
+            ? (els.secs[s.sec]?.querySelector('.rt-panel')?.getBoundingClientRect().top ?? innerHeight)
+            : innerHeight;
+        els.ringTags.forEach((el, k) => place(el, out.rings[k], s.sec === 3 && map < 0.1, small, top));
+        els.recordTags.forEach((el, k) => place(el, out.records[k], s.sec === 4 && map < 0.1, small, top));
         const sound = o.sound();
         if (out.passed !== null) {
             sound?.ping(out.passed);

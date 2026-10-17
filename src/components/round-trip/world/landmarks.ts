@@ -12,12 +12,20 @@ import { GROUND, type LandKind, LANDS } from '@/components/round-trip/world/land
  * The alpine peaks borrow the mountain range, sunk deeper and further off, until a snowy range
  * of their own is added (`scripts/assets.sh`).
  */
-type Landmark = { id: string; width: number; ahead: number; sink: number; side: number };
+type Landmark = {
+    id: string;
+    width: number;
+    ahead: number;
+    sink: number;
+    side: number;
+    /** Night grade of the scan's colours; blue-grey moonlight unless the rock should stay warm. */
+    tint?: [number, number, number];
+};
 
 /** Width in metres; `ahead` past the exit portal; `sink` below the ground; `side` off the path. */
 const LANDMARKS: Partial<Record<LandKind, Landmark>> = {
     grass: { id: 'mountain_range_01', width: 1500, ahead: 1050, sink: 40, side: -80 },
-    canyon: { id: 'horseshoe', width: 1700, ahead: 850, sink: 90, side: 120 },
+    canyon: { id: 'horseshoe', width: 1300, ahead: 1350, sink: 110, side: 170, tint: [0.42, 0.36, 0.36] },
     alpine: { id: 'mountain_range_01', width: 1900, ahead: 1150, sink: 20, side: 140 },
     volcano: { id: 'snowy_volcano', width: 1100, ahead: 900, sink: 30, side: 160 },
 };
@@ -25,8 +33,8 @@ const LANDMARKS: Partial<Record<LandKind, Landmark>> = {
 export type Landmarks = { show: (zone: number) => void };
 
 /** Night grade and lighter fog, so the far silhouette still reads against the sky. */
-function nightFar(mat: THREE.MeshStandardMaterial): void {
-    mat.color.multiply(new THREE.Color(0.45, 0.5, 0.62));
+function nightFar(mat: THREE.MeshStandardMaterial, tint: [number, number, number]): void {
+    mat.color.multiply(new THREE.Color(...tint));
     mat.envMapIntensity = 0.1;
     mat.onBeforeCompile = (sh) => {
         sh.fragmentShader = sh.fragmentShader.replace(
@@ -73,7 +81,7 @@ export function addLandmarks(
                 model.position.multiplyScalar(model.scale.x);
                 model.traverse((o) => {
                     const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
-                    if (m?.isMeshStandardMaterial) nightFar(m);
+                    if (m?.isMeshStandardMaterial) nightFar(m, mark.tint ?? [0.45, 0.5, 0.62]);
                     o.frustumCulled = false;
                 });
                 g.add(model);

@@ -46,10 +46,11 @@ const FRAG = /* glsl */ `
         float disc = smoothstep(0.034, 0.031, r);
         vec3 md = normalize(d - uMoon * m);
         float seas = smoothstep(0.45, 0.62, f3(md * 40.0 + uMoon * 13.0));
-        vec3 moon = vec3(1.0, 0.97, 0.9) * 2.4 * (1.0 - seas * 0.35) * (0.75 + 0.25 * smoothstep(0.034, 0.0, r));
+        // A moon, not a sun: a modest disc and a tight halo, so it never blooms over the scene.
+        vec3 moon = vec3(1.0, 0.97, 0.9) * 1.5 * (1.0 - seas * 0.35) * (0.75 + 0.25 * smoothstep(0.034, 0.0, r));
         // Seen from the ground only: from orbit it would steal the scene from Earth.
         col = mix(col, moon, disc * air);
-        col += vec3(0.5, 0.6, 0.8) * (exp(-r * 30.0) * 0.35 + exp(-r * 4.0) * 0.05) * air;
+        col += vec3(0.5, 0.6, 0.8) * (exp(-r * 40.0) * 0.2 + exp(-r * 5.0) * 0.035) * air;
 
         // Aurora: curtains along the horizon ahead, a sharp green lower edge fading up into red.
         if (uAurora > 0.001) {

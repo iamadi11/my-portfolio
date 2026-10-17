@@ -355,7 +355,7 @@ export function createWorld(o: WorldOptions): World {
         const orbit = place === 'orbit';
         const air = AIR[place];
         const { n1 } = route.frame(clamp(u));
-        if (camera.aspect >= 1) side.copy(n1).multiplyScalar(3).add(DOWN);
+        if (camera.aspect >= 1) side.copy(n1).multiplyScalar(2.2).add(DOWN);
         else side.set(0, air.space ? 3.6 : 4.6, 0);
         route.curve.getTangentAt(clamp(u), tangent);
         const hero = 1 - smooth(route.seg[1] * 0.6, route.seg[1] * 1.6, u);

@@ -594,6 +594,8 @@ html:has(.rt) body {
 }
 .rt-top {
     top: 0;
+    /* a breath of dark under the HUD, so it stays legible as a panel slides out beneath it */
+    background: linear-gradient(rgba(5, 7, 13, 0.78), rgba(5, 7, 13, 0));
 }
 .rt-bottom {
     bottom: 0;
