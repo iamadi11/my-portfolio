@@ -96,8 +96,10 @@ const FLASH = {
 };
 /** Night cloud, lit from below by the city, for the fog while dropping through the deck. */
 const CLOUD = new THREE.Color(0.06, 0.05, 0.05);
-const JUMP = 0.95;
-const PEAK = 0.32;
+/** How long a jump takes (s) and where in it the scene is swapped: portals are quick, the two
+ * passages through the air (into the cloud deck, out of the last of the air) linger. */
+const JUMP = { portal: 1.1, air: 1.9 };
+const PEAK = { portal: 0.32, air: 0.42 };
 
 function renderer(canvas: HTMLCanvasElement, small: boolean): THREE.WebGLRenderer {
     const r = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
@@ -136,10 +138,15 @@ function jumper(reduce: boolean, onStart: () => void): { step: (dt: number, targ
     const out: Jump = { shown: 'space', jump: 0, jumped: false, tint: FLASH.other };
     let next: Stop = 'space';
     let clock = -1;
+    let len = JUMP.portal;
+    let peak = PEAK.portal;
     const start = (target: Stop): void => {
         next = target;
         clock = 0;
         out.jumped = true;
+        const air = out.shown === 'space' || target === 'orbit';
+        len = air ? JUMP.air : JUMP.portal;
+        peak = air ? PEAK.air : PEAK.portal;
         out.tint = out.shown === 'space' ? FLASH.entry : target === 'orbit' ? FLASH.orbit : FLASH.other;
         onStart();
     };
@@ -151,9 +158,9 @@ function jumper(reduce: boolean, onStart: () => void): { step: (dt: number, targ
         }
         out.jump = 0;
         if (clock < 0) return out;
-        clock += dt / JUMP;
-        if (clock >= PEAK) out.shown = next;
-        out.jump = clock < PEAK ? Math.pow(clock / PEAK, 2) : 1 - Math.pow((clock - PEAK) / (1 - PEAK), 0.6);
+        clock += dt / len;
+        if (clock >= peak) out.shown = next;
+        out.jump = clock < peak ? Math.pow(clock / peak, 2) : 1 - Math.pow((clock - peak) / (1 - peak), 0.6);
         if (clock >= 1) {
             clock = -1;
             out.jump = 0;
@@ -292,7 +299,8 @@ export function createWorld(o: WorldOptions): World {
      * Earth once back in orbit.
      */
     const beat = { dive: 0, drop: 0, climb: 0, rise: 0 };
-    const shot: Shot = { tilt: 0, lift: 0 };
+    const shot: Shot = { tilt: 0, lift: 0, shake: 0 };
+    let kicked = false;
     const heading = new THREE.Vector3();
 
     /** Fog, horizon and sky for the place on screen; `thin` is high air, `cloud` the deck. */
@@ -372,7 +380,7 @@ export function createWorld(o: WorldOptions): World {
         ship.update({
             at,
             heading,
-            speed: Math.max(speed, leave),
+            speed: Math.max(speed, leave, rings.rush),
             dt,
             hero: u < route.seg[1] + 0.002 || (orbit && leave < 0.08),
             heat,
@@ -401,23 +409,41 @@ export function createWorld(o: WorldOptions): World {
         s.uPacket.value.copy(p);
         s.uScan.value = p.y;
         s.uTime.value = t;
-        beat.dive = shown === 'space' ? smooth(0.5, 0.98, u / city0) : 0;
-        beat.drop = shown === 'city' ? 1 - smooth(city0, lerp(city0, svc, 0.3), u) : 0;
-        beat.climb = shown === 'ice' ? smooth(0.08, 0.5, f.map) : 0;
+        // The long way in: a slow roll onto the globe, then the dive proper, the air thickening.
+        beat.dive = shown === 'space' ? smooth(0.38, 0.96, u / city0) : 0;
+        beat.drop = shown === 'city' ? 1 - smooth(city0, lerp(city0, svc, 0.34), u) : 0;
+        // The long way out: pull up off the ice, burn, then the globe falls away in orbit.
+        beat.climb = shown === 'ice' ? smooth(0.06, 0.5, f.map) : 0;
         beat.rise = shown === 'orbit' ? smooth(0.5, 1, f.map) : 0;
-        shot.tilt = beat.dive * 0.8 - beat.climb * 0.5 + (shown === 'orbit' ? (1 - beat.rise) * 0.55 : 0);
-        shot.lift = beat.drop * beat.drop * 230 + beat.climb * beat.climb * 60;
-        applyAir(AIR[shown], beat.drop * 0.6 + beat.climb * 0.8, beat.drop);
-        rig.update(u, t, dt, speed, jump, f.pointer, !AIR[shown].space, shot);
+        shot.tilt = beat.dive * 0.8 - beat.climb * 0.55 + (shown === 'orbit' ? (1 - beat.rise) * 0.55 : 0);
+        shot.lift = beat.drop * beat.drop * 230 + beat.climb * beat.climb * 90;
+        // The afterburner lights once on the way out.
+        if (beat.climb > 0.45 && !kicked) {
+            kicked = true;
+            ship.boost();
+        }
+        if (beat.climb < 0.1) kicked = false;
+        applyAir(AIR[shown], beat.drop * 0.6 + beat.climb * 0.85, beat.drop);
+        s.uDrop.value = beat.drop;
         const { heat, sun } = showPlace(shown);
         const passed = rings.update(u, t, dt, zone);
+        // Rushing at a portal, or burning through the air: the frame widens and shudders.
+        const rush = Math.max(rings.rush, heat * 0.8, beat.climb > 0.45 ? (beat.climb - 0.45) * 1.6 : 0);
+        shot.shake = o.reduce ? 0 : rush * 0.004;
+        rig.update(u, t, dt, Math.min(1, speed + rush * 0.6), jump, f.pointer, !AIR[shown].space, shot);
         landmarks.show(zone);
         flyShip(shown, dt, f.resp, heat, sun);
         if (passed !== null) ship.roll();
         records.update(p, u);
         warp.update(jump, tint);
         // Seen from above through cloud, a city of small lights would bloom into mush.
-        post.finish(t, o.reduce ? 0 : speed, jump, tint, 1 - beat.drop * 0.8);
+        post.finish(
+            t,
+            o.reduce ? 0 : Math.min(1, speed + rush * 0.5),
+            jump,
+            tint,
+            1 - Math.max(beat.drop * 0.8, beat.dive * 0.45)
+        );
         post.composer.render();
         return {
             rings: rings.centers.map((c, k) =>

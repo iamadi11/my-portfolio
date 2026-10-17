@@ -59,11 +59,11 @@ export function tripFrom(site: SiteContent): Trip {
  */
 export const heights = (trip: Trip): number[] => [
     130,
-    230,
-    270,
-    100 + 170 * trip.projects.length,
-    100 + 95 * trip.records.length,
-    250,
+    330,
+    290,
+    100 + 180 * trip.projects.length,
+    100 + 100 * trip.records.length,
+    340,
 ];
 
 /** Where item k of n is centred within a section h svh tall, as a share of the whole section. */

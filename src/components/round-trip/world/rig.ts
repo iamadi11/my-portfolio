@@ -19,7 +19,7 @@ export type Rig = {
     ) => void;
 };
 
-export type Shot = { tilt: number; lift: number };
+export type Shot = { tilt: number; lift: number; shake: number };
 
 export function createRig(
     camera: THREE.PerspectiveCamera,
@@ -71,7 +71,7 @@ export function createRig(
         tilt += (shot.tilt - tilt) * ease(dt, 4);
         camera.rotateX(-tilt);
         // Look around a little with the mouse or the phone's tilt; shake through a jump.
-        const shake = reduce ? 0 : jump * jump * 0.012;
+        const shake = reduce ? 0 : jump * jump * 0.012 + shot.shake;
         camera.rotateY(-px * 0.1 + Math.sin(t * 53) * shake);
         camera.rotateX(-py * 0.06 + Math.sin(t * 47 + 1) * shake);
 

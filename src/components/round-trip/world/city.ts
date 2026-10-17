@@ -72,7 +72,7 @@ const TOWER_FRAG = /* glsl */ `
         col = mix(col, glass, win * (1.0 - lit));
         col = mix(col, room * 1.15 + glass * 0.2, lit);
         float shop = side * step(0.35, vR) * smoothstep(-60.0, -59.0, vW.y) * (1.0 - smoothstep(-56.0, -55.0, vW.y));
-        col += shop * mix(vec3(1.0, 0.62, 0.32), vec3(0.6, 0.85, 1.0), step(0.8, vR)) * 1.1;
+        col += shop * mix(vec3(1.0, 0.62, 0.32), vec3(0.6, 0.85, 1.0), step(0.8, vR)) * 1.1 * (1.0 - uDrop * 0.75);
         // Roofs: a parapet rim and a plant room in the middle, not a flat lid.
         float hut = step(abs(vL.x), 0.2) * step(abs(vL.z), 0.2);
         float rim = step(0.44, max(abs(vL.x), abs(vL.z)));
@@ -347,7 +347,7 @@ function addTraffic(scene: THREE.Object3D, s: Shared, density: number, rand: () 
                 vD = -mv.z;
                 gl_Position = projectionMatrix * mv;
             }`,
-            /* glsl */ `varying vec3 vC; varying float vD; void main() { gl_FragColor = vec4(fogIt(vC, vD), 1.0); }`,
+            /* glsl */ `varying vec3 vC; varying float vD; void main() { gl_FragColor = vec4(fogIt(vC * (1.0 - uDrop * 0.8), vD), 1.0); }`,
             { uTile: { value: TILE } }
         )
     );

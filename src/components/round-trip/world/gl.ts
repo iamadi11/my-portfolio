@@ -12,6 +12,8 @@ export type Shared = {
     uPR: THREE.IUniform<number>;
     uScan: THREE.IUniform<number>;
     uBeam: THREE.IUniform<THREE.Vector4>;
+    /** 0–1: the ship is high over the city, coming down; small lights are held back. */
+    uDrop: THREE.IUniform<number>;
 };
 
 export const FOG = 0.0115;
@@ -29,6 +31,7 @@ export const shared = (pr: number): Shared => ({
     uPR: { value: pr },
     uScan: { value: 0 },
     uBeam: { value: new THREE.Vector4(0, -999, 0, 0) },
+    uDrop: { value: 0 },
 });
 
 /** Noise, the path's sway and endless-scenery wrapping: plain functions any shader can include. */
@@ -53,7 +56,7 @@ const NOISE = /* glsl */ `
 const HEAD =
     /* glsl */ `
     uniform float uTime; uniform vec3 uPacket; uniform float uFog; uniform vec3 uFogColor; uniform float uPR; uniform float uScan;
-    uniform vec4 uBeam;
+    uniform vec4 uBeam; uniform float uDrop;
     vec3 fogIt(vec3 c, float d) { float f = 1.0 - exp(-uFog * uFog * d * d); return mix(c, uFogColor, clamp(f, 0.0, 1.0)); }
     float fade(float d) { return exp(-uFog * uFog * d * d); }
     float glowAt(vec3 w, float r) { vec3 d = w - uPacket; return exp(-dot(d, d) / (r * r)); }

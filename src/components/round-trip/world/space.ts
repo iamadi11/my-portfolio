@@ -20,16 +20,18 @@ const SUN = new THREE.Vector3(-0.9, 0.25, -0.35).normalize();
  * the lights. At the end the sun lights a thin crescent along the rim and glints off the oceans.
  */
 const EARTH_FRAG = /* glsl */ `
-    uniform sampler2D tLights, tClouds, tDay; uniform float uOp, uDay; uniform vec3 uMoon, uSun;
+    uniform sampler2D tLights, tClouds, tDay; uniform float uOp, uDay, uNear; uniform vec3 uMoon, uSun;
     varying vec2 vUv; varying vec3 vN, vW;
     void main() {
         vec3 n = normalize(vN), V = normalize(cameraPosition - vW);
         vec3 day = texture2D(tDay, vUv).rgb;
-        float lights = texture2D(tLights, vUv).r;
+        // Up close the map's pixels would show as squares: read a blurrier level the lower we are.
+        float lights = texture2D(tLights, vUv, uNear * 3.0).r;
         float cloud = smoothstep(0.12, 0.85, texture2D(tClouds, vUv + vec2(uTime * 0.0004, 0.0)).r);
         float moon = max(dot(n, uMoon), 0.0);
         // Moonlit land and sea in blue-grey, as the night side looks from orbit, cities burning on it.
-        vec3 col = day * vec3(0.3, 0.38, 0.55) * (0.2 + 0.8 * moon) + vec3(1.0, 0.7, 0.36) * pow(lights, 0.85) * 10.0 * (1.0 - cloud * 0.75);
+        // City lights: brilliant from high orbit, held back on the way down so they do not bloom.
+        vec3 col = day * vec3(0.3, 0.38, 0.55) * (0.2 + 0.8 * moon) + vec3(1.0, 0.7, 0.36) * pow(lights, 0.85) * mix(10.0, 1.2, uNear) * (1.0 - cloud * 0.75);
         col = mix(col, vec3(0.2, 0.23, 0.29) * (0.3 + 0.9 * moon), cloud * 0.8);
         float sunLit = smoothstep(-0.04, 0.3, dot(n, uSun)) * uDay;
         float ocean = smoothstep(0.04, 0.18, day.b - max(day.r, day.g));
@@ -159,6 +161,7 @@ export function addSpace(
     const uSun = { value: SUN.clone() };
     const uRise = { value: 1 };
     const uDay = { value: 0 };
+    const uNear = { value: 0 };
     const globe = new THREE.Group();
     const earth = new THREE.Mesh(
         new THREE.SphereGeometry(R, 128, 64),
@@ -173,6 +176,7 @@ export function addSpace(
                 tDay: { value: tDay },
                 uOp,
                 uDay,
+                uNear,
                 uSun,
                 uMoon: { value: MOON },
             },
@@ -196,7 +200,7 @@ export function addSpace(
     scene.add(globe);
     globe.traverse((o) => (o.frustumCulled = false));
 
-    const uHeat = addStreaks(scene, route, s, Math.round(280 * density), rand);
+    const uHeat = addStreaks(scene, route, s, Math.round(200 * density), rand);
     // The sun about to clear the rim at the end: a hot white core, a wide gold glare.
     const sun = [
         glow(34, new THREE.Color(8, 7, 6)),
@@ -219,6 +223,7 @@ export function addSpace(
         if (!f.on) return { heat: 0, sun: null };
         // Higher up the globe sits ahead and below; diving in, it fills the floor of the view.
         const k = f.finale ? lerp(1, 0.1, f.rise) : clamp(f.e);
+        uNear.value = smooth(0.5, 1, k);
         const alt = R * (f.tall ? 0.25 : 0.42) * Math.pow(f.tall ? 0.12 : 0.08, k);
         const pitch = THREE.MathUtils.degToRad(lerp(f.tall ? 44 : 52, f.tall ? 70 : 76, k));
         dir.set(0, -Math.sin(pitch), -Math.cos(pitch));

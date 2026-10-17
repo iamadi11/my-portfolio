@@ -238,8 +238,10 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         root.classList.toggle('rt-scrolled', s.y > 40);
         if (s.y > 4) wake();
         panels(s.q);
-        const map = smooth(0, 0.55, s.q(5));
-        const resp = 1 - smooth(0.3, 0.92, s.q(5));
+        // The way out takes most of the last section: the climb, the cut at the halfway point of
+        // `map`, the rise into orbit; only then does the ship turn and leave.
+        const map = smooth(0, 0.8, s.q(5));
+        const resp = 1 - smooth(0.55, 0.96, s.q(5));
         const toEnd = clamp(s.y / Math.max(1, els.secs[5]?.offsetTop ?? 1));
         hud(s.sec, Math.round(toEnd * 180 + (1 - resp) * 58));
         draw(s, map, resp);

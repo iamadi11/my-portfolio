@@ -48,6 +48,8 @@ type Portal = {
 
 export type Rings = {
     centers: THREE.Vector3[];
+    /** 0–1: how hard the ship is rushing at the portal ahead (set by `update`). */
+    rush: number;
     /** Advances the portals, showing only `show` (the current landscape's exit; -1 for none). */
     update: (u: number, t: number, dt: number, show: number) => number | null;
 };
@@ -146,10 +148,14 @@ export function addRings(
         })
         .catch(() => undefined);
 
+    const rings: Rings = { centers: portals.map((p) => p.center), rush: 0, update: () => null };
     const update = (u: number, _t: number, dt: number, show: number): number | null => {
         let hit: number | null = null;
+        rings.rush = 0;
         portals.forEach((p, k) => {
             p.g.visible = k === show;
+            // The run-up: the last 90 m before the ring, building until the ship is through.
+            if (k === show && u < p.u) rings.rush = smooth(90, 8, (p.u - u) * route.len);
             const d = Math.abs(u - p.u) * route.len;
             p.near += (smooth(140, 20, d) - p.near) * (1 - Math.exp(-dt * 4));
             p.glow.color.copy(p.colour).multiplyScalar(0.35 + p.near * 0.8);
@@ -164,5 +170,6 @@ export function addRings(
         });
         return hit;
     };
-    return { centers: portals.map((p) => p.center), update };
+    rings.update = update;
+    return rings;
 }
