@@ -1,22 +1,23 @@
 # Source of truth — Aditya Raj portfolio
 
-**Last reviewed:** 2026-10-17 (LinkedIn export + owner's message)  
-**Source PDF:** `Aditya_Raj_SDE.pdf` (updated June 2026)  
-**Hierarchy (strict):** `Aditya_Raj_SDE.pdf` → LinkedIn → GitHub. On conflict, **resume wins**.
+**Last reviewed:** 2026-10-19 (owner: the live site is the correct state)  
+**Canonical data:** `src/content/site.ts` (`SITE`). The owner confirmed on 2026-10-19 that the site's data is more current than the resume PDF: it already merges the resume, the LinkedIn export (2026-10-17), GitHub and the owner's own word. This file mirrors it.  
+**Source PDF:** `Aditya_Raj_SDE.pdf` (June 2026; git-ignored, older than the site).  
+**Hierarchy (strict):** `src/content/site.ts` → resume → LinkedIn → GitHub. A new fact enters `site.ts` only from the owner, the resume, LinkedIn or GitHub; never invent one.
 
 ---
 
 ## Identity
 
-| Field    | Value (resume)                                                                                                                                                                             |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Name     | Aditya Raj                                                                                                                                                                                 |
-| Location | Bengaluru, Karnataka, India                                                                                                                                                                |
-| Title    | Senior Software Development Engineer at **Amby Tech** (https://ambytech.com/) since 9 Jul 2026 (owner, 2026-10-17). Previous: Frontend Engineer II, Cashfree Payments, Mar 2025 – May 2026 |
-| Email    | adityaraj92.20@gmail.com                                                                                                                                                                   |
-| Phone    | +91 72578 07070 → `tel:+917257807070`                                                                                                                                                      |
-| LinkedIn | https://www.linkedin.com/in/adityaraj11/                                                                                                                                                   |
-| GitHub   | https://github.com/iamadi11                                                                                                                                                                |
+| Field    | Value (resume)                                                                                                                                                                                                                       |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Name     | Aditya Raj                                                                                                                                                                                                                           |
+| Location | Bengaluru, Karnataka, India                                                                                                                                                                                                          |
+| Title    | Senior Software Development Engineer at **Amby Tech** (https://ambytech.com/) since 9 Jul 2026 (owner, 2026-10-17; confirmed as live on the site 2026-10-19). Previous: Frontend Engineer II, Cashfree Payments, Mar 2025 – May 2026 |
+| Email    | adityaraj92.20@gmail.com                                                                                                                                                                                                             |
+| Phone    | +91 72578 07070 → `tel:+917257807070`                                                                                                                                                                                                |
+| LinkedIn | https://www.linkedin.com/in/adityaraj11/                                                                                                                                                                                             |
+| GitHub   | https://github.com/iamadi11                                                                                                                                                                                                          |
 
 **Tagline (LinkedIn summary, shortened for UI; owner approved "5+ years" on 2026-10-17, counting o9 Solutions from Jun 2021):** 5+ years building fast, scalable web products for fintech and e-commerce: React, Next.js and Node.js at Tata 1mg and Cashfree, including a self-serve fraud rule engine used by 200+ merchants.
 
@@ -69,57 +70,51 @@
 my-portfolio/
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx              # Home: DetailsCard + ProjectsCard + TechStackCard
+│   │   ├── page.tsx              # Home (/): Round trip, the 3D scroll story (see docs/round-trip.md)
 │   │   ├── about/page.tsx        # About: Description + WorkExperience + Education
-│   │   ├── tech-stack/page.tsx   # Tech: TechStackCard (standalone h1)
+│   │   ├── tech-stack/page.tsx   # Tech: TechStackCard
 │   │   ├── contact/page.tsx      # Contact: email, phone, LinkedIn, GitHub
-│   │   ├── layout.tsx            # Root layout: metadata, JSON-LD, fonts
-│   │   ├── globals.css
-│   │   ├── manifest.ts
-│   │   ├── robots.ts
-│   │   ├── sitemap.ts
-│   │   └── llms.txt/route.ts
+│   │   ├── layout.tsx            # Root layout: metadata, JSON-LD, fonts (Geist)
+│   │   ├── opengraph-image.tsx, manifest.ts, robots.ts, sitemap.ts, llms.txt/route.ts
+│   │   └── error.tsx, not-found.tsx, template.tsx, globals.css
+│   ├── content/
+│   │   ├── site.ts               # SITE: every fact on the site (canonical)
+│   │   └── types.ts              # SiteContent types + SAMPLE
 │   ├── components/
-│   │   ├── Card/                 # Base card primitive
-│   │   ├── DetailsCard/          # Hero section (name, title, tagline, CTAs)
-│   │   ├── Description/          # About intro paragraph
-│   │   ├── Education/            # Education card
-│   │   ├── Header/               # Top nav (data-driven tree renderer)
-│   │   ├── Layout/               # Page layout wrapper
-│   │   ├── ProjectsCard/         # GitHub projects grid
-│   │   ├── SocialLinks/          # Social icon links
-│   │   ├── TechStackCard/        # Skills/tech icon grid
-│   │   └── WorkExperience/       # Work history timeline
-│   └── lib/
-│       ├── site.ts               # getSiteOrigin() helper
-│       └── site-request-origin.ts
-├── public/                       # Static assets (logo, favicons, profile pic)
+│   │   ├── round-trip/           # / : RoundTrip.tsx, trip.ts, drive.ts, sound, tilt, CSS, world/* (three.js)
+│   │   ├── Description/, Education/, WorkExperience/, TechStackCard/   # /about, /tech-stack
+│   │   ├── Header/, Layout/, SiteChrome.tsx, SocialLinks/               # chrome for the inner pages
+│   │   └── PrimeEasterEgg/, PrimeUniverse/                              # easter egg
+│   ├── hooks/, lib/, types/
+├── public/                       # models/, env/ (rebuilt by scripts/assets.sh), icons
+├── docs/round-trip.md            # Spec, assets and licences for /
 ├── SOURCE_OF_TRUTH.md            # This file
-├── CLAUDE.md                     # AI rules
-└── Aditya_SDE_5_years.pdf        # Resume (gitignored — contains private contact info)
+└── CLAUDE.md                     # AI rules
 ```
 
 ## Portfolio project tech stack
 
-| Layer      | Technology                                             |
-| ---------- | ------------------------------------------------------ |
-| Framework  | Next.js 15 (App Router)                                |
-| UI library | React 19                                               |
-| Language   | TypeScript 5 (strict)                                  |
-| Styling    | Tailwind CSS 3                                         |
-| Animation  | Motion (motion/react)                                  |
-| Icons      | react-icons 5                                          |
-| Utility    | clsx                                                   |
-| Linting    | ESLint 9 + eslint-config-next + eslint-plugin-prettier |
-| Formatting | Prettier 3 with prettier-plugin-tailwindcss            |
-| Git hooks  | commitlint + commitizen + husky + lint-staged          |
-| Deployment | Vercel                                                 |
+| Layer      | Technology                                                            |
+| ---------- | --------------------------------------------------------------------- |
+| Framework  | Next.js 15 (App Router)                                               |
+| UI library | React 19                                                              |
+| Language   | TypeScript 5 (strict)                                                 |
+| Styling    | Tailwind CSS 3 (inner pages); plain CSS for / (`round-trip.css`)      |
+| 3D         | three.js (/ only; fetched on idle, built on Start or scroll)          |
+| Type       | Instrument Serif (display on /), Geist Sans + Mono                    |
+| Animation  | CSS transitions + three.js on /; Motion (motion/react) on inner pages |
+| Icons      | react-icons 5                                                         |
+| Utility    | clsx                                                                  |
+| Linting    | ESLint 9 + eslint-config-next + eslint-plugin-prettier                |
+| Formatting | Prettier 3 with prettier-plugin-tailwindcss                           |
+| Git hooks  | commitlint + commitizen + husky + lint-staged                         |
+| Deployment | Vercel                                                                |
 
 ---
 
 ## Content authority rules
 
-1. **Experience, dates, titles, companies:** resume only.
+1. **Experience, dates, titles, companies:** as in `site.ts` (owner-confirmed 2026-10-19); new entries from the resume, LinkedIn or the owner.
 2. **Contact:** resume email/phone unless user explicitly overrides in repo with a documented reason.
 3. **Projects:** GitHub URL must exist under `iamadi11/*` (or fork you own with clear attribution). Descriptions from README or neutral factual one-liners—no fabricated metrics.
 4. **Skills on the page:** subset of resume + optional GitHub-verified additions only if the same skill appears in repo activity (not resume-only wish lists).
@@ -182,7 +177,7 @@ Role-level bullets now come from the LinkedIn export (`Profile.pdf`, 2026-10-17)
 
 ## Home (/)
 
-`/` is Round trip, a 3D world built in code (see `docs/round-trip.md`); `/v2` redirects to it. Content rules above apply unchanged: every fact on `/` comes from this file via `src/content/site.ts`. Role highlights, tech and locations on `/` are the resume bullets also used on `/about`; the Tata 1mg roles are shown as one record (SDE I → II, Dec 2021 – Jul 2024) because the bullets cover the whole tenure.
+`/` is Round trip, a 3D world built in code (see `docs/round-trip.md`); `/v2` redirects to it: an alien ship flies from orbit into a night city, through one landscape per project (each ending in a portal in the project's colour), over the sea to the pole (one light pillar per record), and back to orbit at sunrise for `200 OK`. Content rules above apply unchanged: every fact on `/` comes from `src/content/site.ts`. Role highlights, tech and locations on `/` are the resume bullets also used on `/about`; the Tata 1mg roles are shown as one record (SDE I → II, Dec 2021 – Jul 2024) because the bullets cover the whole tenure.
 
 ---
 

@@ -5,7 +5,7 @@ description: Autonomously find and implement the highest-impact portfolio improv
 
 Full lifecycle for one portfolio improvement:
 
-1. Read `SOURCE_OF_TRUTH.md` (cached snapshot — do NOT re-parse `Aditya_SDE_5_years.pdf` unless snapshot is missing)
+1. Read `SOURCE_OF_TRUTH.md` and `src/content/site.ts` (canonical data — do NOT re-parse the resume PDF unless explicitly outdated)
 2. Audit current portfolio vs. snapshot — find all gaps and weaknesses:
     - Missing projects or experiences
     - Outdated or inaccurate copy
@@ -30,5 +30,5 @@ Full lifecycle for one portfolio improvement:
 **Build filter (all must pass before shipping):**
 
 1. Improves credibility OR impression speed OR contact conversion
-2. Grounded in `Aditya_SDE_5_years.pdf` or LinkedIn
+2. Grounded in `src/content/site.ts` (or resume/LinkedIn/GitHub for new facts)
 3. Simplest viable implementation

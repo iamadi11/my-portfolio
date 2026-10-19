@@ -1,17 +1,17 @@
 ---
 name: sync-resume
-description: Diff portfolio against Aditya_SDE_5_years.pdf and LinkedIn, then fix gaps one by one
+description: Diff portfolio (src/content/site.ts) against the latest resume and LinkedIn export, then fix gaps one by one
 ---
 
-1. Read `Aditya_SDE_5_years.pdf` using the Read tool (Claude Code supports PDF natively)
+1. Read `src/content/site.ts` (canonical; owner-confirmed 2026-10-19), then the newest resume PDF (`Aditya_Raj_SDE.pdf`) if one was added
 2. Fetch `https://www.linkedin.com/in/adityaraj11/` and extract: headline, about, experience, skills, projects, education
 3. Compare against cached snapshot in `SOURCE_OF_TRUTH.md`:
     - If resume has changed: update the cached snapshot section before proceeding
-    - `Aditya_SDE_5_years.pdf` wins all conflicts with LinkedIn
+    - `site.ts` stays canonical; a newer resume or LinkedIn export only adds or updates facts the owner confirms
 4. Audit every section of the portfolio against the updated snapshot:
     - **Projects:** all significant projects present? descriptions accurate and sourced from README/repo?
     - **Skills:** all key skills listed? none invented? missing any from resume?
-    - **Experience:** all 3 roles represented? dates correct? bullets match resume?
+    - **Experience:** all roles in `site.ts` represented? dates correct? bullets match resume?
     - **Education:** IIIT Lucknow present, dates correct, CGPA accurate?
     - **Contact:** email, phone, LinkedIn, GitHub — all correct and clickable?
     - **Hero:** title, tagline, and summary match resume?

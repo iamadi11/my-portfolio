@@ -9,7 +9,7 @@ Scrolling flies an alien ship down to Earth at night and across it. It comes in 
 3. **Hero and Wire (space):** the ship hovers over Earth at night, real stars and the Milky Way behind. Through `practice.impact` it closes in; then it noses down and dives at the moonlit globe, plasma building on the hull, the camera pitching down after it, until the cloud deck whites the screen out.
 4. **Edge (city):** out of the cloud high over an endless night city, sinking between the towers as the fog thins: lit rooms, LED billboards, street lamps, traffic and wet streets; the skill groups from `practice.skills`.
 5. **Services (one landscape per project):** grassland (wind in the grass, fireflies), desert dunes, red-rock canyon, alpine peaks in falling snow, a volcanic field with lava rivers and embers; then they repeat if there are more projects. Each landscape is a long stretch with one portal at its end, the only one in view: a sci-fi gateway standing on the ground, lined with the project's colour, an event horizon swirling inside it. Flying through it (with a barrel roll) is the jump to the next landscape. The panel shows that project.
-6. **Data:** experience then education, one record at a time; the first half over the open sea under the moon, the second over pack ice and icebergs under the aurora. Each role is a block of glowing ice beside the path.
+6. **Data:** experience then education, one record at a time; the first half over the open sea under the moon, the second over pack ice and icebergs under the aurora. Each record (every role, then education) is a light pillar beside the path, a column of light over a point of light, the way cold nights make them.
 7. **200 OK:** the ship pulls up off the ice, the air thins and the stars come back; a cut through the last of the air, and it climbs away from Earth into orbit at sunrise, the globe falling away below. The ship turns to greet you, then leaves towards the sun. Email, copy, phone and profile links, and the credits.
 
 The ship's search beam sweeps the ground on Earth. Sound (drone, wind that follows speed, a chime per ring) stays off until the visitor turns it on. Phones buzz briefly on each jump and ring.
@@ -31,7 +31,7 @@ The ship's search beam sweeps the ground on Earth. Sound (drone, wind that follo
 | `world/land.ts` | The landscapes: one GLSL terrain with five kinds, grass blades, fireflies, embers, snow. |
 | `world/sea.ts` | Open sea with a moon path; at the pole, pack ice and icebergs. |
 | `world/landmarks.ts` | One real terrain model (Sketchfab, CC BY) on the horizon of some landscapes, beyond the exit portal. |
-| `world/services.ts`, `world/records.ts` | The project portals (gateway model, light strip, event horizon; one visible at a time); one ice-glass block per role. |
+| `world/services.ts`, `world/records.ts` | The project portals (gateway model, light strip, event horizon; one visible at a time); one light pillar per record. |
 | `world/ship.ts` | The ship: PBR model, engine plasma, search beam, re-entry glow, wingtip strobes, banking and barrel rolls. |
 | `world/warp.ts` | Light streaks rushing past the camera during a jump. |
 | `world/rig.ts` | Camera: follows the ship, banks into turns, widens with speed, punches out and shakes on a jump. |

@@ -21,7 +21,7 @@ import { addWarp } from '@/components/round-trip/world/warp';
 
 export type WorldOptions = {
     canvas: HTMLCanvasElement;
-    /** One colour per project; each gets a gyroscope. */
+    /** One colour per project; each gets a portal. */
     rings: string[];
     /** Where each ring sits, as a share of the services stretch (0–1). */
     ringAt: number[];
