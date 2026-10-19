@@ -11,7 +11,7 @@ import { SITE } from '@/content/site';
 const display = Instrument_Serif({
     subsets: ['latin'],
     weight: ['400'],
-    style: ['normal', 'italic'],
+    style: ['normal'],
     variable: '--font-rt-display',
     display: 'swap',
 });

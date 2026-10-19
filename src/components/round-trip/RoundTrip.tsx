@@ -11,7 +11,6 @@ import '@/components/round-trip/round-trip.css';
 const HOPS = ['Browser', 'Wire', 'Edge', 'Services', 'Data', '200 OK'];
 /** Where each hop of the route goes: the route is the shortcut from the name to the work and contact. */
 const HOP_IDS = ['rt-hero', 'rt-wire', 'rt-edge', 'rt-work', 'rt-career', 'rt-contact'];
-const nn = (i: number): string => String(i + 1).padStart(2, '0');
 const sec = (h: number): React.CSSProperties => ({ '--h': h }) as React.CSSProperties;
 const stagger = (i: number): React.CSSProperties => ({ '--i': i }) as React.CSSProperties;
 const key = (r: { org: string; role: string }): string => `${r.org}-${r.role}`;
@@ -36,7 +35,7 @@ function Label({ n, zone }: { n: number; zone: string }): React.JSX.Element {
     return (
         <p className="rt-label rt-fade">
             <i />
-            {nn(n - 1)} · {zone} <em data-ms={n} />
+            {zone} <em data-ms={n} />
         </p>
     );
 }
@@ -52,15 +51,15 @@ function Line({ i, children }: { i: number; children: React.ReactNode }): React.
 function Hero({ trip }: { trip: Trip }): React.JSX.Element {
     return (
         <>
-            <p className="rt-kicker">
-                <Line i={0}>{trip.role}</Line>
-            </p>
             <h1 className="rt-name">
                 <Line i={0}>{trip.name}</Line>
             </h1>
+            <p className="rt-role">
+                <Line i={1}>{trip.role}</Line>
+            </p>
             <p className="rt-lede rt-fade">
                 {trip.lede}
-                {trip.rest && <span className="rt-sr">: {trip.rest}</span>}
+                {trip.rest && <span>: {trip.rest}</span>}
             </p>
             <p className="rt-meta rt-fade" style={stagger(1)}>
                 {trip.meta}
@@ -131,13 +130,9 @@ function Work({ trip }: { trip: Trip }): React.JSX.Element {
             <Label n={3} zone="Services" />
             <h2 className="rt-sr">Projects</h2>
             <div className="rt-stacked rt-fade">
-                {trip.projects.map((p, k) => (
+                {trip.projects.map((p) => (
                     <article className="rt-item" data-project key={p.id}>
-                        <p className="rt-meta">
-                            {[`${nn(k)} / ${nn(trip.projects.length - 1)}`, p.year, p.stack.join(' · ')]
-                                .filter(Boolean)
-                                .join(' · ')}
-                        </p>
+                        <p className="rt-meta">{[p.year, p.stack.join(' · ')].filter(Boolean).join(' · ')}</p>
                         <h3 className="rt-h3">{p.title}</h3>
                         <p className="rt-copy">{p.summary}</p>
                         <ul className="rt-links">
@@ -231,7 +226,7 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
         <>
             <p className="rt-label rt-fade">
                 <i />
-                {nn(4)} · Response
+                Response
             </p>
             <h2 className="rt-ok">
                 <Line i={0}>200 OK</Line>
@@ -324,7 +319,7 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                     Tilt to scroll
                 </button>
                 <button className="rt-snd" type="button" aria-pressed={soundOn} onClick={toggleSound}>
-                    {soundOn ? 'Sound on' : 'Sound off'}
+                    Sound
                 </button>
             </header>
             <div className="rt-hud rt-bottom" aria-hidden="true">
@@ -356,9 +351,9 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                 </Section>
             </main>
 
-            {trip.projects.map((p, k) => (
+            {trip.projects.map((p) => (
                 <div className="rt-tag" data-ring-tag key={p.id} aria-hidden="true">
-                    {p.title} <small>· svc-{nn(k)}</small>
+                    {p.title}
                 </div>
             ))}
             {trip.records.map((r) => (

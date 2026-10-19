@@ -12,9 +12,11 @@ html:has(.rt) body {
 .rt {
     --bg: #05070d;
     --ink: #eef2f8;
-    --muted: #9aa3b5;
-    --soft: #c9d0dc;
-    --line: rgba(238, 242, 248, 0.16);
+    /* lifted so secondary text holds AA over the brighter places (snow, lava, sunrise) */
+    --muted: oklch(0.8 0.025 260);
+    --soft: oklch(0.89 0.018 260);
+    --line: rgba(238, 242, 248, 0.2);
+    --shade: rgba(5, 7, 13, 0.7);
     --accent: #8fd3ff;
     --display: var(--font-rt-display), 'Times New Roman', Georgia, serif;
     --body: var(--font-geist-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -109,12 +111,12 @@ html:has(.rt) body {
     inset: 0;
     z-index: 1;
     pointer-events: none;
+    /* dark under the whole 640px panel, then open onto the world */
     background: linear-gradient(
         90deg,
-        rgba(5, 7, 13, 0.88),
-        rgba(5, 7, 13, 0.62) 44%,
-        rgba(5, 7, 13, 0.25) 56%,
-        rgba(5, 7, 13, 0) 70%
+        rgba(5, 7, 13, 0.9) 0 46%,
+        rgba(5, 7, 13, 0.72) 58%,
+        rgba(5, 7, 13, 0) 76%
     );
 }
 
@@ -155,23 +157,23 @@ html:has(.rt) body {
 .rt-panel {
     position: relative;
     max-width: 640px;
+    text-shadow: 0 1px 12px var(--shade);
 }
 .rt-label {
     display: flex;
     align-items: center;
     gap: 10px;
     margin: 0 0 20px;
-    color: var(--muted);
-    font: 500 11px/1 var(--mono);
-    letter-spacing: 0.18em;
+    color: var(--soft);
+    font: 500 12px/1 var(--mono);
+    letter-spacing: 0.14em;
     text-transform: uppercase;
 }
 .rt-label i {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: var(--accent);
-    box-shadow: 0 0 14px var(--accent);
 }
 .rt-label em {
     color: var(--accent);
@@ -214,24 +216,22 @@ html:has(.rt) body {
     transition-delay: calc(var(--i, 0) * 60ms + 120ms);
 }
 
-/* hero */
-.rt-kicker {
-    margin: 0 0 18px;
-    color: var(--soft);
-    font: 500 11.5px var(--mono);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-}
+/* hero: name, then what he is, then why it matters */
 .rt-name {
-    margin: 0 0 22px;
+    margin: 0 0 14px;
     font: 400 clamp(64px, 11.5vw, 200px) / 0.9 var(--display);
     letter-spacing: -0.025em;
 }
-.rt-lede {
-    max-width: 40ch;
-    margin: 0 0 14px;
+.rt-role {
+    margin: 0 0 18px;
     color: var(--ink);
-    font-size: clamp(16px, 1.35vw, 20px);
+    font: 400 clamp(20px, 2.2vw, 28px) / 1.25 var(--body);
+}
+.rt-lede {
+    max-width: 52ch;
+    margin: 0 0 14px;
+    color: var(--soft);
+    font-size: clamp(17px, 1.5vw, 20px);
 }
 .rt-lede + .rt-meta {
     margin-bottom: 26px;
@@ -320,46 +320,38 @@ html:has(.rt) body {
 .rt-impact {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1px;
+    gap: 28px 40px;
     margin: 0;
-    overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    background: var(--line);
 }
 .rt-impact div {
     display: flex;
     flex-direction: column-reverse;
+    justify-content: flex-end;
     gap: 8px;
-    padding: 18px 20px;
-    background: rgba(5, 7, 13, 0.72);
-    backdrop-filter: blur(10px);
 }
 .rt-impact dd {
     margin: 0;
     color: var(--accent);
-    font: 400 clamp(30px, 3.2vw, 50px) / 1 var(--display);
+    font: 400 clamp(36px, 4vw, 56px) / 1 var(--display);
     letter-spacing: -0.015em;
     font-variant-numeric: tabular-nums;
 }
 .rt-impact dt {
     color: var(--soft);
-    font-size: 14.5px;
+    font-size: 16px;
     line-height: 1.4;
 }
 .rt-impact small {
     display: block;
     margin-top: 4px;
     color: var(--muted);
-    font: 500 11px var(--mono);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 14px;
 }
 
 /* edge */
 .rt-h2 {
     margin: 0 0 22px;
-    font: 400 clamp(40px, 5vw, 76px) / 0.95 var(--display);
+    font: 400 clamp(40px, 4.8vw, 72px) / 0.95 var(--display);
     letter-spacing: -0.02em;
 }
 .rt-layers,
@@ -414,7 +406,8 @@ html:has(.rt) body {
 }
 .rt-layers span {
     color: var(--soft);
-    font: 400 13.5px/1.5 var(--mono);
+    font-size: 16px;
+    line-height: 1.5;
 }
 
 /* services + data: one item at a time, stacked in one cell so nothing shifts */
@@ -447,7 +440,7 @@ html:has(.rt) body {
 }
 .rt-h3-sm {
     margin: 0 0 8px;
-    font-size: clamp(30px, 3.6vw, 52px);
+    font-size: clamp(28px, 3vw, 44px);
 }
 .rt-copy {
     max-width: 46ch;
@@ -457,9 +450,8 @@ html:has(.rt) body {
 .rt-meta {
     margin: 0;
     color: var(--muted);
-    font: 500 11.5px var(--mono);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    font-size: 14px;
+    line-height: 1.4;
 }
 .rt-links,
 .rt-pills {
@@ -477,12 +469,11 @@ html:has(.rt) body {
     padding: 10px 18px;
     border: 1px solid var(--line);
     border-radius: 999px;
-    background: rgba(238, 242, 248, 0.06);
+    background: rgba(18, 22, 32, 0.85);
     color: var(--ink);
-    font: 500 14px var(--body);
+    font: 500 15px var(--body);
     text-decoration: none;
     cursor: pointer;
-    backdrop-filter: blur(8px);
     transition:
         background 200ms ease,
         color 200ms ease,
@@ -518,7 +509,7 @@ html:has(.rt) body {
 
 /* data */
 .rt-h2-sm {
-    font-size: clamp(30px, 3.4vw, 52px);
+    font-size: clamp(34px, 3.8vw, 56px);
 }
 .rt-chips {
     display: flex;
@@ -531,8 +522,7 @@ html:has(.rt) body {
     border: 1px solid var(--line);
     border-radius: 999px;
     color: var(--muted);
-    font: 500 11.5px var(--mono);
-    letter-spacing: 0.04em;
+    font-size: 14px;
     transition:
         color 0.4s,
         border-color 0.4s;
@@ -551,8 +541,8 @@ html:has(.rt) body {
     position: relative;
     padding-left: 18px;
     color: var(--soft);
-    font-size: 15px;
-    line-height: 1.45;
+    font-size: 16px;
+    line-height: 1.5;
 }
 .rt-bullets li::before {
     content: '';
@@ -571,9 +561,7 @@ html:has(.rt) body {
     min-height: 32px;
     align-items: center;
     color: var(--accent);
-    font: 500 12px var(--mono);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font: 500 15px var(--body);
     cursor: pointer;
     pointer-events: auto;
 }
@@ -597,7 +585,8 @@ html:has(.rt) body {
 .rt-tech {
     margin: 14px 0 0;
     color: var(--muted);
-    font: 400 12.5px/1.5 var(--mono);
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 /* response */
@@ -608,7 +597,7 @@ html:has(.rt) body {
 }
 .rt-done {
     margin: 18px 0 26px;
-    color: var(--muted);
+    color: var(--soft);
     font: 500 12px var(--mono);
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -628,7 +617,8 @@ html:has(.rt) body {
 .rt-note {
     margin: 26px 0 0;
     color: var(--muted);
-    font: 400 12px var(--mono);
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 /* HUD */
@@ -716,7 +706,6 @@ html:has(.rt) body {
 .rt-route li.on i {
     border-color: var(--z, #8fd3ff);
     background: var(--z, #8fd3ff);
-    box-shadow: 0 0 10px var(--z, #8fd3ff);
 }
 .rt-snd {
     white-space: nowrap;
@@ -764,12 +753,14 @@ html:has(.rt) body {
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--shade);
     color: var(--ink);
-    font: 500 11.5px var(--mono);
+    font: 500 12px var(--mono);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     white-space: nowrap;
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
     opacity: 0;
     pointer-events: none;
     transition: opacity 200ms ease-out;
@@ -796,10 +787,9 @@ html:has(.rt) body {
     .rt-scrim {
         background: linear-gradient(
             0deg,
-            rgba(5, 7, 13, 0.92),
-            rgba(5, 7, 13, 0.78) 55%,
-            rgba(5, 7, 13, 0.4) 74%,
-            rgba(5, 7, 13, 0) 90%
+            rgba(5, 7, 13, 0.92) 0 50%,
+            rgba(5, 7, 13, 0.8) 70%,
+            rgba(5, 7, 13, 0) 92%
         );
     }
     .rt-top .rt-route,
@@ -836,14 +826,14 @@ html:has(.rt) body {
     .rt-h3 {
         margin: 8px 0 10px;
     }
-    .rt-impact div {
-        padding: 14px;
+    .rt-impact {
+        gap: 20px 24px;
     }
     .rt-impact dt {
-        font-size: 13px;
+        font-size: 15px;
     }
     .rt-impact dd {
-        font-size: 24px;
+        font-size: 30px;
     }
     .rt-top {
         gap: 8px;
@@ -852,10 +842,10 @@ html:has(.rt) body {
         padding: 8px 12px;
     }
     .rt-bullets li {
-        font-size: 14px;
+        font-size: 15px;
     }
     .rt-tag {
-        font-size: 10.5px;
+        font-size: 11px;
     }
 }
 
