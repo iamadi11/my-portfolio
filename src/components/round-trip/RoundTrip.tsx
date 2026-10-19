@@ -232,6 +232,7 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                 <Line i={0}>200 OK</Line>
             </h2>
             <p className="rt-done rt-fade">Round trip complete · {trip.meta}</p>
+            <p className="rt-vitals" data-vitals hidden />
             <a className="rt-mail rt-fade" style={stagger(1)} href={`mailto:${trip.email}`}>
                 {trip.email}
             </a>

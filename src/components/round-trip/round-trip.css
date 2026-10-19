@@ -158,6 +158,15 @@ html:has(.rt) body {
     position: relative;
     max-width: 640px;
     text-shadow: 0 1px 12px var(--shade);
+    transition:
+        filter 250ms ease-out,
+        opacity 250ms ease-out;
+}
+/* the jump's flash: the panel loses focus for a beat, then settles with the new place */
+.rt-panel.rt-cut {
+    filter: blur(2px);
+    opacity: 0.6;
+    transition: none;
 }
 .rt-label {
     display: flex;
@@ -494,17 +503,21 @@ html:has(.rt) body {
     margin: 22px 0 0;
 }
 .rt-count i {
-    width: 22px;
+    position: relative;
+    width: 32px;
     height: 2px;
+    overflow: hidden;
     border-radius: 2px;
     background: var(--line);
-    transition:
-        background 0.4s,
-        width 0.4s var(--ease);
 }
-.rt-count i.on {
-    width: 40px;
+/* fills as the ship closes on that project's portal */
+.rt-count i::after {
+    content: '';
+    position: absolute;
+    inset: 0;
     background: var(--accent);
+    transform: scaleX(var(--p, 0));
+    transform-origin: left;
 }
 
 /* data */
@@ -602,6 +615,13 @@ html:has(.rt) body {
     letter-spacing: 0.12em;
     text-transform: uppercase;
 }
+.rt-vitals {
+    max-width: 46ch;
+    margin: -14px 0 26px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+}
 .rt-mail {
     display: inline-block;
     padding-bottom: 6px;
@@ -685,7 +705,14 @@ html:has(.rt) body {
     width: 22px;
     height: 1px;
     margin: 0 10px;
-    background: var(--line);
+    /* the wire: lit behind the request, filling ahead of it */
+    background:
+        linear-gradient(var(--soft), var(--soft)) left / calc(var(--fill, 0) * 100%) 100% no-repeat,
+        var(--line);
+}
+.rt-route li.on::before,
+.rt-route li.past::before {
+    --fill: 1;
 }
 .rt-route i {
     width: 6px;

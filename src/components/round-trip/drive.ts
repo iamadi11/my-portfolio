@@ -25,6 +25,7 @@ type Els = {
     chips: HTMLElement[];
     ringTags: HTMLElement[];
     recordTags: HTMLElement[];
+    vitals: HTMLElement | null;
 };
 
 const ZONES = ['#ffffff', '#8fd3ff', '#ffb35c', '#ff7ad9', '#7af0ff', '#ffffff'];
@@ -44,6 +45,7 @@ function find(root: HTMLElement): Els {
         chips: all('[data-chip]'),
         ringTags: all('[data-ring-tag]'),
         recordTags: all('[data-record-tag]'),
+        vitals: root.querySelector('[data-vitals]'),
     };
 }
 
@@ -70,6 +72,8 @@ function scrollState(
     q: (i: number) => number;
     pathU: (seg: number[]) => number;
     inView: (i: number) => boolean;
+    /** How far from section i's top to the next section's top (0–1): the hop in the HUD. */
+    hop: (i: number) => number;
 } {
     const y = scrollY;
     let sec = 0;
@@ -84,7 +88,28 @@ function scrollState(
         return 1;
     };
     const inView = (i: number): boolean => y >= tops[i] - vh * 0.4 && y < tops[i] + hs[i] - vh * 0.45;
-    return { y, vh, sec, q, pathU, inView };
+    const hop = (i: number): number =>
+        i + 1 < tops.length ? clamp((y - tops[i]) / Math.max(1, tops[i + 1] - tops[i])) : 1;
+    return { y, vh, sec, q, pathU, inView, hop };
+}
+
+/** What this visit actually measured: the 200 OK shows real numbers, not a story's. */
+function measured(lcp: number): string {
+    const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    const js = performance
+        .getEntriesByType('resource')
+        .filter((r) => r.name.split('?')[0].endsWith('.js'))
+        .reduce((sum, r) => {
+            const t = r as PerformanceResourceTiming;
+            return sum + (t.transferSize || t.encodedBodySize);
+        }, 0);
+    return [
+        nav && nav.responseStart > 0 ? `first byte ${Math.round(nav.responseStart)} ms` : '',
+        lcp > 0 ? `largest paint ${Math.round(lcp)} ms` : '',
+        js > 0 ? `${Math.round(js / 1024)} kB of JavaScript` : '',
+    ]
+        .filter(Boolean)
+        .join(' · ');
 }
 
 /** Labels follow rings and records on screen, but never sit on the text panel (`top` is its edge). */
@@ -120,15 +145,52 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     let lastRecord = -1;
     let raf = 0;
     let dead = false;
+    // The stack list shows one group's items at a time; it keeps the height of its tallest
+    // group, so the bottom-anchored panel never jumps as groups open.
+    const reserveSkills = (): void => {
+        const list = els.skills[0]?.parentElement;
+        if (!list || !root.classList.contains('rt-js')) return;
+        const was = els.skills.findIndex((li) => li.classList.contains('on'));
+        list.style.minHeight = '';
+        let tallest = 0;
+        els.skills.forEach((li, i) => {
+            els.skills.forEach((x, k) => x.classList.toggle('on', k === i));
+            tallest = Math.max(tallest, list.offsetHeight);
+        });
+        els.skills.forEach((x, k) => x.classList.toggle('on', k === was));
+        list.style.minHeight = `${tallest}px`;
+    };
     let layout = measure(els);
     let vh = innerHeight;
     let shownMs = -1;
+    let vitalsDone = false;
     const remeasure = (): void => {
+        reserveSkills();
         layout = measure(els);
         vh = innerHeight;
     };
     const resized = new ResizeObserver(remeasure);
     resized.observe(root);
+    // Web fonts change line wraps: measure again once they are in.
+    void document.fonts?.ready.then(() => !dead && remeasure());
+    const fills = new Map<HTMLElement, string>();
+    const fill = (el: HTMLElement, prop: string, v: number): void => {
+        const val = v.toFixed(2);
+        if (fills.get(el) === val) return;
+        fills.set(el, val);
+        el.style.setProperty(prop, val);
+    };
+    let lcp = 0;
+    const lcpSeen = new PerformanceObserver((list) => {
+        const last = list.getEntries().at(-1);
+        if (last) lcp = last.startTime;
+    });
+    try {
+        lcpSeen.observe({ type: 'largest-contentful-paint', buffered: true });
+    } catch {
+        // not measured in this browser; the line leaves it out
+    }
+    let cutTimer = 0;
 
     const setOn = (key: string, list: HTMLElement[], idx: number): void => {
         if (active.get(key) === idx) return;
@@ -171,6 +233,10 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         lastPick = p;
         setOn('projects', els.projects, forced ?? p);
         setOn('dots', els.dots, forced ?? p);
+        // Each project's dot fills as the ship closes on its portal.
+        const n = els.dots.length;
+        const through = clamp(q(3) * n - p);
+        els.dots.forEach((d, k) => fill(d, '--p', k < p ? 1 : k === p ? through : 0));
         const r = pick(q(4), els.records.length);
         if (r !== lastRecord) forcedRecord = null;
         lastRecord = r;
@@ -178,7 +244,16 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         setOn('chips', els.chips, forcedRecord ?? r);
     };
 
-    const hud = (sec: number, ms: number): void => {
+    const hud = (sec: number, ms: number, hop: number): void => {
+        // The wire to the next hop fills as the request travels it.
+        els.route.forEach((li) => fill(li, '--fill', Number(li.dataset.r) === sec + 1 ? hop : 0));
+        // Filled while the 200 OK panel is still off screen (from Data on), so nothing shifts.
+        if (sec >= 4 && !vitalsDone && els.vitals) {
+            vitalsDone = true;
+            const line = measured(lcp);
+            els.vitals.textContent = line && `Measured on this visit: ${line}.`;
+            els.vitals.hidden = !line;
+        }
         if (active.get('zone') !== sec) {
             active.set('zone', sec);
             shownMs = -1;
@@ -218,6 +293,13 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         // A longer pulse in the hand as the ship jumps to the next place.
         if (out.jumped && coarse) navigator.vibrate?.([8, 30, 16]);
         if (out.jumped) sound?.jump();
+        // The panel blinks out of focus with the flash, so text and world change on the same beat.
+        if (out.jumped && !reduce) {
+            const panel = els.secs[s.sec]?.querySelector('.rt-panel');
+            panel?.classList.add('rt-cut');
+            clearTimeout(cutTimer);
+            cutTimer = window.setTimeout(() => panel?.classList.remove('rt-cut'), 180);
+        }
         sound?.wind(out.speed);
         sound?.engine(panOf(out.ship), Math.min(1, out.speed + out.rush));
         sound?.roar(out.rush);
@@ -235,7 +317,10 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
                 : vh;
         els.secs.forEach((el, i) => el.classList.toggle('in', s.inView(i)));
         // Reveals are armed in the same frame the visible section is marked, so nothing blinks.
-        root.classList.add('rt-js');
+        if (!root.classList.contains('rt-js')) {
+            root.classList.add('rt-js');
+            reserveSkills();
+        }
         root.classList.toggle('rt-scrolled', s.y > 40);
         if (s.y > 4) wake();
         panels(s.q);
@@ -244,7 +329,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         const map = smooth(0, 0.8, s.q(5));
         const resp = 1 - smooth(0.55, 0.96, s.q(5));
         const toEnd = clamp(s.y / Math.max(1, layout.tops[5] ?? 1));
-        hud(s.sec, Math.round(toEnd * 180 + (1 - resp) * 58));
+        hud(s.sec, Math.round(toEnd * 180 + (1 - resp) * 58), s.hop(s.sec));
         draw(s, map, resp, top);
     };
 
@@ -289,6 +374,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     return () => {
         dead = true;
         cancelAnimationFrame(raf);
+        clearTimeout(cutTimer);
+        lcpSeen.disconnect();
         resized.disconnect();
         removeEventListener('resize', remeasure);
         removeEventListener('keydown', onKey);
