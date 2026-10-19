@@ -48,12 +48,15 @@ export function createRig(
         ground: boolean,
         shot: Shot
     ): void => {
-        px += (pointer.x - px) * 0.05;
-        py += (pointer.y - py) * 0.05;
+        // Parallax and the hover bob are decoration: none with reduced motion, same pace at any refresh rate.
+        const still = reduce ? 0 : 1;
+        px += (pointer.x * still - px) * ease(dt, 3);
+        py += (pointer.y * still - py) * ease(dt, 3);
         const back = clamp(u - 10 / route.len);
         route.curve.getPointAt(back, camera.position);
         camera.position.addScaledVector(route.frame(back).n1, px * 1.4);
-        camera.position.y += 1.8 - py * 0.9 + (u < route.seg[1] + 0.002 ? Math.sin(t * 0.6) * 0.3 : 0);
+        camera.position.y +=
+            1.8 - py * 0.9 + (u < route.seg[1] + 0.002 ? Math.sin(t * 0.6) * 0.3 * still : 0);
         // Lifted (coming down onto the city, or climbing off the ice), it looks further ahead, down
         // at the path. Past the end of the route the look point carries on along the last tangent.
         camera.position.y += shot.lift;

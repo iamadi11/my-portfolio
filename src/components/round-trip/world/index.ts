@@ -169,6 +169,19 @@ function jumper(
     };
     const step = (dt: number, target: Stop, back: boolean): Jump => {
         out.jumped = false;
+        // Scrolled back before the flash: drop the jump and cut to where the visitor is.
+        if (clock >= 0 && clock < peak && back && target !== next) {
+            clock = -1;
+            out.shown = target;
+        }
+        // Raced past another place after the flash: chain straight into the next jump, at the
+        // same strength and twice the pace, instead of queueing a full one behind this.
+        if (clock >= peak && target !== next && !back && !reduce) {
+            const now = out.jump;
+            start(target);
+            len *= 0.5;
+            clock = peak * Math.sqrt(now);
+        }
         if (clock < 0 && target !== out.shown) {
             // Rewinding is a plain cut; only the way forward is a jump.
             if (reduce || back) out.shown = target;
@@ -521,7 +534,7 @@ export function createWorld(o: WorldOptions): World {
         landmarks.show(zone);
         flyShip(shown, dt, f.resp, heat, sun, dawn);
         records.update(p, u);
-        warp.update(Math.max(jump, beat.climb > 0.45 ? (beat.climb - 0.45) * 1.4 : 0), tint);
+        warp.update(Math.max(jump, !o.reduce && beat.climb > 0.45 ? (beat.climb - 0.45) * 1.4 : 0), tint);
         // Seen from above through cloud, a city of small lights would bloom into mush.
         post.finish(
             t,

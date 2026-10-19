@@ -52,18 +52,26 @@ const webgl = (): boolean => {
     return Boolean(c.getContext('webgl2') ?? c.getContext('webgl'));
 };
 
-/** Scroll → which section, how far through it, and where on the route the request should be. */
-function scrollState(els: Els): {
+/** Where each section sits; measured on resize, not every frame, so a frame never forces layout. */
+type Layout = { tops: number[]; hs: number[] };
+const measure = (els: Els): Layout => ({
+    tops: els.secs.map((s) => s.offsetTop),
+    hs: els.secs.map((s) => s.offsetHeight),
+});
+
+/** Scroll → which section, how far through it, and where on the route the request should be. Reads only. */
+function scrollState(
+    { tops, hs }: Layout,
+    vh: number
+): {
     y: number;
     vh: number;
     sec: number;
     q: (i: number) => number;
     pathU: (seg: number[]) => number;
+    inView: (i: number) => boolean;
 } {
     const y = scrollY;
-    const vh = innerHeight;
-    const tops = els.secs.map((s) => s.offsetTop);
-    const hs = els.secs.map((s) => s.offsetHeight);
     let sec = 0;
     tops.forEach((t, i) => {
         if (y >= t - vh * 0.5) sec = i;
@@ -75,10 +83,8 @@ function scrollState(els: Els): {
                 return lerp(seg[i], seg[i + 1], clamp((y - tops[i]) / (tops[i + 1] - tops[i])));
         return 1;
     };
-    els.secs.forEach((s, i) =>
-        s.classList.toggle('in', y >= tops[i] - vh * 0.4 && y < tops[i] + hs[i] - vh * 0.45)
-    );
-    return { y, vh, sec, q, pathU };
+    const inView = (i: number): boolean => y >= tops[i] - vh * 0.4 && y < tops[i] + hs[i] - vh * 0.45;
+    return { y, vh, sec, q, pathU, inView };
 }
 
 /** Labels follow rings and records on screen, but never sit on the text panel (`top` is its edge). */
@@ -114,6 +120,15 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     let lastRecord = -1;
     let raf = 0;
     let dead = false;
+    let layout = measure(els);
+    let vh = innerHeight;
+    let shownMs = -1;
+    const remeasure = (): void => {
+        layout = measure(els);
+        vh = innerHeight;
+    };
+    const resized = new ResizeObserver(remeasure);
+    resized.observe(root);
 
     const setOn = (key: string, list: HTMLElement[], idx: number): void => {
         if (active.get(key) === idx) return;
@@ -166,6 +181,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     const hud = (sec: number, ms: number): void => {
         if (active.get('zone') !== sec) {
             active.set('zone', sec);
+            shownMs = -1;
             // A tick in the hand at each hop while tilt is scrolling.
             if (tilted.scrolling()) navigator.vibrate?.(10);
             els.route.forEach((li) => {
@@ -178,19 +194,18 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
                 else a?.removeAttribute('aria-current');
             });
         }
-        const text = `${ms} ms`;
+        if (ms === shownMs) return;
+        shownMs = ms;
+        const text = `· ${ms} ms`;
         const req = els.req?.querySelector('em');
-        if (req) req.textContent = `· ${text}`;
+        if (req) req.textContent = text;
         const tag = els.ms[sec];
-        if (tag) tag.textContent = `· ${text}`;
+        if (tag) tag.textContent = text;
     };
 
-    const draw = (s: ReturnType<typeof scrollState>, map: number, resp: number): void => {
+    const draw = (s: ReturnType<typeof scrollState>, map: number, resp: number, top: number): void => {
         if (!world) return;
         const out: FrameOut = world.frame({ u: s.pathU(world.seg), map, resp, pointer });
-        const top = small
-            ? (els.secs[s.sec]?.querySelector('.rt-panel')?.getBoundingClientRect().top ?? innerHeight)
-            : innerHeight;
         els.ringTags.forEach((el, k) => place(el, out.rings[k], s.sec === 3 && map < 0.1, small, top));
         els.recordTags.forEach((el, k) => place(el, out.records[k], s.sec === 4 && map < 0.1, small, top));
         const sound = o.sound();
@@ -212,7 +227,13 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
 
     const tick = (): void => {
         raf = requestAnimationFrame(tick);
-        const s = scrollState(els);
+        const s = scrollState(layout, vh);
+        // Phones keep world labels clear of the panel: read its edge before this frame writes anything.
+        const top =
+            small && world
+                ? (els.secs[s.sec]?.querySelector('.rt-panel')?.getBoundingClientRect().top ?? vh)
+                : vh;
+        els.secs.forEach((el, i) => el.classList.toggle('in', s.inView(i)));
         // Reveals are armed in the same frame the visible section is marked, so nothing blinks.
         root.classList.add('rt-js');
         root.classList.toggle('rt-scrolled', s.y > 40);
@@ -222,9 +243,9 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         // `map`, the rise into orbit; only then does the ship turn and leave.
         const map = smooth(0, 0.8, s.q(5));
         const resp = 1 - smooth(0.55, 0.96, s.q(5));
-        const toEnd = clamp(s.y / Math.max(1, els.secs[5]?.offsetTop ?? 1));
+        const toEnd = clamp(s.y / Math.max(1, layout.tops[5] ?? 1));
         hud(s.sec, Math.round(toEnd * 180 + (1 - resp) * 58));
-        draw(s, map, resp);
+        draw(s, map, resp, top);
     };
 
     const onKey = (e: KeyboardEvent): void => {
@@ -251,6 +272,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         if (el.hasAttribute('data-project')) forced = els.projects.indexOf(el);
         else forcedRecord = els.records.indexOf(el);
     };
+    addEventListener('resize', remeasure);
     addEventListener('keydown', onKey);
     addEventListener('wheel', wake, { passive: true });
     addEventListener('touchstart', wake, { passive: true });
@@ -267,6 +289,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     return () => {
         dead = true;
         cancelAnimationFrame(raf);
+        resized.disconnect();
+        removeEventListener('resize', remeasure);
         removeEventListener('keydown', onKey);
         removeEventListener('wheel', wake);
         removeEventListener('touchstart', wake);

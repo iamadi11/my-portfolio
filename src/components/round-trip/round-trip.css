@@ -21,6 +21,8 @@ html:has(.rt) body {
     --mono: var(--font-geist-mono), ui-monospace, Menlo, Consolas, monospace;
     --g: clamp(16px, 4vw, 56px);
     --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    /* quick, decisive: entrances and presses */
+    --out: cubic-bezier(0.23, 1, 0.32, 1);
     position: relative;
     color: var(--ink);
     background: var(--bg);
@@ -51,7 +53,6 @@ html:has(.rt) body {
     z-index: 0;
     overflow: hidden;
     background: var(--bg);
-    transition: opacity 1.4s ease;
 }
 .rt-poster::before {
     /* The night side of Earth: its curve low on the screen, rimmed by a thin blue line of air. */
@@ -90,13 +91,18 @@ html:has(.rt) body {
     width: 100%;
     height: 100lvh;
     opacity: 0;
-    transition: opacity 1.4s ease;
+    transition: opacity 700ms var(--out);
 }
+/* Only the canvas fades, over a poster that stays put, so the hand-off never dips dark. */
 .rt-live .rt-canvas {
     opacity: 1;
 }
 .rt-live .rt-poster {
-    opacity: 0;
+    visibility: hidden;
+    transition: visibility 0s 700ms;
+}
+.rt-live .rt-poster::before {
+    animation: none;
 }
 .rt-scrim {
     position: fixed;
@@ -184,23 +190,28 @@ html:has(.rt) body {
 }
 .rt-js .rt-ln > span {
     transform: translateY(108%);
-    transition: transform 1.05s var(--ease);
-    transition-delay: calc(var(--i, 0) * 80ms);
+    transition: transform 250ms ease-in;
 }
 .rt-js .in .rt-ln > span {
     transform: none;
+    transition: transform 800ms var(--out);
+    transition-delay: calc(var(--i, 0) * 60ms);
 }
+/* leaving is quicker than arriving, so the old panel never lingers under the next */
 .rt-js .rt-fade {
     opacity: 0;
     transform: translateY(14px);
     transition:
-        opacity 0.8s var(--ease),
-        transform 0.9s var(--ease);
-    transition-delay: calc(var(--i, 0) * 80ms + 140ms);
+        opacity 200ms ease-in,
+        transform 250ms ease-in;
 }
 .rt-js .in .rt-fade {
     opacity: 1;
     transform: none;
+    transition:
+        opacity 600ms var(--out),
+        transform 800ms var(--out);
+    transition-delay: calc(var(--i, 0) * 60ms + 120ms);
 }
 
 /* hero */
@@ -241,7 +252,7 @@ html:has(.rt) body {
     color: var(--bg);
     font: 600 15px var(--body);
     cursor: pointer;
-    transition: transform 0.25s var(--ease);
+    transition: transform 160ms ease-out;
 }
 .rt-cue a {
     display: inline-flex;
@@ -254,15 +265,26 @@ html:has(.rt) body {
     font: 500 15px var(--body);
     text-decoration: none;
     transition:
-        background 0.25s,
-        color 0.25s;
+        background 200ms ease,
+        color 200ms ease,
+        transform 160ms ease-out;
 }
-.rt-cue a:hover {
-    background: var(--ink);
-    color: var(--bg);
+@media (hover: hover) and (pointer: fine) {
+    .rt-cue a:hover {
+        background: var(--ink);
+        color: var(--bg);
+    }
+    .rt-cue button:hover {
+        transform: translateY(-2px);
+    }
 }
-.rt-cue button:hover {
-    transform: translateY(-2px);
+.rt-cue button:active,
+.rt-cue a:active,
+.rt-links a:active,
+.rt-pills a:active,
+.rt-pills button:active,
+.rt-snd:active {
+    transform: scale(0.97);
 }
 .rt-cue span {
     display: flex;
@@ -375,7 +397,7 @@ html:has(.rt) body {
     white-space: nowrap;
 }
 .rt-js .rt-layers li.on span {
-    animation: rt-fade-in 0.5s var(--ease);
+    animation: rt-fade-in 250ms ease-out;
 }
 @keyframes rt-fade-in {
     from {
@@ -402,14 +424,18 @@ html:has(.rt) body {
 .rt-item {
     grid-area: 1 / 1;
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(10px);
     transition:
-        opacity 0.55s var(--ease),
-        transform 0.8s var(--ease);
+        opacity 180ms ease-out,
+        transform 180ms ease-out;
 }
+/* scrubbed through many times a visit: the incoming item is quick, the outgoing one quicker */
 .rt-item.on {
     opacity: 1;
     transform: none;
+    transition:
+        opacity 300ms var(--out) 60ms,
+        transform 400ms var(--out) 60ms;
 }
 .rt-item:not(.on) a {
     pointer-events: none;
@@ -458,14 +484,17 @@ html:has(.rt) body {
     cursor: pointer;
     backdrop-filter: blur(8px);
     transition:
-        background 0.25s,
-        color 0.25s;
+        background 200ms ease,
+        color 200ms ease,
+        transform 160ms ease-out;
 }
-.rt-links a:hover,
-.rt-pills a:hover,
-.rt-pills button:hover {
-    background: var(--ink);
-    color: var(--bg);
+@media (hover: hover) and (pointer: fine) {
+    .rt-links a:hover,
+    .rt-pills a:hover,
+    .rt-pills button:hover {
+        background: var(--ink);
+        color: var(--bg);
+    }
 }
 .rt-count {
     display: flex;
@@ -650,7 +679,7 @@ html:has(.rt) body {
 .rt-route li {
     display: flex;
     align-items: center;
-    transition: color 0.4s;
+    transition: color 200ms ease;
 }
 .rt-route a {
     display: inline-flex;
@@ -674,9 +703,8 @@ html:has(.rt) body {
     border: 1px solid var(--muted);
     border-radius: 50%;
     transition:
-        background 0.4s,
-        border-color 0.4s,
-        box-shadow 0.4s;
+        background 200ms ease,
+        border-color 200ms ease;
 }
 .rt-route li.past i {
     border-color: var(--soft);
@@ -702,6 +730,7 @@ html:has(.rt) body {
     letter-spacing: inherit;
     text-transform: inherit;
     cursor: pointer;
+    transition: transform 160ms ease-out;
 }
 .rt-snd[aria-pressed='true'] {
     border-color: var(--ink);
@@ -743,7 +772,7 @@ html:has(.rt) body {
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.35s;
+    transition: opacity 200ms ease-out;
     will-change: transform;
 }
 .rt-tag::before {
@@ -831,9 +860,18 @@ html:has(.rt) body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .rt-js .rt-ln > span,
+    /* no movement; fades stay, short */
     .rt-js .rt-fade,
+    .rt-js .in .rt-fade,
     .rt-item,
+    .rt-item.on {
+        transform: none !important;
+        transition: opacity 200ms ease !important;
+    }
+    .rt :active {
+        transform: none !important;
+    }
+    .rt-js .rt-ln > span,
     .rt-cue b::after,
     .rt-poster::before,
     .rt-js .rt-layers li.on span,
@@ -852,7 +890,6 @@ html:has(.rt) body {
         opacity: 0.35;
     }
 }
-
 
 @media (max-width: 760px) {
     /* phones: no "or scroll" cue; the page itself is the cue */
