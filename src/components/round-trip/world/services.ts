@@ -3,9 +3,9 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import { smooth } from '@/components/round-trip/math';
-import { ADD, type Shared, shader } from '@/components/round-trip/world/gl';
+import { type Shared, shader } from '@/components/round-trip/world/gl';
 import type { Glow } from '@/components/round-trip/world/glow';
-import { GROUND, LANDS } from '@/components/round-trip/world/land';
+import { GROUND, LANDS, POOL } from '@/components/round-trip/world/land';
 import type { Route } from '@/components/round-trip/world/route';
 
 /**
@@ -13,7 +13,18 @@ import type { Route } from '@/components/round-trip/world/route';
  * rim, with a dark throat. It forms as the ship comes close and flashes as the ship crosses.
  */
 const HORIZON_FRAG = /* glsl */ `
-    uniform vec3 uCol; uniform float uOn, uFlash; varying vec2 vUv; varying float vD;
+    uniform vec3 uCol, uNext; uniform float uOn, uFlash; varying vec2 vUv; varying vec3 vW; varying float vD;
+    // The sky of the place beyond, looked up by direction (so it sits at infinity, like a window):
+    // its horizon colour low down, near-black overhead, a few stars.
+    vec3 beyond(vec3 d) {
+        vec3 hz = uNext * 2.6 + 0.01;
+        vec3 c = mix(hz, vec3(0.004, 0.007, 0.018), smoothstep(0.0, 0.5, d.y));
+        c = mix(c, hz * 0.35, smoothstep(0.0, -0.12, d.y));
+        vec2 sp = vec2(atan(d.z, d.x), asin(clamp(d.y, -1.0, 1.0))) * 110.0;
+        vec2 id = floor(sp);
+        float star = step(0.965, hash(id)) * smoothstep(0.28, 0.0, length(fract(sp) - 0.5));
+        return c + vec3(0.9, 0.95, 1.0) * star * (0.4 + 1.2 * hash(id + 7.3)) * smoothstep(0.02, 0.25, d.y);
+    }
     void main() {
         vec2 c = vUv - 0.5;
         float r = max(length(c) * 2.0, 1e-3);
@@ -26,12 +37,26 @@ const HORIZON_FRAG = /* glsl */ `
         float rim = pow(smoothstep(0.8, 0.995, r), 3.0);
         float inside = 1.0 - smoothstep(0.985, 1.0, r);
         // Kept dim inside: up close the disc fills the frame, and it must not wash the scene out.
-        vec3 col = uCol * (0.012 + (arms * 0.22 + streaks * 0.38) * depth + rim * 1.1);
+        vec3 col = uCol * ((arms * 0.22 + streaks * 0.38) * depth + rim * 1.1);
         col += mix(uCol, vec3(1.0), 0.5) * streaks * arms * depth * 0.1;
-        col = col * uOn + mix(uCol, vec3(1.0), 0.5) * uFlash * (1.0 - r * 0.6);
-        gl_FragColor = vec4(col * inside * fade(vD), 1.0);
+        // Premultiplied: the throat covers the scene behind with the sky beyond; the swirl adds light.
+        float alpha = 0.85 * uOn * inside * fade(vD);
+        vec3 glow = col * uOn + mix(uCol, vec3(1.0), 0.5) * uFlash * (1.0 - r * 0.6);
+        gl_FragColor = vec4(beyond(normalize(vW - cameraPosition)) * alpha + glow * inside * fade(vD), alpha);
     }
 `;
+
+/** Premultiplied alpha: the disc covers what is behind it (rgb already scaled by alpha), and adds light. */
+const WINDOW: THREE.ShaderMaterialParameters = {
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.CustomBlending,
+    blendEquation: THREE.AddEquation,
+    blendSrc: THREE.OneFactor,
+    blendDst: THREE.OneMinusSrcAlphaFactor,
+    blendSrcAlpha: THREE.OneFactor,
+    blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
+};
 
 type Portal = {
     u: number;
@@ -94,7 +119,7 @@ export function addRings(
     us: number[],
     small: boolean,
     glowAt: Glow,
-    _next: THREE.Color[] = []
+    next: THREE.Color[] = []
 ): Rings {
     const portals: Portal[] = colours.map((c, k) => {
         const center = route.curve.getPointAt(us[k]);
@@ -110,14 +135,15 @@ export function addRings(
         const strip = new THREE.Mesh(new THREE.TorusGeometry(INNER, 0.025, 8, 160), glow);
         strip.position.y = RING_Y;
         const horizon = { uOn: { value: 0 }, uFlash: { value: 0 } };
+        const beyond = next[k] ?? new THREE.Color(0.03, 0.045, 0.08);
         const disc = new THREE.Mesh(
             new THREE.CircleGeometry(INNER, 128),
             shader(
                 s,
-                /* glsl */ `varying vec2 vUv; varying float vD; void main() { vUv = uv; vec4 mv = modelViewMatrix * vec4(position, 1.0); vD = -mv.z; gl_Position = projectionMatrix * mv; }`,
+                /* glsl */ `varying vec2 vUv; varying vec3 vW; varying float vD; void main() { vUv = uv; vW = (modelMatrix * vec4(position, 1.0)).xyz; vec4 mv = modelViewMatrix * vec4(position, 1.0); vD = -mv.z; gl_Position = projectionMatrix * mv; }`,
                 HORIZON_FRAG,
-                { uCol: { value: new THREE.Color(c) }, ...horizon },
-                { ...ADD, side: THREE.DoubleSide }
+                { uCol: { value: new THREE.Color(c) }, uNext: { value: beyond.clone() }, ...horizon },
+                { ...WINDOW, side: THREE.DoubleSide }
             )
         );
         disc.position.y = RING_Y;
@@ -147,7 +173,10 @@ export function addRings(
             const inner = innerRadius(gltf.scene);
             gltf.scene.traverse((o) => {
                 const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
-                if (m?.isMeshStandardMaterial) m.envMapIntensity = 0.6;
+                if (!m?.isMeshStandardMaterial) return;
+                m.envMapIntensity = 0.6;
+                // Brushed, not polished: a mirror finish throws glints that bloom into white blobs.
+                m.roughness = Math.max(m.roughness, 0.45);
             });
             for (const p of portals as Array<
                 Portal & { strip: THREE.Mesh; disc: THREE.Mesh; g: THREE.Group }
@@ -159,11 +188,18 @@ export function addRings(
         })
         .catch(() => undefined);
 
+    // The gate lights the ground at its foot as it opens.
+    const pool = (p: Portal): void => {
+        const r = RING_Y * p.g.scale.x * 0.9;
+        POOL.uPool.value.set(p.g.position.x, p.g.position.y, p.g.position.z, r * p.horizon.uOn.value);
+        POOL.uPoolCol.value.copy(p.colour).multiplyScalar(0.6);
+    };
     const rings: Rings = { centers: portals.map((p) => p.center), rush: 0, close: 0, update: () => null };
     const update = (u: number, _t: number, dt: number, show: number): number | null => {
         let hit: number | null = null;
         rings.rush = 0;
         rings.close = 0;
+        POOL.uPool.value.w = 0;
         portals.forEach((p, k) => {
             p.g.visible = k === show;
             // The run-up: the last 90 m before the ring, building until the ship is through.
@@ -177,6 +213,7 @@ export function addRings(
             p.beacon.material.opacity = 0.85 * smooth(30, 120, d);
             p.glow.color.copy(p.colour).multiplyScalar(0.35 + p.near * 0.8);
             p.horizon.uOn.value = smooth(0.15, 0.85, p.near);
+            if (k === show) pool(p);
             p.horizon.uFlash.value *= Math.exp(-dt * 3.5);
             if (!p.passed && u > p.u) {
                 p.passed = true;
