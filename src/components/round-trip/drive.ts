@@ -582,7 +582,9 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         const idle = reduce ? 0 : still.idle();
         const out: FrameOut = world.frame({ u: s.pathU(world.seg), map, resp, pointer, boost, idle });
         const zone = out.place.split('#')[1];
-        shownProject = s.sec === 3 && zone !== undefined ? Number(zone) : null;
+        // Still over the city on the way into Services, the first project is the one coming.
+        const into = out.place === 'city' ? 0 : null;
+        shownProject = s.sec === 3 ? (zone !== undefined ? Number(zone) : into) : null;
         // Set on the two HUD bars only: a variable on the root would restyle the whole page each frame.
         els.huds.forEach((el) => fill(el, '--flash', out.flash));
         els.ringTags.forEach((el, k) => place(el, out.rings[k], s.sec === 3 && map < 0.1, small, top));
@@ -604,6 +606,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         sound?.wind(out.speed);
         sound?.engine(panOf(out.ship), Math.min(1, out.speed + out.rush));
         sound?.roar(out.rush);
+        sound?.rise(zone === undefined ? -1 : Number(zone), out.rush);
         sound?.place(out.place);
         root.classList.add('rt-live');
     };

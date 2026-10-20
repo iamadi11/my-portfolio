@@ -16,6 +16,8 @@ export type Sound = {
     place: (stop: string) => void;
     /** A jump begins; its thump lands on the cut, `lead` seconds from now. */
     jump: (lead: number) => void;
+    /** A riser in project k's note as the ship rushes at its portal (0–1); k < 0 for none. */
+    rise: (k: number, level: number) => void;
     /** 0–1: burning through the air (entry and exit). */
     roar: (heat: number) => void;
 };
@@ -185,6 +187,10 @@ export function createSound(given?: AudioContext): Sound {
     let engine: { pan: PannerNode; gain: GainNode; lp: BiquadFilterNode } | null = null;
     let roar: GainNode | null = null;
     let all: ReturnType<typeof beds> | null = null;
+    let riser: { a: OscillatorNode; b: OscillatorNode; gain: GainNode; lp: BiquadFilterNode } | null = null;
+    let riseK = 0;
+    // Until then a jump is resolving the riser, and the frame's level leaves it alone.
+    let riseHeld = 0;
     let bedOn = '';
     let on = false;
     const live = (): boolean => on && ctx?.state === 'running';
@@ -221,11 +227,49 @@ export function createSound(given?: AudioContext): Sound {
         }
         filtered(ctx, white, 'bandpass', 900, 0.7, gain).gain.value = 0.03;
         engine = { pan, gain, lp };
+        // The riser: the portal's note and its fifth under a low-pass that opens as it climbs.
+        const rlp = ctx.createBiquadFilter();
+        rlp.type = 'lowpass';
+        rlp.frequency.value = 400;
+        const rg = ctx.createGain();
+        rg.gain.value = 0;
+        rlp.connect(rg).connect(master);
+        const osc = (type: OscillatorType, hz: number): OscillatorNode => {
+            const o = ctx!.createOscillator();
+            o.type = type;
+            o.frequency.value = hz;
+            o.connect(rlp);
+            o.start();
+            return o;
+        };
+        riser = { a: osc('triangle', 260), b: osc('sawtooth', 390), gain: rg, lp: rlp };
         // The roar through the air: brown noise through a low-pass that opens with the heat.
         roar = ctx.createGain();
         roar.gain.value = 0;
         roar.connect(master);
         filtered(ctx, noise(ctx, true), 'lowpass', 500, 0.5, roar).gain.value = 0.5;
+    };
+
+    /** On the cut the riser lands on the portal's note and rings out. */
+    const resolve = (t: number, at: number): void => {
+        if (!riser) return;
+        riseHeld = at + 1.6;
+        const note = NOTES[riseK % NOTES.length];
+        const g = riser.gain.gain;
+        const was = g.value;
+        for (const [o, m] of [
+            [riser.a, 1],
+            [riser.b, 1.5],
+        ] as const) {
+            o.frequency.cancelScheduledValues(t);
+            o.frequency.setValueAtTime(o.frequency.value, t);
+            o.frequency.exponentialRampToValueAtTime(note * m * 0.97, at);
+            o.frequency.setValueAtTime(note * m, at);
+        }
+        g.cancelScheduledValues(t);
+        g.setValueAtTime(was, t);
+        g.linearRampToValueAtTime(was > 0.004 ? Math.max(was, 0.04) : 0, at);
+        g.setTargetAtTime(0, at, 0.45);
     };
 
     return {
@@ -304,6 +348,19 @@ export function createSound(given?: AudioContext): Sound {
             thump.connect(tg).connect(master);
             thump.start(at);
             thump.stop(at + 0.9);
+            resolve(t, at);
+        },
+        rise(k, level) {
+            if (!live() || !ctx || !riser || ctx.currentTime < riseHeld) return;
+            if (k >= 0) riseK = k;
+            const lv = k < 0 ? 0 : level;
+            const t = ctx.currentTime;
+            // Climbs an octave from below the note, stopping just short of it: the cut resolves it.
+            const hz = (NOTES[riseK % NOTES.length] / 2) * Math.pow(2, lv * 0.92);
+            riser.a.frequency.setTargetAtTime(hz, t, 0.08);
+            riser.b.frequency.setTargetAtTime(hz * 1.5, t, 0.08);
+            riser.lp.frequency.setTargetAtTime(400 + lv * 2400, t, 0.1);
+            riser.gain.gain.setTargetAtTime(lv * lv * 0.05, t, 0.1);
         },
         roar(heat) {
             if (!live() || !ctx || !roar) return;

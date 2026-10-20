@@ -234,6 +234,32 @@ html:has(.rt) body {
     transition: transform 800ms var(--out);
     transition-delay: calc(var(--i, 0) * 60ms);
 }
+/* chapter titles: word by word (200 OK letter by letter), each piece in its own mask */
+.rt-kin {
+    display: block;
+}
+.rt-w {
+    display: inline-block;
+    overflow: hidden;
+    padding: 0 0.04em 0.08em;
+    margin: 0 -0.04em -0.08em;
+    vertical-align: top;
+}
+.rt-w > span {
+    display: inline-block;
+}
+.rt-js .rt-w > span {
+    transform: translateY(108%);
+    transition: transform 250ms ease-in;
+}
+.rt-js .in .rt-w > span {
+    transform: none;
+    transition: transform 800ms var(--out);
+    transition-delay: calc(var(--i, 0) * 50ms);
+}
+.rt-js .in .rt-kin-c .rt-w > span {
+    transition-delay: calc(var(--i, 0) * 30ms);
+}
 /* leaving is quicker than arriving, so the old panel never lingers under the next */
 .rt-js .rt-fade {
     opacity: 0;
@@ -1034,6 +1060,7 @@ html:has(.rt) body {
         transform: none !important;
     }
     .rt-js .rt-ln > span,
+    .rt-js .rt-w > span,
     .rt-cue b::after,
     .rt-poster::before,
     .rt-layer-items,

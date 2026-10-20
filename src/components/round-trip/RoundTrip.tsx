@@ -48,6 +48,39 @@ function Line({ i, children }: { i: number; children: React.ReactNode }): React.
     );
 }
 
+/** Where each piece of a title starts in it, so every piece has a key of its own. */
+function pieces(text: string, chars: boolean): Array<{ p: string; at: number; n: number }> {
+    const parts = chars ? [...text] : text.split(' ');
+    let at = 0;
+    return parts.map((p, n) => {
+        const piece = { p, at, n };
+        at += p.length + (chars ? 0 : 1);
+        return piece;
+    });
+}
+
+/**
+ * A chapter title that comes in word by word (200 OK letter by letter), each piece rising in its
+ * own mask. Read as one line: the pieces are aria-hidden, the whole title is there for readers.
+ */
+function Kinetic({ text, chars = false }: { text: string; chars?: boolean }): React.JSX.Element {
+    return (
+        <span className={chars ? 'rt-kin rt-kin-c' : 'rt-kin'}>
+            <span className="rt-sr">{text}</span>
+            <span aria-hidden="true">
+                {pieces(text, chars).map(({ p, at, n }) => (
+                    <React.Fragment key={at}>
+                        {n > 0 && !chars && ' '}
+                        <span className="rt-w" style={stagger(n)}>
+                            <span>{p === ' ' ? '\u00a0' : p}</span>
+                        </span>
+                    </React.Fragment>
+                ))}
+            </span>
+        </span>
+    );
+}
+
 function Hero({ trip }: { trip: Trip }): React.JSX.Element {
     return (
         <>
@@ -84,7 +117,7 @@ function Impact({ trip }: { trip: Trip }): React.JSX.Element | null {
         <>
             <Label n={1} zone="Wire" />
             <h2 className="rt-h2">
-                <Line i={0}>What changed when I shipped</Line>
+                <Kinetic text="What changed when I shipped" />
             </h2>
             <dl className="rt-impact">
                 {trip.impact.map((m, i) => {
@@ -114,7 +147,7 @@ function Stack({ trip }: { trip: Trip }): React.JSX.Element | null {
         <>
             <Label n={2} zone="Edge" />
             <h2 className="rt-h2">
-                <Line i={0}>The stack</Line>
+                <Kinetic text="The stack" />
             </h2>
             <div className="rt-skills">
                 <ul className="rt-layers">
@@ -201,7 +234,7 @@ function Career({ trip }: { trip: Trip }): React.JSX.Element {
         <>
             <Label n={4} zone="Data" />
             <h2 className="rt-h2 rt-h2-sm">
-                <Line i={0}>Career</Line>
+                <Kinetic text="Career" />
             </h2>
             <p className="rt-chips rt-fade" aria-hidden="true">
                 {trip.records.map((r) => (
@@ -243,7 +276,7 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                 Response
             </p>
             <h2 className="rt-ok">
-                <Line i={0}>200 OK</Line>
+                <Kinetic text="200 OK" chars />
             </h2>
             <p className="rt-done rt-fade">Round trip complete · {trip.meta}</p>
             <p className="rt-vitals" data-vitals hidden />
