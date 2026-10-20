@@ -50,6 +50,42 @@ const FINISH = {
         }`,
 };
 
+/**
+ * The bloom's bright pass, read with four taps spread over each of its (much larger) texels so small
+ * lights neither alias nor flicker as the chain shrinks; each tap is clamped, so a specular glint
+ * on metal can't flood the chain.
+ */
+const BRIGHT_FRAG = /* glsl */ `
+    uniform sampler2D tDiffuse; uniform vec3 defaultColor; uniform float defaultOpacity;
+    uniform float luminosityThreshold, smoothWidth; uniform vec2 uStep; varying vec2 vUv;
+    vec4 tap(vec2 o) {
+        vec4 c = texture2D(tDiffuse, vUv + o * uStep);
+        c.rgb = min(c.rgb, vec3(6.0));
+        float a = smoothstep(luminosityThreshold, luminosityThreshold + smoothWidth, luminance(c.rgb));
+        return mix(vec4(defaultColor, defaultOpacity), c, a);
+    }
+    void main() { gl_FragColor = 0.25 * (tap(vec2(-1.0, -1.0)) + tap(vec2(1.0, -1.0)) + tap(vec2(-1.0, 1.0)) + tap(vec2(1.0, 1.0))); }
+`;
+
+/** Height of the bloom's first mip (px): halos keep their size on screen at any pixel ratio. */
+const BLOOM_H = 256;
+
+/** Pins the bloom chain to BLOOM_H tall at the frame's aspect, whatever size the composer asks for. */
+function pinBloom(bloom: UnrealBloomPass): void {
+    const uStep = { value: new THREE.Vector2() };
+    const u = bloom.highPassUniforms as Record<string, THREE.IUniform>;
+    u.uStep = uStep;
+    bloom.materialHighPassFilter.fragmentShader = BRIGHT_FRAG;
+    const setSize = bloom.setSize.bind(bloom);
+    bloom.setSize = (width: number, height: number): void => {
+        const h = Math.max(1, height);
+        // The pass halves what it is given for its first mip.
+        setSize(Math.max(2, Math.round((2 * BLOOM_H * width) / h)), 2 * BLOOM_H);
+        // A quarter of a bright-pass texel, in the source's uv.
+        uStep.value.set((0.25 * h) / (BLOOM_H * Math.max(1, width)), 0.25 / BLOOM_H);
+    };
+}
+
 export type Post = {
     composer: EffectComposer;
     /** `jump` 0–1 is the cut between scenes; `tint` colours its flash; `glow` scales the bloom;
@@ -74,6 +110,7 @@ export function createPost(
         1.0
     );
     (bloom.highPassUniforms as { smoothWidth: THREE.IUniform<number> }).smoothWidth.value = 0.6;
+    pinBloom(bloom);
     composer.addPass(bloom);
     composer.addPass(new OutputPass());
     // Clean edges on towers, rings and fibres (the renderer itself runs without MSAA).
