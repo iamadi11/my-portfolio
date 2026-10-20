@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import { drive } from '@/components/round-trip/drive';
-import { createSound, type Sound } from '@/components/round-trip/sound';
+import type { Sound } from '@/components/round-trip/sound';
 import { heights, itemsAt, type Trip } from '@/components/round-trip/trip';
 
 import '@/components/round-trip/round-trip.css';
@@ -264,7 +264,7 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                     Igrium. Downtown: Osaka downtown by matousekfoto. Landmarks: Mountain Range 01 by
                     solararchitect, Snowy Volcano by Pukar Shiwakoti, Horseshoe bend by Ignazio Pillitteri,
                     Snowy Mountain and Death Valley by artfromheath (all Sketchfab, CC BY 4.0). Earth and
-                    stars: NASA.
+                    stars: NASA. Moon and ISS: NASA.
                 </p>
             </details>
         </>
@@ -311,8 +311,16 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
         });
     }, [trip]);
 
+    const loading = useRef<Promise<Sound> | null>(null);
     const toggleSound = async (): Promise<void> => {
-        sound.current ??= createSound();
+        // The synth loads on the first switch-on, not with the page. Its context is made here, inside
+        // the click, so the browser lets it play once the chunk arrives.
+        if (!loading.current) {
+            const ctx = new AudioContext();
+            void ctx.resume();
+            loading.current = import('@/components/round-trip/sound').then((m) => m.createSound(ctx));
+        }
+        sound.current = await loading.current;
         setSoundOn(await sound.current.toggle());
     };
 

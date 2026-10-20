@@ -176,7 +176,8 @@ function placed(ctx: AudioContext, out: AudioNode): PannerNode {
     return p;
 }
 
-export function createSound(): Sound {
+/** `given` is made inside the visitor's click, so the browser lets it play once this chunk has loaded. */
+export function createSound(given?: AudioContext): Sound {
     let ctx: AudioContext | null = null;
     let master: GainNode | null = null;
     let wind: GainNode | null = null;
@@ -189,7 +190,7 @@ export function createSound(): Sound {
     const live = (): boolean => on && ctx?.state === 'running';
 
     const setup = (): void => {
-        ctx = new AudioContext();
+        ctx = given ?? new AudioContext();
         master = ctx.createGain();
         master.gain.value = 0;
         master.connect(ctx.destination);
