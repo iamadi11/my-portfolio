@@ -14,8 +14,8 @@ export type Sound = {
     engine: (x: number, thrust: number) => void;
     /** The bed for the place on screen ("city", "grass#0", "ocean", ...). */
     place: (stop: string) => void;
-    /** The cut between places. */
-    jump: () => void;
+    /** A jump begins; its thump lands on the cut, `lead` seconds from now. */
+    jump: (lead: number) => void;
     /** 0–1: burning through the air (entry and exit). */
     roar: (heat: number) => void;
 };
@@ -276,33 +276,34 @@ export function createSound(given?: AudioContext): Sound {
                     key === name ? 1.2 : 0.6
                 );
         },
-        jump() {
+        jump(lead) {
             if (!live() || !ctx || !master) return;
-            // Noise swept up through a band-pass, then a soft thump at the cut.
+            // Noise swept up through a band-pass to the cut, then a soft thump as the scene swaps.
             const t = ctx.currentTime;
+            const at = t + (lead > 0 ? lead : 0.5);
             const src = noise(ctx, false);
             const bp = ctx.createBiquadFilter();
             bp.type = 'bandpass';
             bp.Q.value = 1.2;
             bp.frequency.setValueAtTime(180, t);
-            bp.frequency.exponentialRampToValueAtTime(3200, t + 0.9);
-            bp.frequency.exponentialRampToValueAtTime(300, t + 1.8);
+            bp.frequency.exponentialRampToValueAtTime(3200, at + 0.4);
+            bp.frequency.exponentialRampToValueAtTime(300, at + 1.3);
             const g = ctx.createGain();
             g.gain.setValueAtTime(0, t);
-            g.gain.linearRampToValueAtTime(0.22, t + 0.5);
-            g.gain.exponentialRampToValueAtTime(0.0001, t + 1.9);
+            g.gain.linearRampToValueAtTime(0.22, at);
+            g.gain.exponentialRampToValueAtTime(0.0001, at + 1.4);
             src.connect(bp).connect(g).connect(master);
-            src.stop(t + 2);
+            src.stop(at + 1.5);
             const thump = ctx.createOscillator();
             const tg = ctx.createGain();
-            thump.frequency.setValueAtTime(90, t + 0.5);
-            thump.frequency.exponentialRampToValueAtTime(35, t + 1.1);
-            tg.gain.setValueAtTime(0, t + 0.5);
-            tg.gain.linearRampToValueAtTime(0.3, t + 0.55);
-            tg.gain.exponentialRampToValueAtTime(0.0001, t + 1.3);
+            thump.frequency.setValueAtTime(90, at);
+            thump.frequency.exponentialRampToValueAtTime(35, at + 0.6);
+            tg.gain.setValueAtTime(0, at);
+            tg.gain.linearRampToValueAtTime(0.3, at + 0.05);
+            tg.gain.exponentialRampToValueAtTime(0.0001, at + 0.8);
             thump.connect(tg).connect(master);
-            thump.start(t + 0.5);
-            thump.stop(t + 1.4);
+            thump.start(at);
+            thump.stop(at + 0.9);
         },
         roar(heat) {
             if (!live() || !ctx || !roar) return;

@@ -292,6 +292,16 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         if (tag) tag.textContent = text;
     };
 
+    // The cut: the scene swaps, so the panel blinks out of focus and the hand feels it, on the same beat.
+    const cutBeat = (sec: number): void => {
+        if (coarse) navigator.vibrate?.(20);
+        if (reduce) return;
+        const panel = els.secs[sec]?.querySelector('.rt-panel');
+        panel?.classList.add('rt-cut');
+        clearTimeout(cutTimer);
+        cutTimer = window.setTimeout(() => panel?.classList.remove('rt-cut'), 120);
+    };
+
     const draw = (s: ReturnType<typeof scrollState>, map: number, resp: number, top: number): void => {
         if (!world) return;
         const out: FrameOut = world.frame({ u: s.pathU(world.seg), map, resp, pointer, boost: 0, idle: 0 });
@@ -308,16 +318,13 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
             // A small tick in the hand as the request flies through a project's ring.
             if (coarse) navigator.vibrate?.(12);
         }
-        // A longer pulse in the hand as the ship jumps to the next place.
-        if (out.jumped && coarse) navigator.vibrate?.([8, 30, 16]);
-        if (out.jumped) sound?.jump();
-        // The panel blinks out of focus with the flash, so text and world change on the same beat.
-        if (out.jumped && !reduce) {
-            const panel = els.secs[s.sec]?.querySelector('.rt-panel');
-            panel?.classList.add('rt-cut');
-            clearTimeout(cutTimer);
-            cutTimer = window.setTimeout(() => panel?.classList.remove('rt-cut'), 180);
+        if (out.jumped) {
+            // A wind-up in the hand as the jump begins (the ring's tick stands in when it is the
+            // same frame); the thump is timed to land on the cut.
+            if (coarse && out.passed === null) navigator.vibrate?.(6);
+            sound?.jump(out.lead);
         }
+        if (out.cut) cutBeat(s.sec);
         sound?.wind(out.speed);
         sound?.engine(panOf(out.ship), Math.min(1, out.speed + out.rush));
         sound?.roar(out.rush);
