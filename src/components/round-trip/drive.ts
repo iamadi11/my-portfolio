@@ -30,6 +30,7 @@ type Els = {
     recordTags: HTMLElement[];
     vitals: HTMLElement | null;
     huds: HTMLElement[];
+    handoff: HTMLElement | null;
 };
 
 const ZONES = ['#ffffff', '#8fd3ff', '#ffb35c', '#ff7ad9', '#7af0ff', '#ffffff'];
@@ -53,6 +54,7 @@ function find(root: HTMLElement): Els {
         recordTags: all('[data-record-tag]'),
         vitals: root.querySelector('[data-vitals]'),
         huds: all('.rt-hud'),
+        handoff: root.querySelector('[data-handoff]'),
     };
 }
 
@@ -130,6 +132,51 @@ function place(el: HTMLElement, m: Mark, show: boolean, small: boolean, top: num
             : m.x > w * 0.52 && m.x < w - 220 && m.y > 60 && m.y < h - 60);
     el.classList.toggle('on', show && clear);
     if (show && clear && m) el.style.transform = `translate(${m.x + 14}px, ${m.y - 8}px)`;
+}
+
+/**
+ * The portal's signature: on the cut into a project's landscape, its title shows large in the
+ * ring's colour in the middle of the flash, then flies into the panel's own heading while the new
+ * place resolves. A fixed overlay moved by transform and opacity only, so nothing on the page shifts.
+ */
+function handoff(el: HTMLElement, h3: HTMLElement, colour: string): void {
+    const box = h3.getBoundingClientRect();
+    const range = document.createRange();
+    range.selectNodeContents(h3);
+    const text = range.getBoundingClientRect();
+    // The incoming item rises 10px as it comes on: land where it will be, not where it is.
+    const top = box.top - (h3.closest('.on') ? 0 : 10);
+    const ox = text.left - box.left + text.width / 2;
+    const oy = text.top - box.top + text.height / 2;
+    el.textContent = h3.textContent;
+    Object.assign(el.style, {
+        left: `${box.left}px`,
+        top: `${top}px`,
+        width: `${box.width}px`,
+        color: colour,
+        transformOrigin: `${ox}px ${oy}px`,
+    });
+    const k = clamp((innerWidth * 0.8) / Math.max(1, text.width), 1, 2.4);
+    const big = `translate(${innerWidth / 2 - box.left - ox}px, ${innerHeight / 2 - top - oy}px) scale(${k})`;
+    document.querySelectorAll('.rt-handing').forEach((h) => {
+        h.getAnimations().forEach((a) => a.cancel());
+        h.classList.remove('rt-handing');
+    });
+    el.getAnimations().forEach((a) => a.cancel());
+    const timing = { duration: 760 };
+    el.animate(
+        [
+            { transform: big, opacity: 0 },
+            { transform: big, opacity: 1, offset: 0.12, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
+            { transform: 'none', opacity: 1, offset: 0.88 },
+            { transform: 'none', opacity: 0 },
+        ],
+        timing
+    );
+    // The real heading, hidden meanwhile, fades back in under the copy as it lands (same clock).
+    h3.classList.add('rt-handing');
+    h3.animate([{ opacity: 0 }, { opacity: 0, offset: 0.82 }, { opacity: 1 }], timing).onfinish = () =>
+        h3.classList.remove('rt-handing');
 }
 
 /** Where J and K stop: each section's top, then each project's landscape and each record's stretch. */
@@ -516,10 +563,13 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         if (tag) tag.textContent = text;
     };
 
-    // The cut: the scene swaps, so the panel blinks out of focus and the hand feels it, on the same beat.
-    const cutBeat = (sec: number): void => {
+    // The cut: the scene swaps, so the panel blinks out of focus and the hand feels it, on the same
+    // beat; into a project's landscape, its title is handed from the flash to the panel.
+    const cutBeat = (sec: number, zone: string | undefined): void => {
         if (coarse) navigator.vibrate?.(20);
         if (reduce) return;
+        const h3 = zone === undefined ? null : els.projects[Number(zone)]?.querySelector<HTMLElement>('h3');
+        if (sec === 3 && h3 && els.handoff) handoff(els.handoff, h3, o.rings[Number(zone)] ?? '#fff');
         const panel = els.secs[sec]?.querySelector('.rt-panel');
         panel?.classList.add('rt-cut');
         clearTimeout(cutTimer);
@@ -550,7 +600,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
             if (coarse && out.passed === null) navigator.vibrate?.(6);
             sound?.jump(out.lead);
         }
-        if (out.cut) cutBeat(s.sec);
+        if (out.cut) cutBeat(s.sec, zone);
         sound?.wind(out.speed);
         sound?.engine(panOf(out.ship), Math.min(1, out.speed + out.rush));
         sound?.roar(out.rush);

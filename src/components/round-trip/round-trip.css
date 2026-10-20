@@ -890,6 +890,22 @@ html:has(.rt) body {
     display: none;
 }
 
+/* the title handed from the portal's flash to the panel: placed by the script, moved by transform */
+.rt-handoff {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    margin: 0;
+    font: 400 clamp(44px, 5.6vw, 88px) / 0.92 var(--display);
+    letter-spacing: -0.02em;
+    text-shadow:
+        0 0 28px currentColor,
+        0 1px 12px var(--shade);
+    opacity: 0;
+    pointer-events: none;
+}
+
 /* labels pinned to rings and records in the world */
 .rt-tag {
     position: fixed;
