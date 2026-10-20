@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import { clamp, lerp, smooth } from '@/components/round-trip/math';
 import { ADD, MOON, type Shared, shader } from '@/components/round-trip/world/gl';
@@ -82,6 +84,149 @@ const STREAK_FRAG = /* glsl */ `
     }
 `;
 
+/**
+ * The International Space Station (NASA 3D Resources, ISS model B), seen against the dawn: arrays
+ * dark gold and blue-black, the truss and modules light metal, lit by the rising sun from behind so
+ * it reads as a silhouette with a bright rim, and faint earthlight on the side facing us.
+ */
+const ISS_FRAG = /* glsl */ `
+    uniform vec3 uSun, uAlbedo; uniform float uDawn, uSpec, uGloss;
+    varying vec3 vN, vW;
+    void main() {
+        vec3 V = normalize(cameraPosition - vW);
+        vec3 n = normalize(vN);
+        n = faceforward(n, -V, n);
+        vec3 sunCol = vec3(1.0, 0.78, 0.5) * uDawn;
+        float lit = max(dot(n, uSun), 0.0);
+        float spec = pow(max(dot(reflect(-uSun, n), V), 0.0), uGloss) * uSpec;
+        float rim = pow(1.0 - abs(dot(n, V)), 3.0) * pow(max(dot(-V, uSun), 0.0), 2.0);
+        vec3 earth = vec3(0.04, 0.06, 0.11) * (0.5 + 0.5 * n.y);
+        vec3 col = uAlbedo * (sunCol * lit * 2.0 + earth) + sunCol * (spec + rim * 2.5);
+        gl_FragColor = vec4(col, 1.0);
+    }
+`;
+
+type Iss = { group: THREE.Group; uDawn: THREE.IUniform<number>; uSun: THREE.IUniform<THREE.Vector3> };
+
+/** Fetched once it is wanted; the strays above the station in the source model are left out. */
+function loadIss(scene: THREE.Scene, s: Shared, iss: Iss): void {
+    const vert = /* glsl */ `varying vec3 vN, vW;
+        void main() { vN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`;
+    const mat = (albedo: THREE.Color, spec: number, gloss: number): THREE.ShaderMaterial =>
+        shader(
+            s,
+            vert,
+            ISS_FRAG,
+            {
+                uSun: iss.uSun,
+                uDawn: iss.uDawn,
+                uAlbedo: { value: albedo },
+                uSpec: { value: spec },
+                uGloss: { value: gloss },
+            },
+            { side: THREE.DoubleSide }
+        );
+    const arrays = mat(new THREE.Color(0.09, 0.065, 0.035), 1.4, 60);
+    const metal = mat(new THREE.Color(0.62, 0.62, 0.6), 0.5, 24);
+    new GLTFLoader()
+        .setMeshoptDecoder(MeshoptDecoder)
+        .loadAsync('/models/iss.glb')
+        .then((gltf) => {
+            const model = gltf.scene;
+            model.updateMatrixWorld(true);
+            const drop: THREE.Object3D[] = [];
+            const size = new THREE.Vector3();
+            model.traverse((o) => {
+                const mesh = o as THREE.Mesh;
+                if (!mesh.isMesh) return;
+                if (!mesh.name.startsWith('polySurfa')) {
+                    drop.push(mesh);
+                    return;
+                }
+                new THREE.Box3().setFromObject(mesh).getSize(size);
+                // The solar arrays are the one sheet flat in x; everything else is metal.
+                mesh.material = size.x / Math.max(size.y, size.z) < 0.02 ? arrays : metal;
+                mesh.frustumCulled = false;
+            });
+            drop.forEach((o) => o.removeFromParent());
+            const box = new THREE.Box3().setFromObject(model);
+            model.position.copy(box.getCenter(size)).negate();
+            const inner = new THREE.Group();
+            inner.add(model);
+            inner.scale.setScalar(1 / Math.max(...box.getSize(size).toArray()));
+            iss.group.add(inner);
+            scene.add(iss.group);
+        })
+        .catch(() => undefined);
+}
+
+const tmp = Array.from({ length: 7 }, () => new THREE.Vector3());
+
+/**
+ * The point of the visible limb (of a sphere of radius `r` around `centre`) in the direction `dir`
+ * (at right angles to the eye): where a line of sight from the eye grazes that sphere.
+ */
+function limbPoint(
+    out: THREE.Vector3,
+    eye: THREE.Vector3,
+    centre: THREE.Vector3,
+    dir: THREE.Vector3,
+    r: number
+) {
+    const toEye = out.copy(eye).sub(centre);
+    const c = Math.min(r / toEye.length(), 0.9999);
+    return toEye
+        .normalize()
+        .multiplyScalar(c)
+        .addScaledVector(dir, Math.sqrt(1 - c * c))
+        .multiplyScalar(r)
+        .add(centre);
+}
+const basis = new THREE.Matrix4();
+
+/**
+ * Where the station is at sunrise: low over the limb some way along from the sun, drifting towards
+ * it as the ship climbs, truss along the curve and arrays turned to the sun; small in frame.
+ */
+function placeIss(
+    iss: Iss,
+    eye: THREE.Vector3,
+    centre: THREE.Vector3,
+    rim: THREE.Vector3,
+    rise: number
+): void {
+    const toEye = tmp[0].copy(eye).sub(centre).normalize();
+    const along = lerp(0.42, 0.12, smooth(0.05, 0.95, rise));
+    const limb = limbPoint(tmp[1], eye, centre, tmp[6].copy(rim).applyAxisAngle(toEye, along), R * 1.012);
+    const D = 60;
+    const look = tmp[2].copy(limb).sub(eye).normalize();
+    iss.group.position.copy(eye).addScaledVector(look, D);
+    const z = tmp[3].crossVectors(toEye, rim).normalize();
+    const x = tmp[4].copy(iss.uSun.value).addScaledVector(z, -z.dot(iss.uSun.value)).normalize();
+    const y = tmp[5].crossVectors(z, x);
+    iss.group.quaternion.setFromRotationMatrix(basis.makeBasis(x, y, z));
+    iss.group.scale.setScalar(D * 0.055);
+}
+
+/** The station: fetched when wanted, shown only in the finale, placed against the dawn. */
+function addStation(scene: THREE.Scene, s: Shared, small: boolean, uSun: THREE.IUniform<THREE.Vector3>) {
+    const iss: Iss = { group: new THREE.Group(), uDawn: { value: 0 }, uSun };
+    let asked = false;
+    return {
+        // Wide screens fetch it once the ship has left orbit; phones only when it is due.
+        want: (f: SpaceIn): void => {
+            if (!asked && (f.finale || (!small && !f.on))) {
+                asked = true;
+                loadIss(scene, s, iss);
+            }
+            iss.group.visible = f.on && f.finale;
+        },
+        place: (f: SpaceIn, dawn: number, centre: THREE.Vector3, rim: THREE.Vector3): void => {
+            iss.uDawn.value = dawn;
+            placeIss(iss, f.eye, centre, rim, f.rise);
+        },
+    };
+}
 export type SpaceIn = {
     on: boolean;
     /** 0–1 from high orbit down to the jump into the atmosphere. */
@@ -216,8 +361,10 @@ export function addSpace(
     const toEye = new THREE.Vector3();
     const rim = new THREE.Vector3();
     const X = new THREE.Vector3(1, 0, 0);
+    const station = addStation(scene, s, small, uSun);
     const update = (f: SpaceIn): { heat: number; sun: THREE.Vector3 | null; dawn: number } => {
         globe.visible = f.on;
+        station.want(f);
         // The sunrise: the limb goes gold, then the disc breaks the curve, as the ship climbs away.
         const dawn = f.finale ? smooth(0.04, 0.72, f.rise) : 0;
         sun.forEach((g, i) => {
@@ -250,11 +397,10 @@ export function addSpace(
         else uSun.value.copy(SUN);
         uRise.value = 1 + 1.6 * smooth(0, 0.6, dawn);
         uDay.value = dawn;
-        sunAt
-            .copy(globe.position)
-            .addScaledVector(rim, R * lerp(0.984, 1.003, dawn))
-            .addScaledVector(toEye, -R * 0.02);
+        // Just under the visible limb, then clearing it: on the curve as seen from here.
+        limbPoint(sunAt, f.eye, globe.position, rim, R * lerp(0.99, 1.03, dawn));
         for (const g of sun) g.position.copy(sunAt);
+        if (f.finale) station.place(f, dawn, globe.position, rim);
         const heat = f.finale ? 0 : smooth(0.55, 0.95, f.e);
         uHeat.value = heat;
         return { heat, sun: f.finale ? sunAt : null, dawn };
