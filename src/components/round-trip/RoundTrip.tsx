@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import { drive } from '@/components/round-trip/drive';
-import { createSound, type Sound } from '@/components/round-trip/sound';
+import type { Sound } from '@/components/round-trip/sound';
 import { heights, itemsAt, type Trip } from '@/components/round-trip/trip';
 
 import '@/components/round-trip/round-trip.css';
@@ -48,6 +48,39 @@ function Line({ i, children }: { i: number; children: React.ReactNode }): React.
     );
 }
 
+/** Where each piece of a title starts in it, so every piece has a key of its own. */
+function pieces(text: string, chars: boolean): Array<{ p: string; at: number; n: number }> {
+    const parts = chars ? [...text] : text.split(' ');
+    let at = 0;
+    return parts.map((p, n) => {
+        const piece = { p, at, n };
+        at += p.length + (chars ? 0 : 1);
+        return piece;
+    });
+}
+
+/**
+ * A chapter title that comes in word by word (200 OK letter by letter), each piece rising in its
+ * own mask. Read as one line: the pieces are aria-hidden, the whole title is there for readers.
+ */
+function Kinetic({ text, chars = false }: { text: string; chars?: boolean }): React.JSX.Element {
+    return (
+        <span className={chars ? 'rt-kin rt-kin-c' : 'rt-kin'}>
+            <span className="rt-sr">{text}</span>
+            <span aria-hidden="true">
+                {pieces(text, chars).map(({ p, at, n }) => (
+                    <React.Fragment key={at}>
+                        {n > 0 && !chars && ' '}
+                        <span className="rt-w" style={stagger(n)}>
+                            <span>{p === ' ' ? '\u00a0' : p}</span>
+                        </span>
+                    </React.Fragment>
+                ))}
+            </span>
+        </span>
+    );
+}
+
 function Hero({ trip }: { trip: Trip }): React.JSX.Element {
     return (
         <>
@@ -84,7 +117,7 @@ function Impact({ trip }: { trip: Trip }): React.JSX.Element | null {
         <>
             <Label n={1} zone="Wire" />
             <h2 className="rt-h2">
-                <Line i={0}>What changed when I shipped</Line>
+                <Kinetic text="What changed when I shipped" />
             </h2>
             <dl className="rt-impact">
                 {trip.impact.map((m, i) => {
@@ -95,7 +128,11 @@ function Impact({ trip }: { trip: Trip }): React.JSX.Element | null {
                                 {what}
                                 {org && <small>{org}</small>}
                             </dt>
-                            <dd>{m.value}</dd>
+                            {/* The value is read as written; the digits that count sit over it, unread. */}
+                            <dd data-count>
+                                <span>{m.value}</span>
+                                <span className="rt-tick" aria-hidden="true" />
+                            </dd>
                         </div>
                     );
                 })}
@@ -110,7 +147,7 @@ function Stack({ trip }: { trip: Trip }): React.JSX.Element | null {
         <>
             <Label n={2} zone="Edge" />
             <h2 className="rt-h2">
-                <Line i={0}>The stack</Line>
+                <Kinetic text="The stack" />
             </h2>
             <div className="rt-skills">
                 <ul className="rt-layers">
@@ -197,7 +234,7 @@ function Career({ trip }: { trip: Trip }): React.JSX.Element {
         <>
             <Label n={4} zone="Data" />
             <h2 className="rt-h2 rt-h2-sm">
-                <Line i={0}>Career</Line>
+                <Kinetic text="Career" />
             </h2>
             <p className="rt-chips rt-fade" aria-hidden="true">
                 {trip.records.map((r) => (
@@ -239,7 +276,7 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                 Response
             </p>
             <h2 className="rt-ok">
-                <Line i={0}>200 OK</Line>
+                <Kinetic text="200 OK" chars />
             </h2>
             <p className="rt-done rt-fade">Round trip complete · {trip.meta}</p>
             <p className="rt-vitals" data-vitals hidden />
@@ -256,6 +293,10 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                         {l.label}
                     </a>
                 ))}
+                {/* Always laid out, shown once the ship has left, so nothing shifts when it comes up. */}
+                <button type="button" className="rt-again" data-again>
+                    Send again
+                </button>
             </div>
             <details className="rt-more rt-fade" style={stagger(3)}>
                 <summary>Credits</summary>
@@ -264,7 +305,7 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                     Igrium. Downtown: Osaka downtown by matousekfoto. Landmarks: Mountain Range 01 by
                     solararchitect, Snowy Volcano by Pukar Shiwakoti, Horseshoe bend by Ignazio Pillitteri,
                     Snowy Mountain and Death Valley by artfromheath (all Sketchfab, CC BY 4.0). Earth and
-                    stars: NASA.
+                    stars: NASA. Moon and ISS: NASA.
                 </p>
             </details>
         </>
@@ -311,8 +352,16 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
         });
     }, [trip]);
 
+    const loading = useRef<Promise<Sound> | null>(null);
     const toggleSound = async (): Promise<void> => {
-        sound.current ??= createSound();
+        // The synth loads on the first switch-on, not with the page. Its context is made here, inside
+        // the click, so the browser lets it play once the chunk arrives.
+        if (!loading.current) {
+            const ctx = new AudioContext();
+            void ctx.resume();
+            loading.current = import('@/components/round-trip/sound').then((m) => m.createSound(ctx));
+        }
+        sound.current = await loading.current;
         setSoundOn(await sound.current.toggle());
     };
 
@@ -336,10 +385,13 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
             </header>
             <div className="rt-hud rt-bottom" aria-hidden="true">
                 <span className="rt-req" data-req>
-                    GET /{trip.slug} <em>· 0 ms</em>
+                    GET /{trip.slug} <em>· 0 s</em>
                 </span>
                 <Route />
-                <span className="rt-hint">Scroll to send</span>
+                <span className="rt-hint">
+                    <span>Scroll to send</span>
+                    <kbd>J / K</kbd>
+                </span>
             </div>
 
             <main id="main-content">
@@ -368,6 +420,8 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                     {p.title}
                 </div>
             ))}
+            {/* The project title handed from the portal's flash to its panel (a copy; the h3 is the real one). */}
+            <p className="rt-handoff" data-handoff aria-hidden="true" />
             {trip.records.map((r) => (
                 <div className="rt-tag" data-record-tag key={key(r)} aria-hidden="true">
                     {r.org} <small>· {r.period}</small>

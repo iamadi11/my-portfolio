@@ -87,6 +87,8 @@ html:has(.rt) body {
 }
 .rt-canvas {
     position: fixed;
+    /* pressing and holding on the world boosts: no callout on a long press */
+    -webkit-touch-callout: none;
     inset: 0;
     z-index: 0;
     display: block;
@@ -118,6 +120,30 @@ html:has(.rt) body {
         rgba(5, 7, 13, 0.72) 58%,
         rgba(5, 7, 13, 0) 76%
     );
+}
+
+/* Send again: the screen fades to black, the page goes home under it, then the night comes back */
+.rt-scrim::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+    opacity: 0;
+    transition: opacity 600ms ease-out;
+}
+.rt main {
+    transition: opacity 600ms ease-out;
+}
+.rt-veil .rt-scrim::after,
+.rt-veil main {
+    transition: opacity 300ms ease-in;
+}
+.rt-veil .rt-scrim::after {
+    opacity: 1;
+}
+.rt-veil main,
+.rt-veil .rt-tag.on {
+    opacity: 0;
 }
 
 /* scroll tracks + sticky panels */
@@ -207,6 +233,32 @@ html:has(.rt) body {
     transform: none;
     transition: transform 800ms var(--out);
     transition-delay: calc(var(--i, 0) * 60ms);
+}
+/* chapter titles: word by word (200 OK letter by letter), each piece in its own mask */
+.rt-kin {
+    display: block;
+}
+.rt-w {
+    display: inline-block;
+    overflow: hidden;
+    padding: 0 0.04em 0.08em;
+    margin: 0 -0.04em -0.08em;
+    vertical-align: top;
+}
+.rt-w > span {
+    display: inline-block;
+}
+.rt-js .rt-w > span {
+    transform: translateY(108%);
+    transition: transform 250ms ease-in;
+}
+.rt-js .in .rt-w > span {
+    transform: none;
+    transition: transform 800ms var(--out);
+    transition-delay: calc(var(--i, 0) * 50ms);
+}
+.rt-js .in .rt-kin-c .rt-w > span {
+    transition-delay: calc(var(--i, 0) * 30ms);
 }
 /* leaving is quicker than arriving, so the old panel never lingers under the next */
 .rt-js .rt-fade {
@@ -344,6 +396,21 @@ html:has(.rt) body {
     font: 400 clamp(36px, 4vw, 56px) / 1 var(--display);
     letter-spacing: -0.015em;
     font-variant-numeric: tabular-nums;
+}
+/* counting: the real value keeps its box (and is still read); the moving digits sit over it */
+.rt-impact dd {
+    position: relative;
+}
+.rt-tick {
+    display: none;
+    position: absolute;
+    inset: 0;
+}
+.rt-counting > span:first-child {
+    opacity: 0;
+}
+.rt-counting .rt-tick {
+    display: block;
 }
 .rt-impact dt {
     color: var(--soft);
@@ -650,6 +717,26 @@ html:has(.rt) body {
     font-size: 14px;
     line-height: 1.5;
 }
+/* Send again: its place is kept from the start; it comes up once the ship has left */
+.rt-pills .rt-again {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 200ms ease-in,
+        visibility 0s 200ms,
+        background 200ms ease,
+        color 200ms ease,
+        transform 160ms ease-out;
+}
+.rt-left .rt-pills .rt-again {
+    opacity: 1;
+    visibility: visible;
+    transition:
+        opacity 600ms var(--out),
+        background 200ms ease,
+        color 200ms ease,
+        transform 160ms ease-out;
+}
 .rt-mail {
     display: inline-block;
     padding-bottom: 6px;
@@ -800,13 +887,49 @@ html:has(.rt) body {
     font-style: normal;
 }
 .rt-hint {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+}
+.rt-hint span {
     transition: opacity 0.6s;
 }
-.rt-scrolled .rt-hint {
+.rt-scrolled .rt-hint span {
     opacity: 0;
+}
+/* J / K step between stops; only shown where there is a keyboard to hand */
+.rt-hint kbd {
+    display: none;
+    padding: 3px 7px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--soft);
+    font: inherit;
+}
+@media (hover: hover) and (pointer: fine) {
+    .rt-hint kbd {
+        display: inline;
+    }
 }
 .rt-bottom .rt-route {
     display: none;
+}
+
+/* the title handed from the portal's flash to the panel: placed by the script, moved by transform */
+.rt-handoff {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    margin: 0;
+    font: 400 clamp(44px, 5.6vw, 88px) / 0.92 var(--display);
+    letter-spacing: -0.02em;
+    text-shadow:
+        0 0 28px currentColor,
+        0 1px 12px var(--shade);
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* labels pinned to rings and records in the world */
@@ -937,6 +1060,7 @@ html:has(.rt) body {
         transform: none !important;
     }
     .rt-js .rt-ln > span,
+    .rt-js .rt-w > span,
     .rt-cue b::after,
     .rt-poster::before,
     .rt-layer-items,

@@ -14,8 +14,10 @@ export type Sound = {
     engine: (x: number, thrust: number) => void;
     /** The bed for the place on screen ("city", "grass#0", "ocean", ...). */
     place: (stop: string) => void;
-    /** The cut between places. */
-    jump: () => void;
+    /** A jump begins; its thump lands on the cut, `lead` seconds from now. */
+    jump: (lead: number) => void;
+    /** A riser in project k's note as the ship rushes at its portal (0–1); k < 0 for none. */
+    rise: (k: number, level: number) => void;
     /** 0–1: burning through the air (entry and exit). */
     roar: (heat: number) => void;
 };
@@ -176,7 +178,8 @@ function placed(ctx: AudioContext, out: AudioNode): PannerNode {
     return p;
 }
 
-export function createSound(): Sound {
+/** `given` is made inside the visitor's click, so the browser lets it play once this chunk has loaded. */
+export function createSound(given?: AudioContext): Sound {
     let ctx: AudioContext | null = null;
     let master: GainNode | null = null;
     let wind: GainNode | null = null;
@@ -184,12 +187,16 @@ export function createSound(): Sound {
     let engine: { pan: PannerNode; gain: GainNode; lp: BiquadFilterNode } | null = null;
     let roar: GainNode | null = null;
     let all: ReturnType<typeof beds> | null = null;
+    let riser: { a: OscillatorNode; b: OscillatorNode; gain: GainNode; lp: BiquadFilterNode } | null = null;
+    let riseK = 0;
+    // Until then a jump is resolving the riser, and the frame's level leaves it alone.
+    let riseHeld = 0;
     let bedOn = '';
     let on = false;
     const live = (): boolean => on && ctx?.state === 'running';
 
     const setup = (): void => {
-        ctx = new AudioContext();
+        ctx = given ?? new AudioContext();
         master = ctx.createGain();
         master.gain.value = 0;
         master.connect(ctx.destination);
@@ -220,11 +227,49 @@ export function createSound(): Sound {
         }
         filtered(ctx, white, 'bandpass', 900, 0.7, gain).gain.value = 0.03;
         engine = { pan, gain, lp };
+        // The riser: the portal's note and its fifth under a low-pass that opens as it climbs.
+        const rlp = ctx.createBiquadFilter();
+        rlp.type = 'lowpass';
+        rlp.frequency.value = 400;
+        const rg = ctx.createGain();
+        rg.gain.value = 0;
+        rlp.connect(rg).connect(master);
+        const osc = (type: OscillatorType, hz: number): OscillatorNode => {
+            const o = ctx!.createOscillator();
+            o.type = type;
+            o.frequency.value = hz;
+            o.connect(rlp);
+            o.start();
+            return o;
+        };
+        riser = { a: osc('triangle', 260), b: osc('sawtooth', 390), gain: rg, lp: rlp };
         // The roar through the air: brown noise through a low-pass that opens with the heat.
         roar = ctx.createGain();
         roar.gain.value = 0;
         roar.connect(master);
         filtered(ctx, noise(ctx, true), 'lowpass', 500, 0.5, roar).gain.value = 0.5;
+    };
+
+    /** On the cut the riser lands on the portal's note and rings out. */
+    const resolve = (t: number, at: number): void => {
+        if (!riser) return;
+        riseHeld = at + 1.6;
+        const note = NOTES[riseK % NOTES.length];
+        const g = riser.gain.gain;
+        const was = g.value;
+        for (const [o, m] of [
+            [riser.a, 1],
+            [riser.b, 1.5],
+        ] as const) {
+            o.frequency.cancelScheduledValues(t);
+            o.frequency.setValueAtTime(o.frequency.value, t);
+            o.frequency.exponentialRampToValueAtTime(note * m * 0.97, at);
+            o.frequency.setValueAtTime(note * m, at);
+        }
+        g.cancelScheduledValues(t);
+        g.setValueAtTime(was, t);
+        g.linearRampToValueAtTime(was > 0.004 ? Math.max(was, 0.04) : 0, at);
+        g.setTargetAtTime(0, at, 0.45);
     };
 
     return {
@@ -275,33 +320,47 @@ export function createSound(): Sound {
                     key === name ? 1.2 : 0.6
                 );
         },
-        jump() {
+        jump(lead) {
             if (!live() || !ctx || !master) return;
-            // Noise swept up through a band-pass, then a soft thump at the cut.
+            // Noise swept up through a band-pass to the cut, then a soft thump as the scene swaps.
             const t = ctx.currentTime;
+            const at = t + (lead > 0 ? lead : 0.5);
             const src = noise(ctx, false);
             const bp = ctx.createBiquadFilter();
             bp.type = 'bandpass';
             bp.Q.value = 1.2;
             bp.frequency.setValueAtTime(180, t);
-            bp.frequency.exponentialRampToValueAtTime(3200, t + 0.9);
-            bp.frequency.exponentialRampToValueAtTime(300, t + 1.8);
+            bp.frequency.exponentialRampToValueAtTime(3200, at + 0.4);
+            bp.frequency.exponentialRampToValueAtTime(300, at + 1.3);
             const g = ctx.createGain();
             g.gain.setValueAtTime(0, t);
-            g.gain.linearRampToValueAtTime(0.22, t + 0.5);
-            g.gain.exponentialRampToValueAtTime(0.0001, t + 1.9);
+            g.gain.linearRampToValueAtTime(0.22, at);
+            g.gain.exponentialRampToValueAtTime(0.0001, at + 1.4);
             src.connect(bp).connect(g).connect(master);
-            src.stop(t + 2);
+            src.stop(at + 1.5);
             const thump = ctx.createOscillator();
             const tg = ctx.createGain();
-            thump.frequency.setValueAtTime(90, t + 0.5);
-            thump.frequency.exponentialRampToValueAtTime(35, t + 1.1);
-            tg.gain.setValueAtTime(0, t + 0.5);
-            tg.gain.linearRampToValueAtTime(0.3, t + 0.55);
-            tg.gain.exponentialRampToValueAtTime(0.0001, t + 1.3);
+            thump.frequency.setValueAtTime(90, at);
+            thump.frequency.exponentialRampToValueAtTime(35, at + 0.6);
+            tg.gain.setValueAtTime(0, at);
+            tg.gain.linearRampToValueAtTime(0.3, at + 0.05);
+            tg.gain.exponentialRampToValueAtTime(0.0001, at + 0.8);
             thump.connect(tg).connect(master);
-            thump.start(t + 0.5);
-            thump.stop(t + 1.4);
+            thump.start(at);
+            thump.stop(at + 0.9);
+            resolve(t, at);
+        },
+        rise(k, level) {
+            if (!live() || !ctx || !riser || ctx.currentTime < riseHeld) return;
+            if (k >= 0) riseK = k;
+            const lv = k < 0 ? 0 : level;
+            const t = ctx.currentTime;
+            // Climbs an octave from below the note, stopping just short of it: the cut resolves it.
+            const hz = (NOTES[riseK % NOTES.length] / 2) * Math.pow(2, lv * 0.92);
+            riser.a.frequency.setTargetAtTime(hz, t, 0.08);
+            riser.b.frequency.setTargetAtTime(hz * 1.5, t, 0.08);
+            riser.lp.frequency.setTargetAtTime(400 + lv * 2400, t, 0.1);
+            riser.gain.gain.setTargetAtTime(lv * lv * 0.05, t, 0.1);
         },
         roar(heat) {
             if (!live() || !ctx || !roar) return;
