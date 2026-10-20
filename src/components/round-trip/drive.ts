@@ -148,6 +148,78 @@ const FIELD = 'input, textarea, select, [contenteditable]';
 const NOT_WORLD = 'a, button, summary, .rt-panel, .rt-hud';
 const BOOST = 2200;
 
+type Count = { head: string; from: number; to: number; dp: number; tail: string; minus: string };
+
+/**
+ * How an impact value counts, from the endpoints its own string states: the last number moves,
+ * from the first one ("70% → 15%": 70 to 15; "15 → 3 min": 15 to 3) or from 0 when it is alone
+ * ("200+": 0 to 200; "−30%": 0 to −30). Null when there is no number to count.
+ */
+function countOf(v: string): Count | null {
+    const nums = [...v.matchAll(/\d+(?:\.\d+)?/g)];
+    const last = nums.at(-1);
+    if (!last) return null;
+    // A sign belongs to a number only at the start or after a space ("−30%", not "2-3").
+    const signOf = (m: RegExpMatchArray): string => {
+        const i = m.index ?? 0;
+        return /[−-]/.test(v[i - 1] ?? '') && (i === 1 || /\s/.test(v[i - 2] ?? '')) ? v[i - 1] : '';
+    };
+    const valueOf = (m: RegExpMatchArray): number => (signOf(m) ? -1 : 1) * Number(m[0]);
+    const at = last.index ?? 0;
+    const sign = signOf(last);
+    return {
+        head: v.slice(0, at - sign.length),
+        from: nums.length > 1 ? valueOf(nums[0]) : 0,
+        to: valueOf(last),
+        dp: last[0].split('.')[1]?.length ?? 0,
+        tail: v.slice(at + last[0].length),
+        minus: sign || '−',
+    };
+}
+
+/** The value at t (0–1) of the count; a trailing "+" only once it has landed. */
+function countAt(c: Count, t: number): string {
+    const x = lerp(c.from, c.to, 1 - Math.pow(1 - t, 3));
+    const mag = Math.abs(x).toFixed(c.dp);
+    const sign = x < 0 && Number(mag) !== 0 ? c.minus : '';
+    return c.head + sign + mag + (t < 1 ? c.tail.replace(/\+$/, '') : c.tail);
+}
+
+/**
+ * Wire: each impact value counts up as the section comes on. The real value stays in the DOM
+ * (hidden from sight, not from screen readers) and the moving digits sit over it, aria-hidden,
+ * so the box never changes size and the text that is read is always the one in site.ts.
+ */
+function counter(dds: HTMLElement[]): { run: () => void; stop: () => void } {
+    const items = dds.flatMap((dd) => {
+        const c = countOf(dd.querySelector('span')?.textContent ?? '');
+        const tick = dd.querySelector<HTMLElement>('.rt-tick');
+        return c && tick ? [{ dd, c, tick }] : [];
+    });
+    let raf = 0;
+    let t0 = 0;
+    const frame = (now: number): void => {
+        let busy = false;
+        items.forEach(({ dd, c, tick }, i) => {
+            // In step with the stagger of the fade that brings each one in.
+            const t = clamp((now - t0 - (i + 1) * 60 - 120) / 1200);
+            const done = t >= 1;
+            dd.classList.toggle('rt-counting', !done);
+            tick.textContent = done ? '' : countAt(c, t);
+            busy ||= !done;
+        });
+        raf = busy ? requestAnimationFrame(frame) : 0;
+    };
+    return {
+        run: () => {
+            cancelAnimationFrame(raf);
+            t0 = performance.now();
+            raf = requestAnimationFrame(frame);
+        },
+        stop: () => cancelAnimationFrame(raf),
+    };
+}
+
 /** The trip's real clock, e.g. "1 min 12 s". */
 const clockText = (ms: number): string => {
     const t = Math.floor(ms / 1000);
@@ -320,6 +392,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     let started = 0;
     let ended = 0;
     const still = stillness();
+    const counts = counter([...root.querySelectorAll<HTMLElement>('[data-count]')]);
+    let wireIn = false;
     let vitalsDone = false;
     const remeasure = (): void => {
         reserveSkills();
@@ -493,6 +567,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
                 ? (els.secs[s.sec]?.querySelector('.rt-panel')?.getBoundingClientRect().top ?? vh)
                 : vh;
         els.secs.forEach((el, i) => el.classList.toggle('in', s.inView(i)));
+        if (s.inView(1) && !wireIn && !reduce) counts.run();
+        wireIn = s.inView(1);
         // Reveals are armed in the same frame the visible section is marked, so nothing blinks.
         if (!root.classList.contains('rt-js')) {
             root.classList.add('rt-js');
@@ -597,6 +673,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         clearTimeout(cutTimer);
         clearTimeout(veilTimer);
         still.stop();
+        counts.stop();
         lcpSeen.disconnect();
         resized.disconnect();
         removeEventListener('resize', remeasure);

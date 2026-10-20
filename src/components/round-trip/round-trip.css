@@ -371,6 +371,21 @@ html:has(.rt) body {
     letter-spacing: -0.015em;
     font-variant-numeric: tabular-nums;
 }
+/* counting: the real value keeps its box (and is still read); the moving digits sit over it */
+.rt-impact dd {
+    position: relative;
+}
+.rt-tick {
+    display: none;
+    position: absolute;
+    inset: 0;
+}
+.rt-counting > span:first-child {
+    opacity: 0;
+}
+.rt-counting .rt-tick {
+    display: block;
+}
 .rt-impact dt {
     color: var(--soft);
     font-size: 16px;

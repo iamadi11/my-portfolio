@@ -95,7 +95,11 @@ function Impact({ trip }: { trip: Trip }): React.JSX.Element | null {
                                 {what}
                                 {org && <small>{org}</small>}
                             </dt>
-                            <dd>{m.value}</dd>
+                            {/* The value is read as written; the digits that count sit over it, unread. */}
+                            <dd data-count>
+                                <span>{m.value}</span>
+                                <span className="rt-tick" aria-hidden="true" />
+                            </dd>
                         </div>
                     );
                 })}
