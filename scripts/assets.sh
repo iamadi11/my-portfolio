@@ -8,6 +8,10 @@
 #   env/stars-*.jpg               NASA/Goddard SVS Deep Star Maps 2020 (svs.gsfc.nasa.gov/4851),
 #                                 credit NASA/GSFC SVS, ESA/Gaia/DPAC.
 #   env/night.hdr                 "Modern Buildings Night", Poly Haven, CC0 (reflections).
+#   env/moon.webp                 NASA full-moon photograph, NASA 3D Resources (free and without
+#                                 copyright), credit NASA.
+#   models/iss.glb                International Space Station (ISS) (B), NASA 3D Resources (free and
+#                                 without copyright), credit NASA.
 # Needs Blender 4.2 (BLENDER=/path/to/Blender) for the .blend and the image work.
 set -euo pipefail
 BLENDER=${BLENDER:-blender}
@@ -53,3 +57,18 @@ C=$A/sketchfab/city
 base="--compress meshopt --texture-compress webp --flatten true --join true --instance false --palette false"
 npx -y @gltf-transform/cli@4 optimize "$C/osaka_downtown.glb" public/models/osaka-hi.glb $base --texture-size 2048 --simplify-ratio 0.35
 npx -y @gltf-transform/cli@4 optimize "$C/osaka_downtown.glb" public/models/osaka-lo.glb $base --texture-size 1024 --simplify-ratio 0.15
+
+# NASA 3D Resources (github.com/nasa/NASA-3D-Resources @ 11ebb4ee043715aefbba6aeec8a61746fad67fa7),
+# "free and without copyright", credit NASA. Download into assets-src/nasa/:
+#   "Images and Textures/Moon/Moon.jpg"  -> assets-src/nasa/Moon.jpg (1913x1911, full moon)
+#   "3D Models/International Space Station (ISS) (B)/International Space Station (ISS) (B).glb"
+#                                        -> assets-src/nasa/International_Space_Station_ISS_B.glb
+# The moon: cropped square to its disc (centre 1015,963, radius ~765 px), 512 px WebP; sky.ts maps
+# the disc radius to 0.497 of the texture.
+N=$A/nasa
+ffmpeg -y -i "$N/Moon.jpg" -vf "crop=1536:1536:247:195,scale=512:512:flags=lanczos" -c:v libwebp -quality 82 public/env/moon.webp
+# The ISS (untextured; space.ts gives the arrays and the truss their materials in code): Draco
+# decoded, welded and meshopt-compressed (simplify ratio 1: no triangles removed). space.ts
+# leaves out the seven stray rings that float above the station in the source.
+npx -y @gltf-transform/cli@4 optimize "$N/International_Space_Station_ISS_B.glb" public/models/iss.glb \
+  --compress meshopt --texture-compress webp --flatten true --join true --instance false --palette false --texture-size 1024 --simplify-ratio 1

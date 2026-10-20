@@ -1,15 +1,20 @@
 import * as THREE from 'three';
 
-import { MOON, type Shared } from '@/components/round-trip/world/gl';
+import { hazeGlsl, MIST, MOON, type Shared } from '@/components/round-trip/world/gl';
 
 /**
  * The night sky over every landscape: the real stars and Milky Way (NASA/Goddard SVS Deep Star
  * Maps, ESA/Gaia), the moon with its halo, a horizon that takes the colour of whatever lies below
  * (city glow, desert haze, sea), and the aurora over the pole. In space the air drops away.
  */
-const FRAG = /* glsl */ `
-    uniform float uTime, uSpace, uAurora, uStars; uniform vec3 uMoon, uHorizon; uniform sampler2D tStars; uniform mat3 uTurn;
+const FRAG =
+    /* glsl */ `
+    uniform float uTime, uSpace, uAurora, uStars, uMist, uMoonOn; uniform vec3 uMoon, uHorizon;
+    uniform sampler2D tStars, tMoon; uniform mat3 uTurn;
     varying vec3 vDir;
+` +
+    hazeGlsl('uHorizon', 'uMist') +
+    /* glsl */ `
     float h3(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
     float n3(vec3 p) {
         vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -31,25 +36,29 @@ const FRAG = /* glsl */ `
         float up = d.y;
         float air = 1.0 - uSpace;
 
-        // Air: near-black overhead, the landscape's colour along the horizon, a faint green airglow.
-        vec3 zenith = vec3(0.0035, 0.006, 0.016);
-        vec3 col = mix(uHorizon, zenith, smoothstep(-0.02, 0.45, up)) * air;
-        col += vec3(0.02, 0.05, 0.03) * exp(-abs(up - 0.06) * 18.0) * air;
+        // Air: the same haze the fog fades into, so the ground meets the sky in one colour.
+        // A faint green airglow a few degrees up, none at the horizon itself so the seam stays shut.
+        vec3 col = haze(d) * air;
+        col += vec3(0.02, 0.05, 0.03) * exp(-abs(up - 0.06) * 18.0) * smoothstep(0.0, 0.06, up) * air;
 
         // Stars and the Milky Way, dimmed by the air near the horizon and by city light.
         float clear = mix(smoothstep(-0.02, 0.3, up) * uStars, 1.0, uSpace);
         col += sky(d) * clear;
 
-        // The moon: a disc with darker seas, its halo, and a wider glow in the air.
+        // The moon: NASA's photograph of the full moon once loaded (a disc with noise seas until then),
+        // its halo, and a wider glow in the air.
         float m = dot(d, uMoon);
         float r = acos(clamp(m, -1.0, 1.0));
-        float disc = smoothstep(0.034, 0.031, r);
-        vec3 md = normalize(d - uMoon * m);
-        float seas = smoothstep(0.45, 0.62, f3(md * 40.0 + uMoon * 13.0));
-        // A moon, not a sun: a modest disc and a tight halo, so it never blooms over the scene.
-        vec3 moon = vec3(1.0, 0.97, 0.9) * 1.5 * (1.0 - seas * 0.35) * (0.75 + 0.25 * smoothstep(0.034, 0.0, r));
         // Seen from the ground only: from orbit it would steal the scene from Earth.
-        col = mix(col, moon, disc * air);
+        // (The photo is sampled outside the branch, so its mip level stays well defined.)
+        vec3 east = normalize(cross(uMoon, vec3(0.0, 1.0, 0.0))), north = cross(east, uMoon);
+        vec3 photo = texture2D(tMoon, vec2(dot(d, east), dot(d, north)) * (0.497 / 0.034) + 0.5).rgb * 1.8;
+        if (r < 0.034 && air > 0.0) {
+            float seas = smoothstep(0.45, 0.62, f3(d * 40.0 + uMoon * 13.0));
+            // A moon, not a sun: a modest disc and a tight halo, so it never blooms over the scene.
+            vec3 drawn = vec3(1.0, 0.97, 0.9) * 1.5 * (1.0 - seas * 0.35) * (1.0 - 0.25 * smoothstep(0.0, 0.034, r));
+            col = mix(col, mix(drawn, photo, uMoonOn), (1.0 - smoothstep(0.031, 0.034, r)) * air);
+        }
         col += vec3(0.5, 0.6, 0.8) * (exp(-r * 40.0) * 0.2 + exp(-r * 5.0) * 0.035) * air;
 
         // Aurora: curtains along the horizon ahead, a sharp green lower edge fading up into red.
@@ -58,15 +67,14 @@ const FRAG = /* glsl */ `
             float base = 0.07 + 0.05 * sin(az * 2.3 + uTime * 0.07) + 0.03 * sin(az * 5.1 - uTime * 0.11);
             float hgt = up - base;
             float rays = pow(n3(vec3(az * 26.0, uTime * 0.25, 0.0)), 2.0) * 0.8 + 0.2;
-            float curtain = smoothstep(-0.006, 0.01, hgt) * exp(-max(hgt, 0.0) * 7.0);
+            // A soft lower edge: the curtain's foot glows out a little below where it is brightest.
+            float curtain = smoothstep(-0.035, 0.015, hgt) * exp(-max(hgt, 0.0) * 7.0);
             float fold = 0.5 + 0.5 * sin(az * 9.0 + n3(vec3(az * 3.0, uTime * 0.05, 1.0)) * 6.0);
             vec3 tint = mix(vec3(0.12, 1.0, 0.55), vec3(0.85, 0.18, 0.5), smoothstep(0.02, 0.32, hgt));
             float ahead = smoothstep(-0.4, 0.4, -d.z);
             col += tint * curtain * rays * (0.4 + 0.6 * fold) * ahead * uAurora * 0.55;
         }
 
-        // Below the horizon: the haze over the ground (the land itself covers most of it).
-        col = mix(col, uHorizon * air, smoothstep(0.0, -0.08, up));
         gl_FragColor = vec4(col, 1.0);
     }
 `;
@@ -98,7 +106,16 @@ export function addSky(scene: THREE.Scene, s: Shared, small: boolean): Sky {
         uHorizon: { value: new THREE.Color(0.03, 0.045, 0.08) },
         tStars: { value: tStars },
         uTurn: { value: turn },
+        uMist: MIST,
+        tMoon: { value: new THREE.Texture() },
+        uMoonOn: { value: 0 },
     };
+    // The real moon (NASA), cropped to its disc; the drawn one stands in until it arrives.
+    new THREE.TextureLoader().load('/env/moon.webp', (t) => {
+        t.colorSpace = THREE.SRGBColorSpace;
+        uniforms.tMoon.value = t;
+        uniforms.uMoonOn.value = 1;
+    });
     const mesh = new THREE.Mesh(
         new THREE.SphereGeometry(4000, 48, 24),
         new THREE.ShaderMaterial({

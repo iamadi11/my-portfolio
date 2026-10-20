@@ -14,6 +14,8 @@ export type Shared = {
     uBeam: THREE.IUniform<THREE.Vector4>;
     /** 0–1: the ship is high over the city, coming down; small lights are held back. */
     uDrop: THREE.IUniform<number>;
+    /** Ground mist: how thick the air is that pools in the valleys and lies on the sea. */
+    uMist: THREE.IUniform<number>;
 };
 
 export const FOG = 0.0115;
@@ -22,6 +24,33 @@ const NIGHT = new THREE.Color('#05070d');
 export const MOON = new THREE.Vector3(0.32, 0.36, -0.88).normalize();
 /** Moonlight on the hand-lit landscapes: brighter than nature, as night is shot for film. */
 export const MOONLIGHT = new THREE.Color(1.1, 1.25, 1.65);
+/** One mist for the world (the far landmarks read it too); 1 is a light ground mist. */
+export const MIST: THREE.IUniform<number> = { value: 1 };
+
+/**
+ * The air seen along a direction, in GLSL, given the name of its horizon colour: what fog fades
+ * into and what the sky shows at and below the horizon, so ground meets sky in the same colour.
+ * Brighter towards the moon, near-black overhead, a little darker looking down.
+ * `mist` is the optical depth of a ground mist (exponential in height, thickest at sea level).
+ */
+export const hazeGlsl = (horizon: string, mist: string): string => /* glsl */ `
+    const vec3 MOON_DIR = vec3(${MOON.toArray()
+        .map((v) => v.toFixed(4))
+        .join(', ')});
+    vec3 haze(vec3 V) {
+        // Looking down, less air lies between the eye and the ground than along the horizon.
+        vec3 c = ${horizon} * (1.0 + 0.5 * pow(max(dot(V, MOON_DIR), 0.0), 8.0)) * (0.7 + 0.3 * smoothstep(-0.12, 0.0, V.y));
+        return mix(c, vec3(0.0035, 0.006, 0.016), smoothstep(-0.02, 0.45, V.y));
+    }
+    float mist(vec3 w, float d) {
+        // Density ${mist} * 0.003 * exp(-0.08 (y + 16)), integrated from the eye to w.
+        float eo = exp(min(-0.08 * (cameraPosition.y + 16.0), 8.0));
+        float ew = exp(min(-0.08 * (w.y + 16.0), 8.0));
+        float dy = w.y - cameraPosition.y;
+        float k = abs(dy) > 0.05 ? (eo - ew) / (0.08 * dy) : ew;
+        return ${mist} * 0.003 * d * k;
+    }
+`;
 
 export const shared = (pr: number): Shared => ({
     uTime: { value: 0 },
@@ -32,6 +61,7 @@ export const shared = (pr: number): Shared => ({
     uScan: { value: 0 },
     uBeam: { value: new THREE.Vector4(0, -999, 0, 0) },
     uDrop: { value: 0 },
+    uMist: MIST,
 });
 
 /** Noise, the path's sway and endless-scenery wrapping: plain functions any shader can include. */
@@ -56,15 +86,15 @@ const NOISE = /* glsl */ `
 const HEAD =
     /* glsl */ `
     uniform float uTime; uniform vec3 uPacket; uniform float uFog; uniform vec3 uFogColor; uniform float uPR; uniform float uScan;
-    uniform vec4 uBeam; uniform float uDrop;
+    uniform vec4 uBeam; uniform float uDrop; uniform float uMist;
     vec3 fogIt(vec3 c, float d) { float f = 1.0 - exp(-uFog * uFog * d * d); return mix(c, uFogColor, clamp(f, 0.0, 1.0)); }
-    // Fog with aerial perspective: the haze is brighter along the horizon and towards the moon, darker overhead.
-    const vec3 MOON_DIR = vec3(0.319, 0.359, -0.877);
+` +
+    hazeGlsl('uFogColor', 'uMist') +
+    /* glsl */ `
+    // Fog with aerial perspective and ground mist: it fades into exactly the sky along that line.
     vec3 fogAt(vec3 c, float d, vec3 w) {
-        vec3 V = normalize(w - cameraPosition);
-        vec3 ins = uFogColor * mix(0.4, 1.15, smoothstep(0.35, -0.05, V.y)) * (1.0 + 0.7 * pow(max(dot(V, MOON_DIR), 0.0), 8.0));
-        float f = 1.0 - exp(-uFog * uFog * d * d);
-        return mix(c, ins, clamp(f, 0.0, 1.0));
+        float f = 1.0 - exp(-uFog * uFog * d * d - mist(w, d));
+        return mix(c, haze(normalize(w - cameraPosition)), f);
     }
     float fade(float d) { return exp(-uFog * uFog * d * d); }
     float glowAt(vec3 w, float r) { vec3 d = w - uPacket; return exp(-dot(d, d) / (r * r)); }
@@ -75,7 +105,7 @@ const HEAD =
     vec3 beamAt(vec3 w) {
         float d = length(w.xz - uBeam.xz);
         float pool = exp(-d * d / 14.0) * 0.4 + exp(-pow((d - 3.4) / 0.5, 2.0)) * 0.3;
-        return vec3(0.55, 1.0, 0.92) * pool * uBeam.w * smoothstep(24.0, 4.0, abs(w.y - uBeam.y));
+        return vec3(0.55, 1.0, 0.92) * pool * uBeam.w * (1.0 - smoothstep(4.0, 24.0, abs(w.y - uBeam.y)));
     }
 `;
 

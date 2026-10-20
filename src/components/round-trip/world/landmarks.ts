@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+import { hazeGlsl, MIST } from '@/components/round-trip/world/gl';
 import { GROUND, type LandKind, LANDS } from '@/components/round-trip/world/land';
 
 /**
@@ -32,20 +33,40 @@ const LANDMARKS: Partial<Record<LandKind, Landmark>> = {
 
 export type Landmarks = { show: (zone: number) => void };
 
-/** Night grade and lighter fog, so the far silhouette still reads against the sky. */
+/**
+ * Night grade, and the world's own haze and ground mist (gl.ts) so the scan stands in the same air
+ * as the land in front of it; only the distance fog is lighter, so the far silhouette still reads.
+ */
 function nightFar(mat: THREE.MeshStandardMaterial, tint: [number, number, number]): void {
     mat.color.multiply(new THREE.Color(...tint));
     mat.envMapIntensity = 0.1;
     // A scan is a sheet: seen from below, its underside would read as a floating slab.
     mat.side = THREE.FrontSide;
     mat.onBeforeCompile = (sh) => {
-        sh.fragmentShader = sh.fragmentShader.replace(
-            '#include <fog_fragment>',
-            `#ifdef USE_FOG
-                float fogFactor = 1.0 - exp(-fogDensity * fogDensity * 0.12 * vFogDepth * vFogDepth);
-                gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor, clamp(fogFactor, 0.0, 1.0));
+        sh.uniforms.uMist = MIST;
+        sh.vertexShader = sh.vertexShader
+            .replace('#include <common>', '#include <common>\nvarying vec3 vHazeW;')
+            .replace(
+                '#include <fog_vertex>',
+                '#include <fog_vertex>\nvHazeW = (modelMatrix * vec4(transformed, 1.0)).xyz;'
+            );
+        sh.fragmentShader = sh.fragmentShader
+            .replace(
+                '#include <fog_pars_fragment>',
+                `#include <fog_pars_fragment>
+                varying vec3 vHazeW; uniform float uMist;
+                #ifdef USE_FOG
+                ${hazeGlsl('fogColor', 'uMist')}
+                #endif`
+            )
+            .replace(
+                '#include <fog_fragment>',
+                `#ifdef USE_FOG
+                float hazeD = length(vHazeW - cameraPosition);
+                float fogFactor = 1.0 - exp(-fogDensity * fogDensity * 0.12 * hazeD * hazeD - mist(vHazeW, hazeD));
+                gl_FragColor.rgb = mix(gl_FragColor.rgb, haze((vHazeW - cameraPosition) / hazeD), fogFactor);
             #endif`
-        );
+            );
     };
 }
 
