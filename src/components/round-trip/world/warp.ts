@@ -2,7 +2,11 @@ import * as THREE from 'three';
 
 import { ADD, type Shared, shader } from '@/components/round-trip/world/gl';
 
-export type Warp = { update: (jump: number, tint: THREE.Color) => void };
+/** `hint` (0–1): a faint, short streaking while the visitor boosts; not a jump. */
+export type Warp = { update: (jump: number, tint: THREE.Color, hint?: number) => void };
+
+/** How strong a full boost's hint is, as a share of a jump. */
+const HINT = 0.3;
 
 /**
  * The jump between scenes, in 3D: long streaks of light rushing past the camera, stretching as the
@@ -10,6 +14,8 @@ export type Warp = { update: (jump: number, tint: THREE.Color) => void };
  */
 export function addWarp(camera: THREE.Camera, s: Shared, n: number, rand: () => number): Warp {
     const uJump = { value: 0 };
+    const uHint = { value: 0 };
+    const uLit = { value: 0 };
     const uTint = { value: new THREE.Color() };
     const geo = new THREE.BoxGeometry(1, 1, 1);
     const r = new Float32Array(n);
@@ -28,9 +34,9 @@ export function addWarp(camera: THREE.Camera, s: Shared, n: number, rand: () => 
                 w.z += z - c.z;
                 gl_Position = projectionMatrix * modelViewMatrix * w;
             }`,
-            /* glsl */ `uniform float uJump; uniform vec3 uTint; varying float vZ, vR;
-            void main() { gl_FragColor = vec4(mix(uTint, vec3(1.0), 0.4) * pow(vZ, 2.0) * smoothstep(0.05, 0.5, uJump) * (0.5 + vR) * 1.6, 1.0); }`,
-            { uJump, uTint },
+            /* glsl */ `uniform float uLit, uHint; uniform vec3 uTint; varying float vZ, vR;
+            void main() { gl_FragColor = vec4(mix(uTint, vec3(1.0), 0.4) * pow(vZ, 2.0) * max(smoothstep(0.05, 0.5, uLit), uHint * vR * vR) * (0.5 + vR) * 1.6, 1.0); }`,
+            { uJump, uLit, uHint, uTint },
             ADD
         ),
         n
@@ -57,10 +63,13 @@ export function addWarp(camera: THREE.Camera, s: Shared, n: number, rand: () => 
     mesh.frustumCulled = false;
     camera.add(mesh);
     return {
-        update: (jump, tint) => {
-            uJump.value = jump;
+        update: (jump, tint, hint = 0) => {
+            // The hint streaks a little (it sets the stretch), and lights only some of the streaks.
+            uJump.value = Math.max(jump, hint * HINT);
+            uLit.value = jump;
+            uHint.value = hint * HINT;
             uTint.value.copy(tint);
-            mesh.visible = jump > 0.01;
+            mesh.visible = uJump.value > 0.01;
         },
     };
 }

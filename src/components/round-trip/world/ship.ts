@@ -21,9 +21,46 @@ export type ShipIn = {
     /** 0–1: the pool of its landing light on the ground; `ground` is the height it lands on. */
     beam: number;
     ground: number;
+    /** Steering velocity (world units/s), across the route and up: it leans and pitches into it. */
+    lean: number;
+    pitch: number;
+    /** 0–1: the visitor holding to boost (the engines flare). */
+    boost: number;
+    /** 0–1: the visitor is still: a slower, deeper hover and a lower hum. */
+    idle: number;
+    /** Rim light on the hull's edges: the air of the place, the portal ahead, the sunrise. */
+    rim: THREE.Color;
 };
 
-export type Ship = { update: (f: ShipIn) => void; roll: () => void; boost: () => void };
+export type Ship = {
+    update: (f: ShipIn) => void;
+    roll: () => void;
+    boost: () => void;
+    /** A glint as it goes: the engines swell and settle. */
+    glint: () => void;
+};
+
+/** How long the leaving glint takes (s), and how far the engine glow swells at its height. */
+const GLINT = { len: 0.6, gain: 2 };
+/** The glint: a quick swell, then a long settle. 0 when none is under way. */
+const glintAt = (c: number): number => {
+    if (c < 0 || c >= 1) return 0;
+    return c < 0.2 ? c / 0.2 : Math.pow(1 - (c - 0.2) / 0.8, 2);
+};
+
+/** A fresnel rim on the hull: edges seen side-on pick up `uRim` as light of their own. */
+function addRim(mat: THREE.MeshStandardMaterial, uRim: { value: THREE.Color }): void {
+    mat.onBeforeCompile = (sh) => {
+        sh.uniforms.uRim = uRim;
+        sh.fragmentShader = sh.fragmentShader
+            .replace('void main() {', 'uniform vec3 uRim;\nvoid main() {')
+            .replace(
+                '#include <emissivemap_fragment>',
+                `#include <emissivemap_fragment>
+                totalEmissiveRadiance += uRim * pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 4.0);`
+            );
+    };
+}
 
 const LEN = 3.2;
 
@@ -68,6 +105,7 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
     scene.add(fill);
 
     const uOn = { value: 0 };
+    const uRim = { value: new THREE.Color(0, 0, 0) };
 
     new GLTFLoader()
         .setMeshoptDecoder(MeshoptDecoder)
@@ -96,6 +134,7 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
             mat.roughness = Math.min(mat.roughness, 0.5);
             mat.emissive.setRGB(1, 0.8, 0.5);
             mat.emissiveIntensity = 1.3;
+            addRim(mat, uRim);
             for (const f of flames) {
                 const box = new THREE.Box3().setFromBufferAttribute(
                     f.geometry.attributes.position as THREE.BufferAttribute
@@ -129,26 +168,44 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
     let bank = 0;
     let spin = 1;
     let kick = 0;
+    let glint = -1;
+    /** Engine thrust: idle hum, cruise, speed, steering, boost, the afterburner kick. */
+    const thrust = (f: ShipIn): number =>
+        0.7 +
+        f.speed * 0.9 +
+        Math.hypot(f.lean, f.pitch) * 0.1 +
+        f.boost * 0.8 -
+        f.idle * 0.15 +
+        kick +
+        (Math.random() - 0.5) * 0.08;
     const update = (f: ShipIn): void => {
         const now = performance.now() / 1000;
         rig.position.copy(f.at);
-        rig.position.y += Math.sin(now * 1.4) * 0.08;
+        rig.position.y += Math.sin(now * 1.4) * (0.08 + f.idle * 0.1);
         rig.lookAt(look.copy(rig.position).add(f.heading));
         turn += ((f.hero ? Math.PI : 0) - turn) * (1 - Math.exp(-f.dt * 2.5));
         rig.rotateY(turn);
         // Bank into turns; a full barrel roll through each project ring.
         const yaw = prev.x * f.heading.z - prev.z * f.heading.x;
         prev.copy(f.heading);
-        bank += (clamp(-yaw * 40, -0.6, 0.6) - bank) * (1 - Math.exp(-f.dt * 3));
+        // Steered, it banks into the move (positive roll drops the right wing; turned round to face
+        // you, that flips) and lifts its nose into a climb.
+        const lean = clamp(-yaw * 40, -0.6, 0.6) + clamp(f.lean * 0.12, -0.5, 0.5) * Math.cos(turn);
+        bank += (lean - bank) * (1 - Math.exp(-f.dt * 3));
         spin = Math.min(1, spin + f.dt / 0.9);
         const roll = bank + (spin < 1 ? Math.PI * 2 * (1 - Math.pow(1 - spin, 3)) : 0);
-        body.rotation.set(-Math.min(0.2, f.speed * 0.25), 0, roll + Math.sin(now * 0.9) * 0.04);
-        kick = Math.max(0, kick - f.dt * 1.5);
-        uThrust.value = 0.7 + f.speed * 0.9 + kick + (Math.random() - 0.5) * 0.08;
-        // Hard thrust flares the engines, so a ship burning away reads as a bright point from afar.
-        engines.forEach((e) =>
-            e.scale.setScalar((0.5 + uThrust.value * 0.45) * (1 + f.speed * f.speed * 2.5))
+        body.rotation.set(
+            -Math.min(0.2, f.speed * 0.25) - f.pitch * 0.05,
+            0,
+            roll + Math.sin(now * 0.9) * 0.04
         );
+        kick = Math.max(0, kick - f.dt * 1.5);
+        uThrust.value = thrust(f);
+        if (glint >= 0) glint = glint + f.dt / GLINT.len;
+        // Hard thrust flares the engines, so a ship burning away reads as a bright point from afar.
+        const swell = (1 + f.speed * f.speed * 2.5) * (1 + GLINT.gain * glintAt(glint));
+        engines.forEach((e) => e.scale.setScalar((0.5 + uThrust.value * 0.45) * swell));
+        uRim.value.lerp(f.rim, 1 - Math.exp(-f.dt * 4));
         nose.material.opacity = f.heat;
         nose.scale.setScalar(2 + f.heat * 5 + Math.random() * 0.4);
         strobes.forEach((g, i) => (g.material.opacity = (now + i * 0.7) % 1.4 < 0.07 ? 1 : 0));
@@ -167,6 +224,9 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
         },
         boost: () => {
             kick = 1.2;
+        },
+        glint: () => {
+            glint = 0;
         },
     };
 }

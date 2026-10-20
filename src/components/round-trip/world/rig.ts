@@ -19,7 +19,15 @@ export type Rig = {
     ) => void;
 };
 
-export type Shot = { tilt: number; lift: number; shake: number };
+export type Shot = {
+    tilt: number;
+    lift: number;
+    shake: number;
+    /** 0–1, eased: the visitor boosting: the frame widens and drops back a little. */
+    boost: number;
+    /** 0–1, eased: the visitor is still: the frame breathes, a slow sway and rise. */
+    idle: number;
+};
 
 export function createRig(
     camera: THREE.PerspectiveCamera,
@@ -52,14 +60,14 @@ export function createRig(
         const still = reduce ? 0 : 1;
         px += (pointer.x * still - px) * ease(dt, 3);
         py += (pointer.y * still - py) * ease(dt, 3);
-        const back = clamp(u - 10 / route.len);
+        const back = clamp(u - (10 + shot.boost * 3 * still) / route.len);
         route.curve.getPointAt(back, camera.position);
         camera.position.addScaledVector(route.frame(back).n1, px * 1.4);
         camera.position.y +=
             1.8 - py * 0.9 + (u < route.seg[1] + 0.002 ? Math.sin(t * 0.6) * 0.3 * still : 0);
         // Lifted (coming down onto the city, or climbing off the ice), it looks further ahead, down
         // at the path. Past the end of the route the look point carries on along the last tangent.
-        camera.position.y += shot.lift;
+        camera.position.y += shot.lift + shot.idle * Math.sin(t * 0.13) * 0.4 * still;
         const ahead = (28 + Math.max(0, shot.lift) * 1.6) / route.len;
         route.curve.getPointAt(clamp(u + ahead), look);
         // Dropped below the path (skimming the sea), it keeps looking level, not up at the path.
@@ -77,7 +85,7 @@ export function createRig(
         camera.rotateX(-tilt);
         // Look around a little with the mouse or the phone's tilt; shake through a jump.
         const shake = reduce ? 0 : jump * jump * 0.012 + shot.shake;
-        camera.rotateY(-px * 0.1 + Math.sin(t * 53) * shake);
+        camera.rotateY(-px * 0.1 + Math.sin(t * 53) * shake + shot.idle * Math.sin(t * 0.21) * 0.06 * still);
         camera.rotateX(-py * 0.06 + Math.sin(t * 47 + 1) * shake);
 
         route.curve.getTangentAt(clamp(u), t0);
@@ -86,7 +94,9 @@ export function createRig(
         roll += (clamp(-turn * 5, -0.32, 0.32) * (reduce ? 0 : 1) - roll) * ease(dt, 3);
         camera.rotateZ(roll);
 
-        fov += (base + (reduce ? 0 : speed * 16 + jump * 38) - fov) * ease(dt, jump > 0.05 ? 14 : 5);
+        fov +=
+            (base + (reduce ? 0 : speed * 16 + jump * 38 + shot.boost * 6) - fov) *
+            ease(dt, jump > 0.05 ? 14 : 5);
         camera.fov = fov;
         camera.updateProjectionMatrix();
     };

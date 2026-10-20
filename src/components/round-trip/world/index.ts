@@ -117,6 +117,22 @@ const CLOUD = new THREE.Color(0.06, 0.05, 0.05);
  * passages through the air (into the cloud deck, out of the last of the air) linger. */
 const JUMP = { portal: 1.45, air: 1.9, dip: 1.1 };
 const PEAK = { portal: 0.36, air: 0.42, dip: 0.5 };
+/** The sun's gold, for the rim on the hull at sunrise. */
+const GOLD = new THREE.Color(1.5, 0.95, 0.5);
+
+/**
+ * The ship's steering: a spring per axis (slightly under-damped), stiffer than the camera's ease,
+ * so the ship leads and the frame follows. How far a full pointer moves it, in world units: across
+ * (wide screens, tall ones) and up.
+ */
+const STEER = { k: 40, c: 10, wide: 2, tall: 1.2, up: 0.9 };
+type Steer = { x: number; y: number; vx: number; vy: number };
+const stepSteer = (st: Steer, dt: number, tx: number, ty: number): void => {
+    st.vx += (STEER.k * (tx - st.x) - STEER.c * st.vx) * dt;
+    st.vy += (STEER.k * (ty - st.y) - STEER.c * st.vy) * dt;
+    st.x += st.vx * dt;
+    st.y += st.vy * dt;
+};
 
 function renderer(canvas: HTMLCanvasElement, small: boolean): THREE.WebGLRenderer {
     const r = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
@@ -265,13 +281,14 @@ export function createWorld(o: WorldOptions): World {
     const pmrem = new THREE.PMREMGenerator(gl);
     // A studio light until the night-city HDRI (Poly Haven, CC0) arrives; then metal has a night to reflect.
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    // The same strength for both, so the hull does not dim with a pop when the HDRI lands.
+    scene.environmentIntensity = 0.35;
     // The city's glass reflects the same HDRI by direction, so it is kept.
     const env: Env = { tEnv: { value: null }, uEnvOn: { value: 0 } };
     new HDRLoader()
         .loadAsync('/env/night.hdr')
         .then((hdr) => {
             scene.environment = pmrem.fromEquirectangular(hdr).texture;
-            scene.environmentIntensity = 0.35;
             hdr.generateMipmaps = true;
             hdr.minFilter = THREE.LinearMipmapLinearFilter;
             hdr.needsUpdate = true;
@@ -400,6 +417,12 @@ export function createWorld(o: WorldOptions): World {
     let rolled = false;
     const toSun = new THREE.Vector3();
     let leaveWas = 0;
+    let boostWas = 0;
+    const steer: Steer = { x: 0, y: 0, vx: 0, vy: 0 };
+    /** The visitor, eased: holding to boost, keeping still, and where the pointer is. */
+    const feel = { boost: 0, idle: 0, pointer: { x: 0, y: 0 } };
+    const ringColours = o.rings.map((c) => new THREE.Color(c).multiplyScalar(0.8));
+    const rim = new THREE.Color();
     let u = 0.004;
     let speed = 0;
     let t = 0;
@@ -411,7 +434,7 @@ export function createWorld(o: WorldOptions): World {
      * Earth once back in orbit.
      */
     const beat = { dive: 0, drop: 0, climb: 0, rise: 0, skim: 0, over: 0, leave: 0 };
-    const shot: Shot = { tilt: 0, lift: 0, shake: 0 };
+    const shot: Shot = { tilt: 0, lift: 0, shake: 0, boost: 0, idle: 0 };
     let kicked = false;
     const heading = new THREE.Vector3();
 
@@ -471,6 +494,41 @@ export function createWorld(o: WorldOptions): World {
         sunlight.position.copy(camera.position).addScaledVector(camera.up, 40);
     };
 
+    /** The visitor's input: a boost lights the afterburner once as it passes half; both ease. */
+    const sense = (f: FrameIn, dt: number): void => {
+        const want = clamp(f.boost);
+        if (boostWas <= 0.5 && want > 0.5) ship.boost();
+        boostWas = want;
+        feel.boost += (want - feel.boost) * (1 - Math.exp(-dt * 6));
+        feel.idle += ((o.reduce ? 0 : clamp(f.idle)) - feel.idle) * (1 - Math.exp(-dt * 1.5));
+        feel.pointer = f.pointer;
+        shot.boost = o.reduce ? 0 : feel.boost;
+        shot.idle = feel.idle;
+    };
+
+    /** Rim light on the hull: the air of the place, the portal's colour as it nears, gold at sunrise. */
+    const rimOf = (place: Place, zone: number, dawn: number): void => {
+        rim.setRGB(...AIR[place].horizon).multiplyScalar(3);
+        if (ringColours[zone]) rim.lerp(ringColours[zone], rings.close);
+        if (place === 'orbit') rim.lerp(GOLD, dawn);
+    };
+
+    /** Steered by the pointer (mouse or phone tilt): across the route and up; none in the hero. */
+    const steerShip = (n1: THREE.Vector3, reach: number, dt: number): void => {
+        const k = o.reduce ? 0 : reach;
+        const across = camera.aspect < 1 ? STEER.tall : STEER.wide;
+        stepSteer(steer, dt, feel.pointer.x * across * k, -feel.pointer.y * STEER.up * k);
+        at.addScaledVector(n1, steer.x);
+        at.y += steer.y;
+    };
+
+    /** Leaving: the afterburner lights early on; a glint from the engines as it goes. */
+    const leaving = (leave: number): void => {
+        if (leaveWas < 0.3 && leave >= 0.3) ship.boost();
+        if (leaveWas < 0.9 && leave >= 0.9 && !o.reduce) ship.glint();
+        leaveWas = leave;
+    };
+
     const moves = (orbit: boolean): number => {
         const away = orbit ? 1 - beat.rise : 0;
         heading
@@ -507,6 +565,7 @@ export function createWorld(o: WorldOptions): World {
             .add(side)
             .addScaledVector(tangent, hero * 5 + lead);
         at.y += hero * 1.1 + leave * 6 + moves(orbit);
+        steerShip(n1, (1 - hero) * (1 - leave), dt);
         depart(sun, leave, dawn);
         ship.update({
             at,
@@ -518,9 +577,13 @@ export function createWorld(o: WorldOptions): World {
             key: dawn,
             beam: air.space ? 0 : 1,
             ground: place === 'city' ? FLOOR : isLand(place) ? GROUND[place] : SEA,
+            lean: steer.vx,
+            pitch: steer.vy,
+            boost: feel.boost,
+            idle: feel.idle,
+            rim,
         });
-        if (leaveWas < 0.3 && leave >= 0.3) ship.boost();
-        leaveWas = leave;
+        leaving(leave);
     };
 
     /** The beats for the place on screen, and the shot they make. */
@@ -571,6 +634,7 @@ export function createWorld(o: WorldOptions): World {
         last = now;
         t += dt;
         resize();
+        sense(f, dt);
         const prev = u;
         u += (f.u - u) * (o.reduce ? 1 : 1 - Math.exp(-dt * 3.6));
         speed +=
@@ -601,9 +665,14 @@ export function createWorld(o: WorldOptions): World {
         shot.shake = o.reduce ? 0 : rush * 0.004;
         rig.update(u, t, dt, Math.min(1, speed + rush * 0.6), jump, f.pointer, !AIR[shown].space, shot);
         landmarks.show(zone);
+        rimOf(shown, zone, dawn);
         flyShip(shown, dt, f.resp, heat, sun, dawn);
         records.update(p, u);
-        warp.update(Math.max(jump, !o.reduce && beat.climb > 0.45 ? (beat.climb - 0.45) * 1.4 : 0), tint);
+        warp.update(
+            Math.max(jump, !o.reduce && beat.climb > 0.45 ? (beat.climb - 0.45) * 1.4 : 0),
+            tint,
+            shot.boost * shot.boost
+        );
         // Seen from above through cloud, a city of small lights would bloom into mush.
         post.finish(
             t,
