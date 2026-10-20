@@ -148,6 +148,39 @@ const FIELD = 'input, textarea, select, [contenteditable]';
 const NOT_WORLD = 'a, button, summary, .rt-panel, .rt-hud';
 const BOOST = 2200;
 
+/** The trip's real clock, e.g. "1 min 12 s". */
+const clockText = (ms: number): string => {
+    const t = Math.floor(ms / 1000);
+    return t < 60 ? `${t} s` : `${Math.floor(t / 60)} min ${t % 60} s`;
+};
+
+/** How still the visitor has been, from what they last did: 0 until 4 s, rising to 1 by 7 s. */
+function stillness(): { idle: () => number; touched: () => void; stop: () => void } {
+    let last = performance.now();
+    let angle = 0;
+    const touched = (): void => {
+        last = performance.now();
+    };
+    // A phone in the hand is never quite still: only a turn of a couple of degrees counts.
+    const onOrient = (e: DeviceOrientationEvent): void => {
+        const a = (e.beta ?? 0) + (e.gamma ?? 0);
+        if (Math.abs(a - angle) < 2) return;
+        angle = a;
+        touched();
+    };
+    const kinds = ['scroll', 'pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart'];
+    kinds.forEach((k) => addEventListener(k, touched, { passive: true }));
+    addEventListener('deviceorientation', onOrient);
+    return {
+        idle: () => smooth(4, 7, (performance.now() - last) / 1000),
+        touched,
+        stop: () => {
+            kinds.forEach((k) => removeEventListener(k, touched));
+            removeEventListener('deviceorientation', onOrient);
+        },
+    };
+}
+
 const plainKey = (e: KeyboardEvent): string | null => {
     const k = e.key.toLowerCase();
     if (k !== 'j' && k !== 'k') return null;
@@ -282,7 +315,11 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     };
     let layout = measure(els);
     let vh = innerHeight;
-    let shownMs = -1;
+    let shownClock = '';
+    // Real time on the trip: from the first scroll (or Start) until the ship has left.
+    let started = 0;
+    let ended = 0;
+    const still = stillness();
     let vitalsDone = false;
     const remeasure = (): void => {
         reserveSkills();
@@ -371,7 +408,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         setOn('chips', els.chips, forcedRecord ?? r);
     };
 
-    const hud = (sec: number, ms: number, hop: number): void => {
+    const hud = (sec: number, clock: string, hop: number): void => {
         // The wire to the next hop fills as the request travels it.
         els.route.forEach((li) => fill(li, '--fill', Number(li.dataset.r) === sec + 1 ? hop : 0));
         // Filled while the 200 OK panel is still off screen (from Data on), so nothing shifts.
@@ -383,7 +420,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         }
         if (active.get('zone') !== sec) {
             active.set('zone', sec);
-            shownMs = -1;
+            shownClock = '';
             // A tick in the hand at each hop while tilt is scrolling.
             if (tilted.scrolling()) navigator.vibrate?.(10);
             els.route.forEach((li) => {
@@ -396,9 +433,9 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
                 else a?.removeAttribute('aria-current');
             });
         }
-        if (ms === shownMs) return;
-        shownMs = ms;
-        const text = `· ${ms} ms`;
+        if (clock === shownClock) return;
+        shownClock = clock;
+        const text = `· ${clock}`;
         const req = els.req?.querySelector('em');
         if (req) req.textContent = text;
         const tag = els.ms[sec];
@@ -418,7 +455,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     const draw = (s: ReturnType<typeof scrollState>, map: number, resp: number, top: number): void => {
         if (!world) return;
         const boost = clamp(page.speed('boost') / BOOST);
-        const out: FrameOut = world.frame({ u: s.pathU(world.seg), map, resp, pointer, boost, idle: 0 });
+        const idle = reduce ? 0 : still.idle();
+        const out: FrameOut = world.frame({ u: s.pathU(world.seg), map, resp, pointer, boost, idle });
         const zone = out.place.split('#')[1];
         shownProject = s.sec === 3 && zone !== undefined ? Number(zone) : null;
         // Set on the two HUD bars only: a variable on the root would restyle the whole page each frame.
@@ -469,8 +507,13 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         // `map`, the rise into orbit; only then does the ship turn and leave.
         const map = smooth(0, 0.8, s.q(5));
         const resp = 1 - smooth(0.55, 0.96, s.q(5));
-        const toEnd = clamp(s.y / Math.max(1, layout.tops[5] ?? 1));
-        hud(s.sec, Math.round(toEnd * 180 + (1 - resp) * 58), s.hop(s.sec));
+        const now = performance.now();
+        if (s.y > 4 && !started) started = now;
+        // The ship has left: the clock stops, and Send again comes up.
+        const left = resp < 0.02;
+        ended = left ? ended || now : 0;
+        root.classList.toggle('rt-left', left);
+        hud(s.sec, clockText(started ? (ended || now) - started : 0), s.hop(s.sec));
         draw(s, map, resp, top);
     };
 
@@ -485,7 +528,26 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         aim = { y: to, at: performance.now() };
         scrollTo({ top: to, behavior: reduce ? 'instant' : 'smooth' });
     };
-    const held = hands(root, page, reduce, step, () => undefined);
+    const held = hands(root, page, reduce, step, still.touched);
+
+    // Send again: the screen goes dark, the page goes back to the top under it, the trip restarts.
+    let veilTimer = 0;
+    const again = (): void => {
+        const home = (): void => {
+            scrollTo({ top: 0, behavior: 'instant' });
+            started = 0;
+            ended = 0;
+            root.querySelector<HTMLElement>('.rt-cue [data-start]')?.focus({ preventScroll: true });
+            root.classList.remove('rt-veil');
+        };
+        clearTimeout(veilTimer);
+        if (reduce) {
+            home();
+            return;
+        }
+        root.classList.add('rt-veil');
+        veilTimer = window.setTimeout(home, 300);
+    };
 
     const onKey = (e: KeyboardEvent): void => {
         if (SCROLL_KEYS.has(e.key)) wake();
@@ -496,6 +558,10 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         pointer.y = (e.clientY / innerHeight - 0.5) * 2;
     };
     const onClick = (e: MouseEvent): void => {
+        if ((e.target as HTMLElement).closest('[data-again]')) {
+            again();
+            return;
+        }
         const start = (e.target as HTMLElement).closest<HTMLElement>('[data-start]');
         if (!start) return;
         if (start instanceof HTMLAnchorElement) e.preventDefault();
@@ -529,6 +595,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         dead = true;
         cancelAnimationFrame(raf);
         clearTimeout(cutTimer);
+        clearTimeout(veilTimer);
+        still.stop();
         lcpSeen.disconnect();
         resized.disconnect();
         removeEventListener('resize', remeasure);

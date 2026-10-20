@@ -256,6 +256,10 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                         {l.label}
                     </a>
                 ))}
+                {/* Always laid out, shown once the ship has left, so nothing shifts when it comes up. */}
+                <button type="button" className="rt-again" data-again>
+                    Send again
+                </button>
             </div>
             <details className="rt-more rt-fade" style={stagger(3)}>
                 <summary>Credits</summary>
@@ -344,7 +348,7 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
             </header>
             <div className="rt-hud rt-bottom" aria-hidden="true">
                 <span className="rt-req" data-req>
-                    GET /{trip.slug} <em>· 0 ms</em>
+                    GET /{trip.slug} <em>· 0 s</em>
                 </span>
                 <Route />
                 <span className="rt-hint">

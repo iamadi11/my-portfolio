@@ -122,6 +122,30 @@ html:has(.rt) body {
     );
 }
 
+/* Send again: the screen fades to black, the page goes home under it, then the night comes back */
+.rt-scrim::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+    opacity: 0;
+    transition: opacity 600ms ease-out;
+}
+.rt main {
+    transition: opacity 600ms ease-out;
+}
+.rt-veil .rt-scrim::after,
+.rt-veil main {
+    transition: opacity 300ms ease-in;
+}
+.rt-veil .rt-scrim::after {
+    opacity: 1;
+}
+.rt-veil main,
+.rt-veil .rt-tag.on {
+    opacity: 0;
+}
+
 /* scroll tracks + sticky panels */
 .rt main {
     position: relative;
@@ -651,6 +675,26 @@ html:has(.rt) body {
     color: var(--muted);
     font-size: 14px;
     line-height: 1.5;
+}
+/* Send again: its place is kept from the start; it comes up once the ship has left */
+.rt-pills .rt-again {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 200ms ease-in,
+        visibility 0s 200ms,
+        background 200ms ease,
+        color 200ms ease,
+        transform 160ms ease-out;
+}
+.rt-left .rt-pills .rt-again {
+    opacity: 1;
+    visibility: visible;
+    transition:
+        opacity 600ms var(--out),
+        background 200ms ease,
+        color 200ms ease,
+        transform 160ms ease-out;
 }
 .rt-mail {
     display: inline-block;
