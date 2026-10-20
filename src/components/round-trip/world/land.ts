@@ -15,6 +15,15 @@ export const GROUND: Record<LandKind, number> = {
 };
 
 /**
+ * A pool of light on the ground at the foot of the open portal, in its colour: xyz is the gate's
+ * base, w its radius times how far open it is (0 for none). Set by the portals each frame.
+ */
+export const POOL = {
+    uPool: { value: new THREE.Vector4(0, -999, 0, 0) },
+    uPoolCol: { value: new THREE.Color() },
+};
+
+/**
  * Ground height for each landscape, in GLSL so the land is endless: the mesh follows the camera and
  * every vertex asks for its own height. All of them keep a valley along the path.
  */
@@ -60,7 +69,7 @@ const HEIGHT = /* glsl */ `
 `;
 
 const FRAG = /* glsl */ `
-    uniform vec3 uMoon, uMoonCol;
+    uniform vec3 uMoon, uMoonCol, uPoolCol; uniform vec4 uPool;
     varying vec3 vW, vN; varying float vD, vSh;
     void main() {
         vec3 n = normalize(vN);
@@ -91,7 +100,7 @@ const FRAG = /* glsl */ `
         } else if (uKind == 3) {
             snow = smoothstep(20.0, 50.0, vW.y + fbm(p * 0.03) * 34.0) * (1.0 - smoothstep(0.5, 0.72, slope));
             snow = max(snow, (1.0 - rocky) * smoothstep(0.0, -12.0, vW.y));
-            albedo = mix(vec3(0.065, 0.06, 0.058) * (0.7 + 0.6 * g), vec3(0.74, 0.8, 0.9), snow);
+            albedo = mix(vec3(0.065, 0.06, 0.058) * (0.7 + 0.6 * g), vec3(0.5, 0.54, 0.6), snow);
         } else {
             // Basalt and ash; lava in the low channels, cracks glowing, craters alight.
             albedo = mix(vec3(0.024, 0.023, 0.026), vec3(0.06, 0.055, 0.05), rocky) * (0.7 + 0.6 * g);
@@ -110,6 +119,8 @@ const FRAG = /* glsl */ `
         float sparkle = step(0.985, hash(floor(p * 6.0))) * pow(max(dot(R, V), 0.0), 6.0);
         col += uMoonCol * (pow(max(dot(R, V), 0.0), 30.0) * 0.25 * snow + sparkle * snow * 1.2 * close);
         col += beamAt(vW) * (albedo * 4.0 + 0.04);
+        vec3 pd = vW - uPool.xyz;
+        col += uPoolCol * exp(-dot(pd, pd) / max(uPool.w * uPool.w, 1e-3)) * (albedo * 1.2 + 0.01) * step(0.01, uPool.w);
         gl_FragColor = vec4(fogAt(col, vD, vW), 1.0);
     }
 `;
@@ -295,7 +306,7 @@ export function addLand(scene: THREE.Object3D, s: Shared, small: boolean, rand: 
                 gl_Position = projectionMatrix * mv;
             }`,
             HEIGHT + FRAG,
-            { ...lights, uCell: { value: cell } }
+            { ...lights, ...POOL, uCell: { value: cell } }
         )
     );
     ground.frustumCulled = false;
