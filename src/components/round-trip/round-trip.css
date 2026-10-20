@@ -661,6 +661,16 @@ html:has(.rt) body {
 .rt-hud button {
     pointer-events: auto;
 }
+/* a jump's flash whites out the frame: the HUD gets a dark backing for that moment */
+.rt-hud::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: rgba(5, 7, 13, 0.85);
+    opacity: var(--flash, 0);
+    pointer-events: none;
+}
 .rt-top {
     top: 0;
     /* a breath of dark under the HUD, so it stays legible as a panel slides out beneath it */

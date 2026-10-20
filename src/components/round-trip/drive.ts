@@ -26,6 +26,7 @@ type Els = {
     ringTags: HTMLElement[];
     recordTags: HTMLElement[];
     vitals: HTMLElement | null;
+    huds: HTMLElement[];
 };
 
 const ZONES = ['#ffffff', '#8fd3ff', '#ffb35c', '#ff7ad9', '#7af0ff', '#ffffff'];
@@ -46,6 +47,7 @@ function find(root: HTMLElement): Els {
         ringTags: all('[data-ring-tag]'),
         recordTags: all('[data-record-tag]'),
         vitals: root.querySelector('[data-vitals]'),
+        huds: all('.rt-hud'),
     };
 }
 
@@ -191,6 +193,9 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         // not measured in this browser; the line leaves it out
     }
     let cutTimer = 0;
+    // The project whose landscape the world is showing; its panel changes at the portal's flash,
+    // with the world, not ahead of it as the scroll arrives.
+    let shownProject: number | null = null;
 
     const setOn = (key: string, list: HTMLElement[], idx: number): void => {
         if (active.get(key) === idx) return;
@@ -228,7 +233,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
 
     const panels = (q: (i: number) => number): void => {
         setOn('skills', els.skills, pick(q(2), els.skills.length));
-        const p = pick(q(3), els.projects.length);
+        const p = shownProject ?? pick(q(3), els.projects.length);
         if (p !== lastPick) forced = null;
         lastPick = p;
         setOn('projects', els.projects, forced ?? p);
@@ -281,6 +286,10 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     const draw = (s: ReturnType<typeof scrollState>, map: number, resp: number, top: number): void => {
         if (!world) return;
         const out: FrameOut = world.frame({ u: s.pathU(world.seg), map, resp, pointer });
+        const zone = out.place.split('#')[1];
+        shownProject = s.sec === 3 && zone !== undefined ? Number(zone) : null;
+        // Set on the two HUD bars only: a variable on the root would restyle the whole page each frame.
+        els.huds.forEach((el) => fill(el, '--flash', out.flash));
         els.ringTags.forEach((el, k) => place(el, out.rings[k], s.sec === 3 && map < 0.1, small, top));
         els.recordTags.forEach((el, k) => place(el, out.records[k], s.sec === 4 && map < 0.1, small, top));
         const sound = o.sound();

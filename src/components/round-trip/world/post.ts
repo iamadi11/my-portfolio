@@ -16,12 +16,13 @@ const FINISH = {
         uTime: { value: 0 },
         uVel: { value: 0 },
         uJump: { value: 0 },
+        uDip: { value: 0 },
         uTint: { value: new THREE.Color(0.8, 0.9, 1) },
         uAspect: { value: 1.6 },
     },
     vertexShader: /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
     fragmentShader: /* glsl */ `
-        uniform sampler2D tDiffuse; uniform float uTime, uVel, uJump, uAspect; uniform vec3 uTint; varying vec2 vUv;
+        uniform sampler2D tDiffuse; uniform float uTime, uVel, uJump, uDip, uAspect; uniform vec3 uTint; varying vec2 vUv;
         float h(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
         void main() {
             vec2 c = vUv - 0.5; float r = length(c * vec2(uAspect, 1.0)) / uAspect;
@@ -38,6 +39,8 @@ const FINISH = {
                 col = mix(col, acc / 14.0, smoothstep(0.0, 0.35, uJump));
                 col += uTint * pow(uJump, 4.0) * (0.6 + r) * 1.6;
             }
+            // A quiet change of place: the frame sinks into the night from the edges in, then rises.
+            col *= 1.0 - smoothstep(0.0, 1.0, uDip * (1.15 + r * 0.6));
             col *= 1.0 - smoothstep(0.42, 1.05, r) * 0.6;
             // Film grain: in the mid-tones, in screen space, never lifting the blacks.
             float lum = dot(col, vec3(0.3, 0.59, 0.11));
@@ -49,8 +52,9 @@ const FINISH = {
 
 export type Post = {
     composer: EffectComposer;
-    /** `jump` 0–1 is the cut between scenes; `tint` colours its flash; `glow` scales the bloom. */
-    finish: (t: number, speed: number, jump: number, tint: THREE.Color, glow: number) => void;
+    /** `jump` 0–1 is the cut between scenes; `tint` colours its flash; `glow` scales the bloom;
+     * `dip` 0–1 is a quiet change of place, through the dark. */
+    finish: (t: number, speed: number, jump: number, tint: THREE.Color, glow: number, dip: number) => void;
 };
 
 export function createPost(
@@ -76,12 +80,20 @@ export function createPost(
     composer.addPass(new SMAAPass());
     const pass = new ShaderPass(FINISH);
     composer.addPass(pass);
-    const finish = (t: number, speed: number, jump: number, tint: THREE.Color, glow: number): void => {
+    const finish = (
+        t: number,
+        speed: number,
+        jump: number,
+        tint: THREE.Color,
+        glow: number,
+        dip: number
+    ): void => {
         bloom.strength = strength * glow;
         pass.uniforms.uAspect.value = innerWidth / Math.max(1, innerHeight);
         pass.uniforms.uTime.value = t;
         pass.uniforms.uVel.value = speed;
         pass.uniforms.uJump.value = jump;
+        pass.uniforms.uDip.value = dip;
         pass.uniforms.uTint.value.copy(tint);
     };
     return { composer, finish };

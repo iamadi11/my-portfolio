@@ -1,6 +1,6 @@
 # / (home): Round trip
 
-Scrolling flies an alien ship down to Earth at night and across it. It comes in from orbit over the night side, dives through the atmosphere into a city, then jumps from landscape to landscape (one per project), crosses the open sea to the pole, and ends back in orbit as the sun comes up over the rim. Each place is endless; moving to the next one is a film-style jump (a speed boost, everything smearing into streaks, a flash, and the new place). The panels and HUD keep the request metaphor (`Browser → Wire → Edge → Services → Data → 200 OK`). All facts come from `SITE` in `src/content/site.ts`.
+Scrolling flies an alien ship down to Earth at night and across it. It comes in from orbit over the night side, dives through the atmosphere into a city, then jumps from landscape to landscape (one per project), crosses the open sea to the pole, and ends back in orbit as the sun comes up over the rim. Each place is endless. Flying through a project's portal is the signature: a film-style jump (a speed boost, everything smearing into streaks, a flash in the project's colour, and the new place); the two passages through the air (into the cloud deck, out to orbit) jump too. Where there is no portal (city to the first landscape, open sea to the pack ice) the frame dips through the dark instead, so the warp keeps its meaning. The panels and HUD keep the request metaphor (`Browser → Wire → Edge → Services → Data → 200 OK`). All facts come from `SITE` in `src/content/site.ts`.
 
 ## What a visitor sees
 
@@ -12,7 +12,7 @@ Scrolling flies an alien ship down to Earth at night and across it. It comes in 
 6. **Data:** experience then education, one record at a time; the first half over the open sea under the moon, the second over pack ice and icebergs under the aurora. Each record (every role, then education) is a light pillar beside the path, a column of light over a point of light, the way cold nights make them.
 7. **200 OK:** the ship pulls up off the ice, the air thins and the stars come back; a cut through the last of the air, and it climbs away from Earth into orbit at sunrise, the globe falling away below. The ship turns to greet you, then leaves towards the sun. Under it, what this visit actually measured (first byte, largest paint, JavaScript transferred, from the browser's own timing; any it cannot measure are left out), then email, copy, phone and profile links, and the credits.
 
-The route in the HUD fills between hops as the request travels; each project's dot fills as the ship closes on its portal; at each jump's flash the panel blurs for a beat so text and world change together. The ship's search beam sweeps the ground on Earth. Sound (drone, wind that follows speed, a chime per ring) stays off until the visitor turns it on. Phones buzz briefly on each jump and ring.
+The route in the HUD fills between hops as the request travels; each project's dot fills as the ship closes on its portal; the project panel changes when the world reaches that project's landscape, at the portal's flash, and the panel blurs for that beat so text and world change together; the HUD gets a dark backing while a flash whites out the frame. The ship's search beam sweeps the ground on Earth. Sound (drone, wind that follows speed, a chime per ring) stays off until the visitor turns it on. Phones buzz briefly on each jump and ring.
 
 ## Files (`src/components/round-trip/`)
 
@@ -22,7 +22,7 @@ The route in the HUD fills between hops as the request travels; each project's d
 | `RoundTrip.tsx` | Page shell: HUD, poster, sections and panels, scene labels, sound and tilt toggles, credits. |
 | `drive.ts` | Scroll → section, panel state, HUD, scene labels; fetches the world on idle and builds it on the first scroll or Start. No three.js. |
 | `sound.ts`, `tilt.ts`, `math.ts`, `round-trip.css` | Sound, tilt-to-scroll on phones, shared maths, styles. |
-| `world/index.ts` | `createWorld`: which place is on screen (`placeAt`), the jump between places (`jumper`), the air of each place (`AIR`), the ship's position; `frame()` per animation frame. |
+| `world/index.ts` | `createWorld`: which place is on screen (`stopAt`), the jump or quiet dip between places (`jumper`), the air of each place (`AIR`), the ship's position; `frame()` per animation frame. |
 | `world/route.ts` | The path: a long, gently swaying line whose length per section follows the content. |
 | `world/gl.ts` | Shared uniforms and GLSL: fog, noise, the path's sway, wrapping scenery around the camera, the beam's pool of light. |
 | `world/sky.ts` | Stars and Milky Way from the NASA star map, moon, horizon, aurora. |
@@ -35,7 +35,7 @@ The route in the HUD fills between hops as the request travels; each project's d
 | `world/ship.ts` | The ship: PBR model, engine plasma, search beam, re-entry glow, wingtip strobes, banking and barrel rolls. |
 | `world/warp.ts` | Light streaks rushing past the camera during a jump. |
 | `world/rig.ts` | Camera: follows the ship, banks into turns, widens with speed, punches out and shakes on a jump. |
-| `world/post.ts` | Bloom, SMAA, then fringing with speed, the jump's zoom blur and flash, grain, vignette, dither. |
+| `world/post.ts` | Bloom, SMAA, then fringing with speed, the jump's zoom blur and flash, the quiet dip, grain, vignette, dither. |
 | `world/glow.ts` | Soft additive sprites (engine glow, strobes, the sun). |
 
 ## Look

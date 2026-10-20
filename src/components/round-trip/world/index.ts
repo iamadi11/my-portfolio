@@ -51,8 +51,10 @@ export type FrameOut = {
     passed: number | null;
     /** 0–1, how fast the ship is moving. */
     speed: number;
-    /** True on the frame a jump to a new scene begins. */
+    /** True on the frame a jump to a new scene begins (not for a quiet dip). */
     jumped: boolean;
+    /** 0–1: how white the screen is with a jump's flash, so the HUD can hold its ground. */
+    flash: number;
     /** The stop on screen: a place, plus which project's stretch for a landscape ("desert#1"). */
     place: string;
     /** Where the ship is on screen, for the sound of its engine. */
@@ -103,8 +105,8 @@ const FLASH = {
 const CLOUD = new THREE.Color(0.06, 0.05, 0.05);
 /** How long a jump takes (s) and where in it the scene is swapped: portals are quick, the two
  * passages through the air (into the cloud deck, out of the last of the air) linger. */
-const JUMP = { portal: 1.45, air: 1.9 };
-const PEAK = { portal: 0.36, air: 0.42 };
+const JUMP = { portal: 1.45, air: 1.9, dip: 1.1 };
+const PEAK = { portal: 0.36, air: 0.42, dip: 0.5 };
 
 function renderer(canvas: HTMLCanvasElement, small: boolean): THREE.WebGLRenderer {
     const r = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
@@ -134,30 +136,42 @@ type Stop = string;
 const placeOf = (stop: Stop): Place => stop.split('#')[0] as Place;
 const zoneIn = (stop: Stop): number => Number(stop.split('#')[1] ?? -1);
 
-type Jump = { shown: Stop; jump: number; jumped: boolean; tint: THREE.Color };
+type Jump = { shown: Stop; jump: number; dip: number; jumped: boolean; tint: THREE.Color };
 type TintOf = (target: Stop) => THREE.Color | null;
 
 /**
- * The jump between places: crossing into a new one starts a boost; the scene is swapped at its
- * peak, under the blur and the flash. Reduced motion cuts straight across.
+ * The quiet changes of place, where there is no portal to fly through: city to the first
+ * landscape, open sea to the pack ice. They dip through the dark instead of jumping, so the warp
+ * stays the signature of the portals (and of the two passages through the air).
+ */
+const quiet = (from: Stop, to: Stop): boolean =>
+    (from === 'city' && to.includes('#')) || (from === 'ocean' && to === 'ice');
+
+/**
+ * The change between places: crossing into a new one starts a boost (or, for a quiet change, a
+ * dip through the dark); the scene is swapped at its peak, under the blur and flash or the dark.
+ * Reduced motion cuts straight across.
  */
 function jumper(
     reduce: boolean,
     tintOf: TintOf,
     onStart: () => void
 ): { step: (dt: number, target: Stop, back: boolean) => Jump } {
-    const out: Jump = { shown: 'space', jump: 0, jumped: false, tint: FLASH.other.clone() };
+    const out: Jump = { shown: 'space', jump: 0, dip: 0, jumped: false, tint: FLASH.other.clone() };
     let next: Stop = 'space';
     let clock = -1;
     let len = JUMP.portal;
     let peak = PEAK.portal;
+    let soft = false;
+    let level = 0;
     const start = (target: Stop): void => {
+        soft = quiet(out.shown, target);
         next = target;
         clock = 0;
-        out.jumped = true;
+        out.jumped = !soft;
         const air = out.shown === 'space' || target === 'orbit';
-        len = air ? JUMP.air : JUMP.portal;
-        peak = air ? PEAK.air : PEAK.portal;
+        len = soft ? JUMP.dip : air ? JUMP.air : JUMP.portal;
+        peak = soft ? PEAK.dip : air ? PEAK.air : PEAK.portal;
         out.tint.copy(
             out.shown === 'space'
                 ? FLASH.entry
@@ -165,37 +179,48 @@ function jumper(
                   ? FLASH.orbit
                   : (tintOf(target) ?? FLASH.other)
         );
-        onStart();
+        if (!soft) onStart();
     };
-    const step = (dt: number, target: Stop, back: boolean): Jump => {
-        out.jumped = false;
-        // Scrolled back before the flash: drop the jump and cut to where the visitor is.
-        if (clock >= 0 && clock < peak && back && target !== next) {
+    /** A new target while a change is under way: rewind before the peak, chain after it. */
+    const redirect = (target: Stop, back: boolean): void => {
+        if (clock < 0 || target === next) return;
+        // Scrolled back before the peak: drop the change and cut to where the visitor is.
+        if (clock < peak && back) {
             clock = -1;
             out.shown = target;
+            return;
         }
-        // Raced past another place after the flash: chain straight into the next jump, at the
+        // Raced past another place after the peak: chain straight into the next change, at the
         // same strength and twice the pace, instead of queueing a full one behind this.
-        if (clock >= peak && target !== next && !back && !reduce) {
-            const now = out.jump;
+        if (clock >= peak && !back && !reduce) {
+            const now = level;
             start(target);
             len *= 0.5;
             clock = peak * Math.sqrt(now);
         }
+    };
+    /** Strength of the change in progress (0–1): rising to the peak, where the scene swaps, then easing out. */
+    const advance = (dt: number): number => {
+        if (clock < 0) return 0;
+        clock += dt / len;
+        if (clock >= peak) out.shown = next;
+        if (clock >= 1) {
+            clock = -1;
+            return 0;
+        }
+        return clock < peak ? Math.pow(clock / peak, 2) : 1 - Math.pow((clock - peak) / (1 - peak), 0.6);
+    };
+    const step = (dt: number, target: Stop, back: boolean): Jump => {
+        out.jumped = false;
+        redirect(target, back);
         if (clock < 0 && target !== out.shown) {
             // Rewinding is a plain cut; only the way forward is a jump.
             if (reduce || back) out.shown = target;
             else start(target);
         }
-        out.jump = 0;
-        if (clock < 0) return out;
-        clock += dt / len;
-        if (clock >= peak) out.shown = next;
-        out.jump = clock < peak ? Math.pow(clock / peak, 2) : 1 - Math.pow((clock - peak) / (1 - peak), 0.6);
-        if (clock >= 1) {
-            clock = -1;
-            out.jump = 0;
-        }
+        level = advance(dt);
+        out.jump = soft ? 0 : level;
+        out.dip = soft ? level : 0;
         return out;
     };
     return { step };
@@ -491,11 +516,8 @@ export function createWorld(o: WorldOptions): World {
      * the air: the frame widens and shudders; the barrel roll is the wind-up. Returns 0–1.
      */
     const rushing = (shown: Place, heat: number, forward: boolean): number => {
-        const gate = Math.max(
-            rings.rush,
-            shown === 'city' ? smooth(90, 8, (svc - u) * route.len) : 0,
-            shown === 'ocean' ? smooth(90, 8, (iceAt - u) * route.len) : 0
-        );
+        // Only a portal is rushed; the quiet changes (city to land, sea to ice) are not.
+        const gate = rings.rush;
         if (gate > 0.5 && !rolled && forward) {
             rolled = true;
             ship.roll();
@@ -515,7 +537,7 @@ export function createWorld(o: WorldOptions): World {
         speed +=
             (Math.min(1, (Math.abs(u - prev) * route.len) / Math.max(dt, 1e-3) / 160) - speed) *
             (1 - Math.exp(-dt * 4));
-        const { shown: stop, jump, jumped, tint } = jumps.step(dt, stopAt(u, f.map), u < prev);
+        const { shown: stop, jump, dip, jumped, tint } = jumps.step(dt, stopAt(u, f.map), u < prev);
         const shown = placeOf(stop);
         const zone = zoneIn(stop);
         route.curve.getPointAt(clamp(u), p);
@@ -541,7 +563,8 @@ export function createWorld(o: WorldOptions): World {
             o.reduce ? 0 : Math.min(1, speed + rush * 0.5),
             jump,
             tint,
-            1 - Math.max(beat.drop * 0.8, beat.dive * 0.45)
+            1 - Math.max(beat.drop * 0.8, beat.dive * 0.45),
+            dip
         );
         post.composer.render();
         return {
@@ -552,6 +575,7 @@ export function createWorld(o: WorldOptions): World {
             passed,
             speed,
             jumped,
+            flash: Math.pow(jump, 3),
             place: stop,
             ship: project(at, 1e9),
             rush: Math.max(rush, heat),

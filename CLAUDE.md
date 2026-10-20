@@ -107,7 +107,7 @@ Examples:
 
 ## 10. HOME (/) RULES
 
-`/` is **Round trip**: scrolling flies an alien ship (three.js) from orbit down to Earth at night: a city, then one endless landscape per project (each ending in a portal in the project's colour), the sea and the pole (one light pillar per record: roles, then education), with a film-style jump between places, ending back in orbit at sunrise for `200 OK`. Spec, assets and licences: `docs/round-trip.md`. `/v2` redirects to `/`.
+`/` is **Round trip**: scrolling flies an alien ship (three.js) from orbit down to Earth at night: a city, then one endless landscape per project (each ending in a portal in the project's colour), the sea and the pole (one light pillar per record: roles, then education), with a film-style jump through each portal and a dip through the dark where there is none, ending back in orbit at sunrise for `200 OK`. Spec, assets and licences: `docs/round-trip.md`. `/v2` redirects to `/`.
 
 1. **Content:** all copy for `/` lives in `src/content/site.ts` (`SITE`; types and `SAMPLE` in `src/content/types.ts`). Same truth rules as §0. Optional fields are dropped from the page when empty; never fill them to fill a layout.
 2. **Layout:** `src/components/round-trip/*`: `trip.ts` reshapes `SITE`, `drive.ts` runs the page (scroll, panels, HUD, tilt), `world/*` is the three.js scene. Models and textures in `public/models` and `public/env` are rebuilt by `scripts/assets.sh` from git-ignored `assets-src/`; keep the credits line on the `200 OK` panel in step with them.
