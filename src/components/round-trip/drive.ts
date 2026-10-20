@@ -1,6 +1,6 @@
 import { clamp, lerp, smooth } from '@/components/round-trip/math';
 import type { Sound } from '@/components/round-trip/sound';
-import { tilt } from '@/components/round-trip/tilt';
+import { push, type Push, tilt } from '@/components/round-trip/tilt';
 import type { FrameOut, Mark, World } from '@/components/round-trip/world';
 
 /** three.js and the world live in a separate chunk: fetched on idle, built on the first scroll or Start. */
@@ -132,6 +132,118 @@ function place(el: HTMLElement, m: Mark, show: boolean, small: boolean, top: num
     if (show && clear && m) el.style.transform = `translate(${m.x + 14}px, ${m.y - 8}px)`;
 }
 
+/** Where J and K stop: each section's top, then each project's landscape and each record's stretch. */
+function stopsOf({ tops, hs }: Layout, ringAt: number[], recordAt: number[], end: number): number[] {
+    // Item k's stretch begins halfway between mark k-1 and mark k; the first begins at the top.
+    const within = (i: number, at: number[]): number[] =>
+        at.slice(1).map((a, k) => tops[i] + (hs[i] * (at[k] + a)) / 2);
+    const ys = [...tops, ...within(3, ringAt), ...within(4, recordAt), end]
+        .map(Math.round)
+        .sort((a, b) => a - b);
+    return ys.filter((y, i) => i === 0 || y - ys[i - 1] > 40);
+}
+
+const FIELD = 'input, textarea, select, [contenteditable]';
+/** A press here is not a press on the world. */
+const NOT_WORLD = 'a, button, summary, .rt-panel, .rt-hud';
+const BOOST = 2200;
+
+const plainKey = (e: KeyboardEvent): string | null => {
+    const k = e.key.toLowerCase();
+    if (k !== 'j' && k !== 'k') return null;
+    if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return null;
+    return (e.target as Element | null)?.closest?.(FIELD) ? null : k;
+};
+
+/** The panels' text is not clickable (it lets presses through to the world), so test where it is. */
+const overPanel = (root: HTMLElement, x: number, y: number): boolean =>
+    [...root.querySelectorAll('.rt-sec.in .rt-panel')].some((el) => {
+        const r = el.getBoundingClientRect();
+        return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+    });
+
+type Hands = { stop: () => void };
+
+/**
+ * J and K step between stops. Holding J, or pressing and holding on the world (a mouse for
+ * 180 ms; a finger for 350 ms without moving), boosts until let go. Reduced motion: a hold on the
+ * world steps to the next stop instead, and holding J does nothing more than its first step.
+ */
+function hands(
+    root: HTMLElement,
+    page: Push,
+    reduce: boolean,
+    step: (dir: 1 | -1) => void,
+    onInput: () => void
+): Hands {
+    let timer = 0;
+    let held = false;
+    let down: { id: number; x: number; y: number } | null = null;
+    const start = (): void => {
+        held = true;
+        if (reduce) step(1);
+        else page.aim('boost', BOOST, 2.5);
+    };
+    const end = (): void => {
+        clearTimeout(timer);
+        down = null;
+        if (held && !reduce) page.aim('boost', 0, 5);
+        held = false;
+    };
+    const onKeyDown = (e: KeyboardEvent): void => {
+        const k = plainKey(e);
+        if (!k) return;
+        e.preventDefault();
+        onInput();
+        if (e.repeat) return;
+        step(k === 'j' ? 1 : -1);
+        clearTimeout(timer);
+        if (k === 'j' && !reduce) timer = window.setTimeout(start, 350);
+    };
+    const onKeyUp = (e: KeyboardEvent): void => {
+        if (e.key.toLowerCase() === 'j') end();
+    };
+    const onDown = (e: PointerEvent): void => {
+        if (!e.isPrimary || e.button !== 0) return;
+        if ((e.target as Element).closest(NOT_WORLD) || overPanel(root, e.clientX, e.clientY)) return;
+        down = { id: e.pointerId, x: e.clientX, y: e.clientY };
+        clearTimeout(timer);
+        timer = window.setTimeout(start, e.pointerType === 'mouse' ? 180 : 350);
+    };
+    const onMove = (e: PointerEvent): void => {
+        // A finger that moves is swiping, not holding.
+        if (!down || e.pointerId !== down.id || e.pointerType === 'mouse') return;
+        if (Math.hypot(e.clientX - down.x, e.clientY - down.y) >= 8) end();
+    };
+    const onUp = (e: PointerEvent): void => {
+        if (down?.id === e.pointerId) end();
+    };
+    const onMenu = (e: Event): void => {
+        if (down || held) e.preventDefault();
+    };
+    addEventListener('keydown', onKeyDown);
+    addEventListener('keyup', onKeyUp);
+    addEventListener('blur', end);
+    root.addEventListener('pointerdown', onDown);
+    addEventListener('pointermove', onMove, { passive: true });
+    addEventListener('pointerup', onUp);
+    addEventListener('pointercancel', onUp);
+    root.addEventListener('contextmenu', onMenu);
+    return {
+        stop: () => {
+            end();
+            removeEventListener('keydown', onKeyDown);
+            removeEventListener('keyup', onKeyUp);
+            removeEventListener('blur', end);
+            root.removeEventListener('pointerdown', onDown);
+            removeEventListener('pointermove', onMove);
+            removeEventListener('pointerup', onUp);
+            removeEventListener('pointercancel', onUp);
+            root.removeEventListener('contextmenu', onMenu);
+        },
+    };
+}
+
 export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOptions): () => void {
     const els = find(root);
     const small = matchMedia('(max-width: 760px)').matches;
@@ -142,7 +254,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         coarse = matchMedia('(pointer: coarse)').matches;
     };
     const pointer = { x: 0, y: 0 };
-    const tilted = tilt(pointer, root.querySelector<HTMLButtonElement>('[data-tilt]'));
+    const page = push();
+    const tilted = tilt(pointer, root.querySelector<HTMLButtonElement>('[data-tilt]'), page);
     const active = new Map<string, number>();
     let world: World | null = null;
     let phase: 'idle' | 'building' | 'live' | 'flat' = 'idle';
@@ -304,7 +417,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
 
     const draw = (s: ReturnType<typeof scrollState>, map: number, resp: number, top: number): void => {
         if (!world) return;
-        const out: FrameOut = world.frame({ u: s.pathU(world.seg), map, resp, pointer, boost: 0, idle: 0 });
+        const boost = clamp(page.speed('boost') / BOOST);
+        const out: FrameOut = world.frame({ u: s.pathU(world.seg), map, resp, pointer, boost, idle: 0 });
         const zone = out.place.split('#')[1];
         shownProject = s.sec === 3 && zone !== undefined ? Number(zone) : null;
         // Set on the two HUD bars only: a variable on the root would restyle the whole page each frame.
@@ -348,6 +462,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         }
         root.classList.toggle('rt-scrolled', s.y > 40);
         if (s.y > 4) wake();
+        // Boosting into the end of the page stops there.
+        if (s.y >= layout.tops[5] + layout.hs[5] - vh - 2) page.halt('boost');
         panels(s.q);
         // The way out takes most of the last section: the climb, the cut at the halfway point of
         // `map`, the rise into orbit; only then does the ship turn and leave.
@@ -357,6 +473,19 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         hud(s.sec, Math.round(toEnd * 180 + (1 - resp) * 58), s.hop(s.sec));
         draw(s, map, resp, top);
     };
+
+    // J and K: the next stop from where a smooth scroll is heading, not from where it has got to.
+    let aim: { y: number; at: number } | null = null;
+    const step = (dir: 1 | -1): void => {
+        wake();
+        const ys = stopsOf(layout, o.ringAt, o.recordAt, document.documentElement.scrollHeight - vh);
+        const from = aim && performance.now() - aim.at < 1000 ? aim.y : scrollY;
+        const to = dir > 0 ? ys.find((y) => y > from + 4) : [...ys].reverse().find((y) => y < from - 4);
+        if (to === undefined) return;
+        aim = { y: to, at: performance.now() };
+        scrollTo({ top: to, behavior: reduce ? 'instant' : 'smooth' });
+    };
+    const held = hands(root, page, reduce, step, () => undefined);
 
     const onKey = (e: KeyboardEvent): void => {
         if (SCROLL_KEYS.has(e.key)) wake();
@@ -373,7 +502,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         wake();
         document
             .getElementById(start.dataset.start ?? '')
-            ?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+            ?.scrollIntoView({ behavior: reduce ? 'instant' : 'smooth' });
     };
     const onFocus = (e: FocusEvent): void => {
         // A keyboard user tabbing into a project or record that is not on screen brings it forward.
@@ -411,6 +540,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         root.removeEventListener('click', onClick);
         root.removeEventListener('focusin', onFocus);
         tilted.stop();
+        held.stop();
+        page.stop();
         (world as World | null)?.dispose();
     };
 }

@@ -347,7 +347,10 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                     GET /{trip.slug} <em>· 0 ms</em>
                 </span>
                 <Route />
-                <span className="rt-hint">Scroll to send</span>
+                <span className="rt-hint">
+                    <span>Scroll to send</span>
+                    <kbd>J / K</kbd>
+                </span>
             </div>
 
             <main id="main-content">
