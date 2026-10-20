@@ -25,7 +25,8 @@ const LANDMARKS: Partial<Record<LandKind, Landmark>> = {
     grass: { id: 'mountain_range_01', width: 1500, ahead: 1050, sink: 40, side: -80 },
     desert: { id: 'death_valley', width: 1700, ahead: 1250, sink: 70, side: 110, tint: [0.5, 0.46, 0.44] },
     canyon: { id: 'horseshoe', width: 1300, ahead: 1350, sink: 110, side: 170, tint: [0.42, 0.36, 0.36] },
-    alpine: { id: 'snowy_mountain', width: 2100, ahead: 1150, sink: 30, side: 120 },
+    // The ship flies low in the alpine valley: sunk well below its floor, or the scan's flat base shows.
+    alpine: { id: 'snowy_mountain', width: 2100, ahead: 1150, sink: 160, side: 120 },
     volcano: { id: 'snowy_volcano', width: 1100, ahead: 900, sink: 30, side: 160 },
 };
 
@@ -35,6 +36,8 @@ export type Landmarks = { show: (zone: number) => void };
 function nightFar(mat: THREE.MeshStandardMaterial, tint: [number, number, number]): void {
     mat.color.multiply(new THREE.Color(...tint));
     mat.envMapIntensity = 0.1;
+    // A scan is a sheet: seen from below, its underside would read as a floating slab.
+    mat.side = THREE.FrontSide;
     mat.onBeforeCompile = (sh) => {
         sh.fragmentShader = sh.fragmentShader.replace(
             '#include <fog_fragment>',

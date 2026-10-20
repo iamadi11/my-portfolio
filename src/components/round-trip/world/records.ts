@@ -33,7 +33,11 @@ const PILLAR_FRAG = /* glsl */ `
         float halo = exp(-x * x * 3.5);
         float rise = pow(1.0 - vP.y, 1.3) * smoothstep(0.0, 0.03, vP.y);
         float shimmer = 0.75 + 0.25 * vnoise(vec2(vP.y * 40.0 + vR * 9.0, uTime * 1.2));
-        float glitter = step(0.93, hash(floor(vec2(vP.x * 30.0, vP.y * 220.0 - uTime * 3.0) + vR * 17.0)));
+        // Ice crystals: a few cells hold one soft, round, twinkling point (a whole lit cell reads as a pixel).
+        vec2 gc = vec2(vP.x * 30.0, vP.y * 220.0 - uTime * 3.0) + vR * 17.0;
+        float seed = hash(floor(gc));
+        float glint = smoothstep(0.42, 0.0, length(fract(gc) - 0.5));
+        float glitter = step(0.93, seed) * glint * glint * (0.6 + 0.4 * sin(uTime * 6.0 + seed * 40.0));
         vec3 tint = mix(vec3(0.75, 0.9, 1.0), vec3(1.0, 0.95, 0.85), vR);
         vec3 col = tint * (core * 0.7 + halo * 0.16 + glitter * halo * 0.5) * rise * shimmer;
         gl_FragColor = vec4(col * vHot * fade(vD * 0.6), 1.0);
