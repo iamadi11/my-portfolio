@@ -112,14 +112,24 @@ function Stack({ trip }: { trip: Trip }): React.JSX.Element | null {
             <h2 className="rt-h2">
                 <Line i={0}>The stack</Line>
             </h2>
-            <ul className="rt-layers">
-                {trip.skills.map((s, i) => (
-                    <li key={s.group} data-skill className="rt-fade" style={stagger(i + 1)}>
-                        <b>{s.group}</b>
-                        <span>{s.items.split(', ').join(' · ')}</span>
-                    </li>
-                ))}
-            </ul>
+            <div className="rt-skills">
+                <ul className="rt-layers">
+                    {trip.skills.map((s, i) => (
+                        <li key={s.group} data-skill className="rt-fade" style={stagger(i + 1)}>
+                            <b>{s.group}</b>
+                            <span>{s.items.split(', ').join(' · ')}</span>
+                        </li>
+                    ))}
+                </ul>
+                {/* The group the ship is passing, shown beside its name; the list rows never grow. */}
+                <div className="rt-layer-items" data-skill-box aria-hidden="true">
+                    {trip.skills.map((s) => (
+                        <p key={s.group} data-skill-items>
+                            {s.items.split(', ').join(' · ')}
+                        </p>
+                    ))}
+                </div>
+            </div>
         </>
     );
 }

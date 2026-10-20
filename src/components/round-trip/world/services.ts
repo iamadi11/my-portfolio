@@ -53,6 +53,8 @@ export type Rings = {
     centers: THREE.Vector3[];
     /** 0–1: how hard the ship is rushing at the portal ahead (set by `update`). */
     rush: number;
+    /** 0–1: how close the ship is to the portal on screen, before or after it. */
+    close: number;
     /** Advances the portals, showing only `show` (the current landscape's exit; -1 for none). */
     update: (u: number, t: number, dt: number, show: number) => number | null;
 };
@@ -156,15 +158,17 @@ export function addRings(
         })
         .catch(() => undefined);
 
-    const rings: Rings = { centers: portals.map((p) => p.center), rush: 0, update: () => null };
+    const rings: Rings = { centers: portals.map((p) => p.center), rush: 0, close: 0, update: () => null };
     const update = (u: number, _t: number, dt: number, show: number): number | null => {
         let hit: number | null = null;
         rings.rush = 0;
+        rings.close = 0;
         portals.forEach((p, k) => {
             p.g.visible = k === show;
             // The run-up: the last 90 m before the ring, building until the ship is through.
             if (k === show && u < p.u) rings.rush = smooth(90, 8, (p.u - u) * route.len);
             const d = Math.abs(u - p.u) * route.len;
+            if (k === show) rings.close = smooth(60, 12, d);
             p.near += (smooth(400, 40, d) - p.near) * (1 - Math.exp(-dt * 4));
             // The beacon holds its size on screen from far off and fades as the ring takes over.
             p.beacon.visible = k === show && u < p.u;

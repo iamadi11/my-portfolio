@@ -563,7 +563,8 @@ export function createWorld(o: WorldOptions): World {
             o.reduce ? 0 : Math.min(1, speed + rush * 0.5),
             jump,
             tint,
-            1 - Math.max(beat.drop * 0.8, beat.dive * 0.45),
+            // Up close, a gateway's metal throws specular glints that bloom into white blobs.
+            (1 - Math.max(beat.drop * 0.8, beat.dive * 0.45)) * (1 - 0.75 * rings.close),
             dip
         );
         post.composer.render();

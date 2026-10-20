@@ -19,6 +19,8 @@ type Els = {
     req: HTMLElement | null;
     ms: Array<HTMLElement | null>;
     skills: HTMLElement[];
+    skillBox: HTMLElement | null;
+    skillItems: HTMLElement[];
     projects: HTMLElement[];
     dots: HTMLElement[];
     records: HTMLElement[];
@@ -40,6 +42,8 @@ function find(root: HTMLElement): Els {
         req: root.querySelector('[data-req]'),
         ms: [0, 1, 2, 3, 4, 5].map((i) => root.querySelector<HTMLElement>(`[data-ms="${i}"]`)),
         skills: all('[data-skill]'),
+        skillBox: root.querySelector('[data-skill-box]'),
+        skillItems: all('[data-skill-items]'),
         projects: all('[data-project]'),
         dots: all('[data-dot]'),
         records: all('[data-record]'),
@@ -147,20 +151,20 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     let lastRecord = -1;
     let raf = 0;
     let dead = false;
-    // The stack list shows one group's items at a time; it keeps the height of its tallest
-    // group, so the bottom-anchored panel never jumps as groups open.
+    // The stack: the rows never grow; the passing group's items sit in one slot (as tall as the
+    // tallest group), moved beside its name with a transform on wide screens, so nothing shifts.
+    let skillTops: number[] = [];
+    const moveSkills = (idx: number): void => {
+        if (els.skillBox) els.skillBox.style.transform = small ? '' : `translateY(${skillTops[idx] ?? 0}px)`;
+    };
     const reserveSkills = (): void => {
-        const list = els.skills[0]?.parentElement;
-        if (!list || !root.classList.contains('rt-js')) return;
-        const was = els.skills.findIndex((li) => li.classList.contains('on'));
-        list.style.minHeight = '';
-        let tallest = 0;
-        els.skills.forEach((li, i) => {
-            els.skills.forEach((x, k) => x.classList.toggle('on', k === i));
-            tallest = Math.max(tallest, list.offsetHeight);
-        });
-        els.skills.forEach((x, k) => x.classList.toggle('on', k === was));
-        list.style.minHeight = `${tallest}px`;
+        const wrap = els.skillBox?.parentElement;
+        if (!wrap || !els.skillBox || small || !root.classList.contains('rt-js')) return;
+        wrap.style.minHeight = '';
+        skillTops = els.skills.map((li) => li.offsetTop);
+        const reach = Math.max(...skillTops) + els.skillBox.offsetHeight;
+        wrap.style.minHeight = `${Math.max(wrap.offsetHeight, reach)}px`;
+        moveSkills(active.get('skills') ?? 0);
     };
     let layout = measure(els);
     let vh = innerHeight;
@@ -232,7 +236,10 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     };
 
     const panels = (q: (i: number) => number): void => {
-        setOn('skills', els.skills, pick(q(2), els.skills.length));
+        const g = pick(q(2), els.skills.length);
+        if (active.get('skills') !== g) moveSkills(g);
+        setOn('skills', els.skills, g);
+        setOn('skillItems', els.skillItems, g);
         const p = shownProject ?? pick(q(3), els.projects.length);
         if (p !== lastPick) forced = null;
         lastPick = p;

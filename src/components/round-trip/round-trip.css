@@ -384,12 +384,23 @@ html:has(.rt) body {
 .rt-js .in .rt-layers li.on {
     opacity: 1;
 }
-/* text-light: only the group the ship is passing shows its items; the others keep their names
-   (the items stay in the DOM for readers and search) */
+/* text-light: the rows keep only their names (the items stay in each row for readers and
+   search); the passing group's items show in one slot beside it, so no row ever grows */
+.rt-layer-items {
+    display: none;
+}
+.rt-js .rt-skills {
+    position: relative;
+    display: grid;
+    grid-template-columns: 9.5em 1fr;
+    column-gap: 18px;
+    align-items: start;
+}
 .rt-js .rt-layers li {
+    display: block;
     min-height: 56px;
 }
-.rt-js .rt-layers li:not(.on) span {
+.rt-js .rt-layers li span {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -397,14 +408,31 @@ html:has(.rt) body {
     clip-path: inset(50%);
     white-space: nowrap;
 }
-.rt-js .rt-layers li.on span {
-    animation: rt-fade-in 250ms ease-out;
+.rt-js .rt-layer-items {
+    display: grid;
+    padding-top: 17px;
+    opacity: 0;
+    transition:
+        opacity 200ms ease-in,
+        transform 300ms var(--out);
 }
-@keyframes rt-fade-in {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
+.rt-js .in .rt-layer-items {
+    opacity: 1;
+    transition:
+        opacity 600ms var(--out) 300ms,
+        transform 300ms var(--out);
+}
+.rt-layer-items p {
+    grid-area: 1 / 1;
+    margin: 0;
+    color: var(--soft);
+    font-size: 16px;
+    line-height: 1.5;
+    opacity: 0;
+    transition: opacity 200ms ease-out;
+}
+.rt-layer-items p.on {
+    opacity: 1;
 }
 .rt-layers b {
     font: 400 clamp(21px, 1.9vw, 28px) / 1.05 var(--display);
@@ -860,6 +888,16 @@ html:has(.rt) body {
         gap: 4px;
         padding: 10px 0;
     }
+    /* phones: the items sit under the list */
+    .rt-js .rt-skills {
+        grid-template-columns: 1fr;
+    }
+    .rt-js .rt-layers li {
+        min-height: 0;
+    }
+    .rt-js .rt-layer-items {
+        padding-top: 12px;
+    }
     .rt-h3 {
         margin: 8px 0 10px;
     }
@@ -901,7 +939,7 @@ html:has(.rt) body {
     .rt-js .rt-ln > span,
     .rt-cue b::after,
     .rt-poster::before,
-    .rt-js .rt-layers li.on span,
+    .rt-layer-items,
     .rt-count i,
     .rt-req em {
         transition: none !important;
