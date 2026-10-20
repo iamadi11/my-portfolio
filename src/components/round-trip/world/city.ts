@@ -433,7 +433,8 @@ export function addCity(
     s: Shared,
     density: number,
     rand: () => number,
-    env: Env
+    env: Env,
+    _skills: Array<{ group: string; items: string }> = []
 ): City {
     const towers = addTowers(scene, s, rand, env);
     const downtown = addDowntown(scene, density < 1);

@@ -10,6 +10,7 @@ export type DriveOptions = {
     rings: string[];
     ringAt: number[];
     recordAt: number[];
+    skills: Array<{ group: string; items: string }>;
     sound: () => Sound | null;
 };
 
@@ -216,6 +217,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
             rings: o.rings,
             ringAt: o.ringAt,
             recordAt: o.recordAt,
+            skills: o.skills,
             small,
             reduce,
         });
@@ -292,7 +294,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
 
     const draw = (s: ReturnType<typeof scrollState>, map: number, resp: number, top: number): void => {
         if (!world) return;
-        const out: FrameOut = world.frame({ u: s.pathU(world.seg), map, resp, pointer });
+        const out: FrameOut = world.frame({ u: s.pathU(world.seg), map, resp, pointer, boost: 0, idle: 0 });
         const zone = out.place.split('#')[1];
         shownProject = s.sec === 3 && zone !== undefined ? Number(zone) : null;
         // Set on the two HUD bars only: a variable on the root would restyle the whole page each frame.

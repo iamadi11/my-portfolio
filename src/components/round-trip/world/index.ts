@@ -27,6 +27,8 @@ export type WorldOptions = {
     ringAt: number[];
     /** Where each role's record sits, as a share of the data stretch (0–1). */
     recordAt: number[];
+    /** The skill groups from SITE, for the city's billboards. */
+    skills: Array<{ group: string; items: string }>;
     small: boolean;
     reduce: boolean;
 };
@@ -42,6 +44,10 @@ export type FrameIn = {
     /** The response going home, 1 → 0: at 0 the ship has left. */
     resp: number;
     pointer: { x: number; y: number };
+    /** 0–1: the visitor is holding to boost (afterburner). */
+    boost: number;
+    /** 0–1: how long the visitor has been still; the scene breathes as it rises. */
+    idle: number;
 };
 
 export type FrameOut = {
@@ -55,6 +61,10 @@ export type FrameOut = {
     jumped: boolean;
     /** 0–1: how white the screen is with a jump's flash, so the HUD can hold its ground. */
     flash: number;
+    /** True on the frame a jump or dip swaps the scene (its peak): the beat text and sound land on. */
+    cut: boolean;
+    /** Seconds from the start of the jump that began this frame to its cut (0 when none began). */
+    lead: number;
     /** The stop on screen: a place, plus which project's stretch for a landscape ("desert#1"). */
     place: string;
     /** Where the ship is on screen, for the sound of its engine. */
@@ -136,7 +146,15 @@ type Stop = string;
 const placeOf = (stop: Stop): Place => stop.split('#')[0] as Place;
 const zoneIn = (stop: Stop): number => Number(stop.split('#')[1] ?? -1);
 
-type Jump = { shown: Stop; jump: number; dip: number; jumped: boolean; tint: THREE.Color };
+type Jump = {
+    shown: Stop;
+    jump: number;
+    dip: number;
+    jumped: boolean;
+    cut: boolean;
+    lead: number;
+    tint: THREE.Color;
+};
 type TintOf = (target: Stop) => THREE.Color | null;
 
 /**
@@ -157,7 +175,15 @@ function jumper(
     tintOf: TintOf,
     onStart: () => void
 ): { step: (dt: number, target: Stop, back: boolean) => Jump } {
-    const out: Jump = { shown: 'space', jump: 0, dip: 0, jumped: false, tint: FLASH.other.clone() };
+    const out: Jump = {
+        shown: 'space',
+        jump: 0,
+        dip: 0,
+        jumped: false,
+        cut: false,
+        lead: 0,
+        tint: FLASH.other.clone(),
+    };
     let next: Stop = 'space';
     let clock = -1;
     let len = JUMP.portal;
@@ -172,6 +198,7 @@ function jumper(
         const air = out.shown === 'space' || target === 'orbit';
         len = soft ? JUMP.dip : air ? JUMP.air : JUMP.portal;
         peak = soft ? PEAK.dip : air ? PEAK.air : PEAK.portal;
+        out.lead = len * peak;
         out.tint.copy(
             out.shown === 'space'
                 ? FLASH.entry
@@ -203,7 +230,10 @@ function jumper(
     const advance = (dt: number): number => {
         if (clock < 0) return 0;
         clock += dt / len;
-        if (clock >= peak) out.shown = next;
+        if (clock >= peak && out.shown !== next) {
+            out.shown = next;
+            out.cut = true;
+        }
         if (clock >= 1) {
             clock = -1;
             return 0;
@@ -212,6 +242,8 @@ function jumper(
     };
     const step = (dt: number, target: Stop, back: boolean): Jump => {
         out.jumped = false;
+        out.cut = false;
+        out.lead = 0;
         redirect(target, back);
         if (clock < 0 && target !== out.shown) {
             // Rewinding is a plain cut; only the way forward is a jump.
@@ -267,7 +299,7 @@ export function createWorld(o: WorldOptions): World {
     const space = addSpace(scene, route, s, density, o.small, glow, rand);
     const cityGroup = new THREE.Group();
     scene.add(cityGroup);
-    const city = addCity(cityGroup, s, density, rand, env);
+    const city = addCity(cityGroup, s, density, rand, env, o.skills);
     const land = addLand(scene, s, o.small, rand);
     const sea = addSea(scene, s, sky.uniforms.uHorizon, o.small, rand);
     const ringGroup = new THREE.Group();
@@ -281,7 +313,14 @@ export function createWorld(o: WorldOptions): World {
         o.rings,
         ringEnds.map((f) => lerp(svc, data, f)),
         o.small,
-        glow
+        glow,
+        // The air of the place beyond each portal, for its event horizon.
+        o.rings.map(
+            (_, k) =>
+                new THREE.Color(
+                    ...AIR[k < o.rings.length - 1 ? LANDS[(k + 1) % LANDS.length] : 'ocean'].horizon
+                )
+        )
     );
     const landmarks = addLandmarks(
         scene,
@@ -537,7 +576,15 @@ export function createWorld(o: WorldOptions): World {
         speed +=
             (Math.min(1, (Math.abs(u - prev) * route.len) / Math.max(dt, 1e-3) / 160) - speed) *
             (1 - Math.exp(-dt * 4));
-        const { shown: stop, jump, dip, jumped, tint } = jumps.step(dt, stopAt(u, f.map), u < prev);
+        const {
+            shown: stop,
+            jump,
+            dip,
+            jumped,
+            cut,
+            lead,
+            tint,
+        } = jumps.step(dt, stopAt(u, f.map), u < prev);
         const shown = placeOf(stop);
         const zone = zoneIn(stop);
         route.curve.getPointAt(clamp(u), p);
@@ -577,6 +624,8 @@ export function createWorld(o: WorldOptions): World {
             speed,
             jumped,
             flash: Math.pow(jump, 3),
+            cut,
+            lead,
             place: stop,
             ship: project(at, 1e9),
             rush: Math.max(rush, heat),

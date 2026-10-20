@@ -93,7 +93,8 @@ export function addRings(
     colours: string[],
     us: number[],
     small: boolean,
-    glowAt: Glow
+    glowAt: Glow,
+    _next: THREE.Color[] = []
 ): Rings {
     const portals: Portal[] = colours.map((c, k) => {
         const center = route.curve.getPointAt(us[k]);
