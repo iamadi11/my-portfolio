@@ -8,34 +8,56 @@ import { heights, itemsAt, type Trip } from '@/components/round-trip/trip';
 
 import '@/components/round-trip/round-trip.css';
 
-const HOPS = ['Browser', 'Wire', 'Edge', 'Services', 'Data', '200 OK'];
+/** Plain names for the route: the request metaphor stays in the HUD's request line and the 200 OK. */
+const HOPS = ['Intro', 'Impact', 'Stack', 'Projects', 'Experience', 'Contact'];
 /** Where each hop of the route goes: the route is the shortcut from the name to the work and contact. */
 const HOP_IDS = ['rt-hero', 'rt-wire', 'rt-edge', 'rt-work', 'rt-career', 'rt-contact'];
 const sec = (h: number): React.CSSProperties => ({ '--h': h }) as React.CSSProperties;
 const stagger = (i: number): React.CSSProperties => ({ '--i': i }) as React.CSSProperties;
 const key = (r: { org: string; role: string }): string => `${r.org}-${r.role}`;
 
-function Route({ label }: { label?: string }): React.JSX.Element {
-    const list = (
-        <ol className="rt-route" data-route aria-hidden={label ? undefined : true}>
-            {HOPS.map((hop, r) => (
-                <li key={hop} data-r={r}>
-                    <a href={`#${HOP_IDS[r]}`} data-start={HOP_IDS[r]} tabIndex={label ? undefined : -1}>
-                        <i />
-                        <span>{hop}</span>
-                    </a>
-                </li>
-            ))}
-        </ol>
+const CC_BY = 'https://creativecommons.org/licenses/by/4.0/';
+/** The CC BY models on /, as titled and credited on Sketchfab. */
+const CREDITS: Array<[string, string]> = [
+    ['Sci-Fi Portal Gateway', 'Igrium'],
+    ['Osaka downtown', 'matousekfoto'],
+    ['Mountain Range 01', 'solararchitect'],
+    ['Snowy Volcano', 'Pukar Shiwakoti'],
+    ['Horseshoe bend near Grand Canyon', 'Ignazio Pillitteri'],
+    ['Snowy Mountain - Terrain', 'artfromheath'],
+    ['Death Valley - Terrain', 'artfromheath'],
+];
+const sketchfab = (title: string, by: string): string =>
+    `https://sketchfab.com/search?type=models&q=${encodeURIComponent(`${title} ${by}`)}`;
+/** Where the J/K switch is remembered for this viewer. */
+const KEYS = 'rt-keys';
+
+/**
+ * The sections, one tap away. Two copies (top on wide screens, bottom on phones); CSS shows one,
+ * so only one is ever in the accessibility tree and the tab order.
+ */
+function Route({ where }: { where: 'top' | 'bottom' }): React.JSX.Element {
+    return (
+        <nav aria-label="Sections" className={`rt-nav rt-nav-${where}`}>
+            <ol className="rt-route" data-route>
+                {HOPS.map((hop, r) => (
+                    <li key={hop} data-r={r}>
+                        <a href={`#${HOP_IDS[r]}`} data-start={HOP_IDS[r]}>
+                            <i />
+                            <span>{hop}</span>
+                        </a>
+                    </li>
+                ))}
+            </ol>
+        </nav>
     );
-    return label ? <nav aria-label={label}>{list}</nav> : list;
 }
 
-function Label({ n, zone }: { n: number; zone: string }): React.JSX.Element {
+function Label({ zone }: { zone: string }): React.JSX.Element {
     return (
         <p className="rt-label rt-fade">
             <i />
-            {zone} <em data-ms={n} />
+            {zone}
         </p>
     );
 }
@@ -99,7 +121,7 @@ function Hero({ trip }: { trip: Trip }): React.JSX.Element {
             </p>
             <div className="rt-cue rt-fade" style={stagger(2)}>
                 <button type="button" data-start="rt-wire">
-                    Send a request
+                    Start the trip
                 </button>
                 <a href={`mailto:${trip.email}`}>Email me</a>
                 <span aria-hidden="true">
@@ -115,7 +137,7 @@ function Impact({ trip }: { trip: Trip }): React.JSX.Element | null {
     if (!trip.impact.length) return null;
     return (
         <>
-            <Label n={1} zone="Wire" />
+            <Label zone="Impact" />
             <h2 className="rt-h2">
                 <Kinetic text="What changed when I shipped" />
             </h2>
@@ -145,7 +167,7 @@ function Stack({ trip }: { trip: Trip }): React.JSX.Element | null {
     if (!trip.skills.length) return null;
     return (
         <>
-            <Label n={2} zone="Edge" />
+            <Label zone="Stack" />
             <h2 className="rt-h2">
                 <Kinetic text="The stack" />
             </h2>
@@ -174,7 +196,7 @@ function Stack({ trip }: { trip: Trip }): React.JSX.Element | null {
 function Work({ trip }: { trip: Trip }): React.JSX.Element {
     return (
         <>
-            <Label n={3} zone="Services" />
+            <Label zone="Projects" />
             <h2 className="rt-sr">Projects</h2>
             <div className="rt-stacked rt-fade">
                 {trip.projects.map((p) => (
@@ -205,7 +227,15 @@ function Work({ trip }: { trip: Trip }): React.JSX.Element {
 }
 
 /** One highlight on screen; the rest, and the stack, one tap away, so the panel stays light. */
-function Highlights({ items, stack }: { items: string[]; stack?: string }): React.JSX.Element {
+function Highlights({
+    items,
+    stack,
+    org,
+}: {
+    items: string[];
+    stack?: string;
+    org: string;
+}): React.JSX.Element {
     const [shown, more] = [items.slice(0, 1), items.slice(1)];
     return (
         <>
@@ -216,7 +246,7 @@ function Highlights({ items, stack }: { items: string[]; stack?: string }): Reac
             </ul>
             {(more.length > 0 || stack) && (
                 <details className="rt-more">
-                    <summary>{more.length > 0 ? `${more.length} more` : 'Stack'}</summary>
+                    <summary>{more.length > 0 ? `${more.length} more at ${org}` : `Stack at ${org}`}</summary>
                     <ul className="rt-bullets">
                         {more.map((h) => (
                             <li key={h}>{h}</li>
@@ -232,14 +262,14 @@ function Highlights({ items, stack }: { items: string[]; stack?: string }): Reac
 function Career({ trip }: { trip: Trip }): React.JSX.Element {
     return (
         <>
-            <Label n={4} zone="Data" />
+            <Label zone="Experience" />
             <h2 className="rt-h2 rt-h2-sm">
                 <Kinetic text="Career" />
             </h2>
             <p className="rt-chips rt-fade" aria-hidden="true">
-                {trip.records.map((r) => (
+                {trip.records.map((r, i) => (
                     <span key={key(r)} data-chip>
-                        {r.org}
+                        {trip.chips[i]}
                     </span>
                 ))}
             </p>
@@ -251,7 +281,7 @@ function Career({ trip }: { trip: Trip }): React.JSX.Element {
                             {[r.role, r.period, r.location].filter(Boolean).join(' · ')}
                         </p>
                         {r.highlights ? (
-                            <Highlights items={r.highlights} stack={r.stack} />
+                            <Highlights items={r.highlights} stack={r.stack} org={r.org} />
                         ) : (
                             r.stack && <p className="rt-tech">{r.stack.split(', ').join(' · ')}</p>
                         )}
@@ -263,18 +293,23 @@ function Career({ trip }: { trip: Trip }): React.JSX.Element {
 }
 
 function Contact({ trip }: { trip: Trip }): React.JSX.Element {
-    const [copied, setCopied] = useState(false);
+    // What the copy really did, said in a status line that is always laid out, so nothing shifts.
+    const [said, setSaid] = useState('');
+    const timer = useRef(0);
     const copy = async (): Promise<void> => {
-        await navigator.clipboard.writeText(trip.email).catch(() => undefined);
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 1800);
+        const ok = await (
+            navigator.clipboard?.writeText(trip.email) ?? Promise.reject(new Error('no clipboard'))
+        )
+            .then(() => true)
+            .catch(() => false);
+        setSaid(ok ? 'Email address copied.' : 'Could not copy: select the address above instead.');
+        window.clearTimeout(timer.current);
+        timer.current = window.setTimeout(() => setSaid(''), 4000);
     };
+    useEffect(() => () => window.clearTimeout(timer.current), []);
     return (
         <>
-            <p className="rt-label rt-fade">
-                <i />
-                Response
-            </p>
+            <Label zone="Contact" />
             <h2 className="rt-ok">
                 <Kinetic text="200 OK" chars />
             </h2>
@@ -284,8 +319,11 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                 {trip.email}
             </a>
             <div className="rt-pills rt-fade" style={stagger(2)}>
+                <p className="rt-said" role="status">
+                    {said}
+                </p>
                 <button type="button" onClick={copy}>
-                    {copied ? 'Copied' : 'Copy email'}
+                    Copy email
                 </button>
                 {trip.phone && <a href={trip.phone.href}>{trip.phone.label}</a>}
                 {trip.links.map((l) => (
@@ -301,11 +339,25 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
             <details className="rt-more rt-fade" style={stagger(3)}>
                 <summary>Credits</summary>
                 <p className="rt-note">
-                    Ship: Intergalactic Spaceship by Dennis Haupt (3DHaupt). Portals: Sci-Fi Portal Gateway by
-                    Igrium. Downtown: Osaka downtown by matousekfoto. Landmarks: Mountain Range 01 by
-                    solararchitect, Snowy Volcano by Pukar Shiwakoti, Horseshoe bend by Ignazio Pillitteri,
-                    Snowy Mountain and Death Valley by artfromheath (all Sketchfab, CC BY 4.0). Earth, stars,
-                    Moon photograph and International Space Station model: NASA.
+                    Ship: Intergalactic Spaceship by Dennis Haupt (3DHaupt). Models from Sketchfab under{' '}
+                    <a href={CC_BY} target="_blank" rel="noopener noreferrer license">
+                        CC BY 4.0
+                    </a>
+                    , modified (optimised):{' '}
+                    {CREDITS.map(([title, by], i) => (
+                        <React.Fragment key={title}>
+                            {i > 0 && ', '}
+                            <a href={sketchfab(title, by)} target="_blank" rel="noopener noreferrer">
+                                {title}
+                            </a>{' '}
+                            by {by}
+                        </React.Fragment>
+                    ))}
+                    . Earth, Moon photograph and International Space Station model: NASA. Stars:{' '}
+                    <a href="https://svs.gsfc.nasa.gov/4851" target="_blank" rel="noopener noreferrer">
+                        NASA/Goddard SVS Deep Star Maps
+                    </a>
+                    , ESA/Gaia/DPAC.
                 </p>
             </details>
         </>
@@ -338,7 +390,28 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
     const canvas = useRef<HTMLCanvasElement>(null);
     const sound = useRef<Sound | null>(null);
     const [soundOn, setSoundOn] = useState(false);
+    // J/K are single-key shortcuts (WCAG 2.1.4): they can be switched off, and stay off for this viewer.
+    const [keysOn, setKeysOn] = useState(true);
+    const keys = useRef(true);
     const hs = heights(trip);
+
+    useEffect(() => {
+        try {
+            keys.current = localStorage.getItem(KEYS) !== 'off';
+        } catch {
+            // storage blocked: the keys stay on for this visit
+        }
+        setKeysOn(keys.current);
+    }, []);
+    const toggleKeys = (): void => {
+        keys.current = !keys.current;
+        setKeysOn(keys.current);
+        try {
+            localStorage.setItem(KEYS, keys.current ? 'on' : 'off');
+        } catch {
+            // not remembered; the switch still holds for this visit
+        }
+    };
 
     useEffect(() => {
         if (!root.current || !canvas.current) return undefined;
@@ -349,6 +422,7 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
             recordAt: itemsAt(h[4], trip.records.length),
             skills: trip.skills,
             sound: () => sound.current,
+            keys: () => keys.current,
         });
     }, [trip]);
 
@@ -367,7 +441,9 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
 
     return (
         <div className="rt" ref={root}>
-            <div className="rt-poster" aria-hidden="true" />
+            <div className="rt-poster" aria-hidden="true">
+                <i className="rt-beacon" />
+            </div>
             <canvas className="rt-canvas" ref={canvas} aria-hidden="true" />
             <div className="rt-scrim" aria-hidden="true" />
 
@@ -375,22 +451,30 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                 <a className="rt-brand" href="#rt-hero">
                     {trip.name}
                 </a>
-                <Route label="Request route" />
+                <Route where="top" />
                 <button className="rt-snd rt-tilt" type="button" data-tilt aria-pressed="false" hidden>
                     Tilt to scroll
+                </button>
+                <button
+                    className="rt-snd rt-keys"
+                    type="button"
+                    aria-pressed={keysOn}
+                    onClick={toggleKeys}
+                    title="J flies to the next stop, K to the one before (when no button or link has focus)"
+                >
+                    J/K keys
                 </button>
                 <button className="rt-snd" type="button" aria-pressed={soundOn} onClick={toggleSound}>
                     Sound
                 </button>
             </header>
-            <div className="rt-hud rt-bottom" aria-hidden="true">
-                <span className="rt-req" data-req>
+            <div className="rt-hud rt-bottom">
+                <span className="rt-req" data-req aria-hidden="true">
                     GET /{trip.slug} <em>· 0 s</em>
                 </span>
-                <Route />
-                <span className="rt-hint">
-                    <span>Scroll to send</span>
-                    <kbd>J / K</kbd>
+                <Route where="bottom" />
+                <span className="rt-hint" aria-hidden="true">
+                    Scroll to send
                 </span>
             </div>
 

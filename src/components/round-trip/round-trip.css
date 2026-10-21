@@ -85,6 +85,54 @@ html:has(.rt) body {
         transform: translateY(-1.5%) scale(1.02);
     }
 }
+/* The ship before it is built: twin engine lights over the limb, where the world will put it */
+.rt-beacon {
+    position: absolute;
+    top: 24%;
+    left: 66%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow:
+        11px 0 0 0 #fff,
+        0 0 12px 4px rgba(215, 238, 255, 0.95),
+        11px 0 12px 4px rgba(215, 238, 255, 0.95),
+        5px 0 60px 22px rgba(140, 200, 255, 0.3);
+}
+.rt-beacon::after {
+    /* the glow breathes, slowly */
+    content: '';
+    position: absolute;
+    inset: -40px -36px -40px -44px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(170, 215, 255, 0.28), transparent);
+    animation: rt-breathe 3.2s ease-in-out infinite alternate;
+}
+@keyframes rt-breathe {
+    from {
+        opacity: 0.45;
+    }
+}
+@media (min-width: 761px) {
+    /* Wide screens: the limb rises from the left and falls away to the lower right, as the world's
+       first frame has it, so the right of the hero is the scene, not an empty sky. */
+    .rt-poster::before {
+        background: radial-gradient(
+            ellipse 78% 108% at 30% 155%,
+            #04070f 0 88%,
+            #0a1832 98.6%,
+            rgba(120, 180, 255, 0.9) 99.5%,
+            rgba(60, 120, 240, 0.32) 100.6%,
+            rgba(30, 70, 180, 0.08) 103%,
+            transparent 107%
+        );
+    }
+    .rt-beacon {
+        top: 55%;
+        left: 71%;
+    }
+}
 .rt-canvas {
     position: fixed;
     /* pressing and holding on the world boosts: no callout on a long press */
@@ -105,7 +153,8 @@ html:has(.rt) body {
     visibility: hidden;
     transition: visibility 0s 700ms;
 }
-.rt-live .rt-poster::before {
+.rt-live .rt-poster::before,
+.rt-live .rt-beacon::after {
     animation: none;
 }
 .rt-scrim {
@@ -194,25 +243,20 @@ html:has(.rt) body {
     opacity: 0.6;
     transition: none;
 }
+/* chapter labels: a calm plain name in the body face; the clock lives in the HUD only */
 .rt-label {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: 0 0 20px;
+    margin: 0 0 18px;
     color: var(--soft);
-    font: 500 12px/1 var(--mono);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    font: 500 15px/1.2 var(--body);
 }
 .rt-label i {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: var(--accent);
-}
-.rt-label em {
-    color: var(--accent);
-    font-style: normal;
 }
 
 /* reveals: armed only once the page runs, so without JS every word is still there */
@@ -666,7 +710,7 @@ html:has(.rt) body {
 }
 .rt-more summary {
     display: inline-flex;
-    min-height: 32px;
+    min-height: 44px;
     align-items: center;
     color: var(--accent);
     font: 500 15px var(--body);
@@ -717,6 +761,20 @@ html:has(.rt) body {
     font-size: 14px;
     line-height: 1.5;
 }
+/* what Copy email really did: placed over the gap above the pills, so it never moves anything */
+.rt-pills {
+    position: relative;
+}
+.rt-said {
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 0;
+    margin: 0;
+    color: var(--soft);
+    font-size: 14px;
+    line-height: 1.3;
+    white-space: nowrap;
+}
 /* Send again: its place is kept from the start; it comes up once the ship has left */
 .rt-pills .rt-again {
     opacity: 0;
@@ -750,10 +808,15 @@ html:has(.rt) body {
     border-color: var(--ink);
 }
 .rt-note {
-    margin: 26px 0 0;
+    margin: 10px 0 0;
     color: var(--muted);
     font-size: 14px;
     line-height: 1.5;
+}
+.rt-note a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    pointer-events: auto;
 }
 
 /* HUD */
@@ -820,10 +883,19 @@ html:has(.rt) body {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    min-height: 24px;
+    min-height: 32px;
     padding: 0 4px;
     color: inherit;
+    /* plain section names read as names: the body face, as written */
+    font: 500 14px var(--body);
+    letter-spacing: 0;
+    text-transform: none;
     text-decoration: none;
+}
+@media (hover: hover) and (pointer: fine) {
+    .rt-route a:hover {
+        color: var(--ink);
+    }
 }
 .rt-route li + li::before {
     content: '';
@@ -892,27 +964,26 @@ html:has(.rt) body {
     gap: 12px;
     white-space: nowrap;
 }
-.rt-hint span {
+.rt-hint {
     transition: opacity 0.6s;
 }
-.rt-scrolled .rt-hint span {
+.rt-scrolled .rt-hint {
     opacity: 0;
 }
-/* J / K step between stops; only shown where there is a keyboard to hand */
-.rt-hint kbd {
+/* J / K step between stops: the switch shows only where there is a keyboard to hand */
+.rt-keys {
     display: none;
-    padding: 3px 7px;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    color: var(--soft);
-    font: inherit;
+}
+.rt-keys[aria-pressed='false'] {
+    color: var(--muted);
+    text-decoration: line-through;
 }
 @media (hover: hover) and (pointer: fine) {
-    .rt-hint kbd {
-        display: inline;
+    .rt-keys {
+        display: inline-block;
     }
 }
-.rt-bottom .rt-route {
+.rt-nav-bottom {
     display: none;
 }
 
@@ -970,7 +1041,7 @@ html:has(.rt) body {
 
 @media (max-width: 760px) {
     .rt-pin {
-        padding: 84px var(--g) 92px;
+        padding: 84px var(--g) 116px;
     }
     .rt-scrim {
         background: linear-gradient(
@@ -980,31 +1051,51 @@ html:has(.rt) body {
             rgba(5, 7, 13, 0) 92%
         );
     }
-    .rt-top .rt-route,
+    .rt-nav-top,
     .rt-hint {
         display: none;
     }
+    /* phones: the request line, then the sections as six equal 44 px tall targets, every name
+       always laid out (only colour changes), so a hop never moves anything */
     .rt-bottom {
-        justify-content: space-between;
-        gap: 10px;
+        flex-wrap: wrap;
+        gap: 2px 0;
+        padding: 10px 6px calc(4px + env(safe-area-inset-bottom, 0px));
         font-size: 10.5px;
         letter-spacing: 0.06em;
     }
-    .rt-bottom .rt-route {
-        display: flex;
-    }
-    .rt-route span {
-        display: none;
-    }
-    .rt-route li.on span {
-        display: inline;
-    }
-    .rt-route li + li::before {
-        width: 5px;
-        margin: 0 3px;
-    }
     .rt-req {
-        margin-right: 0;
+        margin: 0;
+        padding: 0 calc(var(--g) - 6px);
+    }
+    .rt-nav-bottom {
+        display: block;
+        flex: 1 0 100%;
+    }
+    .rt-bottom .rt-route li {
+        position: relative;
+        flex: 1 1 0;
+        min-width: 0;
+        justify-content: center;
+    }
+    .rt-bottom .rt-route a {
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        width: 100%;
+        min-height: 44px;
+        padding: 0;
+        font-size: 11.5px;
+        white-space: nowrap;
+    }
+    .rt-bottom .rt-route li + li::before {
+        /* the wire runs dot to dot, behind the targets */
+        position: absolute;
+        top: 15px;
+        left: calc(-50% + 8px);
+        width: calc(100% - 16px);
+        margin: 0;
+        pointer-events: none;
     }
     .rt-layers li {
         grid-template-columns: 1fr;
@@ -1063,6 +1154,7 @@ html:has(.rt) body {
     .rt-js .rt-w > span,
     .rt-cue b::after,
     .rt-poster::before,
+    .rt-beacon::after,
     .rt-layer-items,
     .rt-count i,
     .rt-req em {

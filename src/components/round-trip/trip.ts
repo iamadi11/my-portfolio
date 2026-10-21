@@ -24,6 +24,8 @@ export type Trip = {
     }>;
     /** Roles newest first, then education. One lit record each in the data lattice. */
     records: Row[];
+    /** One short name per record for the career chips: the org, plus the role where an org repeats. */
+    chips: string[];
     email: string;
     phone?: Link;
     links: Link[];
@@ -38,8 +40,22 @@ const RING: Record<Hue, string> = {
     ink: '#c9d0dc',
 };
 
+/** "Software Development Engineer II" → "SDE II": the role's own initials, its grade kept as written. */
+const initials = (role: string): string => {
+    const words = role.split(/[\s,]+/).filter(Boolean);
+    const grade = /^[IVX]+$/.test(words.at(-1) ?? '') ? ` ${words.pop()}` : '';
+    return words.map((w) => w[0]).join('') + grade;
+};
+
+/** Each record's chip: the org alone, or with its role's initials where the org comes up twice. */
+const chipsOf = (records: Row[]): string[] =>
+    records.map((r) =>
+        records.filter((o) => o.org === r.org).length > 1 ? `${r.org} · ${initials(r.role)}` : r.org
+    );
+
 export function tripFrom(site: SiteContent): Trip {
     const { profile, projects, practice } = site;
+    const records = [...practice.experience, ...(practice.education ?? [])];
     return {
         name: profile.name,
         slug: profile.name.split(' ')[0].toLowerCase(),
@@ -51,7 +67,8 @@ export function tripFrom(site: SiteContent): Trip {
         impact: practice.impact ?? [],
         skills: practice.skills ?? [],
         projects: projects.map(({ hue, ...p }) => ({ ...p, colour: RING[hue] })),
-        records: [...practice.experience, ...(practice.education ?? [])],
+        records,
+        chips: chipsOf(records),
         email: profile.email,
         phone: profile.phone,
         links: profile.links,

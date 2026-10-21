@@ -3,6 +3,7 @@ import React, { JSX } from 'react';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
+import { SITE } from '@/content/site';
 import { getSiteOrigin } from '@/lib/site';
 
 import './globals.css';
@@ -16,6 +17,22 @@ const geistMono = Geist_Mono({
     variable: '--font-geist-mono',
     subsets: ['latin'],
 });
+
+/** Every skill the site lists (SITE.practice.skills), one entry each, as written there. */
+const knowsAbout = [
+    ...new Set((SITE.practice.skills ?? []).flatMap((s) => s.items.split(', ').map((i) => i.trim()))),
+];
+
+/** Search terms from SITE facts only: name, role, place, employers and the stack's headline skills. */
+const keywords = [
+    ...new Set([
+        SITE.profile.name,
+        SITE.profile.role,
+        SITE.profile.location.split(', ')[0],
+        ...SITE.practice.experience.map((r) => r.org),
+        ...knowsAbout.slice(0, 12),
+    ]),
+];
 
 /** Same origin as `sitemap.xml` / `robots.txt` (`@/lib/site`). */
 const siteUrl = getSiteOrigin();
@@ -59,25 +76,7 @@ const structuredDataJsonLd = {
             },
             worksFor: { '@type': 'Organization', name: 'Amby Tech', url: 'https://ambytech.com/' },
             alumniOf: { '@id': `${siteUrl}#education-iiit` },
-            knowsAbout: [
-                'React',
-                'Next.js',
-                'TypeScript',
-                'JavaScript',
-                'Node.js',
-                'Web performance',
-                'Progressive web apps',
-                'REST APIs',
-                'Frontend engineering',
-                'Semantic UI',
-                'Google Maps API',
-                'Redis',
-                'MongoDB',
-                'MySQL',
-                'Turborepo',
-                'AWS',
-                'CI/CD',
-            ],
+            knowsAbout,
         },
         {
             '@type': 'EducationalOrganization',
@@ -115,29 +114,7 @@ export const metadata: Metadata = {
     authors: [{ name: 'Aditya Raj', url: siteUrl }],
     creator: 'Aditya Raj',
     /** Resume-backed terms for search / discovery (subset of SOURCE_OF_TRUTH.md). */
-    keywords: [
-        'Aditya Raj',
-        'Senior Frontend Engineer',
-        'Senior Software Development Engineer',
-        'Senior Software Engineer',
-        'React',
-        'Next.js',
-        'TypeScript',
-        'JavaScript',
-        'Bengaluru',
-        'Amby Tech',
-        'Cashfree Payments',
-        'Tata 1mg',
-        'Moresand Technologies',
-        'fintech',
-        'web performance',
-        'PWA',
-        'Turborepo',
-        'hire frontend engineer Bengaluru',
-        'Senior SDE React',
-        'polygon serviceability',
-        'WebPush notifications',
-    ],
+    keywords,
     alternates: {
         canonical: '/',
     },
@@ -173,7 +150,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>): JSX.Element {
     return (
-        <html lang="en-IN" className="scroll-smooth">
+        <html lang="en-IN" className="motion-safe:scroll-smooth">
             <head>
                 <link rel="preconnect" href="https://opengraph.githubassets.com" crossOrigin="anonymous" />
                 <link
