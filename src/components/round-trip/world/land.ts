@@ -70,7 +70,54 @@ const HEIGHT = /* glsl */ `
 
 const FRAG = /* glsl */ `
     uniform vec3 uMoon, uMoonCol, uPoolCol; uniform vec4 uPool;
-    varying vec3 vW, vN; varying float vD, vSh;
+    varying vec3 vW, vN; varying float vD, vSh, vCav;
+    // Bump mapping from a height b, in screen space: one noise per pixel instead of three.
+    vec3 bumpN(vec3 n, float b, float k) {
+        vec3 dpx = dFdx(vW), dpy = dFdy(vW);
+        vec3 r1 = cross(dpy, n), r2 = cross(n, dpx);
+        float det = dot(dpx, r1);
+        vec3 grad = sign(det) * (dFdx(b) * r1 + dFdy(b) * r2);
+        return normalize(abs(det) * n - k * grad);
+    }
+    // Molten rock by temperature (0–1): crust near-black, dull red, #ff4a10, then #ffd27a cores.
+    // Only the hottest cores pass 1.0 in luminance, so only they bloom.
+    vec3 lava(float t) {
+        vec3 c = vec3(0.3, 0.018, 0.002) * smoothstep(0.08, 0.4, t);
+        c = mix(c, vec3(1.0, 0.066, 0.005) * 1.4, smoothstep(0.35, 0.72, t));
+        return mix(c, vec3(1.0, 0.644, 0.195) * 2.6, smoothstep(0.8, 1.0, t));
+    }
+    float plates(vec2 q) { return abs(vnoise(q) * 0.65 + vnoise(q * 2.3 + 7.0) * 0.35 - 0.5); }
+    // Lava in the low channels: crust plates drifting along the river with glowing seams between
+    // them, broken open along the middle where it runs hottest. Returns the temperature.
+    float river(vec2 p, out float bed) {
+        float f = fbm(p * 0.012 + 11.0);
+        float rv = 1.0 - abs(f * 2.0 - 1.0);
+        bed = smoothstep(0.91, 0.975, rv) * smoothstep(-8.0, -16.0, vW.y);
+        if (bed <= 0.0) return 0.0;
+        float core = smoothstep(0.96, 0.997, rv);
+        // Downstream runs along the contour: across the field's gradient.
+        vec2 gr = vec2(fbm((p + vec2(3.0, 0.0)) * 0.012 + 11.0), fbm((p + vec2(0.0, 3.0)) * 0.012 + 11.0)) - f;
+        vec2 dir = normalize(vec2(-gr.y, gr.x) + 1e-6);
+        // Two phases of drift, each faded out as it resets, so the crust flows without stretching.
+        float ph = fract(uTime * 0.07);
+        vec2 q = p * 0.17;
+        float c1 = plates(q - dir * ph * 2.4);
+        float c2 = plates(q - dir * fract(ph + 0.5) * 2.4 + 5.3);
+        float cr = mix(c1, c2, abs(ph * 2.0 - 1.0));
+        float plate = smoothstep(0.015, 0.07, cr);
+        float open = smoothstep(0.6, 0.95, core * 0.9 + (vnoise(q * 0.7 - dir * uTime * 0.3) - 0.5) * 0.8);
+        float crust = 0.1 + 0.12 * vnoise(q * 3.0);
+        return bed * mix(0.6 + 0.15 * core, crust, plate * (1.0 - open)) + open * bed * 0.35;
+    }
+    // Fissures down a cone's flanks from the crater, broken into glowing segments.
+    float fissures(vec2 p) {
+        vec2 dc = p - coneAt(p);
+        float r = length(dc);
+        float a = atan(dc.y, dc.x);
+        float line = 1.0 - smoothstep(0.0, 0.07, abs(sin(a * 5.0 + fbm(dc * 0.02) * 4.0)));
+        float seg = smoothstep(0.45, 0.6, vnoise(vec2(a * 9.0, r * 0.04)));
+        return line * seg * smoothstep(170.0, 30.0, r) * smoothstep(20.0, 70.0, vW.y);
+    }
     void main() {
         vec3 n = normalize(vN);
         vec2 p = vW.xz;
@@ -79,9 +126,13 @@ const FRAG = /* glsl */ `
         float g = fbm(p * 0.35 + vW.y * 0.2);
         float rocky = smoothstep(0.14, 0.32, slope + (fbm(p * 0.05) - 0.5) * 0.25);
         n = normalize(n + vec3(g - 0.5, 0.0, fbm(p.yx * 0.35) - 0.5) * 0.35 * rocky * close);
+        // Hollows and clefts hold less light (curvature from the mesh), crests a touch more.
+        float ao = 1.0 - smoothstep(0.0, 4.0, vCav) * 0.6 + smoothstep(0.0, 4.0, -vCav) * 0.1;
         vec3 albedo;
         vec3 glow = vec3(0.0);
+        vec3 amb = vec3(0.016, 0.024, 0.042);
         float snow = 0.0;
+        float fogD = vD;
         if (uKind == 0) {
             // Grass: wind rolling across it in long silvery waves.
             float wave = 0.5 + 0.5 * sin(dot(p, vec2(0.6, 0.8)) * 0.07 - uTime * 1.3 + fbm(p * 0.02) * 6.0);
@@ -93,35 +144,71 @@ const FRAG = /* glsl */ `
             // Pale sand under the moon, dark on the slip faces away from it, dark rock on the mesas.
             albedo = mix(vec3(0.52, 0.42, 0.3) * (0.85 + 0.3 * fbm(p * 0.02)), vec3(0.2, 0.11, 0.07), rocky);
         } else if (uKind == 2) {
-            // Red sandstone in bands, pale dust on the shelves.
-            float band = 0.5 + 0.5 * sin(vW.y * 0.45 + fbm(p * 0.02) * 3.0);
-            vec3 rock = mix(vec3(0.42, 0.16, 0.08), vec3(0.56, 0.3, 0.16), band) * (0.85 + 0.4 * g);
-            albedo = mix(vec3(0.44, 0.28, 0.18), rock, rocky);
+            // Sandstone in beds a few metres thick, of uneven hardness: hard ones stand out as ledges
+            // and catch the moon, soft ones recess into shadow. The beds sag and wander along the
+            // wall, and show strongest where it is steepest. Fine detail fades out before it aliases.
+            float y = vW.y + (fbm(p * 0.015) - 0.5) * 9.0;
+            float bed = y * 0.3;
+            float aa = 1.0 - smoothstep(0.25, 0.7, fwidth(bed));
+            float hard = mix(0.5, hash(vec2(floor(bed), 3.7)), aa);
+            float fb = fract(bed);
+            float ledge = mix(0.6, smoothstep(0.0, 0.25, fb) * smoothstep(1.0, 0.7 - 0.3 * hard, fb), aa);
+            float tone = 0.5 + 0.5 * sin(y * 1.5 + fbm(p * 0.02) * 3.0);
+            float along = dot(p, vec2(0.6, 0.8));
+            float fine = mix(0.5, vnoise(vec2(along * 0.3, y * 1.8)), exp(-vD * 0.02));
+            float strata = smoothstep(0.3, 0.7, slope);
+            vec3 rock = mix(vec3(0.34, 0.12, 0.06), vec3(0.58, 0.31, 0.16), mix(0.5, hard * 0.55 + tone * 0.45, strata));
+            rock *= (0.75 + 0.35 * fine) * (0.85 + 0.3 * g) * mix(1.0, 0.72 + 0.28 * ledge, strata);
+            // The floor of the wash: sand in drifts, darker coarse gravel, scattered stones.
+            float drift = fbm(p * 0.07 + 2.0);
+            float grit = mix(0.5, vnoise(p * 1.7), close);
+            float stones = smoothstep(0.68, 0.76, vnoise(p * 1.3 + 3.0) * 0.7 + drift * 0.3) * close;
+            vec3 sand = mix(vec3(0.5, 0.35, 0.23), vec3(0.36, 0.22, 0.13), smoothstep(0.35, 0.65, drift)) * (0.9 + 0.2 * grit);
+            sand = mix(sand, vec3(0.27, 0.16, 0.1) * (0.85 + 0.3 * grit), stones * 0.7);
+            // Relief in metres: ledges a hand high, stones a few centimetres.
+            float b = mix(stones * 0.05 + grit * 0.012, (ledge * (0.5 + 0.5 * hard) + fine * 0.4) * 0.3 * strata, rocky);
+            n = bumpN(n, b, close);
+            ao *= mix(1.0, 0.65 + 0.35 * ledge, rocky * strata);
+            albedo = mix(sand, rock, rocky);
         } else if (uKind == 3) {
-            snow = smoothstep(20.0, 50.0, vW.y + fbm(p * 0.03) * 34.0) * (1.0 - smoothstep(0.5, 0.72, slope));
-            snow = max(snow, (1.0 - rocky) * smoothstep(0.0, -12.0, vW.y));
-            albedo = mix(vec3(0.065, 0.06, 0.058) * (0.7 + 0.6 * g), vec3(0.5, 0.54, 0.6), snow);
+            // Snow where it can lie: not on the steep faces, which stay bare dark rock.
+            float steep = smoothstep(0.36, 0.6, slope + (g - 0.5) * 0.3);
+            snow = smoothstep(20.0, 50.0, vW.y + fbm(p * 0.03) * 34.0) * (1.0 - steep);
+            snow = max(snow, (1.0 - steep) * smoothstep(0.0, -12.0, vW.y));
+            // Wind-carved ridges in the snow up close, fractured rock.
+            float sastrugi = vnoise(vec2(dot(p, vec2(0.8, 0.6)) * 0.8, dot(p, vec2(-0.6, 0.8)) * 0.15));
+            n = bumpN(n, mix(fbm(p * 0.3), sastrugi * 0.6 + g * 0.4, snow), mix(1.4, 0.7, snow) * close);
+            albedo = mix(vec3(0.065, 0.06, 0.058) * (0.7 + 0.6 * g), vec3(0.5, 0.53, 0.58) * (0.9 + 0.1 * g), snow);
+            // Snow in shadow takes the sky's blue.
+            amb = mix(amb, vec3(0.03, 0.05, 0.11), snow);
         } else {
-            // Basalt and ash; lava in the low channels, cracks glowing, craters alight.
+            // Basalt and ash; lava in the low channels, glowing cracks, fissures down the cones.
             albedo = mix(vec3(0.024, 0.023, 0.026), vec3(0.06, 0.055, 0.05), rocky) * (0.7 + 0.6 * g);
-            float river = smoothstep(0.9, 0.97, 1.0 - abs(fbm(p * 0.012 + 11.0) * 2.0 - 1.0)) * smoothstep(-8.0, -16.0, vW.y);
-            float crack = (1.0 - smoothstep(0.0, 0.025, abs(fbm(p * 0.09) - 0.5))) * 0.35 * (1.0 - rocky);
-            vec2 c = coneAt(p);
-            float crater = smoothstep(26.0, 6.0, length(p - c)) * step(40.0, vW.y);
-            float pulse = 0.75 + 0.25 * sin(uTime * 1.3 + fbm(p * 0.05) * 9.0);
-            glow = vec3(3.2, 0.85, 0.16) * max(max(river, crack), crater) * pulse;
+            float bed;
+            float heat = river(p, bed);
+            albedo *= 1.0 - bed * 0.6;
+            float crack = (1.0 - smoothstep(0.0, 0.02 * (0.4 + 0.6 * close), abs(fbm(p * 0.09) - 0.5))) * (1.0 - rocky);
+            heat = max(heat, crack * (0.42 + 0.12 * sin(uTime * 1.3 + g * 9.0)));
+            heat = max(heat, fissures(p) * 0.82);
+            float crater = smoothstep(26.0, 6.0, length(p - coneAt(p))) * step(40.0, vW.y);
+            heat = max(heat, crater);
+            glow = lava(heat);
+            n = bumpN(n, g, 0.8 * close * (1.0 - bed));
+            // The rock is lit from below by the lava's glow on the haze.
+            amb += vec3(0.05, 0.012, 0.003) * (1.0 - n.y * 0.5);
+            // The ash haze lies low: the cones rise dark out of it instead of fading into it.
+            fogD *= mix(1.0, 0.2, smoothstep(-4.0, 120.0, vW.y + 16.0));
         }
         vec3 V = normalize(cameraPosition - vW);
         float lit = max(dot(n, uMoon), 0.0) * vSh;
-        vec3 amb = vec3(0.016, 0.024, 0.042) * (0.6 + 0.4 * n.y);
-        vec3 col = albedo * (uMoonCol * lit + amb) + glow;
+        vec3 col = albedo * (uMoonCol * lit + amb * (0.6 + 0.4 * n.y)) * ao + glow;
         vec3 R = reflect(-uMoon, n);
         float sparkle = step(0.985, hash(floor(p * 6.0))) * pow(max(dot(R, V), 0.0), 6.0);
-        col += uMoonCol * (pow(max(dot(R, V), 0.0), 30.0) * 0.25 * snow + sparkle * snow * 1.2 * close);
+        col += uMoonCol * (pow(max(dot(R, V), 0.0), 30.0) * 0.25 * snow + sparkle * snow * 1.2 * close) * vSh;
         col += beamAt(vW) * (albedo * 4.0 + 0.04);
         vec3 pd = vW - uPool.xyz;
         col += uPoolCol * exp(-dot(pd, pd) / max(uPool.w * uPool.w, 1e-3)) * (albedo * 1.2 + 0.01) * step(0.01, uPool.w);
-        gl_FragColor = vec4(fogAt(col, vD, vW), 1.0);
+        gl_FragColor = vec4(fogAt(col, fogD, vW), 1.0);
     }
 `;
 
@@ -286,13 +373,15 @@ export function addLand(scene: THREE.Object3D, s: Shared, small: boolean, rand: 
         shader(
             s,
             HEIGHT +
-                /* glsl */ `uniform float uCell; uniform vec3 uMoon; varying vec3 vW, vN; varying float vD, vSh;
+                /* glsl */ `uniform float uCell; uniform vec3 uMoon; varying vec3 vW, vN; varying float vD, vSh, vCav;
             void main() {
                 vec4 w = modelMatrix * vec4(position, 1.0);
-                float hx = landH(w.xz + vec2(uCell, 0.0)) - landH(w.xz - vec2(uCell, 0.0));
-                float hz = landH(w.xz + vec2(0.0, uCell)) - landH(w.xz - vec2(0.0, uCell));
-                vN = normalize(vec3(-hx, 2.0 * uCell, -hz));
+                float xp = landH(w.xz + vec2(uCell, 0.0)), xm = landH(w.xz - vec2(uCell, 0.0));
+                float zp = landH(w.xz + vec2(0.0, uCell)), zm = landH(w.xz - vec2(0.0, uCell));
+                vN = normalize(vec3(xm - xp, 2.0 * uCell, zm - zp));
                 w.y = landH(w.xz);
+                // Curvature: how far the neighbours stand above this point (> 0 in a hollow or cleft).
+                vCav = (xp + xm + zp + zm) * 0.25 - w.y;
                 // Shadow: does the ground rise into the moon's line within 12, 40 and 120 m?
                 float sh = 1.0;
                 for (int k = 0; k < 3; k++) {

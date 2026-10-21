@@ -31,7 +31,8 @@ export const MIST: THREE.IUniform<number> = { value: 1 };
  * The air seen along a direction, in GLSL, given the name of its horizon colour: what fog fades
  * into and what the sky shows at and below the horizon, so ground meets sky in the same colour.
  * Brighter towards the moon, near-black overhead, a little darker looking down.
- * `mist` is the optical depth of a ground mist (exponential in height, thickest at sea level).
+ * `mist` is the optical depth of a ground mist (exponential in height, thickest at sea level),
+ * thinned around the eye so it never veils the ship's own foreground.
  */
 export const hazeGlsl = (horizon: string, mist: string): string => /* glsl */ `
     const vec3 MOON_DIR = vec3(${MOON.toArray()
@@ -48,7 +49,9 @@ export const hazeGlsl = (horizon: string, mist: string): string => /* glsl */ `
         float ew = exp(min(-0.08 * (w.y + 16.0), 8.0));
         float dy = w.y - cameraPosition.y;
         float k = abs(dy) > 0.05 ? (eo - ew) / (0.08 * dy) : ew;
-        return ${mist} * 0.003 * d * k;
+        // The ship's wash clears the air around it: the mist begins some 30 m out, gently.
+        float far = d - 30.0 * (1.0 - exp(-d / 30.0));
+        return ${mist} * 0.003 * far * k;
     }
 `;
 
