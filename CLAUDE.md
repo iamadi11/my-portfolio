@@ -59,7 +59,7 @@ Every change must follow:
 - Re-reading the resume PDF on every task — use `src/content/site.ts` and `SOURCE_OF_TRUTH.md`
 - Breaking mobile layout
 - Committing without a real browser check
-- Placeholder projects — every project card must have a real GitHub URL under `iamadi11/*`
+- Placeholder projects — every project card must have a real GitHub URL under `iamadi11/*` (one documented exception: Eidos lives at `sweidos/eidos`, an org repo the owner authored — see `SOURCE_OF_TRUTH.md`)
 
 ---
 
