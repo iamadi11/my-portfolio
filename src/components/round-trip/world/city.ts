@@ -379,10 +379,11 @@ const SCAN_FRAG = /* glsl */ `
     ${OCCUPANCY}
     void main() {
         vec3 t = texture2D(tMap, vUv).rgb;
-        float L = dot(t, vec3(0.2126, 0.7152, 0.0722));
+        // lum, not L: occupancy returns Lights L below (ANGLE rejects the redefinition).
+        float lum = dot(t, vec3(0.2126, 0.7152, 0.0722));
         float hi = max(t.r, max(t.g, t.b));
         float sat = (hi - min(t.r, min(t.g, t.b))) / max(hi, 1e-3);
-        float lamp = smoothstep(0.12, 0.42, L) * smoothstep(0.28, 0.62, sat) + smoothstep(0.4, 0.78, L) * 0.45;
+        float lamp = smoothstep(0.12, 0.42, lum) * smoothstep(0.28, 0.62, sat) + smoothstep(0.4, 0.78, lum) * 0.45;
         vec3 n = normalize(cross(dFdx(vW), dFdy(vW)));
         float side = 1.0 - smoothstep(0.4, 0.7, abs(n.y));
         float moon = max(dot(n, MOON_DIR), 0.0);
