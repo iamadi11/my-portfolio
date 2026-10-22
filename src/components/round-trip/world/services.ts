@@ -20,7 +20,7 @@ const WINDOW: THREE.ShaderMaterialParameters = {
     blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
 };
 
-type Sign = { mesh: THREE.Mesh; uOn: THREE.IUniform<number> };
+type Sign = { mesh: THREE.Object3D; uOn: THREE.IUniform<number> };
 
 type Portal = {
     u: number;
@@ -145,37 +145,66 @@ const STRIP_FRAG = /* glsl */ `
 `;
 
 /**
- * The marquee over each gate: the project's title in bulbs, in a frame of chasing bulbs in its
- * colour. The text is read from a canvas of the exact title, one bulb per cell.
+ * The marquee over each gate, mounted on it like a cinema's: a dark cabinet in a metal trim, the
+ * project's title in channel letters lit in the ring's colour (white-hot only at the letter cores,
+ * so only they bloom), their glow washing the backing, and a track of bulbs chasing round inside
+ * the trim. Now and then the letters buzz. Mask channels: r the letters, g their halo, b the
+ * letters eased in (near 1 only well inside a stroke: the core).
  */
 const SIGN_FRAG = /* glsl */ `
-    uniform sampler2D tText; uniform vec3 uCol; uniform vec2 uCells; uniform float uOn, uSpin, uSegs;
+    uniform sampler2D tText; uniform vec3 uCol; uniform vec2 uSize; uniform float uOn, uSpin, uSegs, uK;
     varying vec2 vUv; varying float vD;
+    // Signed distance (units) to the bulb track, and how far round the track this point is.
+    vec2 track(vec2 q, vec2 hs) {
+        vec2 e = abs(q) - hs;
+        float side = step(e.y, e.x);
+        float sx = mix(3.0 * hs.x + 2.0 * hs.y - q.x, hs.x + q.x, step(0.0, q.y)) * (1.0 - side);
+        float sy = mix(4.0 * hs.x + 3.0 * hs.y + q.y, 2.0 * hs.x + hs.y - q.y, step(0.0, q.x)) * side;
+        return vec2(max(e.x, e.y), sx + sy);
+    }
     void main() {
-        vec2 p = vUv * uCells;
-        vec2 cell = floor(p);
-        float m = texture2D(tText, (cell + 0.5) / uCells).r;
-        float fp = max(fwidth(p.x), fwidth(p.y));
-        // Far off, a bulb's shape averages out to its share of the cell.
-        float bulb = mix(smoothstep(0.46, 0.18, length(fract(p) - 0.5)), 0.45, smoothstep(0.35, 0.9, fp));
-        float edge = step(cell.x, 0.5) + step(uCells.x - 1.5, cell.x) + step(cell.y, 0.5) + step(uCells.y - 1.5, cell.y);
-        float lap = (cell.x + cell.y) / uSegs - uTime * uSpin;
-        float chase = step(0.5, fract(lap)) * min(edge, 1.0);
-        float sweep = 0.75 + 0.25 * sin(cell.x * 0.35 - uTime * 2.2);
-        vec3 letters = mix(uCol, vec3(1.0, 0.95, 0.85), 0.6) * m * sweep * 3.5;
-        vec3 frame = uCol * chase * 2.0;
-        vec3 col = vec3(0.012, 0.013, 0.018) + (letters + frame) * bulb * uOn;
-        gl_FragColor = vec4(fogIt(col, vD), 1.0);
+        vec2 q = (vUv - 0.5) * uSize;
+        vec3 m = texture2D(tText, vUv).rgb;
+        float fp = max(fwidth(q.x), fwidth(q.y));
+        float buzz = 1.0 - 0.55 * step(0.9, hash(vec2(floor(uTime * 15.0), uK))) * step(0.82, fract(uTime * 0.09 + uK * 0.37));
+        float on = (0.55 + 0.45 * uOn) * buzz;
+        // Backing: dark, faintly brushed. What is lit (the glow, the letters, the bulbs) is a light
+        // source: the haze dims it less than the cabinet, so the title reads from far off.
+        float brushed = 0.85 + 0.15 * hash(vec2(floor(vUv.y * 220.0), uK));
+        vec3 base = vec3(0.01, 0.011, 0.014) * brushed;
+        vec3 light = uCol * m.g * 0.06 * on;
+        // Letters: the ring's colour through each stroke, white-hot only in its core.
+        float core = smoothstep(0.93, 1.0, m.b);
+        light = mix(light, mix(uCol * 1.1, mix(uCol, vec3(1.0), 0.3) * 1.9, core) * on, m.r);
+        base *= 1.0 - m.r;
+        // Trim: brushed metal, lighter along the top where the moon catches it; a coloured inner edge.
+        vec2 e = uSize * 0.5 - abs(q);
+        float border = min(e.x, e.y);
+        float trim = 1.0 - smoothstep(0.07, 0.07 + fp, border);
+        vec3 metal = mix(vec3(0.05, 0.055, 0.065), vec3(0.2, 0.22, 0.26), smoothstep(-0.5, 0.5, q.y / uSize.y));
+        base = mix(base, metal * (0.8 + 0.2 * sin(border * 90.0)), trim);
+        light *= 1.0 - trim;
+        light += uCol * 0.5 * (1.0 - smoothstep(0.0, 0.015 + fp, abs(border - 0.08))) * on;
+        // The bulb track, chasing in segments, the off bulbs glowing faintly; far off, a bulb
+        // averages out over its share of the track.
+        vec2 t = track(q, uSize * 0.5 - 0.17);
+        float sp = 0.16;
+        float bulb = smoothstep(0.05, 0.02, length(vec2((fract(t.y / sp) - 0.5) * sp, t.x)));
+        bulb = mix(bulb, 0.3 * (1.0 - smoothstep(0.0, 0.06, abs(t.x))), smoothstep(0.012, 0.04, fp));
+        float chase = step(0.55, fract(floor(t.y / sp) / uSegs - uTime * uSpin));
+        vec3 warm = mix(vec3(1.0, 0.86, 0.62), uCol, 0.35);
+        light += bulb * warm * mix(0.12, 2.2, chase) * (0.5 + 0.5 * uOn);
+        gl_FragColor = vec4(fogIt(base, vD) + light * fade(vD * 0.6), 1.0);
     }
 `;
 
-/** Bulbs per unit of sign (the gate's own units, ring 5 across), its height, widest, and height. */
-const BULBS = 30;
+/** Sign units (the gate's own, ring 5 across): mask pixels per unit, height, widest, centre height. */
+const PX = 128;
 const SIGN_H = 1.5;
 const SIGN_MAX_W = 7;
 const SIGN_Y = 6.2;
 
-/** The title as a white-on-black mask, sized to whole bulbs; null without a title or a canvas. */
+/** The title as a mask (see SIGN_FRAG); null without a title or a canvas. */
 function titleMask(title: string): { tex: THREE.Texture; w: number } | null {
     if (!title) return null;
     const c = document.createElement('canvas');
@@ -183,44 +212,71 @@ function titleMask(title: string): { tex: THREE.Texture; w: number } | null {
     if (!x) return null;
     const font = (px: number): string => `800 ${px}px system-ui, "Segoe UI", Roboto, Arial, sans-serif`;
     x.font = font(100);
-    const w = Math.min(SIGN_MAX_W, Math.max(2.4, ((x.measureText(title).width / 100) * 0.62 + 0.3) * SIGN_H));
-    c.width = Math.round(w * BULBS);
-    c.height = Math.round(SIGN_H * BULBS);
-    // Letters about 0.6 of the sign tall, narrowed if need be to fit inside the frame.
+    const w = Math.min(SIGN_MAX_W, Math.max(2.6, ((x.measureText(title).width / 100) * 0.55 + 0.6) * SIGN_H));
+    c.width = Math.round(w * PX);
+    c.height = Math.round(SIGN_H * PX);
     x.fillStyle = '#000';
     x.fillRect(0, 0, c.width, c.height);
-    x.fillStyle = '#fff';
-    x.font = font(c.height * 0.6);
+    x.font = font(c.height * 0.5);
     x.textAlign = 'center';
     x.textBaseline = 'middle';
-    x.fillText(title, c.width / 2, c.height * 0.53, c.width - 6);
+    x.globalCompositeOperation = 'lighter';
+    // One pass per channel: the halo in green, the eased letters in blue, the letters in red. The
+    // blurred ones are drawn as a shadow only, the text itself thrown off the canvas (shadow blur
+    // works everywhere; canvas filters do not).
+    const pass = (colour: string, blur: number): void => {
+        const off = blur > 0 ? c.width * 2 : 0;
+        x.fillStyle = colour;
+        x.shadowColor = colour;
+        x.shadowBlur = blur;
+        x.shadowOffsetX = off;
+        x.fillText(title, c.width / 2 - off, c.height * 0.53, c.width - 0.7 * PX);
+    };
+    pass('#00ff00', 0.16 * PX);
+    pass('#0000ff', 0.03 * PX);
+    pass('#ff0000', 0);
     const tex = new THREE.CanvasTexture(c);
-    tex.minFilter = THREE.NearestFilter;
-    tex.magFilter = THREE.NearestFilter;
-    tex.generateMipmaps = false;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.generateMipmaps = true;
+    tex.anisotropy = 4;
     return { tex, w };
 }
 
 const FLAT_VERT = /* glsl */ `varying vec2 vUv; varying float vD;
     void main() { vUv = uv; vec4 mv = modelViewMatrix * vec4(position, 1.0); vD = -mv.z; gl_Position = projectionMatrix * mv; }`;
 
-/** The marquee for project k, standing over its ring; null when there is no title. */
+/** Dark brushed metal for the sign's cabinet and the struts that hold it on the ring. */
+const CABINET = new THREE.MeshStandardMaterial({ color: 0x14161b, metalness: 0.9, roughness: 0.4 });
+
+/** The marquee for project k, mounted over its ring; null when there is no title. */
 function marquee(s: Shared, title: string, colour: THREE.Color, k: number): Sign | null {
     const mask = titleMask(title);
     if (!mask) return null;
     const uOn = { value: 0.5 };
-    const mesh = new THREE.Mesh(
+    const face = new THREE.Mesh(
         new THREE.PlaneGeometry(mask.w, SIGN_H),
         shader(s, FLAT_VERT, SIGN_FRAG, {
             tText: { value: mask.tex },
             uCol: { value: colour.clone() },
-            uCells: { value: new THREE.Vector2(Math.round(mask.w * BULBS), Math.round(SIGN_H * BULBS)) },
+            uSize: { value: new THREE.Vector2(mask.w, SIGN_H) },
             uOn,
-            uSpin: { value: (k % 2 ? -1 : 1) * (0.8 + 0.3 * (k % 3)) },
+            uK: { value: k + 0.5 },
+            uSpin: { value: (k % 2 ? -1 : 1) * (0.7 + 0.3 * (k % 3)) },
             uSegs: { value: 3 + (k % 4) },
         })
     );
-    mesh.position.set(0, SIGN_Y, 0.2);
+    face.position.z = 0.22;
+    const box = new THREE.Mesh(new THREE.BoxGeometry(mask.w + 0.12, SIGN_H + 0.12, 0.36), CABINET);
+    box.position.z = 0.02;
+    const mesh = new THREE.Group();
+    mesh.add(face, box);
+    // Two struts down onto the top of the ring.
+    for (const side of [-1, 1]) {
+        const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 1.1, 8), CABINET);
+        strut.position.set(side * Math.min(1.2, mask.w * 0.3), -SIGN_H / 2 - 0.45, 0);
+        mesh.add(strut);
+    }
+    mesh.position.set(0, SIGN_Y, 0);
     return { mesh, uOn };
 }
 
