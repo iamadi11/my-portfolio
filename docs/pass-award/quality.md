@@ -123,6 +123,7 @@ Prefer `RoundTrip.tsx` / `round-trip.css` / `tilt.ts` (also landed via `aa407cb`
 | Baseline (early this pass) | **113 kB** | Gate OK (−7 kB headroom); page 10.6 kB |
 | `aa407cb` (+ HUD a11y / journey / world integrate) | **114 kB** | Concurrent-agent build path |
 | Exclusive remasure after tip (this lead) | **113 kB** | `npx next build --no-lint`; page 10.5 kB; gate −7 kB |
+| pass-two tip (bloom/portal/pillars) | **114 kB** | Exclusive husky build on `cursor/award-pass-two-410a` |
 | _(add rows after each integrate + build)_ | | |
 
 Lead confirmation: `GET /` **200** on `next start -p 4310`; HTML mount checks pass (`smoke-html-checks.json`); Lighthouse **not run**; interactive computerUse agent **blocked** (model usage) — smoke evidence is harness screenshots + empty pageerror lists.
