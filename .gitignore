@@ -48,3 +48,4 @@ next-env.d.ts
 
 # Source assets for generated models (photos, concepts, raw GLBs); only optimised outputs ship from public/
 assets-src/
+.next-pass2/
