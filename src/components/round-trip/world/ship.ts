@@ -187,14 +187,16 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
     let kick = 0;
     let glint = -1;
     /** Engine thrust: idle hum, cruise, speed, steering, boost, the afterburner kick. */
-    const thrust = (f: ShipIn): number =>
+    const thrust = (f: ShipIn, now: number): number =>
         0.7 +
         f.speed * 0.9 +
         Math.hypot(f.lean, f.pitch) * 0.1 +
         f.boost * 0.8 -
         f.idle * 0.15 +
         kick +
-        (Math.random() - 0.5) * 0.08;
+        // Time-based flicker (not Math.random): a soft beat that stays coherent under bloom.
+        Math.sin(now * 37.1) * 0.035 +
+        Math.sin(now * 61.3 + 1.7) * 0.025;
     const update = (f: ShipIn): void => {
         const now = performance.now() / 1000;
         rig.position.copy(f.at);
@@ -217,14 +219,15 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
             roll + Math.sin(now * 0.9) * 0.04
         );
         kick = Math.max(0, kick - f.dt * 1.5);
-        uThrust.value = thrust(f);
+        uThrust.value = thrust(f, now);
         if (glint >= 0) glint = glint + f.dt / GLINT.len;
         // Hard thrust flares the engines, so a ship burning away reads as a bright point from afar.
-        const swell = (1 + f.speed * f.speed * 2.5) * (1 + GLINT.gain * glintAt(glint));
+        // Cap the speed swell so bloom does not mush the hull on boost.
+        const swell = (1 + f.speed * f.speed * 0.6) * (1 + GLINT.gain * glintAt(glint));
         engines.forEach((e) => e.scale.setScalar((0.5 + uThrust.value * 0.45) * swell));
         uRim.value.lerp(f.rim, 1 - Math.exp(-f.dt * 4));
         nose.material.opacity = f.heat;
-        nose.scale.setScalar(2 + f.heat * 5 + Math.random() * 0.4);
+        nose.scale.setScalar(2 + f.heat * 5 + Math.sin(now * 29.0) * 0.12);
         strobes.forEach((g, i) => (g.material.opacity = (now + i * 0.7) % 1.4 < 0.07 ? 1 : 0));
         fill.position.copy(rig.position).add(look.set(0, 2.2, 0));
         fill.intensity = 1.4 + f.key * 9;

@@ -69,14 +69,14 @@ const BOWL_FRAG = /* glsl */ `
         vec3 n = normalize(vN);
         float moon = max(dot(n, MOON_DIR), 0.0);
         float up = max(n.y, 0.0);
-        // Altiplano night: cool rock, a little warm light pollution pooling in the bowl.
-        vec3 rock = mix(vec3(0.035, 0.032, 0.045), vec3(0.08, 0.075, 0.09), up);
-        rock *= 0.55 + 0.55 * moon;
+        // Altiplano night: cool rock that still reads under city fog, warm spill in the valley.
+        vec3 rock = mix(vec3(0.055, 0.05, 0.07), vec3(0.12, 0.11, 0.14), up);
+        rock *= 0.7 + 0.55 * moon;
         float valley = exp(-max(vW.y + 40.0, 0.0) / 55.0);
-        rock += vec3(0.22, 0.12, 0.05) * valley * 0.08;
+        rock += vec3(0.28, 0.14, 0.06) * valley * 0.14;
         // Snow lick on the steepest high faces (Illimani-adjacent ridges).
-        float snow = smoothstep(0.55, 0.85, up) * smoothstep(40.0, 120.0, vW.y + 60.0);
-        rock = mix(rock, vec3(0.55, 0.58, 0.64) * (0.4 + 0.6 * moon), snow * 0.85);
+        float snow = smoothstep(0.5, 0.82, up) * smoothstep(30.0, 100.0, vW.y + 60.0);
+        rock = mix(rock, vec3(0.62, 0.65, 0.72) * (0.45 + 0.55 * moon), snow * 0.9);
         gl_FragColor = vec4(fogAt(rock, vD, vW), 1.0);
     }
 `;
@@ -165,7 +165,7 @@ export function addCityPlaces(scene: THREE.Object3D, s: Shared, small: boolean):
     let peakPeriod = 4800;
     void loadPlace(loader, s, small, {
         id: 'lapaz-bowl',
-        width: 2800,
+        width: 3200,
         y: 0,
         side: 0,
         ahead: 0,
@@ -173,42 +173,44 @@ export function addCityPlaces(scene: THREE.Object3D, s: Shared, small: boolean):
     }).then((proto) => {
         if (!proto) return;
         const box = new THREE.Box3().setFromObject(proto);
-        bowlPeriod = Math.max(box.getSize(new THREE.Vector3()).z * 0.92, 1800);
+        bowlPeriod = Math.max(box.getSize(new THREE.Vector3()).z * 0.9, 1600);
         bowls.forEach((g) => {
             g.add(proto.clone());
             g.visible = true;
-            // Sit the bowl so its valley floor meets street level; ridges climb past the towers.
-            g.position.y = -60 - 8;
+            // Valley floor near street level; ridges rise above the mid-rises.
+            g.position.y = -60 + 6;
         });
     });
     void loadPlace(loader, s, small, {
         id: 'illimani',
-        width: 3600,
+        width: 4200,
         y: 0,
         side: 0,
         ahead: 0,
-        tint: [0.62, 0.64, 0.7],
+        tint: [0.72, 0.74, 0.8],
     }).then((proto) => {
         if (!proto) return;
         const box = new THREE.Box3().setFromObject(proto);
-        peakPeriod = Math.max(box.getSize(new THREE.Vector3()).z * 0.9, 2400);
+        peakPeriod = Math.max(box.getSize(new THREE.Vector3()).z * 0.88, 2200);
         peaks.forEach((g) => {
             g.add(proto.clone());
             g.visible = true;
-            // East of the path, sunk so only the snow cone clears the fog.
-            g.position.set(520, -60 - 40, 0);
+            // Closer on the right so the snow cone sits in the city frame.
+            g.position.set(380, -60 + 20, 0);
         });
     });
     return {
         update: (eye) => {
             const b0 = Math.round(eye.z / bowlPeriod) * bowlPeriod;
             bowls.forEach((g, i) => {
-                g.position.x = 40;
+                g.position.x = 20;
                 g.position.z = b0 + (i - 1) * bowlPeriod;
             });
             const p0 = Math.round(eye.z / peakPeriod) * peakPeriod;
             peaks.forEach((g, i) => {
-                g.position.z = p0 + (i - 0.5) * peakPeriod + 400;
+                g.position.x = 380;
+                g.position.y = -40;
+                g.position.z = p0 + (i - 0.5) * peakPeriod + 200;
             });
         },
     };

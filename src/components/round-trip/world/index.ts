@@ -94,8 +94,8 @@ type Air = {
 };
 const AIR: Record<Place, Air> = {
     space: { fog: 0.03, horizon: [0, 0, 0], space: true },
-    // Altiplano night over La Paz: thinner, cooler air so Illimani and the bowl walls read.
-    city: { fog: FOG * 0.62, horizon: [0.04, 0.045, 0.07], stars: 0.55 },
+    // Altiplano night over La Paz: thinner still so bowl walls and Illimani clear the haze.
+    city: { fog: FOG * 0.5, horizon: [0.035, 0.04, 0.065], stars: 0.6 },
     // Chocolate Hills / Lençóis / Danxia / Roraima / Erta Ale horizons sit in matching air.
     grass: { fog: 0.0055, horizon: [0.03, 0.04, 0.05] },
     desert: { fog: 0.005, horizon: [0.04, 0.045, 0.055] },
