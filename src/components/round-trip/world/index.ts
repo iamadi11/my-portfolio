@@ -96,8 +96,8 @@ type Air = {
 };
 const AIR: Record<Place, Air> = {
     space: { fog: 0.03, horizon: [0, 0, 0], space: true, mist: 0 },
-    // Altiplano night: cool spill; base mist clears for tower/Illimani read (deck boosts it below).
-    city: { fog: FOG * 0.36, horizon: [0.052, 0.038, 0.058], stars: 0.55, mist: 0.92 },
+    // Altiplano night: thin mist so tower windows stay point lights, not bloom streaks.
+    city: { fog: FOG * 0.28, horizon: [0.052, 0.038, 0.058], stars: 0.55, mist: 0.7 },
     // Each project land gets its own air so a portal jump changes the sky, not only the ground.
     grass: { fog: 0.0048, horizon: [0.022, 0.048, 0.042], mist: 1.2, stars: 0.85 }, // Chocolate Hills
     desert: { fog: 0.0038, horizon: [0.055, 0.06, 0.078], mist: 0.55, stars: 0.95 }, // Lençóis flats
@@ -131,7 +131,7 @@ const FRAMING: Partial<Record<Place, Framing>> = {
 const FRAME_KEYS = Object.keys(CHASE) as Array<keyof Framing>;
 /** Place-aware bloom: lava/city windows mush under one strength; ice/ocean need a touch more. */
 const GLOW_SCALE: Partial<Record<Place, number>> = {
-    city: 0.58,
+    city: 0.48,
     volcano: 0.72,
     canyon: 0.9,
     ocean: 1.12,
@@ -715,10 +715,14 @@ export function createWorld(o: WorldOptions): World {
         resize();
         sense(f, dt);
         const prev = u;
-        u += (f.u - u) * (o.reduce ? 1 : 1 - Math.exp(-dt * 3.6));
+        // Snap when nearly on target so idle city doesn't keep a residual speed streak.
+        const near = Math.abs(f.u - u) < 0.0015;
+        const catchUp = near ? 14 : 3.6;
+        u += (f.u - u) * (o.reduce ? 1 : 1 - Math.exp(-dt * catchUp));
+        const inCity = f.u >= city0 && f.u < svc && f.map <= 0.32;
         speed +=
             (Math.min(1, (Math.abs(u - prev) * route.len) / Math.max(dt, 1e-3) / 160) - speed) *
-            (1 - Math.exp(-dt * 4));
+            (1 - Math.exp(-dt * (inCity && near ? 8 : 4)));
         const {
             shown: stop,
             jump,
