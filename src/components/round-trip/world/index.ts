@@ -197,6 +197,11 @@ type Jump = {
     shown: Stop;
     jump: number;
     dip: number;
+    /**
+     * 0–1: warp streak strength for the two air passages only (into the cloud deck, out to
+     * orbit). Portal cuts and quiet dips leave this at 0.
+     */
+    air: number;
     jumped: boolean;
     cut: boolean;
     lead: number;
@@ -206,8 +211,8 @@ type TintOf = (target: Stop) => THREE.Color | null;
 
 /**
  * The quiet changes of place, where there is no portal to fly through: city to the first
- * landscape, open sea to the pack ice. They dip through the dark instead of jumping, so the warp
- * stays the signature of the portals (and of the two passages through the air).
+ * landscape, open sea to the pack ice. They dip through the dark instead of jumping; warp light
+ * streaks are reserved for the two air passages (portal cuts keep flash/blur without streaks).
  */
 const quiet = (from: Stop, to: Stop): boolean =>
     (from === 'city' && to.includes('#')) || (from === 'ocean' && to === 'ice');
@@ -226,6 +231,7 @@ function jumper(
         shown: 'space',
         jump: 0,
         dip: 0,
+        air: 0,
         jumped: false,
         cut: false,
         lead: 0,
@@ -236,15 +242,16 @@ function jumper(
     let len = JUMP.portal;
     let peak = PEAK.portal;
     let soft = false;
+    let airPass = false;
     let level = 0;
     const start = (target: Stop): void => {
         soft = quiet(out.shown, target);
         next = target;
         clock = 0;
         out.jumped = !soft;
-        const air = out.shown === 'space' || target === 'orbit';
-        len = soft ? JUMP.dip : air ? JUMP.air : JUMP.portal;
-        peak = soft ? PEAK.dip : air ? PEAK.air : PEAK.portal;
+        airPass = !soft && (out.shown === 'space' || target === 'orbit');
+        len = soft ? JUMP.dip : airPass ? JUMP.air : JUMP.portal;
+        peak = soft ? PEAK.dip : airPass ? PEAK.air : PEAK.portal;
         out.lead = len * peak;
         out.tint.copy(
             out.shown === 'space'
@@ -300,6 +307,7 @@ function jumper(
         level = advance(dt);
         out.jump = soft ? 0 : level;
         out.dip = soft ? level : 0;
+        out.air = airPass ? level : 0;
         return out;
     };
     return { step };
@@ -586,8 +594,13 @@ export function createWorld(o: WorldOptions): World {
         const orbit = place === 'orbit';
         const air = AIR[place];
         const { n1 } = route.frame(clamp(u));
-        if (camera.aspect >= 1) side.copy(n1).multiplyScalar(2.2).add(DOWN);
-        else side.set(0, air.space ? 3.6 : 4.6, 0);
+        // Pull off the chase offset as the ship lines up with the portal window.
+        const through = rings.rush;
+        if (camera.aspect >= 1)
+            side.copy(n1)
+                .multiplyScalar(2.2 * (1 - through))
+                .add(DOWN);
+        else side.set(0, (air.space ? 3.6 : 4.6) * (1 - through), 0);
         route.curve.getTangentAt(clamp(u), tangent);
         const hero = 1 - smooth(route.seg[1] * 0.6, route.seg[1] * 1.6, u);
         const leave = orbit ? smooth(0.35, 1, 1 - resp) : 0;
@@ -597,7 +610,9 @@ export function createWorld(o: WorldOptions): World {
             .add(side)
             .addScaledVector(tangent, hero * 5 + lead);
         at.y += hero * 1.1 + leave * 6 + moves(orbit);
-        steerShip(n1, (1 - hero) * (1 - leave), dt);
+        // Fly through the open portal's window into the next place.
+        if (rings.entry && through > 0) at.lerp(rings.entry, through * 0.92);
+        steerShip(n1, (1 - hero) * (1 - leave) * (1 - through), dt);
         depart(sun, leave, dawn);
         ship.update({
             at,
@@ -676,6 +691,7 @@ export function createWorld(o: WorldOptions): World {
             shown: stop,
             jump,
             dip,
+            air: airJump,
             jumped,
             cut,
             lead,
@@ -701,8 +717,10 @@ export function createWorld(o: WorldOptions): World {
         rimOf(shown, zone, dawn);
         flyShip(shown, dt, f.resp, heat, sun, dawn);
         records.update(p, u);
+        // Warp streaks only for the two air passages (and the climb into the exit cut) — not portal
+        // jumps or quiet dips. Boost still gets a faint hint.
         warp.update(
-            Math.max(jump, !o.reduce && beat.climb > 0.45 ? (beat.climb - 0.45) * 1.4 : 0),
+            Math.max(airJump, !o.reduce && beat.climb > 0.45 ? (beat.climb - 0.45) * 1.4 : 0),
             tint,
             shot.boost * shot.boost
         );

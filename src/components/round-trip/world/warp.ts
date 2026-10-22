@@ -2,15 +2,20 @@ import * as THREE from 'three';
 
 import { ADD, type Shared, shader } from '@/components/round-trip/world/gl';
 
-/** `hint` (0–1): a faint, short streaking while the visitor boosts; not a jump. */
+/**
+ * `jump` (0–1): full streak stretch — callers pass this only for the two air passages (into the
+ * cloud deck, out to orbit). Portal cuts and quiet dips leave it at 0.
+ * `hint` (0–1): a faint, short streaking while the visitor boosts; not a jump.
+ */
 export type Warp = { update: (jump: number, tint: THREE.Color, hint?: number) => void };
 
 /** How strong a full boost's hint is, as a share of a jump. */
 const HINT = 0.3;
 
 /**
- * The jump between scenes, in 3D: long streaks of light rushing past the camera, stretching as the
- * boost peaks. They ride with the camera, so they are the same wherever the jump happens.
+ * Light streaks for the air passages: long streaks rushing past the camera, stretching as the cut
+ * peaks. They ride with the camera. Portal jumps keep post flash/blur without these streaks; quiet
+ * dips stay dark.
  */
 export function addWarp(camera: THREE.Camera, s: Shared, n: number, rand: () => number): Warp {
     const uJump = { value: 0 };
