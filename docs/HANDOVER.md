@@ -28,7 +28,7 @@ Scrolling flies an alien ship (three.js r184, `src/components/round-trip/world/*
 3. ~~Portal entry through the window (`rings.entry`), streaks only for air passages, lighter vignette.~~ Done 2026-10-22 (portal throat + entry + air-only warp; vignette already lighter).
 4. Phone scrim must not erase the world; distinctive display face (HTML layer).
 5. Replace owner-supplied Earth textures with NASA Blue Marble / Black Marble if reachable.
-6. Sketchfab credit links still point at search pages — replace with model page URLs.
+6. ~~Sketchfab credit links still point at search pages — replace with model page URLs.~~ Done 2026-10-22 (portal + Osaka model pages in `RoundTrip.tsx`).
 
 ## Validation (every change)
 

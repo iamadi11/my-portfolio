@@ -50,8 +50,8 @@ The route in the HUD fills between hops as the request travels; each project's d
 
 | Asset | Source | Licence / credit |
 | --- | --- | --- |
-| `models/ship.glb`, `ship-1k.glb` | Intergalactic Spaceship, Dennis Haupt (3DHaupt), free3d.com | Personal, non-commercial use; supplied by the owner |
-| `models/portal.glb`, `portal-1k.glb` | Sci-Fi Portal Gateway, Igrium, Sketchfab | CC BY 4.0; supplied by the owner |
+| `models/ship.glb`, `ship-1k.glb` | Intergalactic Spaceship, Dennis Haupt (3DHaupt), free3d.com ([Sketchfab mirror](https://sketchfab.com/3d-models/intergalactic-spaceship-a51cc468ec2049b583c36e5c4606fbc2)) | Personal, non-commercial use; supplied by the owner |
+| `models/portal.glb`, `portal-1k.glb` | [Sci-Fi Portal Gateway](https://sketchfab.com/3d-models/sci-fi-portal-gateway-58d2570e88c642bba8ef92f3175391cf), Igrium, Sketchfab | CC BY 4.0; supplied by the owner |
 | `env/earth-*.jpg` | Earth model textures supplied by the owner (`59-earth.zip`) | As supplied |
 | `env/stars-*.jpg` | NASA/Goddard SVS Deep Star Maps 2020 | NASA/GSFC SVS; ESA/Gaia/DPAC |
 | `env/night.hdr` | Modern Buildings Night, Poly Haven | CC0 |
@@ -61,7 +61,7 @@ The route in the HUD fills between hops as the request travels; each project's d
 | `models/places/zhangye-danxia-*.glb` | AWS Terrain Tiles | Joerd attribution; canyon horizon |
 | `models/places/roraima-*.glb` | AWS Terrain Tiles | Joerd attribution; alpine horizon (Mount Roraima) |
 | `models/places/erta-ale-*.glb` | AWS Terrain Tiles | Joerd attribution; volcanic horizon |
-| `models/osaka-*.glb` | Osaka downtown, matousekfoto, Sketchfab (night photogrammetry) | CC BY 4.0; downtown mass left of the La Paz path |
+| `models/osaka-*.glb` | [Osaka downtown](https://sketchfab.com/3d-models/osaka-downtown-53e0980d555a4af6b921cc00c208e4a3), matousekfoto, Sketchfab (night photogrammetry) | CC BY 4.0; downtown mass left of the La Paz path |
 | `env/moon.webp` | Moon photograph, NASA (nasa/NASA-3D-Resources @11ebb4e, `Images and Textures/Moon/Moon.jpg`) | NASA media, free and without copyright; credit NASA |
 | `models/iss.glb` | International Space Station (B), NASA (nasa/NASA-3D-Resources @11ebb4e) | NASA media, free and without copyright; credit NASA; the finale |
 

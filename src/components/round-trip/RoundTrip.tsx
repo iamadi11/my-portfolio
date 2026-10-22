@@ -17,13 +17,23 @@ const stagger = (i: number): React.CSSProperties => ({ '--i': i }) as React.CSSP
 const key = (r: { org: string; role: string }): string => `${r.org}-${r.role}`;
 
 const CC_BY = 'https://creativecommons.org/licenses/by/4.0/';
-/** The CC BY models on /, as titled and credited on Sketchfab. */
-const CREDITS: Array<[string, string]> = [
-    ['Sci-Fi Portal Gateway', 'Igrium'],
-    ['Osaka downtown', 'matousekfoto'],
+/**
+ * CC BY models on /: title, author, Sketchfab model page (not a search URL).
+ * Portal: https://sketchfab.com/3d-models/sci-fi-portal-gateway-58d2570e88c642bba8ef92f3175391cf
+ * Osaka: https://sketchfab.com/3d-models/osaka-downtown-53e0980d555a4af6b921cc00c208e4a3
+ */
+const CREDITS: Array<[string, string, string]> = [
+    [
+        'Sci-Fi Portal Gateway',
+        'Igrium',
+        'https://sketchfab.com/3d-models/sci-fi-portal-gateway-58d2570e88c642bba8ef92f3175391cf',
+    ],
+    [
+        'Osaka downtown',
+        'matousekfoto',
+        'https://sketchfab.com/3d-models/osaka-downtown-53e0980d555a4af6b921cc00c208e4a3',
+    ],
 ];
-const sketchfab = (title: string, by: string): string =>
-    `https://sketchfab.com/search?type=models&q=${encodeURIComponent(`${title} ${by}`)}`;
 /** DEM places on / from AWS Terrain Tiles (see scripts/places/build-dem.py). */
 const TERRAIN = 'https://github.com/tilezen/joerd/blob/master/docs/attribution.md';
 const PLACES = [
@@ -350,10 +360,10 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                         CC BY 4.0
                     </a>
                     , modified (optimised):{' '}
-                    {CREDITS.map(([title, by], i) => (
+                    {CREDITS.map(([title, by, href], i) => (
                         <React.Fragment key={title}>
                             {i > 0 && ', '}
-                            <a href={sketchfab(title, by)} target="_blank" rel="noopener noreferrer">
+                            <a href={href} target="_blank" rel="noopener noreferrer">
                                 {title}
                             </a>{' '}
                             by {by}
