@@ -4,8 +4,8 @@
 #                                 personal-use licence; supplied by the owner as a .blend file.
 #   models/portal.glb, portal-1k.glb  "Sci-Fi Portal Gateway" by Igrium, Sketchfab, CC BY 4.0;
 #                                 supplied by the owner as a .blend.
-#   env/earth-*.jpg               Earth model textures supplied by the owner (59-earth.zip); their
-#                                 original source is not known (see "Earth textures" below).
+#   env/earth-*.jpg               NASA Blue Marble Next Generation (day), Black Marble 2016 (lights),
+#                                 Blue Marble clouds; credit NASA (see "Earth textures" below).
 #   env/stars-*.jpg               NASA/Goddard SVS Deep Star Maps 2020 (svs.gsfc.nasa.gov/4851),
 #                                 credit NASA/GSFC SVS, ESA/Gaia/DPAC.
 #   env/night.hdr                 "Modern Buildings Night", Poly Haven, CC0 (reflections).
@@ -31,7 +31,6 @@ P=$A/sketchfab/portal
 "$BLENDER" -b "$P/source/portal_bundle.blend" --python scripts/assets/portal.py -- "$(pwd)/$P/portal-raw.glb"
 npx -y @gltf-transform/cli@4 optimize "$P/portal-raw.glb" public/models/portal.glb $opt --texture-size 2048
 npx -y @gltf-transform/cli@4 optimize "$P/portal-raw.glb" public/models/portal-1k.glb $opt --texture-size 1024
-"$BLENDER" -b --python scripts/assets/earth.py -- "$A/earth/model/textures" public/env
 "$BLENDER" -b --python scripts/assets/stars.py -- "$A/stars/starmap_2020_4k.exr" public/env
 cp "$A/story/hdri/modern_buildings_night_1k.hdr" public/env/night.hdr
 
@@ -74,18 +73,21 @@ ffmpeg -y -i "$N/Moon.jpg" -vf "crop=1536:1536:247:195,scale=512:512:flags=lancz
 npx -y @gltf-transform/cli@4 optimize "$N/International_Space_Station_ISS_B.glb" public/models/iss.glb \
   --compress meshopt --texture-compress webp --flatten true --join true --instance false --palette false --texture-size 1024 --simplify-ratio 1
 
-# Earth textures: looked for a NASA replacement (2026-10-21, again 2026-10-22) in
-# nasa/NASA-3D-Resources @ 11ebb4ee043715aefbba6aeec8a61746fad67fa7, fetched with
-#   git clone --depth 1 --filter=blob:none --sparse https://github.com/nasa/NASA-3D-Resources
-#   git -C NASA-3D-Resources ls-tree -r --name-only HEAD | grep -i -E 'earth|night|lights|cloud'
-#   git -C NASA-3D-Resources sparse-checkout set --no-cone '/Images and Textures/Earth (A)/' \
-#     '/Images and Textures/Earth (B)/'
-# The repository has no night-lights or cloud map. "Images and Textures/Earth (A)/Earth (A).jpg"
-# is a 1440x720 equirectangular shaded-relief map (hypsometric false colour with bathymetry), and
-# "Images and Textures/Earth (B)/Earth (B).jpg" a 4095x4095 Apollo photograph of the whole disc;
-# neither can stand in for the day, lights or cloud maps space.ts reads (earth-{day,lights,
-# clouds}-{hi,lo}.jpg: day and clouds 2048x1024 / 1024x512, lights 4096x2048 / 2048x1024), so the
-# owner's files stay until NASA maps are supplied. Candidates with the same terms: NASA Earth
-# Observatory "Blue Marble" (day), "Black Marble" (night lights) and Blue Marble clouds. Once one
-# is in assets-src/nasa/earth/, resize with ffmpeg to the sizes above, for example:
-#   ffmpeg -y -i "$N/earth/day.jpg" -vf scale=2048:1024:flags=lanczos -q:v 3 public/env/earth-day-hi.jpg
+# Earth textures (2026-10-22): nasa/NASA-3D-Resources has no day/lights/cloud maps usable by
+# space.ts (Earth A = hypsometric relief; Earth B = Apollo disc photo). Replaced owner-supplied
+# 59-earth.zip with NASA EO / Visible Earth media (eoimages.gsfc.nasa.gov; credit NASA).
+# Download into assets-src/nasa/earth/ (git-ignored), then resize:
+#   day-src.jpg     BMNG Dec 2004 world.topo.bathy 5400x2700
+#     https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg
+#   lights-src.jpg  Black Marble 2016 3km colour 13500x6750
+#     https://eoimages.gsfc.nasa.gov/images/imagerecords/144000/144898/BlackMarble_2016_3km.jpg
+#   clouds-src.jpg  Blue Marble clouds 2048x1024
+#     https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57747/cloud_combined_2048.jpg
+# day+clouds: hi 2048x1024 / lo 1024x512; lights: hi 4096x2048 / lo 2048x1024 (gray for .r).
+E=$N/earth
+ffmpeg -y -i "$E/day-src.jpg" -vf scale=2048:1024:flags=lanczos -q:v 3 public/env/earth-day-hi.jpg
+ffmpeg -y -i "$E/day-src.jpg" -vf scale=1024:512:flags=lanczos -q:v 3 public/env/earth-day-lo.jpg
+ffmpeg -y -i "$E/lights-src.jpg" -vf "scale=4096:2048:flags=lanczos,format=gray" -q:v 3 public/env/earth-lights-hi.jpg
+ffmpeg -y -i "$E/lights-src.jpg" -vf "scale=2048:1024:flags=lanczos,format=gray" -q:v 3 public/env/earth-lights-lo.jpg
+ffmpeg -y -i "$E/clouds-src.jpg" -vf scale=2048:1024:flags=lanczos -q:v 3 public/env/earth-clouds-hi.jpg
+ffmpeg -y -i "$E/clouds-src.jpg" -vf scale=1024:512:flags=lanczos -q:v 3 public/env/earth-clouds-lo.jpg

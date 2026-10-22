@@ -334,7 +334,7 @@ export function addSpace(
     glow: Glow,
     rand: () => number
 ): Space {
-    // Earth textures (night lights, clouds, day) supplied by the owner as a free Earth model.
+    // Earth textures: NASA Blue Marble NG (day), Black Marble 2016 (lights), Blue Marble clouds.
     const load = (name: string, colour: boolean): THREE.Texture => {
         const t = new THREE.TextureLoader().load(`/env/${name}-${small ? 'lo' : 'hi'}.jpg`);
         if (colour) t.colorSpace = THREE.SRGBColorSpace;

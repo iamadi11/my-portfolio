@@ -52,7 +52,7 @@ The route in the HUD fills between hops as the request travels; each project's d
 | --- | --- | --- |
 | `models/ship.glb`, `ship-1k.glb` | Intergalactic Spaceship, Dennis Haupt (3DHaupt), free3d.com ([Sketchfab mirror](https://sketchfab.com/3d-models/intergalactic-spaceship-a51cc468ec2049b583c36e5c4606fbc2)) | Personal, non-commercial use; supplied by the owner |
 | `models/portal.glb`, `portal-1k.glb` | [Sci-Fi Portal Gateway](https://sketchfab.com/3d-models/sci-fi-portal-gateway-58d2570e88c642bba8ef92f3175391cf), Igrium, Sketchfab | CC BY 4.0; supplied by the owner |
-| `env/earth-*.jpg` | Earth model textures supplied by the owner (`59-earth.zip`) | As supplied |
+| `env/earth-*.jpg` | NASA Blue Marble Next Generation (day), Black Marble 2016 (lights), Blue Marble clouds | NASA media; credit NASA; see `docs/pass-lapaz/earth-textures.md` |
 | `env/stars-*.jpg` | NASA/Goddard SVS Deep Star Maps 2020 | NASA/GSFC SVS; ESA/Gaia/DPAC |
 | `env/night.hdr` | Modern Buildings Night, Poly Haven | CC0 |
 | `models/places/lapaz-bowl-*.glb`, `illimani-*.glb` | AWS Terrain Tiles (Terrarium) via `scripts/places/build-dem.py` | Joerd attribution; La Paz city chapter |

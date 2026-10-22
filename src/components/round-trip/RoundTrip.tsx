@@ -374,8 +374,31 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                         AWS Terrain Tiles
                     </a>{' '}
                     (Mapzen Joerd sources; rebuilt by scripts/places/build-dem.py). Moon photograph and
-                    International Space Station model: NASA. Earth textures: from an Earth model pack supplied
-                    by the owner. Stars:{' '}
+                    International Space Station model: NASA. Earth textures:{' '}
+                    <a
+                        href="https://visibleearth.nasa.gov/images/73909/december-blue-marble-next-generation-w-topography-and-bathymetry"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        NASA Blue Marble Next Generation
+                    </a>{' '}
+                    (day),{' '}
+                    <a
+                        href="https://visibleearth.nasa.gov/images/144898/earth-at-night-black-marble-2016-color-maps"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Black Marble 2016
+                    </a>{' '}
+                    (night lights),{' '}
+                    <a
+                        href="https://visibleearth.nasa.gov/images/57747/blue-marble-clouds"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Blue Marble clouds
+                    </a>
+                    ; credit NASA. Stars:{' '}
                     <a href="https://svs.gsfc.nasa.gov/4851" target="_blank" rel="noopener noreferrer">
                         NASA/Goddard SVS Deep Star Maps
                     </a>
