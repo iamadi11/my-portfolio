@@ -488,11 +488,20 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     resized.observe(root);
     // Web fonts change line wraps: measure again once they are in.
     void document.fonts?.ready.then(() => !dead && remeasure());
-    const fills = new Map<HTMLElement, string>();
+    const fillIds = new WeakMap<HTMLElement, number>();
+    let fillSeq = 0;
+    const fills = new Map<string, string>();
     const fill = (el: HTMLElement, prop: string, v: number): void => {
         const val = v.toFixed(2);
-        if (fills.get(el) === val) return;
-        fills.set(el, val);
+        let id = fillIds.get(el);
+        if (id === undefined) {
+            id = fillSeq++;
+            fillIds.set(el, id);
+        }
+        // Key by element + prop so --flash / --rush / --p never collide on one node.
+        const k = `${id}:${prop}`;
+        if (fills.get(k) === val) return;
+        fills.set(k, val);
         el.style.setProperty(prop, val);
     };
     let lcp = 0;
@@ -610,7 +619,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         const panel = els.secs[sec]?.querySelector('.rt-panel');
         panel?.classList.add('rt-cut');
         clearTimeout(cutTimer);
-        cutTimer = window.setTimeout(() => panel?.classList.remove('rt-cut'), 120);
+        // Hold soft focus through the flash peak so the handoff title can land (~880 ms clock).
+        cutTimer = window.setTimeout(() => panel?.classList.remove('rt-cut'), 360);
     };
 
     const draw = (s: ReturnType<typeof scrollState>, map: number, resp: number, top: number): void => {
@@ -624,6 +634,9 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         shownProject = s.sec === 3 ? (zone !== undefined ? Number(zone) : into) : null;
         // Set on the two HUD bars only: a variable on the root would restyle the whole page each frame.
         els.huds.forEach((el) => fill(el, '--flash', out.flash));
+        // Anticipation: soften the projects panel as the ship rushes a portal (HTML layer only).
+        const servicesPanel = els.secs[3]?.querySelector<HTMLElement>('.rt-panel');
+        if (servicesPanel) fill(servicesPanel, '--rush', reduce || s.sec !== 3 ? 0 : out.rush);
         // Project titles live in the panel + handoff flash only (no duplicate ring tags).
         els.recordTags.forEach((el, k) => place(el, out.records[k], s.sec === 4 && map < 0.1, small, top));
         const sound = o.sound();

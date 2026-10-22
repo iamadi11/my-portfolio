@@ -340,12 +340,22 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                     <p className="rt-said" role="status">
                         {said}
                     </p>
-                    <button type="button" onClick={copy}>
+                    <button type="button" className="rt-cta-primary" onClick={copy}>
                         Copy email
                     </button>
-                    {trip.phone && <a href={trip.phone.href}>{trip.phone.label}</a>}
+                    {trip.phone && (
+                        <a className="rt-cta-secondary" href={trip.phone.href}>
+                            {trip.phone.label}
+                        </a>
+                    )}
                     {trip.links.map((l) => (
-                        <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">
+                        <a
+                            key={l.href}
+                            className="rt-cta-secondary"
+                            href={l.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
                             {l.label}
                         </a>
                     ))}
