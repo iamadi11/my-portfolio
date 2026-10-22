@@ -287,7 +287,7 @@ const BLADE_VERT = /* glsl */ `
     void main() {
         vec2 c = wrapAround(aOff, uTile);
         float far = length(c - cameraPosition.xz);
-        float h = aBlade.y * (1.0 - smoothstep(uTile.x * 0.3, uTile.x * 0.48, far));
+        float h = aBlade.y * (1.0 - smoothstep(uTile.x * 0.38, uTile.x * 0.58, far));
         float t = position.y;
         vT = t;
         vec2 dir = vec2(cos(aBlade.x), sin(aBlade.x));
@@ -404,7 +404,8 @@ export function addMotes(group: THREE.Object3D, s: Shared, m: Motes, rand: () =>
                 // Rain is a streak, not a flake: the point is squeezed sideways into a line.
                 vec2 q = (gl_PointCoord - 0.5) * mix(vec2(1.0), vec2(7.0, 1.0), uStreak);
                 float a = smoothstep(0.5, 0.0, length(q)) * mix(1.0, 0.35, uStreak);
-                gl_FragColor = vec4(uCol * a * vA * fade(vD), 1.0); }`,
+                // Softer distance fade so motes still read mid-chase, not only in the near field.
+                gl_FragColor = vec4(uCol * a * vA * fade(vD * 0.62), 1.0); }`,
             {
                 uTile: { value: new THREE.Vector2(m.tile, m.tile) },
                 uY: { value: new THREE.Vector2(...m.y) },
@@ -490,6 +491,7 @@ export function addLand(scene: THREE.Object3D, s: Shared, small: boolean, rand: 
     const motes: Partial<Record<LandKind, THREE.Group>> = {
         grass: new THREE.Group(),
         desert: new THREE.Group(),
+        canyon: new THREE.Group(),
         volcano: new THREE.Group(),
         alpine: new THREE.Group(),
     };
@@ -514,6 +516,18 @@ export function addLand(scene: THREE.Object3D, s: Shared, small: boolean, rand: 
                 y: [-13, -5],
                 colour: new THREE.Color(0.92, 0.88, 0.8),
                 size: 1.55,
+                mode: 3,
+            },
+        ],
+        [
+            // Danxia: wind-blown red dust so the canyon chase does not die at mid distance.
+            'canyon',
+            {
+                n: 480 * k,
+                tile: 165,
+                y: [-12, 8],
+                colour: new THREE.Color(1.15, 0.45, 0.28),
+                size: 1.45,
                 mode: 3,
             },
         ],
