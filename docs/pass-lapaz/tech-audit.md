@@ -94,5 +94,5 @@ What *not* to do: replace wrap with a finite city mesh, or load Google 3D / Stre
 | 8 Sketchfab landmarks | **Done** — DEM places via `landmarks.ts` → `places.ts` |
 | 9 Ship flicker | **Done** — time-based thrust/nose; capped swell |
 | 10 Idle fringe / vignette | **Done** — fringe gated on speed/jump; lighter vignette |
-| 11 Portal throat skyline | Open |
+| 11 Portal throat skyline | **Done** — `HORIZON_FRAG` / `skyline()` retuned per place; `rings.entry` fly-through; warp streaks air-only (`services.ts`, `index.ts`, `warp.ts`) |
 | 12 Scan vs tower grade | Open |

@@ -25,7 +25,7 @@ Scrolling flies an alien ship (three.js r184, `src/components/round-trip/world/*
 
 1. Open Buildings / OSM footprints for La Paz mid-rises (ODbL) instead of pure procedural towers on the slopes.
 2. Ship polish still listed in older notes (hull grade, engine glow cap, time-based flicker).
-3. Portal entry through the window (`rings.entry`), streaks only for air passages, lighter vignette.
+3. ~~Portal entry through the window (`rings.entry`), streaks only for air passages, lighter vignette.~~ Done 2026-10-22 (portal throat + entry + air-only warp; vignette already lighter).
 4. Phone scrim must not erase the world; distinctive display face (HTML layer).
 5. Replace owner-supplied Earth textures with NASA Blue Marble / Black Marble if reachable.
 6. Sketchfab credit links still point at search pages — replace with model page URLs.
