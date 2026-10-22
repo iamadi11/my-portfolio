@@ -77,3 +77,22 @@ What *not* to do: replace wrap with a finite city mesh, or load Google 3D / Stre
 ---
 
 *Audit only. Implementation should follow `CLAUDE.md` release gates and the creative lock in `docs/pass-lapaz/creative-direction.md`.*
+
+---
+
+## Follow-up (implementation status on this branch)
+
+| # | Status |
+| --- | --- |
+| 1 Flat city / bowl | **Done** — DEM `lapaz-bowl` + slope-lifted towers (`places.ts`, `city.ts`) |
+| 2 Osaka morphology | **Kept** — night scan as downtown massing (CC BY); footprints still open |
+| 3 Bengaluru `HOME` | **Done** — dive targets La Paz; HTML location stays Bengaluru |
+| 4 Illimani wall | **Done** — DEM `illimani` wrapping on the right |
+| 5 City framing | **Done** — `FRAMING.city` + thinner Altiplano `AIR.city` |
+| 6 Planar streets | Open |
+| 7 Land biomes | Partial — DEM horizons swapped; `land.ts` HEIGHT still generic biomes |
+| 8 Sketchfab landmarks | **Done** — DEM places via `landmarks.ts` → `places.ts` |
+| 9 Ship flicker | **Done** — time-based thrust/nose; capped swell |
+| 10 Idle fringe / vignette | **Done** — fringe gated on speed/jump; lighter vignette |
+| 11 Portal throat skyline | Open |
+| 12 Scan vs tower grade | Open |
