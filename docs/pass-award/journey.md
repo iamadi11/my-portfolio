@@ -148,8 +148,20 @@ Prefer `RoundTrip.tsx`, `drive.ts`, `round-trip.css`, `trip.ts`. Do not fight `w
 
 ## Acceptance (journey)
 
-- [ ] Who / why / now / path readable in HTML within five seconds at 375 and 1280
-- [ ] Portal approach: dots fill + panel softens before cut; title flash lands in panel h3
-- [ ] `200 OK`: email hierarchy clear; no invented copy
-- [ ] Sound silent until opt-in; Tilt only after button; reduced motion = stills + straight cuts
-- [ ] Every belief above traces to a `SITE` field
+- [x] Who / why / now / path readable in HTML within five seconds at 375 and 1280
+- [x] Portal approach: dots fill + panel softens before cut; title flash lands in panel h3
+- [x] `200 OK`: email hierarchy clear; no invented copy
+- [x] Sound silent until opt-in; Tilt only after button; reduced motion = stills + straight cuts
+- [x] Every belief above traces to a `SITE` field
+
+## Implemented (HTML / drive)
+
+| Change | Where |
+| --- | --- |
+| `--rush` softens projects panel on approach; cut blur 360 ms; fill keyed by prop | `drive.ts` |
+| Title handoff hold (~880 ms) already from motion pass; cut syncs to it | `drive.ts` |
+| Dot fill glow rises with `--p` | `round-trip.css` |
+| Hero name/role extra plate shadow | `round-trip.css` |
+| Finale: `.rt-close`, `.rt-cta-primary` (Copy email), `.rt-cta-secondary` | `RoundTrip.tsx`, CSS |
+| Sound label “Sound on” + pressed chrome; Start `rt-go` pulse (motion pass) | `RoundTrip.tsx`, CSS |
+| Reduced motion: no rush / cut blur | `round-trip.css`, `drive.ts` (`rush` forced 0) |
