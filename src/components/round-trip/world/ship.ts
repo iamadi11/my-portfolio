@@ -64,6 +64,23 @@ function addRim(mat: THREE.MeshStandardMaterial, uRim: { value: THREE.Color }): 
 
 const LEN = 3.2;
 
+/**
+ * The barrel roll: a short counter-bank the other way (`wind` s, to `back` rad), then one full
+ * turn eased in and out over `len` s, so it gathers speed, peaks mid-roll and settles level.
+ */
+const ROLL = { wind: 0.12, back: 0.3, len: 0.95 };
+const inOut = (x: number): number => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+/** The roll angle `c` seconds into it (0 once it is done). */
+const barrel = (c: number): number => {
+    if (c >= ROLL.wind + ROLL.len) return 0;
+    if (c < ROLL.wind) {
+        const a = c / ROLL.wind;
+        return -ROLL.back * a * a * (3 - 2 * a);
+    }
+    const e = inOut((c - ROLL.wind) / ROLL.len);
+    return -ROLL.back * (1 - e) + Math.PI * 2 * e;
+};
+
 /** Engine plasma: white-hot at the nozzle, blue along the plume, flickering. */
 const FLAME_FRAG = /* glsl */ `
     uniform float uThrust; uniform vec2 uSpan; varying vec3 vL, vN, vV;
@@ -166,7 +183,7 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
     const prev = new THREE.Vector3(0, 0, -1);
     let turn = 0;
     let bank = 0;
-    let spin = 1;
+    let spin = ROLL.wind + ROLL.len;
     let kick = 0;
     let glint = -1;
     /** Engine thrust: idle hum, cruise, speed, steering, boost, the afterburner kick. */
@@ -192,8 +209,8 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
         // you, that flips) and lifts its nose into a climb.
         const lean = clamp(-yaw * 40, -0.6, 0.6) + clamp(f.lean * 0.12, -0.5, 0.5) * Math.cos(turn);
         bank += (lean - bank) * (1 - Math.exp(-f.dt * 3));
-        spin = Math.min(1, spin + f.dt / 0.9);
-        const roll = bank + (spin < 1 ? Math.PI * 2 * (1 - Math.pow(1 - spin, 3)) : 0);
+        spin = Math.min(ROLL.wind + ROLL.len, spin + f.dt);
+        const roll = bank + barrel(spin);
         body.rotation.set(
             -Math.min(0.2, f.speed * 0.25) - f.pitch * 0.05,
             0,

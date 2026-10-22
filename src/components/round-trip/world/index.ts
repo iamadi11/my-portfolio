@@ -10,7 +10,7 @@ import { addLand, GROUND, type LandKind, LANDS } from '@/components/round-trip/w
 import { addLandmarks } from '@/components/round-trip/world/landmarks';
 import { createPost } from '@/components/round-trip/world/post';
 import { addRecords } from '@/components/round-trip/world/records';
-import { createRig, type Shot } from '@/components/round-trip/world/rig';
+import { CHASE, createRig, type Framing, type Shot } from '@/components/round-trip/world/rig';
 import { createRoute } from '@/components/round-trip/world/route';
 import { addSea, SEA } from '@/components/round-trip/world/sea';
 import { addRings } from '@/components/round-trip/world/services';
@@ -102,9 +102,35 @@ const AIR: Record<Place, Air> = {
     alpine: { fog: 0.0045, horizon: [0.03, 0.045, 0.075] },
     volcano: { fog: 0.007, horizon: [0.09, 0.03, 0.015], stars: 0.7 },
     ocean: { fog: 0.005, horizon: [0.022, 0.04, 0.066] },
-    ice: { fog: 0.0045, horizon: [0.018, 0.052, 0.06], aurora: 1 },
+    // Darker and bluer than the sea air, and thinner: the far ice carries on to a horizon that
+    // is already night sky, so no band of lit air sits between it and the aurora.
+    ice: { fog: 0.0022, horizon: [0.014, 0.03, 0.044], aurora: 1 },
     orbit: { fog: 0.03, horizon: [0, 0, 0], space: true },
 };
+/**
+ * Each place's shot (see rig.ts); the rest keep the chase. The city keeps its drop through the
+ * cloud deck (a lift, not a framing). The canyon is shot low and from the far side, the walls
+ * towering over the ship; the volcano from a crane, looking down past it at the lava; the desert
+ * through a long lens from far back, the dunes stacked flat; the pole wide and from the side, the
+ * aurora filling the top of the frame.
+ */
+const FRAMING: Partial<Record<Place, Framing>> = {
+    canyon: { side: -2.6, up: -4, back: 10, ahead: 30, look: 4, aim: 1.5, lens: 1.08 },
+    volcano: { side: 1.5, up: 5.5, back: 14, ahead: 26, look: -3, aim: 0, lens: 0.95 },
+    desert: { side: -0.6, up: -1, back: 24, ahead: 52, look: -0.5, aim: 0.5, lens: 0.7 },
+    alpine: { side: 1.2, up: 2.5, back: 12, ahead: 30, look: -1, aim: 0, lens: 1 },
+    ice: { side: -4.5, up: -0.3, back: 10, ahead: 28, look: 4, aim: 2, lens: 1.1 },
+};
+const FRAME_KEYS = Object.keys(CHASE) as Array<keyof Framing>;
+/**
+ * Eases the shot towards the place's framing: fast while a jump's flash or a dip's dark hides the
+ * move (the place changes at their peak), slowly otherwise; reduced motion cuts straight to it.
+ */
+function reframe(f: Framing, place: Place, hidden: number, dt: number, reduce: boolean): void {
+    const to = FRAMING[place] ?? CHASE;
+    const k = reduce ? 1 : 1 - Math.exp(-dt * (hidden > 0.3 ? 9 : 1.2));
+    for (const key of FRAME_KEYS) f[key] += (to[key] - f[key]) * k;
+}
 const isLand = (p: Place): p is LandKind => (LANDS as readonly string[]).includes(p);
 
 /** The cut itself: the cloud deck on the way in, thin blue air on the way out, blue-white otherwise. */
@@ -437,7 +463,7 @@ export function createWorld(o: WorldOptions): World {
      * Earth once back in orbit.
      */
     const beat = { dive: 0, drop: 0, climb: 0, rise: 0, skim: 0, over: 0, leave: 0 };
-    const shot: Shot = { tilt: 0, lift: 0, shake: 0, boost: 0, idle: 0 };
+    const shot: Shot = { frame: { ...CHASE }, tilt: 0, lift: 0, shake: 0, boost: 0, idle: 0 };
     let kicked = false;
     const heading = new THREE.Vector3();
 
@@ -623,7 +649,7 @@ export function createWorld(o: WorldOptions): World {
     const rushing = (shown: Place, heat: number, forward: boolean): number => {
         // Only a portal is rushed; the quiet changes (city to land, sea to ice) are not.
         const gate = rings.rush;
-        if (gate > 0.5 && !rolled && forward) {
+        if (gate > 0.5 && !rolled && forward && !o.reduce) {
             rolled = true;
             ship.roll();
         }
@@ -659,6 +685,7 @@ export function createWorld(o: WorldOptions): World {
         s.uScan.value = p.y;
         s.uTime.value = t;
         beats(shown, f.map, f.resp);
+        reframe(shot.frame, shown, Math.max(jump, dip), dt, o.reduce);
         applyAir(AIR[shown], beat.drop * 0.6 + beat.climb * 0.85, beat.drop);
         s.uDrop.value = beat.drop;
         const { heat, sun, dawn } = showPlace(shown);

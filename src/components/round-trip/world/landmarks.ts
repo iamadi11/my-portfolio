@@ -70,11 +70,23 @@ function nightFar(mat: THREE.MeshStandardMaterial, tint: [number, number, number
     };
 }
 
+type Connection = { saveData?: boolean; effectiveType?: string };
+
+/**
+ * The landmarks are scenery, 0.7–3.6 MB each: left out on a connection that asks to save data or
+ * is slow (3G or worse), where the land, portals and sky still make the place.
+ */
+function lean(): boolean {
+    const c = (navigator as Navigator & { connection?: Connection }).connection;
+    return !!c && (c.saveData === true || ['slow-2g', '2g', '3g'].includes(c.effectiveType ?? ''));
+}
+
 export function addLandmarks(
     scene: THREE.Object3D,
     portals: Array<{ center: THREE.Vector3; tangent: THREE.Vector3 }>,
     small: boolean
 ): Landmarks {
+    if (lean()) return { show: () => undefined };
     const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
     const groups = portals.map((p, k) => {
         const mark = LANDMARKS[LANDS[k % LANDS.length]];
