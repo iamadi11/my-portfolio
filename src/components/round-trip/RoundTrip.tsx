@@ -21,14 +21,20 @@ const CC_BY = 'https://creativecommons.org/licenses/by/4.0/';
 const CREDITS: Array<[string, string]> = [
     ['Sci-Fi Portal Gateway', 'Igrium'],
     ['Osaka downtown', 'matousekfoto'],
-    ['Mountain Range 01', 'solararchitect'],
-    ['Snowy Volcano', 'Pukar Shiwakoti'],
-    ['Horseshoe bend near Grand Canyon', 'Ignazio Pillitteri'],
-    ['Snowy Mountain - Terrain', 'artfromheath'],
-    ['Death Valley - Terrain', 'artfromheath'],
 ];
 const sketchfab = (title: string, by: string): string =>
     `https://sketchfab.com/search?type=models&q=${encodeURIComponent(`${title} ${by}`)}`;
+/** DEM places on / from AWS Terrain Tiles (see scripts/places/build-dem.py). */
+const TERRAIN = 'https://github.com/tilezen/joerd/blob/master/docs/attribution.md';
+const PLACES = [
+    'La Paz bowl',
+    'Illimani',
+    'Chocolate Hills',
+    'Lençóis Maranhenses',
+    'Zhangye Danxia',
+    'Mount Roraima',
+    'Erta Ale',
+];
 /** Where the J/K switch is remembered for this viewer. */
 const KEYS = 'rt-keys';
 
@@ -353,8 +359,13 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                             by {by}
                         </React.Fragment>
                     ))}
-                    . Moon photograph and International Space Station model: NASA. Earth textures: from an
-                    Earth model pack supplied by the owner. Stars:{' '}
+                    . Terrain for {PLACES.join(', ')}:{' '}
+                    <a href={TERRAIN} target="_blank" rel="noopener noreferrer">
+                        AWS Terrain Tiles
+                    </a>{' '}
+                    (Mapzen Joerd sources; rebuilt by scripts/places/build-dem.py). Moon photograph and
+                    International Space Station model: NASA. Earth textures: from an Earth model pack supplied
+                    by the owner. Stars:{' '}
                     <a href="https://svs.gsfc.nasa.gov/4851" target="_blank" rel="noopener noreferrer">
                         NASA/Goddard SVS Deep Star Maps
                     </a>

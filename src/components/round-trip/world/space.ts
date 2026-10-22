@@ -8,10 +8,13 @@ import type { Glow } from '@/components/round-trip/world/glow';
 import type { Route } from '@/components/round-trip/world/route';
 
 const R = 1000;
-/** Bengaluru on the globe (13°N, 77.6°E): the ship comes down on the owner's city. */
+/**
+ * La Paz on the globe (16.5°S, 68.15°W): the ship dives into the city chapter's amphitheater.
+ * The owner's home city in the HTML remains Bengaluru (`SITE.basics.location`).
+ */
 const HOME = (() => {
-    const lat = THREE.MathUtils.degToRad(13);
-    const phi = THREE.MathUtils.degToRad(77.6 + 180);
+    const lat = THREE.MathUtils.degToRad(-16.5);
+    const phi = THREE.MathUtils.degToRad(-68.15 + 180);
     return new THREE.Vector3(-Math.cos(phi) * Math.cos(lat), Math.sin(lat), Math.sin(phi) * Math.cos(lat));
 })();
 /** Where the sun is about to rise: a gold rim along the left of the globe. */

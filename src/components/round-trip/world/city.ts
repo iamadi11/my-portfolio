@@ -7,6 +7,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { ADD, boxes, type Shared, shader, WRAP_VERT } from '@/components/round-trip/world/gl';
 import { addMotes } from '@/components/round-trip/world/land';
 import { lean } from '@/components/round-trip/world/landmarks';
+import { addCityPlaces } from '@/components/round-trip/world/places';
 
 /** Street level, below the path; the grid the blocks sit on, and one tile of the endless city. */
 export const FLOOR = -60;
@@ -249,7 +250,17 @@ const TOWER_FRAG = /* glsl */ `
     }
 `;
 
-type Tower = { x: number; z: number; h: number; w: number; d: number; kind: number; spire: number };
+type Tower = {
+    x: number;
+    z: number;
+    h: number;
+    w: number;
+    d: number;
+    kind: number;
+    spire: number;
+    /** Metres the base sits above street level on the canyon wall. */
+    lift: number;
+};
 
 /** Tower shapes, each one unit tall around its centre: a plain slab, a setback, an octagon. */
 function shapes(): THREE.BufferGeometry[] {
@@ -277,16 +288,26 @@ const shapeFor = (h: number, pick: number): number => {
     return pick < 0.45 ? 1 : pick < 0.75 ? 2 : 0;
 };
 
+/**
+ * La Paz reads as a canyon city: mid-rises climb the slopes, a few taller slabs hold the valley
+ * floor. Side distance lifts the base so towers step up the amphitheater walls.
+ */
+function slopeLift(x: number): number {
+    const side = Math.min(Math.abs(x) / 220, 1);
+    return side * side * 36;
+}
+
 function tower(x: number, z: number, rand: () => number): Tower {
-    // A few supertalls stand clear of the rest.
+    const lift = slopeLift(x);
+    // Fewer glass needles than a coastal mega-city; denser mid-rise on the slopes.
     const h =
-        (22 + Math.pow(rand(), 1.8) * 175 * (1 - (Math.abs(x) / 240) * 0.4)) * (rand() < 0.05 ? 1.55 : 1);
+        (18 + Math.pow(rand(), 1.55) * (140 - lift * 0.6) * (1 - (Math.abs(x) / 260) * 0.35)) *
+        (rand() < 0.035 ? 1.45 : 1);
     const kind = shapeFor(h, rand());
-    const w = 8 + rand() * 5;
-    const d = kind === 2 ? w : 8 + rand() * 5;
-    // The tallest shaped towers carry a spire.
-    const spire = h > 120 && kind > 0 ? 8 + rand() * 14 : 0;
-    return { x, z, h, w, d, kind, spire };
+    const w = 7 + rand() * 5;
+    const d = kind === 2 ? w : 7 + rand() * 5;
+    const spire = h > 110 && kind > 0 ? 6 + rand() * 12 : 0;
+    return { x, z, h, w, d, kind, spire, lift };
 }
 
 /** Lays out one tile of blocks, leaving the strip where the scanned downtown stands. */
@@ -480,7 +501,7 @@ function addSpires(
         .filter((t) => t.spire > 0)
         .map((t) =>
             new THREE.Matrix4().compose(
-                new THREE.Vector3(t.x, FLOOR + t.h + t.spire / 2, t.z),
+                new THREE.Vector3(t.x, FLOOR + t.lift + t.h + t.spire / 2, t.z),
                 q,
                 new THREE.Vector3(0.9, t.spire, 0.9)
             )
@@ -522,7 +543,7 @@ function addTowers(
         if (!mine.length) return;
         const transforms = mine.map((t) =>
             new THREE.Matrix4().compose(
-                new THREE.Vector3(t.x, FLOOR + t.h / 2, t.z),
+                new THREE.Vector3(t.x, FLOOR + t.lift + t.h / 2, t.z),
                 q,
                 new THREE.Vector3(t.w, t.h, t.d)
             )
@@ -536,7 +557,8 @@ function addTowers(
 /** Blinking red aviation lights on the masts of the tallest towers. */
 function addBeacons(scene: THREE.Object3D, towers: Tower[], s: Shared, rand: () => number): void {
     const lights: number[] = [];
-    for (const t of towers) if (t.h > 115) lights.push(t.x, FLOOR + t.h + (t.spire || 1.5 + rand()), t.z);
+    for (const t of towers)
+        if (t.h > 100) lights.push(t.x, FLOOR + t.lift + t.h + (t.spire || 1.5 + rand()), t.z);
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(lights, 3));
     const blink = new THREE.Points(
@@ -744,7 +766,10 @@ function addTraffic(scene: THREE.Object3D, s: Shared, density: number, rand: () 
     scene.add(mesh);
 }
 
-/** 2 · Edge: an endless night city of towers the ship weaves above, in the rain. */
+/**
+ * 2 · Edge: endless night over La Paz — canyon bowl and Illimani from AWS Terrain Tiles, towers
+ * climbing the amphitheater walls, Osaka downtown scan as the lit mass to the left of the path.
+ */
 export function addCity(
     scene: THREE.Object3D,
     s: Shared,
@@ -755,6 +780,7 @@ export function addCity(
 ): City {
     const towers = addTowers(scene, s, rand, env, skills);
     const downtown = addDowntown(scene, s, density < 1);
+    const places = addCityPlaces(scene, s, density < 1);
     addBeacons(scene, towers, s, rand);
     addTraffic(scene, s, density, rand);
     addMotes(
@@ -776,6 +802,7 @@ export function addCity(
         update: (eye, on) => {
             streets.update(eye, on);
             downtown.update(eye);
+            places.update(eye);
         },
     };
 }

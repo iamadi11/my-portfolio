@@ -94,13 +94,14 @@ type Air = {
 };
 const AIR: Record<Place, Air> = {
     space: { fog: 0.03, horizon: [0, 0, 0], space: true },
-    // Thinner than the default so the downtown reads across the avenue.
-    city: { fog: FOG * 0.74, horizon: [0.05, 0.042, 0.05], stars: 0.35 },
-    grass: { fog: 0.006, horizon: [0.025, 0.04, 0.055] },
-    desert: { fog: 0.0055, horizon: [0.035, 0.04, 0.06] },
-    canyon: { fog: 0.006, horizon: [0.045, 0.035, 0.04] },
-    alpine: { fog: 0.0045, horizon: [0.03, 0.045, 0.075] },
-    volcano: { fog: 0.007, horizon: [0.09, 0.03, 0.015], stars: 0.7 },
+    // Altiplano night over La Paz: thinner, cooler air so Illimani and the bowl walls read.
+    city: { fog: FOG * 0.62, horizon: [0.04, 0.045, 0.07], stars: 0.55 },
+    // Chocolate Hills / Lençóis / Danxia / Roraima / Erta Ale horizons sit in matching air.
+    grass: { fog: 0.0055, horizon: [0.03, 0.04, 0.05] },
+    desert: { fog: 0.005, horizon: [0.04, 0.045, 0.055] },
+    canyon: { fog: 0.0058, horizon: [0.055, 0.03, 0.035] },
+    alpine: { fog: 0.0042, horizon: [0.028, 0.04, 0.07] },
+    volcano: { fog: 0.0065, horizon: [0.1, 0.035, 0.02], stars: 0.75 },
     ocean: { fog: 0.005, horizon: [0.022, 0.04, 0.066] },
     // Darker and bluer than the sea air, and thinner: the far ice carries on to a horizon that
     // is already night sky, so no band of lit air sits between it and the aurora.
@@ -115,6 +116,8 @@ const AIR: Record<Place, Air> = {
  * aurora filling the top of the frame.
  */
 const FRAMING: Partial<Record<Place, Framing>> = {
+    // Wide enough that Illimani sits in the right third while the bowl walls frame the path.
+    city: { side: 1.8, up: 1.2, back: 14, ahead: 32, look: 1, aim: 0.4, lens: 0.92 },
     canyon: { side: -2.6, up: -4, back: 10, ahead: 30, look: 4, aim: 1.5, lens: 1.08 },
     volcano: { side: 1.5, up: 5.5, back: 14, ahead: 26, look: -3, aim: 0, lens: 0.95 },
     desert: { side: -0.6, up: -1, back: 24, ahead: 52, look: -0.5, aim: 0.5, lens: 0.7 },

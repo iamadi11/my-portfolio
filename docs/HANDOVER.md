@@ -1,52 +1,47 @@
 # Handover prompt (paste into Cursor)
 
-> Last updated: 2026-10-22, during quality round 3. `main` is the source of truth; this file is refreshed at the end of every round.
+> Last updated: 2026-10-22, quality round 4 (La Paz + unique DEM places). Branch `cursor/la-paz-city-storytelling-410a` holds this round; merge to `main` via PR.
 
-You are continuing an award-calibre quality pass on the portfolio home page `/` ("Round trip") in this repo. Work autonomously, in small validated steps, and commit + push to `main` after each round.
+You are continuing an award-calibre quality pass on the portfolio home page `/` ("Round trip") in this repo. Work autonomously, in small validated steps, and commit + push after each round (feature branch + PR in cloud agents; `main` when you have direct push).
 
 ## Read first
 
-1. `CLAUDE.md` — hard rules (every fact from `src/content/site.ts`; never invent; first-load JS for `/` ≤ 120 kB, now 113 kB; WCAG 2.2 AA; no layout shift; sound only after opt-in; reduced motion; commit format `feat(portfolio): … — reflects …`).
+1. `CLAUDE.md` — hard rules (every fact from `src/content/site.ts`; never invent; first-load JS for `/` ≤ 120 kB; WCAG 2.2 AA; no layout shift; sound only after opt-in; reduced motion; commit format `feat(portfolio): … — reflects …`).
 2. `docs/round-trip.md` — the spec of `/` (places, files, assets and licences, budgets, accessibility).
 3. `SOURCE_OF_TRUTH.md` — content authority (mirrors `site.ts`).
+4. `docs/pass-lapaz/` — this round's notes (`aleph.md`, `creative-direction.md`).
 
 ## What `/` is
 
-Scrolling flies an alien ship (three.js r184, `src/components/round-trip/world/*`, lazy chunk) from orbit into a night city, through one landscape per project (each ends in a titled portal), over the sea to the pole (one light pillar per record) and back to orbit at sunrise for `200 OK`. Page shell: `RoundTrip.tsx`, `drive.ts` (scroll, panels, HUD, J/K keys, hold-to-boost, idle), `round-trip.css`, `sound.ts` (loaded on opt-in), `tilt.ts`, `trip.ts`.
+Scrolling flies an alien ship (three.js r184, `src/components/round-trip/world/*`, lazy chunk) from orbit into a night city (**La Paz** amphitheater + Illimani), through one landscape per project (each ends in a titled portal; horizons are Chocolate Hills, Lençóis Maranhenses, Zhangye Danxia, Mount Roraima, Erta Ale), over the sea to the pole (one light pillar per record) and back to orbit at sunrise for `200 OK`. Page shell: `RoundTrip.tsx`, `drive.ts`, `round-trip.css`, `sound.ts`, `tilt.ts`, `trip.ts`.
 
-## Done so far (all on `main`)
+## Done so far (on `main`, plus this branch)
 
-- Skills used: juliobsz/skills (`awwwards`, `jury`), wheresryan22/anatomy (reviewed, not adopted yet), pbakaus/impeccable, Leonxlnx/taste-skill, emilkowalski/skills (review/improve animations, performance). Reviewed copies were read from a scratchpad; they are not installed in `.claude/skills`.
-- Motion: interruptible jumps; portal-only warp with quiet dips; cues land on the cut; steerable ship (pointer/tilt/arrows), hold-to-boost, idle breathing; per-place camera framing; eased barrel roll; departure glint.
-- World: shared haze + valley mist; aurora-lit ice; NASA Moon photo; NASA ISS at the sunrise limb; bloom resolution fix; anti-aliased city windows; skill billboards (exact `site.ts` strings); portals with lit title signs and window throats; blackbody lava; sandstone canyon; night-graded Osaka scan; Seychelles "blob" fixed.
-- Page: plain nav (Intro/Impact/Stack/Projects/Experience/Contact); "Start the trip"; WCAG 2.1.4-compliant J/K (switch, off where no hover); honest trip clock; measured vitals at `200 OK`; impact counters; portal title handoff; Send again; JSON-LD from `site.ts`; every panel fits short/landscape screens; disclosures fixed; scenery lazy-loaded; Save-Data/slow gates.
+- Prior rounds: motion polish, Osaka scan, portals, ship, sea/ice, NASA moon/ISS, panels, disclosures, lazy scenery, Save-Data gates. See git log before this round.
+- **This round:** AWS Terrain DEM meshes (`scripts/places/build-dem.py` → `public/models/places/*`); city as La Paz bowl + Illimani (`world/places.ts`, `city.ts`); landscape horizons swapped to unique places (`landmarks.ts`); globe dive targets La Paz (HTML location stays Bengaluru); credits + `docs/round-trip.md` updated.
+- **Aleph (Belluxx/Aleph):** useful for OSM + terrain research only. Google Street View / satellite / 3D meshes are **out** (ToS). See `docs/pass-lapaz/aleph.md`.
 
-## In flight when this was written (may or may not have landed — check `git log` and `git branch`)
+## Next highest-impact open items
 
-Worktree branches named `worktree-agent-*` (see `git worktree list`). Each owns specific files:
-- Ship polish (`world/ship.ts`): hull grade, running lights, plumes; cap engine glow swell (`1 + speed²×0.6`), time-based flicker instead of `Math.random`.
-- Portals & post (`services.ts`, `post.ts`, `warp.ts`): enter the next place through the portal window (expose e.g. `rings.entry`), streaks only for the two air passages, bigger black marquees with emissive letters, no fringe at rest, lighter vignette. Needs wiring in `index.ts`.
-- Framing & world (`index.ts`, `rig.ts`, `space.ts`, `land.ts`, `sky.ts`): ship at 62–70% width on desktop, framings for city/sea/space, roll only at the first portal, darker night Earth + city lights, alpine triplanar rock/snow, volcano detail, cooler Milky Way per place, crisper dive clouds.
-- HTML layer (`RoundTrip.tsx`, `round-trip.css`, `drive.ts`, `src/app/page.tsx`): phone scrim must not erase the world (stops ~`0.9 0 34%, 0.5 46%, 0 60%`), lighter desktop scrim, no duplicate project titles (drop ring tags), a distinctive display face and a world-tied reveal instead of the "template" look.
-- Real places (`landmarks.ts` + assets): DEM backdrops from AWS Terrain Tiles for Chocolate Hills (Bohol), Lençóis Maranhenses or Shibam, Zhangye Danxia, Mount Roraima, Erta Ale; expose `names` for world labels.
-- La Paz city (`city.ts` + assets): the city chapter as real La Paz (canyon bowl from AWS Terrain Tiles, footprints from Google Open Buildings v3, CC BY 4.0; heights stylised), Illimani behind.
-
-To finish an in-flight branch: `git merge main` into it, validate (below), merge into `main`, push. Then add the credit lines it reports to the Credits in `RoundTrip.tsx` and the asset table in `docs/round-trip.md`.
+1. Open Buildings / OSM footprints for La Paz mid-rises (ODbL) instead of pure procedural towers on the slopes.
+2. Ship polish still listed in older notes (hull grade, engine glow cap, time-based flicker).
+3. Portal entry through the window (`rings.entry`), streaks only for air passages, lighter vignette.
+4. Phone scrim must not erase the world; distinctive display face (HTML layer).
+5. Replace owner-supplied Earth textures with NASA Blue Marble / Black Marble if reachable.
+6. Sketchfab credit links still point at search pages — replace with model page URLs.
 
 ## Validation (every change)
 
 - `npx tsc --noEmit`, `npm run lint`, `npx prettier --check src/components/round-trip`, `npx next build` (report First Load JS for `/`).
-- Real browser at 375×812, 667×375, 960×540, 1280×800: no console errors; CLS 0; all six panels fit between the HUD bars; career disclosures open the visible record and scroll above the HUD; reduced motion; keyboard pass; axe 0 violations.
-- 3D: inspect frames at each place (hero, dive, city, each portal, canyon, alpine, volcano, sea, ice, finale). On a real GPU also check 60 fps and the motion itself (jumps, steering, boost, departure).
-- Husky pre-commit runs lint + build; commitlint header ≤ 100 chars, body lines ≤ 100; a fallow gate blocks new functions over cognitive complexity 15.
+- Real browser at 375×812, 667×375, 960×540, 1280×800: no console errors; CLS 0; panels fit; reduced motion; keyboard; axe 0.
+- 3D: frames at hero, dive, **La Paz**, each portal + DEM horizon, sea, ice, finale.
 
 ## Open items needing the owner
 
-- Earth textures (`public/env/earth-*.jpg`) come from an owner-supplied `59-earth.zip` with unknown author/licence; credited as "supplied by the owner". Replace with NASA Blue Marble / Black Marble if reachable.
-- Ship model is a free3d "personal, non-commercial" model kept by the owner's choice (residual licence risk).
-- Sketchfab credits link to search pages; replace with each model's page URL.
-- Impact card "200+ merchants changing fraud rules without a redeploy" goes beyond the source wording (owner confirmed `site.ts`; flagged only).
+- Earth textures (`public/env/earth-*.jpg`) licence unknown; credited as owner-supplied.
+- Ship model free3d personal/non-commercial (owner's choice; residual licence risk).
+- Impact card wording flagged in prior handover (owner confirmed `site.ts`).
 
 ## The loop
 
-Harsh-critic review (jury rubric, Impeccable audit/critique, Taste checklist, Emil's review-animations) → fix every blocker/major → validate in the browser → commit + push to `main` → repeat until a round finds nothing basic, careless or derivative.
+Harsh-critic review → fix blockers → validate in browser → commit + push → repeat.

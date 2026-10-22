@@ -7,8 +7,8 @@ Scrolling flies an alien ship down to Earth at night and across it. It comes in 
 1. **First paint (no 3D yet):** name, role, statement, availability and city in HTML over a CSS poster (stars over the curve of the night Earth), with **Start the trip** and **Email me**. The world's code is fetched on idle.
 2. **First scroll, wheel, swipe, scroll key or Send a request:** the world builds and fades in over the poster.
 3. **Hero and Wire (space):** the ship hovers over Earth at night, real stars and the Milky Way behind. Through `practice.impact` it closes in; then it noses down and dives at the moonlit globe, plasma building on the hull, the camera pitching down after it, until the cloud deck whites the screen out.
-4. **Edge (city):** out of the cloud high over an endless night city, sinking between the towers as the fog thins: lit rooms, LED billboards that scroll the skill groups and items from `practice.skills` (exact strings), street lamps, traffic and wet streets.
-5. **Services (one landscape per project):** grassland (wind in the grass, fireflies), desert dunes, red-rock canyon, alpine peaks in falling snow, a volcanic field with lava rivers and embers; then they repeat if there are more projects. Each landscape is a long stretch with one portal at its end, the only one in view: a sci-fi gateway standing on the ground, lined with the project's colour, an event horizon swirling inside it. Flying through it (with a barrel roll) is the jump to the next landscape. The panel shows that project.
+4. **Edge (city — La Paz):** out of the cloud high over the La Paz amphitheater at night, Illimani's snow cone on the right, a canyon bowl under the flight path, towers climbing the walls, Osaka downtown scan as the lit mass on the left; LED billboards scroll the skill groups and items from `practice.skills` (exact strings), street lamps, traffic and wet streets.
+5. **Services (one landscape per project):** grassland (Chocolate Hills on the horizon), desert (Lençóis Maranhenses), red-rock canyon (Zhangye Danxia), alpine (Mount Roraima), volcano (Erta Ale); then they repeat if there are more projects. Each landscape is a long stretch with one portal at its end, the only one in view: a sci-fi gateway standing on the ground, lined with the project's colour, an event horizon swirling inside it. Flying through it (with a barrel roll) is the jump to the next landscape. The panel shows that project.
 6. **Data:** experience then education, one record at a time; the first half over the open sea under the moon, the second over pack ice and icebergs under the aurora. Each record (every role, then education) is a light pillar beside the path, a column of light over a point of light, the way cold nights make them.
 7. **200 OK:** the ship pulls up off the ice, the air thins and the stars come back; a cut through the last of the air, and it climbs away from Earth into orbit at sunrise, the globe falling away below. The International Space Station (NASA model) crosses the dawn limb as a small backlit silhouette. The ship turns to greet you, then leaves towards the sun with a last glint of its engines. Under it, what this visit actually measured (first byte, largest paint, JavaScript transferred, from the browser's own timing; any it cannot measure are left out), then email, copy, phone and profile links, the credits, and **Send again** once the ship has gone (the frame fades to black and the trip starts over).
 
@@ -55,12 +55,13 @@ The route in the HUD fills between hops as the request travels; each project's d
 | `env/earth-*.jpg` | Earth model textures supplied by the owner (`59-earth.zip`) | As supplied |
 | `env/stars-*.jpg` | NASA/Goddard SVS Deep Star Maps 2020 | NASA/GSFC SVS; ESA/Gaia/DPAC |
 | `env/night.hdr` | Modern Buildings Night, Poly Haven | CC0 |
-| `models/terrain/mountain_range_01-*.glb` | Mountain Range 01, solararchitect, Sketchfab | CC BY 4.0; on the grassland horizon |
-| `models/terrain/snowy_volcano-*.glb` | Snowy Volcano, Pukar Shiwakoti, Sketchfab | CC BY 4.0; on the volcanic horizon |
-| `models/terrain/horseshoe-*.glb` | Horseshoe bend near Grand Canyon, Ignazio Pillitteri, Sketchfab | CC BY 4.0; on the canyon horizon |
-| `models/terrain/snowy_mountain-*.glb` | Snowy Mountain - Terrain, artfromheath, Sketchfab | CC BY 4.0; on the alpine horizon |
-| `models/terrain/death_valley-*.glb` | Death Valley - Terrain, artfromheath, Sketchfab | CC BY 4.0; on the desert horizon |
-| `models/osaka-*.glb` | Osaka downtown, matousekfoto, Sketchfab (night photogrammetry) | CC BY 4.0; the downtown left of the city path |
+| `models/places/lapaz-bowl-*.glb`, `illimani-*.glb` | AWS Terrain Tiles (Terrarium) via `scripts/places/build-dem.py` | Joerd attribution; La Paz city chapter |
+| `models/places/chocolate-hills-*.glb` | AWS Terrain Tiles | Joerd attribution; grassland horizon |
+| `models/places/lencois-*.glb` | AWS Terrain Tiles | Joerd attribution; desert horizon (Lençóis Maranhenses) |
+| `models/places/zhangye-danxia-*.glb` | AWS Terrain Tiles | Joerd attribution; canyon horizon |
+| `models/places/roraima-*.glb` | AWS Terrain Tiles | Joerd attribution; alpine horizon (Mount Roraima) |
+| `models/places/erta-ale-*.glb` | AWS Terrain Tiles | Joerd attribution; volcanic horizon |
+| `models/osaka-*.glb` | Osaka downtown, matousekfoto, Sketchfab (night photogrammetry) | CC BY 4.0; downtown mass left of the La Paz path |
 | `env/moon.webp` | Moon photograph, NASA (nasa/NASA-3D-Resources @11ebb4e, `Images and Textures/Moon/Moon.jpg`) | NASA media, free and without copyright; credit NASA |
 | `models/iss.glb` | International Space Station (B), NASA (nasa/NASA-3D-Resources @11ebb4e) | NASA media, free and without copyright; credit NASA; the finale |
 
