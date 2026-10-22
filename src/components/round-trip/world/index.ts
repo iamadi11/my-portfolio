@@ -4,7 +4,7 @@ import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 
 import { clamp, lerp, smooth } from '@/components/round-trip/math';
 import { addCity, type Env, FLOOR } from '@/components/round-trip/world/city';
-import { FOG, MOON, rng, shared } from '@/components/round-trip/world/gl';
+import { FOG, MIST, MOON, rng, shared } from '@/components/round-trip/world/gl';
 import { glowMaker } from '@/components/round-trip/world/glow';
 import { addLand, GROUND, type LandKind, LANDS } from '@/components/round-trip/world/land';
 import { addLandmarks } from '@/components/round-trip/world/landmarks';
@@ -91,33 +91,35 @@ type Air = {
     space?: boolean;
     aurora?: number;
     stars?: number;
+    /** Ground mist depth (1 = default); higher pools in valleys. */
+    mist?: number;
 };
 const AIR: Record<Place, Air> = {
-    space: { fog: 0.03, horizon: [0, 0, 0], space: true },
-    // Altiplano night over La Paz: thinner still so bowl walls and Illimani clear the haze.
-    city: { fog: FOG * 0.5, horizon: [0.035, 0.04, 0.065], stars: 0.6 },
+    space: { fog: 0.03, horizon: [0, 0, 0], space: true, mist: 0 },
+    // Altiplano night: cool moonlight + a hint of warm city spill; mist pools in the bowl.
+    city: { fog: FOG * 0.42, horizon: [0.048, 0.036, 0.055], stars: 0.55, mist: 1.35 },
     // Chocolate Hills / Lençóis / Danxia / Roraima / Erta Ale horizons sit in matching air.
-    grass: { fog: 0.0055, horizon: [0.03, 0.04, 0.05] },
-    desert: { fog: 0.005, horizon: [0.04, 0.045, 0.055] },
-    canyon: { fog: 0.0058, horizon: [0.055, 0.03, 0.035] },
-    alpine: { fog: 0.0042, horizon: [0.028, 0.04, 0.07] },
-    volcano: { fog: 0.0065, horizon: [0.1, 0.035, 0.02], stars: 0.75 },
-    ocean: { fog: 0.005, horizon: [0.022, 0.04, 0.066] },
+    grass: { fog: 0.0055, horizon: [0.03, 0.04, 0.05], mist: 1.05 },
+    desert: { fog: 0.005, horizon: [0.04, 0.045, 0.055], mist: 0.85 },
+    canyon: { fog: 0.0058, horizon: [0.055, 0.03, 0.035], mist: 1.1 },
+    alpine: { fog: 0.0042, horizon: [0.028, 0.04, 0.07], mist: 1.2 },
+    volcano: { fog: 0.0065, horizon: [0.1, 0.035, 0.02], stars: 0.75, mist: 0.9 },
+    ocean: { fog: 0.005, horizon: [0.022, 0.04, 0.066], mist: 1.15 },
     // Darker and bluer than the sea air, and thinner: the far ice carries on to a horizon that
     // is already night sky, so no band of lit air sits between it and the aurora.
-    ice: { fog: 0.0022, horizon: [0.014, 0.03, 0.044], aurora: 1 },
-    orbit: { fog: 0.03, horizon: [0, 0, 0], space: true },
+    ice: { fog: 0.0022, horizon: [0.014, 0.03, 0.044], aurora: 1, mist: 0.65 },
+    orbit: { fog: 0.03, horizon: [0, 0, 0], space: true, mist: 0 },
 };
 /**
- * Each place's shot (see rig.ts); the rest keep the chase. The city keeps its drop through the
- * cloud deck (a lift, not a framing). The canyon is shot low and from the far side, the walls
- * towering over the ship; the volcano from a crane, looking down past it at the lava; the desert
- * through a long lens from far back, the dunes stacked flat; the pole wide and from the side, the
- * aurora filling the top of the frame.
+ * Each place's shot (see rig.ts); the rest keep the chase. The city settles from the cloud-deck
+ * lift into a bowl shot (Illimani right, walls framing the path). The canyon is shot low and from
+ * the far side, the walls towering over the ship; the volcano from a crane, looking down past it
+ * at the lava; the desert through a long lens from far back, the dunes stacked flat; the pole wide
+ * and from the side, the aurora filling the top of the frame.
  */
 const FRAMING: Partial<Record<Place, Framing>> = {
-    // Wide enough that Illimani sits in the right third while the bowl walls frame the path.
-    city: { side: 1.8, up: 1.2, back: 14, ahead: 32, look: 1, aim: 0.4, lens: 0.92 },
+    // Side offset puts Illimani in the right third; lower eye + longer look reads the amphitheater.
+    city: { side: 2.6, up: 0.35, back: 16, ahead: 38, look: 2.4, aim: 0.7, lens: 0.86 },
     canyon: { side: -2.6, up: -4, back: 10, ahead: 30, look: 4, aim: 1.5, lens: 1.08 },
     volcano: { side: 1.5, up: 5.5, back: 14, ahead: 26, look: -3, aim: 0, lens: 0.95 },
     desert: { side: -0.6, up: -1, back: 24, ahead: 52, look: -0.5, aim: 0.5, lens: 0.7 },
@@ -142,8 +144,8 @@ const FLASH = {
     orbit: new THREE.Color(0.75, 0.88, 1),
     other: new THREE.Color(0.7, 0.85, 1),
 };
-/** Night cloud, lit from below by the city, for the fog while dropping through the deck. */
-const CLOUD = new THREE.Color(0.06, 0.05, 0.05);
+/** Night cloud, lit from below by warm city spill, for the fog while dropping through the deck. */
+const CLOUD = new THREE.Color(0.075, 0.052, 0.048);
 /** How long a jump takes (s) and where in it the scene is swapped: portals are quick, the two
  * passages through the air (into the cloud deck, out of the last of the air) linger. */
 const JUMP = { portal: 1.45, air: 1.9, dip: 1.1 };
@@ -478,7 +480,7 @@ export function createWorld(o: WorldOptions): World {
     let kicked = false;
     const heading = new THREE.Vector3();
 
-    /** Fog, horizon and sky for the place on screen; `thin` is high air, `cloud` the deck. */
+    /** Fog, horizon, mist and sky for the place on screen; `thin` is high air, `cloud` the deck. */
     const applyAir = (air: Air, thin: number, cloud: number): void => {
         const fog = scene.fog as THREE.FogExp2;
         fog.density = s.uFog.value = air.fog * (1 - thin);
@@ -488,6 +490,8 @@ export function createWorld(o: WorldOptions): World {
         sky.uniforms.uSpace.value = air.space ? 1 : 0;
         sky.uniforms.uAurora.value = air.aurora ?? 0;
         sky.uniforms.uStars.value = (air.stars ?? 1) * (1 - cloud) * (1 + thin * 0.9);
+        // High air clears valley mist; the deck still holds a little so the cloud-break softens.
+        MIST.value = (air.mist ?? 1) * (1 - thin * 0.75) * (1 - cloud * 0.35);
     };
 
     /** Only the place on screen is drawn; the rest wait for their jump. */
@@ -638,7 +642,8 @@ export function createWorld(o: WorldOptions): World {
         beat.leave = shown === 'orbit' ? smooth(0.35, 1, 1 - resp) : 0;
         // The long way in: a slow roll onto the globe, then the dive proper, the air thickening.
         beat.dive = shown === 'space' ? smooth(0.38, 0.96, u / city0) : 0;
-        beat.drop = shown === 'city' ? 1 - smooth(city0, lerp(city0, svc, 0.34), u) : 0;
+        // Longer settle out of the deck so the bowl framing has time to land before Edge ends.
+        beat.drop = shown === 'city' ? 1 - smooth(city0, lerp(city0, svc, 0.42), u) : 0;
         // The long way out: pull up off the ice, burn, then the globe falls away in orbit.
         beat.climb = shown === 'ice' ? smooth(0.06, 0.5, map) : 0;
         beat.rise = shown === 'orbit' ? smooth(0.5, 1, map) : 0;
@@ -647,11 +652,17 @@ export function createWorld(o: WorldOptions): World {
         beat.skim = shown === 'ocean' ? bump(data, (1 - data) * 0.16) : 0;
         beat.over = shown === 'ice' ? bump(iceAt, (1 - data) * 0.14) : 0;
         shot.tilt =
-            beat.dive * 0.8 -
+            beat.dive * 0.85 -
             beat.climb * 0.9 +
+            beat.drop * 0.12 +
             (shown === 'orbit' ? (1 - beat.rise) * 0.55 - beat.leave * 0.1 : 0);
+        // Quadratic peak through the deck, then ease into the amphitheater eye-line.
         shot.lift =
-            beat.drop * beat.drop * 230 + beat.climb * beat.climb * 40 + beat.over * 22 - beat.skim * 12;
+            beat.drop * beat.drop * 210 +
+            beat.drop * 28 +
+            beat.climb * beat.climb * 40 +
+            beat.over * 22 -
+            beat.skim * 12;
         // The afterburner lights once on the way out.
         if (beat.climb > 0.45 && !kicked) {
             kicked = true;
