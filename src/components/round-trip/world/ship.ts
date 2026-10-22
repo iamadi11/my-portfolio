@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-import { clamp, lerp, smooth } from '@/components/round-trip/math';
+import { clamp, smooth } from '@/components/round-trip/math';
 import { ADD, MOON, type Shared, shader } from '@/components/round-trip/world/gl';
 import type { Glow } from '@/components/round-trip/world/glow';
 
@@ -120,12 +120,14 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
     const strobes = [glow(0.28, new THREE.Color(3, 3, 3)), glow(0.28, new THREE.Color(3, 3, 3))];
     [nose, ...engines, ...strobes].forEach((g) => body.add(g));
 
-    // Cool moonlight bounce (aligned with MOON) + warm key ahead of the nose; both warm at dawn.
+    // Cool moonlight bounce (MOON-aligned) + warm nose key; both warm toward dawn gold as `key` rises.
     const fill = new THREE.PointLight('#c8d6ff', 0.95, 16, 2);
     const key = new THREE.PointLight('#ffe2b8', 0.85, 9, 2);
     scene.add(fill, key);
-    const fillCol = new THREE.Color();
-    const keyCol = new THREE.Color();
+    const fillMoon = new THREE.Color('#c8d6ff');
+    const fillDawn = new THREE.Color('#ffe0c4');
+    const keyWarm = new THREE.Color('#ffe2b8');
+    const keyDawn = new THREE.Color('#ffc48a');
 
     const uOn = { value: 0 };
     const uRim = { value: new THREE.Color(0, 0, 0) };
@@ -239,12 +241,15 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
         nose.material.opacity = f.heat;
         nose.scale.setScalar(2 + f.heat * 5 + Math.sin(now * 29.0) * 0.12);
         strobes.forEach((g, i) => (g.material.opacity = (now + i * 0.7) % 1.4 < 0.07 ? 1 : 0));
-        // Bounce from above-left; warm key sits ahead of the nose so the facing hull keeps shape.
-        // Moon fill + warm nose key track dawn so the hull matches the limb, not a studio softbox.
-        fill.position.copy(rig.position).add(look.set(-1.2, 2.6, 0.35));
-        fill.intensity = 1.05 + f.key * 8.5;
-        key.position.copy(rig.position).addScaledVector(f.heading, 2.6).y += 1.25;
-        key.intensity = 0.9 + f.heat * 0.4 + f.key * 6.5;
+        // Fill rides the world moon so night hulls match the landscape; warm key ahead of the nose.
+        // At dawn both colours shift toward gold so the craft reads against the limb, not as a slab.
+        const dawn = clamp(f.key);
+        fill.position.copy(rig.position).addScaledVector(MOON, 5.2);
+        fill.color.copy(fillMoon).lerp(fillDawn, dawn);
+        fill.intensity = 1.05 + dawn * 8.5;
+        key.position.copy(rig.position).addScaledVector(f.heading, 2.55).y += 1.2;
+        key.color.copy(keyWarm).lerp(keyDawn, dawn);
+        key.intensity = 0.9 + f.heat * 0.4 + dawn * 6.5;
         uOn.value += (f.beam - uOn.value) * (1 - Math.exp(-f.dt * 3));
         const h = rig.position.y - 0.6 - f.ground;
         if (f.beam > 0.01 && h > 0.5)
