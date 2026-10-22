@@ -102,8 +102,10 @@ const AIR: Record<Place, Air> = {
     grass: { fog: 0.0048, horizon: [0.022, 0.048, 0.042], mist: 1.2, stars: 0.85 }, // Chocolate Hills
     desert: { fog: 0.0038, horizon: [0.055, 0.06, 0.078], mist: 0.55, stars: 0.95 }, // Lençóis flats
     canyon: { fog: 0.0064, horizon: [0.09, 0.035, 0.028], mist: 1.05, stars: 0.7 }, // Danxia bands
-    alpine: { fog: 0.0035, horizon: [0.02, 0.035, 0.085], mist: 1.45, stars: 1 }, // Roraima tepui
-    volcano: { fog: 0.0078, horizon: [0.14, 0.04, 0.018], stars: 0.55, mist: 0.7 }, // Erta Ale
+    // Cooler, denser mist so the tepui dome reads as high cold air, not generic night.
+    alpine: { fog: 0.0032, horizon: [0.018, 0.042, 0.11], mist: 1.7, stars: 1.05 }, // Roraima tepui
+    // Warmer horizon spill so the shield's heat reaches the sky without a shimmer pass.
+    volcano: { fog: 0.0082, horizon: [0.18, 0.048, 0.02], stars: 0.5, mist: 0.65 }, // Erta Ale
     ocean: { fog: 0.0046, horizon: [0.016, 0.038, 0.078], mist: 1.25, stars: 0.9 },
     // Darker and bluer than the sea air, and thinner: the far ice carries on to a horizon that
     // is already night sky, so no band of lit air sits between it and the aurora.
@@ -127,6 +129,15 @@ const FRAMING: Partial<Record<Place, Framing>> = {
     ice: { side: -4.8, up: -0.4, back: 10, ahead: 28, look: 4.2, aim: 2.2, lens: 1.12 },
 };
 const FRAME_KEYS = Object.keys(CHASE) as Array<keyof Framing>;
+/** Place-aware bloom: lava/city windows mush under one strength; ice/ocean need a touch more. */
+const GLOW_SCALE: Partial<Record<Place, number>> = {
+    city: 0.82,
+    volcano: 0.72,
+    canyon: 0.9,
+    ocean: 1.12,
+    ice: 1.18,
+    alpine: 1.06,
+};
 /**
  * Eases the shot towards the place's framing: fast while a jump's flash or a dip's dark hides the
  * move (the place changes at their peak), slowly otherwise; reduced motion cuts straight to it.
@@ -556,7 +567,8 @@ export function createWorld(o: WorldOptions): World {
     const rimOf = (place: Place, zone: number, dawn: number): void => {
         rim.setRGB(...AIR[place].horizon).multiplyScalar(3);
         if (ringColours[zone]) rim.lerp(ringColours[zone], rings.close);
-        if (place === 'orbit') rim.lerp(GOLD, dawn);
+        // Sunrise craft: gold owns the hull rim as dawn climbs — signature #3.
+        if (place === 'orbit') rim.lerp(GOLD, Math.min(1, dawn * 1.15));
     };
 
     /** Steered by the pointer (mouse or phone tilt): across the route and up; none in the hero. */
@@ -738,14 +750,18 @@ export function createWorld(o: WorldOptions): World {
             shot.boost * shot.boost
         );
         // Seen from above through cloud, a city of small lights would bloom into mush.
+        // Place scale keeps volcano lava / city windows from washing; ice/ocean keep their glow.
+        const placeGlow = GLOW_SCALE[shown] ?? 1;
         post.finish(
             t,
             o.reduce ? 0 : Math.min(1, speed + rush * 0.5),
             jump,
             tint,
             // Up close, a gateway's metal throws specular glints that bloom into white blobs.
-            (1 - Math.max(beat.drop * 0.8, beat.dive * 0.45)) * (1 - 0.75 * rings.close),
-            dip
+            (1 - Math.max(beat.drop * 0.8, beat.dive * 0.45)) * (1 - 0.75 * rings.close) * placeGlow,
+            dip,
+            // Portal cuts only (air passages set airJump): stronger FINISH zoom without 3D streaks.
+            o.reduce || airJump > 0.01 ? 0 : jump > 0.01 ? 1 : 0
         );
         post.composer.render();
         return {

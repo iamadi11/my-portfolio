@@ -17,12 +17,14 @@ const FINISH = {
         uVel: { value: 0 },
         uJump: { value: 0 },
         uDip: { value: 0 },
+        /** 0–1: portal cut (project tint) — stronger zoom/flash than air passages. */
+        uPortal: { value: 0 },
         uTint: { value: new THREE.Color(0.8, 0.9, 1) },
         uAspect: { value: 1.6 },
     },
     vertexShader: /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
     fragmentShader: /* glsl */ `
-        uniform sampler2D tDiffuse; uniform float uTime, uVel, uJump, uDip, uAspect; uniform vec3 uTint; varying vec2 vUv;
+        uniform sampler2D tDiffuse; uniform float uTime, uVel, uJump, uDip, uPortal, uAspect; uniform vec3 uTint; varying vec2 vUv;
         float h(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
         void main() {
             vec2 c = vUv - 0.5; float r = length(c * vec2(uAspect, 1.0)) / uAspect;
@@ -32,14 +34,16 @@ const FINISH = {
             vec3 col = vec3(texture2D(tDiffuse, vUv + off).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - off).b);
             if (uJump > 0.01) {
                 // Zoom blur: average the image along the line from the centre, longer at the edges.
+                // Portal cuts get a touch more smear + tint flash; air passages stay calmer.
+                float zoom = uJump * (1.0 + clamp(uPortal, 0.0, 1.0) * 0.32);
                 vec3 acc = vec3(0.0);
                 float j = h(gl_FragCoord.xy) * 0.07;
                 for (int i = 0; i < 14; i++) {
                     float t = (float(i) + j) / 14.0;
-                    acc += texture2D(tDiffuse, 0.5 + c * (1.0 - uJump * 0.42 * t)).rgb;
+                    acc += texture2D(tDiffuse, 0.5 + c * (1.0 - zoom * 0.42 * t)).rgb;
                 }
                 col = mix(col, acc / 14.0, smoothstep(0.0, 0.35, uJump));
-                col += uTint * pow(uJump, 4.0) * (0.6 + r) * 1.6;
+                col += uTint * pow(uJump, 4.0) * (0.6 + r) * (1.6 + uPortal * 0.35);
             }
             // A quiet change of place: the frame sinks into the night from the edges in, then rises.
             // Its peak is true black: the dark is reached well before the dip's top and held there.
@@ -103,8 +107,16 @@ function pinBloom(bloom: UnrealBloomPass): void {
 export type Post = {
     composer: EffectComposer;
     /** `jump` 0–1 is the cut between scenes; `tint` colours its flash; `glow` scales the bloom;
-     * `dip` 0–1 is a quiet change of place, through the dark. */
-    finish: (t: number, speed: number, jump: number, tint: THREE.Color, glow: number, dip: number) => void;
+     * `dip` 0–1 is a quiet change of place, through the dark; `portal` 0–1 punches portal cuts. */
+    finish: (
+        t: number,
+        speed: number,
+        jump: number,
+        tint: THREE.Color,
+        glow: number,
+        dip: number,
+        portal?: number
+    ) => void;
 };
 
 export function createPost(
@@ -137,7 +149,8 @@ export function createPost(
         jump: number,
         tint: THREE.Color,
         glow: number,
-        dip: number
+        dip: number,
+        portal = 0
     ): void => {
         bloom.strength = strength * glow;
         pass.uniforms.uAspect.value = innerWidth / Math.max(1, innerHeight);
@@ -145,6 +158,7 @@ export function createPost(
         pass.uniforms.uVel.value = speed;
         pass.uniforms.uJump.value = jump;
         pass.uniforms.uDip.value = dip;
+        pass.uniforms.uPortal.value = portal;
         pass.uniforms.uTint.value.copy(tint);
     };
     return { composer, finish };
