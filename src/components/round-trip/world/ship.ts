@@ -57,9 +57,10 @@ function addRim(mat: THREE.MeshStandardMaterial, uRim: { value: THREE.Color }): 
             .replace(
                 '#include <emissivemap_fragment>',
                 `#include <emissivemap_fragment>
-                // Wider falloff than pow4 so graphite panels keep a readable edge against night.
-                float rim = pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 2.7);
-                totalEmissiveRadiance += uRim * rim * 1.4;`
+                // Wider falloff than pow4 so graphite panels keep a readable edge against night
+                // and against the dawn limb when the key sits behind the craft.
+                float rim = pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 2.55);
+                totalEmissiveRadiance += uRim * rim * 1.45;`
             );
     };
     mat.needsUpdate = true;
@@ -246,10 +247,10 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
         const dawn = clamp(f.key);
         fill.position.copy(rig.position).addScaledVector(MOON, 5.2);
         fill.color.copy(fillMoon).lerp(fillDawn, dawn);
-        fill.intensity = 1.05 + dawn * 8.5;
+        fill.intensity = 0.92 + dawn * 4.6;
         key.position.copy(rig.position).addScaledVector(f.heading, 2.55).y += 1.2;
         key.color.copy(keyWarm).lerp(keyDawn, dawn);
-        key.intensity = 0.9 + f.heat * 0.4 + dawn * 6.5;
+        key.intensity = 0.85 + f.heat * 0.4 + dawn * 7.0;
         uOn.value += (f.beam - uOn.value) * (1 - Math.exp(-f.dt * 3));
         const h = rig.position.y - 0.6 - f.ground;
         if (f.beam > 0.01 && h > 0.5)
