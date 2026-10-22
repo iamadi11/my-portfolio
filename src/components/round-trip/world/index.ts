@@ -96,8 +96,8 @@ type Air = {
 };
 const AIR: Record<Place, Air> = {
     space: { fog: 0.03, horizon: [0, 0, 0], space: true, mist: 0 },
-    // Altiplano night: cool moonlight + a hint of warm city spill; mist pools in the bowl.
-    city: { fog: FOG * 0.42, horizon: [0.052, 0.038, 0.058], stars: 0.55, mist: 1.75 },
+    // Altiplano night: cool spill; base mist clears for tower/Illimani read (deck boosts it below).
+    city: { fog: FOG * 0.36, horizon: [0.052, 0.038, 0.058], stars: 0.55, mist: 0.92 },
     // Each project land gets its own air so a portal jump changes the sky, not only the ground.
     grass: { fog: 0.0048, horizon: [0.022, 0.048, 0.042], mist: 1.2, stars: 0.85 }, // Chocolate Hills
     desert: { fog: 0.0038, horizon: [0.055, 0.06, 0.078], mist: 0.55, stars: 0.95 }, // Lençóis flats
@@ -120,8 +120,8 @@ const AIR: Record<Place, Air> = {
  * and from the side, the aurora filling the top of the frame.
  */
 const FRAMING: Partial<Record<Place, Framing>> = {
-    // Bowl settle: more side/look so Illimani and canyon walls own the frame as the deck clears.
-    city: { side: 3.9, up: 0.4, back: 15.5, ahead: 36, look: 3.85, aim: 1.15, lens: 0.76 },
+    // Bowl settle: pull back, swing right toward Illimani, shorter look-ahead so walls not canyon.
+    city: { side: 5.6, up: 1.05, back: 19, ahead: 20, look: 5.4, aim: 2.6, lens: 0.66 },
     canyon: { side: -2.8, up: -4.2, back: 10, ahead: 30, look: 4.2, aim: 1.6, lens: 1.1 },
     volcano: { side: 1.6, up: 5.8, back: 14, ahead: 26, look: -3.2, aim: 0, lens: 0.93 },
     desert: { side: -0.7, up: -1.2, back: 26, ahead: 54, look: -0.6, aim: 0.55, lens: 0.68 },
@@ -131,7 +131,7 @@ const FRAMING: Partial<Record<Place, Framing>> = {
 const FRAME_KEYS = Object.keys(CHASE) as Array<keyof Framing>;
 /** Place-aware bloom: lava/city windows mush under one strength; ice/ocean need a touch more. */
 const GLOW_SCALE: Partial<Record<Place, number>> = {
-    city: 0.82,
+    city: 0.7,
     volcano: 0.72,
     canyon: 0.9,
     ocean: 1.12,
@@ -145,8 +145,9 @@ const GLOW_SCALE: Partial<Record<Place, number>> = {
  */
 function reframe(f: Framing, place: Place, hidden: number, dt: number, reduce: boolean, urgency = 0): void {
     const to = FRAMING[place] ?? CHASE;
-    // Drop urgency lands the amphitheater shot while the cloud still softens the cut.
-    const rate = hidden > 0.3 ? 9 : 1.4 + urgency * 6.8;
+    // Drop urgency + sticky city rate: amphitheater must land and hold, not linger in chase.
+    const hold = place === 'city' ? 2.4 : 0;
+    const rate = hidden > 0.3 ? 9 : 1.4 + urgency * 6.8 + hold;
     const k = reduce ? 1 : 1 - Math.exp(-dt * rate);
     for (const key of FRAME_KEYS) f[key] += (to[key] - f[key]) * k;
 }
@@ -425,7 +426,8 @@ export function createWorld(o: WorldOptions): World {
             : 0.5;
     const iceAt = lerp(data, 1, half);
     const stopAt = (u: number, map: number): Stop => {
-        if (map > 0.5) return 'orbit';
+        // Sunrise with 200 OK: cut to orbit earlier in Contact so ice climb doesn't own the panel.
+        if (map > 0.32) return 'orbit';
         if (u < city0) return 'space';
         if (u < svc) return 'city';
         if (u < data) {
@@ -504,10 +506,9 @@ export function createWorld(o: WorldOptions): World {
         sky.uniforms.uSpace.value = air.space ? 1 : 0;
         sky.uniforms.uAurora.value = air.aurora ?? 0;
         sky.uniforms.uStars.value = (air.stars ?? 1) * (1 - cloud) * (1 + thin * 0.9);
-        // High air clears valley mist. Through the cloud-break, bowl mist rises as the deck thins
-        // so the amphitheater fills with haze before chase framing fully settles.
-        const deck = cloud > 0.02 ? lerp(1.55, 0.9, cloud) : 1;
-        MIST.value = (air.mist ?? 1) * (1 - thin * 0.75) * deck;
+        // Cloud-break: thicken mist while the deck is up; settled city keeps a clearer bowl read.
+        const deck = cloud > 0.02 ? lerp(1.7, 1.05, cloud) : 1;
+        MIST.value = (air.mist ?? 1) * (1 - thin * 0.55) * deck * (1 + cloud * 0.85);
     };
 
     /** Only the place on screen is drawn; the rest wait for their jump. */
@@ -662,11 +663,11 @@ export function createWorld(o: WorldOptions): World {
         beat.leave = shown === 'orbit' ? smooth(0.35, 1, 1 - resp) : 0;
         // The long way in: a slow roll onto the globe, then the dive proper, the air thickening.
         beat.dive = shown === 'space' ? smooth(0.38, 0.96, u / city0) : 0;
-        // Longer settle out of the deck so the bowl framing has time to land before Edge ends.
-        beat.drop = shown === 'city' ? 1 - smooth(city0, lerp(city0, svc, 0.42), u) : 0;
+        // Hold the drop beat further into Edge so amphitheater urgency outlasts the canyon chase.
+        beat.drop = shown === 'city' ? 1 - smooth(city0, lerp(city0, svc, 0.68), u) : 0;
         // The long way out: pull up off the ice, burn, then the globe falls away in orbit.
-        beat.climb = shown === 'ice' ? smooth(0.06, 0.5, map) : 0;
-        beat.rise = shown === 'orbit' ? smooth(0.5, 1, map) : 0;
+        beat.climb = shown === 'ice' ? smooth(0.04, 0.32, map) : 0;
+        beat.rise = shown === 'orbit' ? smooth(0.32, 1, map) : 0;
         // Arrivals at sea: a skim low over the waves; at the pole: a lift to take in the ice.
         const bump = (from: number, span: number): number => Math.sin(Math.PI * clamp((u - from) / span));
         beat.skim = shown === 'ocean' ? bump(data, (1 - data) * 0.16) : 0;

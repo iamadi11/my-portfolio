@@ -8,16 +8,19 @@ const jsSeen = (): PerformanceResourceTiming[] =>
         r.name.split('?')[0].endsWith('.js')
     );
 
-/** The scripts that came in with the 3D world's chunk, so the 200 OK can count them apart. */
+/** Scripts present before the world import — page First Load. Anything after is world. */
+const pageJs = new Set<string>();
 const worldJs = new Set<string>();
 let worldChunk: Promise<typeof import('@/components/round-trip/world')> | null = null;
 
 /** three.js and the world live in a separate chunk: fetched on idle, built on the first scroll or Start. */
 const loadWorld = (): Promise<typeof import('@/components/round-trip/world')> => {
     if (worldChunk) return worldChunk;
-    const before = new Set(jsSeen().map((r) => r.name));
+    jsSeen().forEach((r) => pageJs.add(r.name));
     worldChunk = import('@/components/round-trip/world').then((m) => {
-        jsSeen().forEach((r) => !before.has(r.name) && worldJs.add(r.name));
+        jsSeen().forEach((r) => {
+            if (!pageJs.has(r.name)) worldJs.add(r.name);
+        });
         return m;
     });
     worldChunk.catch(() => (worldChunk = null));
@@ -122,7 +125,13 @@ function scrollState(
 /** What this visit actually measured: the 200 OK shows real numbers, not a story's. */
 function measured(lcp: number): string {
     const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
-    // The page's own scripts apart from the 3D world's chunk, which is fetched later, on idle.
+    // Late world subchunks (city/land) often arrive after the first import resolves — keep them
+    // out of the page tally so the line matches First Load JS, not a world leak.
+    if (worldChunk) {
+        jsSeen().forEach((r) => {
+            if (!pageJs.has(r.name)) worldJs.add(r.name);
+        });
+    }
     const kb = (world: boolean): number =>
         Math.round(
             jsSeen()
@@ -685,10 +694,9 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         // Boosting into the end of the page stops there.
         if (s.y >= layout.tops[5] + layout.hs[5] - vh - 2) page.halt('boost');
         panels(s.q);
-        // The way out takes most of the last section: the climb, the cut at the halfway point of
-        // `map`, the rise into orbit; only then does the ship turn and leave.
-        const map = smooth(0, 0.8, s.q(5));
-        const resp = 1 - smooth(0.55, 0.96, s.q(5));
+        // Climb → orbit cut early in Contact so 200 OK rides sunrise, not pack ice; leave after.
+        const map = smooth(0, 0.48, s.q(5));
+        const resp = 1 - smooth(0.42, 0.94, s.q(5));
         const now = performance.now();
         if (s.y > 4 && !started) started = now;
         // The ship has left: the clock stops, and Send again comes up (usable: visible + not inert).
