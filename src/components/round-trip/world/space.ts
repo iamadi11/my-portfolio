@@ -94,10 +94,10 @@ const AIR_FRAG = /* glsl */ `
         // sun. It takes the place of the blue there (added on top, the tone curve turns it white),
         // and shows early, before the disc is up.
         float graze = smoothstep(-0.1, 0.95, around);
-        float warmth = exp(-abs(h - 0.0015) / 0.0035) * graze * graze * smoothstep(0.0, 0.3, uDay);
-        vec3 warm = mix(vec3(0.9, 0.22, 0.03), vec3(1.0, 0.62, 0.2), smoothstep(-0.001, 0.007, h));
-        vec3 col = blue * (above + onTop) * 0.9 * (1.0 - 0.85 * warmth) + gold * sun * (above * 3.2 + onTop * 0.8) * uRise;
-        col += warm * warmth * 0.9;
+        float warmth = exp(-abs(h - 0.0015) / 0.0032) * graze * graze * smoothstep(0.0, 0.28, uDay);
+        vec3 warm = mix(vec3(0.95, 0.2, 0.02), vec3(1.0, 0.68, 0.22), smoothstep(-0.001, 0.007, h));
+        vec3 col = blue * (above + onTop) * 0.9 * (1.0 - 0.85 * warmth) + gold * sun * (above * 3.5 + onTop * 0.9) * uRise;
+        col += warm * warmth * 1.2;
         gl_FragColor = vec4(col * uOp, 1.0);
     }
 `;
@@ -241,7 +241,8 @@ function placeIss(
     const x = tmp[4].copy(iss.uSun.value).addScaledVector(z, -z.dot(iss.uSun.value)).normalize();
     const y = tmp[5].crossVectors(z, x);
     iss.group.quaternion.setFromRotationMatrix(basis.makeBasis(x, y, z));
-    iss.group.scale.setScalar(D * 0.075);
+    // Slightly larger so the station reads against the dawn limb without dominating the globe.
+    iss.group.scale.setScalar(D * 0.095);
 }
 
 /** The station: fetched when wanted, shown only in the finale, placed against the dawn. */

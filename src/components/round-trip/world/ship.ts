@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-import { clamp, smooth } from '@/components/round-trip/math';
-import { ADD, type Shared, shader } from '@/components/round-trip/world/gl';
+import { clamp, lerp, smooth } from '@/components/round-trip/math';
+import { ADD, MOON, type Shared, shader } from '@/components/round-trip/world/gl';
 import type { Glow } from '@/components/round-trip/world/glow';
 
 export type ShipIn = {
@@ -58,8 +58,8 @@ function addRim(mat: THREE.MeshStandardMaterial, uRim: { value: THREE.Color }): 
                 '#include <emissivemap_fragment>',
                 `#include <emissivemap_fragment>
                 // Wider falloff than pow4 so graphite panels keep a readable edge against night.
-                float rim = pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 3.0);
-                totalEmissiveRadiance += uRim * rim * 1.15;`
+                float rim = pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 2.7);
+                totalEmissiveRadiance += uRim * rim * 1.4;`
             );
     };
     mat.needsUpdate = true;
@@ -120,10 +120,12 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
     const strobes = [glow(0.28, new THREE.Color(3, 3, 3)), glow(0.28, new THREE.Color(3, 3, 3))];
     [nose, ...engines, ...strobes].forEach((g) => body.add(g));
 
-    // Cool moonlight bounce + a short warm key ahead of the nose so panel breaks read at night.
+    // Cool moonlight bounce (aligned with MOON) + warm key ahead of the nose; both warm at dawn.
     const fill = new THREE.PointLight('#c8d6ff', 0.95, 16, 2);
     const key = new THREE.PointLight('#ffe2b8', 0.85, 9, 2);
     scene.add(fill, key);
+    const fillCol = new THREE.Color();
+    const keyCol = new THREE.Color();
 
     const uOn = { value: 0 };
     const uRim = { value: new THREE.Color(0, 0, 0) };
@@ -150,12 +152,12 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
             // Graphite hull: darker base so normals and night HDRI speculars read; warm panels held
             // back so emission does not flatten the free3d PBR maps.
             const mat = (hull as THREE.Mesh).material as THREE.MeshStandardMaterial;
-            mat.envMapIntensity = 1.35;
-            mat.color.setRGB(0.34, 0.35, 0.38);
+            mat.envMapIntensity = 1.55;
+            mat.color.setRGB(0.32, 0.33, 0.36);
             mat.metalness = 1;
-            mat.roughness = Math.min(mat.roughness, 0.38);
+            mat.roughness = Math.min(mat.roughness, 0.34);
             mat.emissive.setRGB(1, 0.78, 0.48);
-            mat.emissiveIntensity = 0.85;
+            mat.emissiveIntensity = 0.72;
             if (mat.aoMap) mat.aoMapIntensity = 1.2;
             addRim(mat, uRim);
             for (const f of flames) {
@@ -238,10 +240,11 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
         nose.scale.setScalar(2 + f.heat * 5 + Math.sin(now * 29.0) * 0.12);
         strobes.forEach((g, i) => (g.material.opacity = (now + i * 0.7) % 1.4 < 0.07 ? 1 : 0));
         // Bounce from above-left; warm key sits ahead of the nose so the facing hull keeps shape.
-        fill.position.copy(rig.position).add(look.set(-1.1, 2.4, 0.4));
-        fill.intensity = 0.9 + f.key * 7;
-        key.position.copy(rig.position).addScaledVector(f.heading, 2.4).y += 1.1;
-        key.intensity = 0.75 + f.heat * 0.35 + f.key * 5;
+        // Moon fill + warm nose key track dawn so the hull matches the limb, not a studio softbox.
+        fill.position.copy(rig.position).add(look.set(-1.2, 2.6, 0.35));
+        fill.intensity = 1.05 + f.key * 8.5;
+        key.position.copy(rig.position).addScaledVector(f.heading, 2.6).y += 1.25;
+        key.intensity = 0.9 + f.heat * 0.4 + f.key * 6.5;
         uOn.value += (f.beam - uOn.value) * (1 - Math.exp(-f.dt * 3));
         const h = rig.position.y - 0.6 - f.ground;
         if (f.beam > 0.01 && h > 0.5)

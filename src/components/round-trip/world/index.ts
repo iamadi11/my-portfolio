@@ -536,7 +536,7 @@ export function createWorld(o: WorldOptions): World {
      */
     /** At the end it climbs away, up and ahead over the Earth, shrinking in frame, lit by the sun. */
     const depart = (sun: THREE.Vector3 | null, leave: number, dawn: number): void => {
-        sunlight.intensity = sun ? 3.2 * dawn : 0;
+        sunlight.intensity = sun ? 4.2 * dawn : 0;
         if (!sun) return;
         if (leave > 0) {
             // Away along the view, rising a little: it shrinks against the Earth, not out of frame.
