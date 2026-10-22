@@ -29,6 +29,7 @@ export type DriveOptions = {
     ringAt: number[];
     recordAt: number[];
     skills: Array<{ group: string; items: string }>;
+    titles: string[];
     sound: () => Sound | null;
     /** Whether the J/K single-key shortcuts are switched on (the HUD's J/K keys switch). */
     keys: () => boolean;
@@ -517,6 +518,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
             ringAt: o.ringAt,
             recordAt: o.recordAt,
             skills: o.skills,
+            titles: o.titles,
             small,
             reduce,
         });

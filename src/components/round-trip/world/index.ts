@@ -27,6 +27,8 @@ export type WorldOptions = {
     ringAt: number[];
     /** Where each role's record sits, as a share of the data stretch (0–1). */
     recordAt: number[];
+    /** Each project's title, lit over its portal. */
+    titles: string[];
     /** The skill groups from SITE, for the city's billboards. */
     skills: Array<{ group: string; items: string }>;
     small: boolean;
@@ -337,7 +339,8 @@ export function createWorld(o: WorldOptions): World {
                 new THREE.Color(
                     ...AIR[k < o.rings.length - 1 ? LANDS[(k + 1) % LANDS.length] : 'ocean'].horizon
                 )
-        )
+        ),
+        o.titles
     );
     const landmarks = addLandmarks(
         scene,

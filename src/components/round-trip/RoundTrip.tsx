@@ -421,6 +421,7 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
             ringAt: itemsAt(h[3], trip.projects.length),
             recordAt: itemsAt(h[4], trip.records.length),
             skills: trip.skills,
+            titles: trip.projects.map((p) => p.title),
             sound: () => sound.current,
             keys: () => keys.current,
         });
