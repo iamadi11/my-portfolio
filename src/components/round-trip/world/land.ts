@@ -2,16 +2,20 @@ import * as THREE from 'three';
 
 import { ADD, MOON, MOONLIGHT, type Shared, shader } from '@/components/round-trip/world/gl';
 
-/** The landscapes the project rings stand in, one per project (cycling if there are more). */
+/**
+ * Project landscapes (cycle if more projects than kinds). Kind ids stay stable for AIR / sound /
+ * framing; the ground shaders read as Chocolate Hills, Lençóis Maranhenses, Zhangye Danxia,
+ * Mount Roraima, and Erta Ale — matching the DEM horizons in `places.ts`.
+ */
 export const LANDS = ['grass', 'desert', 'canyon', 'alpine', 'volcano'] as const;
 export type LandKind = (typeof LANDS)[number];
 /** Roughly where the ground is under the path in each, for the search beam. */
 export const GROUND: Record<LandKind, number> = {
-    grass: -10,
-    desert: -16,
-    canyon: -14,
-    alpine: -20,
-    volcano: -16,
+    grass: -10, // Chocolate Hills — valley floor between cones
+    desert: -14, // Lençóis — dune flats
+    canyon: -14, // Danxia — wash between banded ridges
+    alpine: -18, // Roraima — floor under the tepui walls
+    volcano: -16, // Erta Ale — shield apron
 };
 
 /**
@@ -26,52 +30,69 @@ export const POOL = {
 /**
  * Ground height for each landscape, in GLSL so the land is endless: the mesh follows the camera and
  * every vertex asks for its own height. All of them keep a valley along the path.
+ * 0 Chocolate Hills · 1 Lençóis · 2 Danxia · 3 Roraima · 4 Erta Ale.
  */
 const HEIGHT = /* glsl */ `
     uniform int uKind;
-    vec2 coneAt(vec2 p) {
-        vec2 cell = floor(p / 520.0);
-        return (cell + 0.5 + (vec2(hash(cell), hash(cell + 3.1)) - 0.5) * 0.5) * 520.0;
+    // Jittered cell centre; s is the lattice spacing (Chocolate Hills dense, Erta Ale sparse).
+    vec2 cellAt(vec2 p, float s) {
+        vec2 cell = floor(p / s);
+        return (cell + 0.5 + (vec2(hash(cell), hash(cell + 3.1)) - 0.5) * 0.48) * s;
     }
+    vec2 coneAt(vec2 p) { return cellAt(p, 720.0); }
     float landH(vec2 p) {
         float d = abs(p.x - pathX(p.y));
         if (uKind == 0) {
-            float hills = (fbm(p * 0.006) - 0.45) * 60.0 + (fbm(p * 0.03 + 7.0) - 0.5) * 6.0;
-            float far = ridged(p * 0.0028 + 9.0) * 150.0 * smoothstep(160.0, 420.0, d);
-            return -10.0 + hills * (0.2 + 0.8 * smoothstep(12.0, 110.0, d)) + far;
+            // Chocolate Hills: dense field of smooth grass cones; path stays in the green troughs.
+            vec2 c = cellAt(p, 260.0);
+            float r = length(p - c);
+            float keep = smoothstep(28.0, 95.0, abs(c.x - pathX(c.y)));
+            float cone = pow(max(0.0, 1.0 - r / 115.0), 1.55) * 52.0;
+            float hummock = (fbm(p * 0.02 + 4.0) - 0.5) * 3.5;
+            return -10.0 + hummock * (0.3 + 0.7 * smoothstep(8.0, 50.0, d)) + cone * keep * smoothstep(12.0, 55.0, d);
         }
         if (uKind == 1) {
-            // Long transverse dunes with sharp crests, smaller ones crossing them, mesas far off.
-            float warp = fbm(p * 0.008) * 6.0;
-            float crest = 1.0 - abs(sin((p.x * 0.8 + p.y * 0.6) * 0.035 + warp));
-            float cross = 1.0 - abs(sin((p.x * -0.5 + p.y * 0.87) * 0.09 + fbm(p * 0.02) * 4.0));
-            float dunes = (pow(crest, 1.6) * (9.0 + 18.0 * fbm(p * 0.011 + 5.0)) + pow(cross, 2.5) * 3.5) * (0.3 + 0.7 * smoothstep(8.0, 40.0, d));
-            float mesas = smoothstep(0.55, 0.62, fbm(p * 0.0035 + 2.0)) * 70.0 * smoothstep(120.0, 260.0, d);
-            return -16.0 + dunes + mesas;
+            // Lençóis Maranhenses: soft white-dune flats; rainwater lagoons dig shallow dark bowls.
+            float warp = fbm(p * 0.01) * 4.0;
+            float crest = 1.0 - abs(sin((p.x * 0.7 + p.y * 0.55) * 0.028 + warp));
+            float dunes = pow(crest, 2.2) * (2.5 + 5.5 * fbm(p * 0.014 + 5.0)) * (0.25 + 0.75 * smoothstep(6.0, 35.0, d));
+            float basin = smoothstep(0.58, 0.74, fbm(p * 0.009 + 3.2)) * smoothstep(0.5, 0.72, fbm(p * 0.021 + 8.0));
+            float lagoon = basin * 5.5 * (0.4 + 0.6 * smoothstep(10.0, 45.0, d));
+            return -14.0 + dunes - lagoon;
         }
         if (uKind == 2) {
-            // Mesas everywhere except a dry wash along the path; walls rise on both sides of it.
+            // Zhangye Danxia: banded ridges with uneven benches; a wash along the path.
             float m = (fbm(p * 0.005 + 4.0) * 1.3 - 0.45) * smoothstep(22.0, 70.0, d) + smoothstep(30.0, 140.0, d) * 0.85;
-            // Benches whose rims have been eaten back unevenly; each cliff starts at its own place
-            // and has a talus apron banked against its foot.
             float t = max(clamp(m, 0.0, 1.4) * 150.0 / 16.0 + (fbm(p * 0.012 + 8.0) - 0.5) * 0.8 * smoothstep(0.0, 0.2, m), 0.0);
             float i = floor(t), f = fract(t);
             float lip = 0.6 + 0.28 * hash(vec2(i, 1.3));
             float scree = smoothstep(0.1, lip, f);
             float h = (i + smoothstep(lip, 1.0, f) * 0.88 + scree * scree * 0.12) * 16.0;
-            // Benches of uneven height (a monotone warp of the steps).
             h += 5.0 * sin(h * 0.045);
             return -14.0 + h + (fbm(p * 0.06) - 0.5) * 2.5;
         }
         if (uKind == 3) {
-            return -20.0 + ridged(p * 0.0055 + 3.0) * 260.0 * smoothstep(28.0, 170.0, d) + (fbm(p * 0.03) - 0.5) * 10.0;
+            // Mount Roraima: sheer tepui plateaus — flat tops, near-vertical walls, path in the gap.
+            vec2 c = cellAt(p, 980.0);
+            vec2 q = (p - c) * vec2(1.0, 0.82);
+            float edge = length(q) - (290.0 + (fbm(c * 0.01) - 0.5) * 70.0 + fbm(p * 0.008 + 2.0) * 28.0);
+            float keep = smoothstep(55.0, 175.0, abs(c.x - pathX(c.y)));
+            float wall = smoothstep(55.0, 6.0, edge);
+            float talus = smoothstep(120.0, 55.0, edge) * (1.0 - wall) * 0.22;
+            float top = 195.0 + (fbm(p * 0.015) - 0.5) * 8.0;
+            float h = (wall * 0.92 + talus) * top;
+            float floorN = (fbm(p * 0.012) - 0.5) * 6.0;
+            return -18.0 + floorN * (0.35 + 0.65 * smoothstep(10.0, 70.0, d)) + h * keep * smoothstep(30.0, 120.0, d);
         }
+        // Erta Ale: broad shield, annular rim, lava-lake pit — not a steep stratocone.
         vec2 c = coneAt(p);
         float r = length(p - c);
-        float keep = smoothstep(70.0, 160.0, abs(c.x - pathX(c.y)));
-        float cone = pow(max(0.0, 1.0 - r / 230.0), 1.6) * 240.0 - smoothstep(30.0, 8.0, r) * 45.0;
-        float plain = (fbm(p * 0.01) - 0.5) * 14.0 + ridged(p * 0.02) * 4.0;
-        return -16.0 + plain * (0.4 + 0.6 * smoothstep(10.0, 60.0, d)) + cone * keep * smoothstep(25.0, 110.0, d);
+        float keep = smoothstep(90.0, 210.0, abs(c.x - pathX(c.y)));
+        float shield = pow(max(0.0, 1.0 - r / 480.0), 2.35) * 88.0;
+        float rim = smoothstep(62.0, 40.0, r) * smoothstep(16.0, 34.0, r) * 14.0;
+        float pit = smoothstep(36.0, 6.0, r) * 38.0;
+        float plain = (fbm(p * 0.01) - 0.5) * 10.0 + ridged(p * 0.018) * 3.0;
+        return -16.0 + plain * (0.4 + 0.6 * smoothstep(10.0, 60.0, d)) + (shield + rim - pit) * keep * smoothstep(30.0, 130.0, d);
     }
 `;
 
@@ -116,17 +137,17 @@ const FRAG = /* glsl */ `
         float crust = 0.1 + 0.12 * vnoise(q * 3.0);
         return bed * mix(0.6 + 0.15 * core, crust, plate * (1.0 - open)) + open * bed * 0.35;
     }
-    // Fissures down a cone's flanks from the crater, broken into glowing segments.
+    // Fissures down a shield's flanks from the lava-lake rim, broken into glowing segments.
     float fissures(vec2 p) {
         vec2 dc = p - coneAt(p);
         float r = length(dc);
         float a = atan(dc.y, dc.x);
         float line = 1.0 - smoothstep(0.0, 0.07, abs(sin(a * 5.0 + fbm(dc * 0.02) * 4.0)));
         float seg = smoothstep(0.45, 0.6, vnoise(vec2(a * 9.0, r * 0.04)));
-        return line * seg * smoothstep(170.0, 30.0, r) * smoothstep(20.0, 70.0, vW.y);
+        return line * seg * smoothstep(200.0, 40.0, r) * smoothstep(8.0, 55.0, vW.y);
     }
     // What weather has done to a wall, at distance a along it and height y, in bed id: a vertical
-    // fracture (x, 1 in the crack), a desert-varnish streak running down (y), and how much of a
+    // fracture (x, 1 in the crack), a varnish streak running down (y), and how much of a
     // hard ledge survives here (z: erosion breaks every ledge into lengths).
     vec3 weathering(float a, float y, float id, float close) {
         float fr = vnoise(vec2(a * 0.07, y * 0.006 + 3.0));
@@ -135,19 +156,16 @@ const FRAG = /* glsl */ `
         float whole = smoothstep(0.25, 0.55, vnoise(vec2(a * 0.045, id * 3.1)));
         return vec3(crack, streak, whole);
     }
-    // Sandstone. Beds of uneven thickness (2 to 13 m) and hardness: hard ones stand out as ledges
-    // with an overhanging cap whose lip catches the moon and an undercut in shadow below; soft ones
-    // are scooped back. Each bed has its own colour (ochre, rust, pale, chocolate). Vertical
-    // fractures, varnish streaks under the ledges. The wash floor: wind ripples in the sand,
-    // pebbles, and rubble fallen from the walls at their foot. Fine detail fades before it aliases.
-    vec3 canyon(vec2 p, float slope, float rocky, float close, float g, inout vec3 n, inout float ao, out float rim) {
+    // Zhangye Danxia: coloured strata beds of uneven thickness. Hard ledges catch the moon; soft
+    // beds scoop back. Palette cycles rose / saffron / cream / crimson / wine. Wash floor is
+    // finer pink sand with rubble at the wall foot.
+    vec3 danxia(vec2 p, float slope, float rocky, float close, float g, inout vec3 n, inout float ao, out float rim) {
         float wall = smoothstep(0.3, 0.7, slope);
         float y = vW.y + (fbm(p * 0.012) - 0.5) * 7.0 + p.x * 0.015;
-        float bed = y * 0.32 + 1.6 * sin(y * 0.07) + 0.7 * sin(y * 0.19 + 1.7);
+        float bed = y * 0.38 + 1.8 * sin(y * 0.08) + 0.85 * sin(y * 0.21 + 1.7);
         float id = floor(bed), fb = fract(bed);
         float aa = 1.0 - smoothstep(0.3, 0.8, fwidth(bed));
         float hard = hash(vec2(id, 3.7));
-        // Two projections along the wall, weighted by the way it faces, so any wall gets its marks.
         vec2 nh = normalize(n.xz + vec2(1e-4, 0.0));
         vec3 mk = mix(weathering(p.y, y, id, close), weathering(p.x, y, id, close), nh.y * nh.y) * wall;
         float ledge = smoothstep(0.5, 0.8, hard) * mix(0.35, 1.0, mk.z) * aa;
@@ -157,24 +175,23 @@ const FRAG = /* glsl */ `
         rim = ledge * smoothstep(0.8, 0.88, fb) * (1.0 - smoothstep(0.9, 0.95, fb)) * wall;
         float lam = mix(0.5, vnoise(vec2((p.x + p.y) * 0.2, y * 3.0)), close * aa);
         float xbed = mix(0.5, 0.5 + 0.5 * sin((y + (p.x - p.y) * 0.3) * 5.0), close * aa * step(0.5, fract(hard * 7.0)));
-        vec3 ochre = vec3(0.6, 0.36, 0.17), rust = vec3(0.46, 0.17, 0.08), pale = vec3(0.6, 0.46, 0.32), choc = vec3(0.3, 0.14, 0.08);
+        vec3 rose = vec3(0.72, 0.32, 0.28), saffron = vec3(0.78, 0.48, 0.18), cream = vec3(0.7, 0.58, 0.42);
+        vec3 crimson = vec3(0.55, 0.14, 0.1), wine = vec3(0.38, 0.12, 0.16);
         float hc = hash(vec2(id, 9.1));
-        vec3 rock = hc < 0.38 ? ochre : hc < 0.68 ? rust : hc < 0.86 ? pale : choc;
-        rock = mix(vec3(0.5, 0.29, 0.15), rock, aa * 0.6 + 0.1);
+        vec3 rock = hc < 0.22 ? rose : hc < 0.42 ? saffron : hc < 0.6 ? cream : hc < 0.8 ? crimson : wine;
+        rock = mix(vec3(0.55, 0.28, 0.2), rock, aa * 0.7 + 0.15);
         rock *= (0.78 + 0.3 * lam) * (0.9 + 0.12 * xbed) * (0.8 + 0.4 * fbm(p * 0.01 + 1.0)) * (0.88 + 0.24 * g);
-        rock = mix(rock, vec3(0.08, 0.055, 0.045), mk.y * 0.75);
+        rock = mix(rock, vec3(0.08, 0.05, 0.045), mk.y * 0.7);
         rock *= 1.0 - 0.45 * mk.x;
-        rock = mix(rock, rock * 1.25 + 0.03, rim);
-        // The floor.
+        rock = mix(rock, rock * 1.28 + 0.04, rim);
         float drift = vnoise(p * 0.07 + 2.0) * 0.6 + vnoise(p * 0.19) * 0.4;
         float rip = sin(dot(p, vec2(0.8, 0.6)) * 3.2 + vnoise(p * 0.3) * 5.0) * close;
         float talus = max(smoothstep(0.06, 0.24, slope), smoothstep(0.5, 3.0, vCav)) * (1.0 - wall);
         float rubble = smoothstep(0.55, 0.78, vnoise(p * 0.5 + 7.0)) * talus;
         float pebble = smoothstep(0.7, 0.8, vnoise(p * 2.3 + 3.0) * 0.75 + drift * 0.25) * close;
-        vec3 sand = mix(vec3(0.52, 0.37, 0.24), vec3(0.4, 0.25, 0.15), smoothstep(0.35, 0.7, drift)) * (0.92 + 0.12 * rip);
-        sand = mix(sand, vec3(0.25, 0.14, 0.09), pebble * 0.75);
-        sand = mix(sand, vec3(0.42, 0.2, 0.1) * (0.7 + 0.5 * hash(floor(p * 0.5))), rubble);
-        // Relief in metres: caps and scoops a hand or two, cracks cut in, ripples a few centimetres.
+        vec3 sand = mix(vec3(0.58, 0.36, 0.28), vec3(0.45, 0.22, 0.16), smoothstep(0.35, 0.7, drift)) * (0.92 + 0.12 * rip);
+        sand = mix(sand, vec3(0.3, 0.14, 0.1), pebble * 0.75);
+        sand = mix(sand, vec3(0.48, 0.2, 0.14) * (0.7 + 0.5 * hash(floor(p * 0.5))), rubble);
         float rb = (cap * ledge * 0.9 - scoop * 0.5 - mk.x * 0.3 + lam * 0.08) * wall;
         float fl = rip * 0.025 * (1.0 - talus) + pebble * 0.04 + rubble * 0.5;
         n = bumpN(n, mix(fl, rb, rocky), close);
@@ -198,47 +215,56 @@ const FRAG = /* glsl */ `
         float snow = 0.0;
         float fogD = vD;
         if (uKind == 0) {
-            // Grass: wind rolling across it in long silvery waves.
+            // Chocolate Hills: green turf with dry-season brown on the cone crests; wind waves.
             float wave = 0.5 + 0.5 * sin(dot(p, vec2(0.6, 0.8)) * 0.07 - uTime * 1.3 + fbm(p * 0.02) * 6.0);
-            albedo = vec3(0.045, 0.07, 0.032) * (0.75 + 0.45 * fbm(p * 0.05)) * (0.8 + 0.45 * wave);
-            albedo = mix(albedo, vec3(0.08, 0.075, 0.07), rocky * 0.6);
+            float crest = smoothstep(-6.0, 28.0, vW.y) * (0.55 + 0.45 * (1.0 - rocky));
+            vec3 green = vec3(0.04, 0.068, 0.03) * (0.75 + 0.45 * fbm(p * 0.05)) * (0.8 + 0.45 * wave);
+            vec3 choc = vec3(0.12, 0.07, 0.035) * (0.85 + 0.25 * g);
+            albedo = mix(green, choc, crest * 0.7);
+            albedo = mix(albedo, vec3(0.09, 0.08, 0.06), rocky * 0.45);
         } else if (uKind == 1) {
-            float rip = sin(dot(p, vec2(0.8, 0.6)) * 2.4 + fbm(p * 0.2) * 5.0);
-            n = normalize(n + vec3(0.8, 0.0, 0.6) * rip * 0.07 * (1.0 - rocky) * close);
-            // Pale sand under the moon, dark on the slip faces away from it, dark rock on the mesas.
-            albedo = mix(vec3(0.52, 0.42, 0.3) * (0.85 + 0.3 * fbm(p * 0.02)), vec3(0.2, 0.11, 0.07), rocky);
+            // Lençóis: near-white dune flats; lagoon bowls go to dark water under the moon.
+            float rip = sin(dot(p, vec2(0.8, 0.6)) * 2.8 + fbm(p * 0.2) * 5.0);
+            n = normalize(n + vec3(0.8, 0.0, 0.6) * rip * 0.05 * (1.0 - rocky) * close);
+            float basin = smoothstep(0.58, 0.74, fbm(p * 0.009 + 3.2)) * smoothstep(0.5, 0.72, fbm(p * 0.021 + 8.0));
+            float lagoon = basin * (1.0 - rocky) * smoothstep(-10.0, -15.5, vW.y + basin * 2.0);
+            vec3 sand = vec3(0.78, 0.74, 0.66) * (0.88 + 0.2 * fbm(p * 0.03)) * (0.92 + 0.1 * rip);
+            vec3 water = vec3(0.015, 0.035, 0.055) * (0.7 + 0.4 * g);
+            albedo = mix(sand, water, lagoon);
+            glow = uMoonCol * lagoon * 0.12 * vSh;
+            n = mix(n, vec3(0.0, 1.0, 0.0), lagoon * 0.65);
+            n = normalize(n);
         } else if (uKind == 2) {
             float rim;
-            albedo = canyon(p, slope, rocky, close, g, n, ao, rim);
+            albedo = danxia(p, slope, rocky, close, g, n, ao, rim);
             glow = albedo * uMoonCol * rim * 0.55 * vSh;
         } else if (uKind == 3) {
-            // Snow where it can lie: not on the steep faces, which stay bare dark rock.
-            float steep = smoothstep(0.36, 0.6, slope + (g - 0.5) * 0.3);
-            snow = smoothstep(20.0, 50.0, vW.y + fbm(p * 0.03) * 34.0) * (1.0 - steep);
-            snow = max(snow, (1.0 - steep) * smoothstep(0.0, -12.0, vW.y));
-            // Wind-carved ridges in the snow up close, fractured rock.
-            float sastrugi = vnoise(vec2(dot(p, vec2(0.8, 0.6)) * 0.8, dot(p, vec2(-0.6, 0.8)) * 0.15));
-            n = bumpN(n, mix(fbm(p * 0.3), sastrugi * 0.6 + g * 0.4, snow), mix(1.4, 0.7, snow) * close);
-            albedo = mix(vec3(0.065, 0.06, 0.058) * (0.7 + 0.6 * g), vec3(0.5, 0.53, 0.58) * (0.9 + 0.1 * g), snow);
-            // Snow in shadow takes the sky's blue.
-            amb = mix(amb, vec3(0.03, 0.05, 0.11), snow);
+            // Mount Roraima: dark sheer walls, scrub plateau top; mist cools the ambient.
+            float steep = smoothstep(0.28, 0.55, slope + (g - 0.5) * 0.25);
+            float plateau = smoothstep(40.0, 120.0, vW.y) * (1.0 - steep);
+            n = bumpN(n, mix(fbm(p * 0.25), g, plateau), mix(1.6, 0.5, plateau) * close);
+            vec3 cliff = vec3(0.045, 0.048, 0.055) * (0.65 + 0.5 * g);
+            vec3 scrub = vec3(0.06, 0.075, 0.05) * (0.8 + 0.3 * fbm(p * 0.04));
+            vec3 bare = vec3(0.12, 0.12, 0.13) * (0.85 + 0.2 * g);
+            albedo = mix(cliff, mix(scrub, bare, smoothstep(0.4, 0.75, g)), plateau);
+            amb = mix(amb, vec3(0.028, 0.04, 0.08), 0.55 + 0.25 * plateau);
+            fogD *= mix(1.0, 0.55, smoothstep(-10.0, 80.0, vW.y));
         } else {
-            // Basalt and ash; lava in the low channels, glowing cracks, fissures down the cones.
-            albedo = mix(vec3(0.024, 0.023, 0.026), vec3(0.06, 0.055, 0.05), rocky) * (0.7 + 0.6 * g);
+            // Erta Ale: black shield crust; lava lake in the summit pit, cracks and flank fissures.
+            albedo = mix(vec3(0.022, 0.02, 0.024), vec3(0.055, 0.048, 0.045), rocky) * (0.7 + 0.55 * g);
             float bed;
-            float heat = river(p, bed);
-            albedo *= 1.0 - bed * 0.6;
+            float heat = river(p, bed) * 0.55;
+            albedo *= 1.0 - bed * 0.5;
             float crack = (1.0 - smoothstep(0.0, 0.02 * (0.4 + 0.6 * close), abs(fbm(p * 0.09) - 0.5))) * (1.0 - rocky);
-            heat = max(heat, crack * (0.42 + 0.12 * sin(uTime * 1.3 + g * 9.0)));
-            heat = max(heat, fissures(p) * 0.82);
-            float crater = smoothstep(26.0, 6.0, length(p - coneAt(p))) * step(40.0, vW.y);
-            heat = max(heat, crater);
+            heat = max(heat, crack * (0.38 + 0.1 * sin(uTime * 1.3 + g * 9.0)));
+            heat = max(heat, fissures(p) * 0.75);
+            float rc = length(p - coneAt(p));
+            float lake = smoothstep(34.0, 8.0, rc) * smoothstep(8.0, 45.0, vW.y + 16.0);
+            heat = max(heat, lake * (0.85 + 0.15 * sin(uTime * 0.9 + g * 6.0)));
             glow = lava(heat);
-            n = bumpN(n, g, 0.8 * close * (1.0 - bed));
-            // The rock is lit from below by the lava's glow on the haze.
-            amb += vec3(0.05, 0.012, 0.003) * (1.0 - n.y * 0.5);
-            // The ash haze lies low: the cones rise dark out of it instead of fading into it.
-            fogD *= mix(1.0, 0.2, smoothstep(-4.0, 120.0, vW.y + 16.0));
+            n = bumpN(n, g, 0.8 * close * (1.0 - bed) * (1.0 - lake * 0.8));
+            amb += vec3(0.055, 0.014, 0.004) * (1.0 - n.y * 0.5) * (0.5 + 0.5 * lake);
+            fogD *= mix(1.0, 0.25, smoothstep(-4.0, 90.0, vW.y + 16.0));
         }
         vec3 V = normalize(cameraPosition - vW);
         float lit = max(dot(n, uMoon), 0.0) * vSh;
@@ -253,7 +279,7 @@ const FRAG = /* glsl */ `
     }
 `;
 
-/** Grass blades near the ship: tapered, bending in the wind, silver at the tips under the moon. */
+/** Chocolate Hills turf near the ship: tapered blades, wind-bent, silver tips under the moon. */
 const BLADE_VERT = /* glsl */ `
     uniform vec2 uTile;
     attribute vec2 aOff; attribute vec3 aBlade;
@@ -328,7 +354,7 @@ function bladeGeometry(n: number, tile: number, rand: () => number): THREE.Insta
     return g;
 }
 
-/** Things in the air: fireflies (0), rising embers (1), falling snow or rain (2), blown sand (3). */
+/** Air motes per place: fireflies (0), Erta Ale embers (1), Roraima mist/rain (2), Lençóis sand (3). */
 export type Motes = {
     n: number;
     tile: number;
@@ -400,7 +426,10 @@ export type Land = {
     show: (kind: LandKind | null, eye: THREE.Vector3) => void;
 };
 
-/** 3 · Services: the landscapes the ship visits, one per project ring. All by moonlight, all endless. */
+/**
+ * 3 · Services: one endless moonlit plane per project ring — Chocolate Hills, Lençóis, Danxia,
+ * Roraima, Erta Ale (via `uKind` / `LANDS`).
+ */
 export function addLand(scene: THREE.Object3D, s: Shared, small: boolean, rand: () => number): Land {
     const group = new THREE.Group();
     scene.add(group);
@@ -482,8 +511,8 @@ export function addLand(scene: THREE.Object3D, s: Shared, small: boolean, rand: 
             {
                 n: 500 * k,
                 tile: 170,
-                y: [-15, -6],
-                colour: new THREE.Color(0.55, 0.45, 0.32),
+                y: [-13, -5],
+                colour: new THREE.Color(0.9, 0.86, 0.78),
                 size: 1.5,
                 mode: 3,
             },
@@ -502,12 +531,13 @@ export function addLand(scene: THREE.Object3D, s: Shared, small: boolean, rand: 
         [
             'alpine',
             {
-                n: 1600 * k,
+                n: 1400 * k,
                 tile: 140,
-                y: [-20, 40],
-                colour: new THREE.Color(0.75, 0.8, 0.9),
-                size: 1.1,
+                y: [-16, 50],
+                colour: new THREE.Color(0.7, 0.78, 0.88),
+                size: 1.0,
                 mode: 2,
+                fall: 0.55,
             },
         ],
     ];
