@@ -62,6 +62,7 @@ The route in the HUD fills between hops as the request travels; each project's d
 | `models/places/roraima-*.glb` | AWS Terrain Tiles | Joerd attribution; alpine horizon (Mount Roraima) |
 | `models/places/erta-ale-*.glb` | AWS Terrain Tiles | Joerd attribution; volcanic horizon |
 | `models/osaka-*.glb` | [Osaka downtown](https://sketchfab.com/3d-models/osaka-downtown-53e0980d555a4af6b921cc00c208e4a3), matousekfoto, Sketchfab (night photogrammetry) | CC BY 4.0; downtown mass left of the La Paz path |
+| `data/lapaz-footprints.json` | [Microsoft Global ML Building Footprints](https://github.com/microsoft/GlobalMLBuildingFootprints) (Bolivia quadkey 210031333) | CDLA-Permissive-2.0; mid-rise instances on La Paz slopes |
 | `env/moon.webp` | Moon photograph, NASA (nasa/NASA-3D-Resources @11ebb4e, `Images and Textures/Moon/Moon.jpg`) | NASA media, free and without copyright; credit NASA |
 | `models/iss.glb` | International Space Station (B), NASA (nasa/NASA-3D-Resources @11ebb4e) | NASA media, free and without copyright; credit NASA; the finale |
 
