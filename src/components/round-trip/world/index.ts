@@ -663,8 +663,8 @@ export function createWorld(o: WorldOptions): World {
         beat.leave = shown === 'orbit' ? smooth(0.35, 1, 1 - resp) : 0;
         // The long way in: a slow roll onto the globe, then the dive proper, the air thickening.
         beat.dive = shown === 'space' ? smooth(0.38, 0.96, u / city0) : 0;
-        // Hold the drop beat further into Edge so amphitheater urgency outlasts the canyon chase.
-        beat.drop = shown === 'city' ? 1 - smooth(city0, lerp(city0, svc, 0.68), u) : 0;
+        // Drop clears by mid-Edge so lift stops aiming down the canyon; reframe hold keeps the bowl.
+        beat.drop = shown === 'city' ? 1 - smooth(city0, lerp(city0, svc, 0.38), u) : 0;
         // The long way out: pull up off the ice, burn, then the globe falls away in orbit.
         beat.climb = shown === 'ice' ? smooth(0.04, 0.32, map) : 0;
         beat.rise = shown === 'orbit' ? smooth(0.32, 1, map) : 0;
@@ -677,10 +677,10 @@ export function createWorld(o: WorldOptions): World {
             beat.climb * 0.9 +
             beat.drop * 0.12 +
             (shown === 'orbit' ? (1 - beat.rise) * 0.55 - beat.leave * 0.1 : 0);
-        // Quadratic peak through the deck, then ease into the amphitheater eye-line.
+        // Softer city lift: old 210×drop² kept a canyon crane after the deck cleared.
         shot.lift =
-            beat.drop * beat.drop * 210 +
-            beat.drop * 28 +
+            beat.drop * beat.drop * 95 +
+            beat.drop * 16 +
             beat.climb * beat.climb * 40 +
             beat.over * 22 -
             beat.skim * 12;

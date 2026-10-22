@@ -16,7 +16,6 @@ let worldChunk: Promise<typeof import('@/components/round-trip/world')> | null =
 /** three.js and the world live in a separate chunk: fetched on idle, built on the first scroll or Start. */
 const loadWorld = (): Promise<typeof import('@/components/round-trip/world')> => {
     if (worldChunk) return worldChunk;
-    jsSeen().forEach((r) => pageJs.add(r.name));
     worldChunk = import('@/components/round-trip/world').then((m) => {
         jsSeen().forEach((r) => {
             if (!pageJs.has(r.name)) worldJs.add(r.name);
@@ -442,6 +441,8 @@ function hands(
 
 export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOptions): () => void {
     const els = find(root);
+    // Freeze First Load scripts before idle prefetch of the world chunk.
+    if (pageJs.size === 0) jsSeen().forEach((r) => pageJs.add(r.name));
     // Send again: inert until the ship has left so tab order matches pointer-events / visibility.
     const againBtn = root.querySelector<HTMLButtonElement>('[data-again]');
     againBtn?.toggleAttribute('inert', true);
