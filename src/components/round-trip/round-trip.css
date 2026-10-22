@@ -408,13 +408,13 @@ html:has(.rt) body {
     letter-spacing: -0.04em;
     font-optical-sizing: auto;
 }
-/* Hero plate: name/role hold AA over orbit limb — plate only, no dashboard chrome */
+/* Pass three: name/role own first paint over orbit limb — denser plate, no dashboard chrome */
 .rt-sec[data-zone='browser'] .rt-name {
     text-shadow:
-        0 1px 1px rgba(5, 7, 13, 0.95),
-        0 2px 8px var(--shade),
-        0 6px 36px var(--shade),
-        0 0 72px rgba(5, 7, 13, 0.85);
+        0 1px 1px rgba(5, 7, 13, 0.98),
+        0 2px 10px var(--shade),
+        0 8px 42px var(--shade),
+        0 0 80px rgba(5, 7, 13, 0.9);
 }
 .rt-role {
     margin: 0 0 18px;
@@ -424,9 +424,9 @@ html:has(.rt) body {
 }
 .rt-sec[data-zone='browser'] .rt-role {
     text-shadow:
-        0 1px 1px rgba(5, 7, 13, 0.9),
-        0 2px 12px var(--shade),
-        0 4px 28px rgba(5, 7, 13, 0.7);
+        0 1px 1px rgba(5, 7, 13, 0.95),
+        0 2px 14px var(--shade),
+        0 6px 32px rgba(5, 7, 13, 0.78);
 }
 .rt-lede {
     max-width: 52ch;
@@ -434,12 +434,12 @@ html:has(.rt) body {
     color: var(--soft);
     font-size: clamp(17px, 1.5vw, 20px);
 }
-/* supporting hero lines: soft plate so statement/status stay readable without chips */
+/* supporting lines: softer plate so statement/status stay readable without rivaling name/role */
 .rt-sec[data-zone='browser'] .rt-lede,
 .rt-sec[data-zone='browser'] .rt-meta {
     text-shadow:
         0 1px 2px var(--shade),
-        0 2px 16px rgba(5, 7, 13, 0.65);
+        0 2px 14px rgba(5, 7, 13, 0.55);
 }
 .rt-lede + .rt-meta {
     margin-bottom: 26px;
@@ -450,6 +450,11 @@ html:has(.rt) body {
     align-items: center;
     gap: 14px 18px;
     margin: 0;
+}
+/* Email me: outline tertiary under Start — brand stays the hero signal */
+.rt-sec[data-zone='browser'] .rt-cue a {
+    border-color: rgba(238, 242, 248, 0.14);
+    color: var(--soft);
 }
 .rt-cue button,
 .rt-go {
@@ -967,18 +972,19 @@ html:has(.rt) body {
         border-color 200ms ease,
         transform 160ms ease-out;
 }
-/* email is the close hero: display weight + dawn underline */
+/* Pass three: mailto is the close hero — display weight + dawn underline; pills sit under it */
 .rt-mail {
     display: inline-block;
     padding-bottom: 10px;
-    border-bottom: 2px solid rgba(255, 215, 168, 0.45);
+    border-bottom: 2px solid rgba(255, 215, 168, 0.5);
     font: 400 clamp(26px, 3.2vw, 48px) / 1.1 var(--display);
     letter-spacing: -0.015em;
     text-decoration: none;
     overflow-wrap: anywhere;
     text-shadow:
         0 1px 2px var(--shade),
-        0 4px 24px rgba(5, 7, 13, 0.75);
+        0 4px 24px rgba(5, 7, 13, 0.75),
+        0 0 36px rgba(255, 180, 110, 0.08);
     transition:
         border-color 220ms ease,
         color 220ms ease;
@@ -987,6 +993,9 @@ html:has(.rt) body {
 .rt-mail:focus-visible {
     border-color: var(--accent);
     color: var(--ink);
+}
+.rt-sec[data-zone='ok'] .rt-mail:focus-visible {
+    outline-color: var(--accent);
 }
 /* phone / GitHub / LinkedIn: quieter than Copy — outline only, muted ink */
 .rt-close .rt-pills .rt-cta-secondary {
@@ -997,14 +1006,19 @@ html:has(.rt) body {
     font-weight: 500;
     padding: 9px 14px;
 }
-/* Send again: quieter still — ghost link weight, still 44px target when shown */
+/* Send again: ghost last — 44px target when .rt-left (drive clears inert then) */
 .rt-close .rt-pills .rt-again {
     background: transparent;
     border-color: rgba(238, 242, 248, 0.1);
     color: var(--muted);
     font-size: 13px;
     font-weight: 500;
+    min-height: 44px;
     padding: 9px 14px;
+}
+.rt-left .rt-pills .rt-again:focus-visible {
+    outline-color: var(--accent);
+    color: var(--soft);
 }
 /* Copy email: filled primary under the address — clearest next step without new copy */
 .rt-close .rt-pills .rt-cta-primary {
@@ -1013,8 +1027,12 @@ html:has(.rt) body {
     color: var(--bg);
     font-weight: 600;
     font-size: 15px;
+    min-height: 44px;
     padding: 10px 18px;
     box-shadow: 0 4px 18px rgba(5, 7, 13, 0.35);
+}
+.rt-close .rt-pills .rt-cta-primary:focus-visible {
+    outline-color: var(--accent);
 }
 @media (hover: hover) and (pointer: fine) {
     .rt-close .rt-pills .rt-cta-secondary:hover {

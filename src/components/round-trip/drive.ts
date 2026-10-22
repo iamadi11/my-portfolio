@@ -433,6 +433,9 @@ function hands(
 
 export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOptions): () => void {
     const els = find(root);
+    // Send again: inert until the ship has left so tab order matches pointer-events / visibility.
+    const againBtn = root.querySelector<HTMLButtonElement>('[data-again]');
+    againBtn?.toggleAttribute('inert', true);
     const small = matchMedia('(max-width: 760px)').matches;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     // Haptics only once the visitor has touched the page (the browser refuses them before).
@@ -688,10 +691,11 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         const resp = 1 - smooth(0.55, 0.96, s.q(5));
         const now = performance.now();
         if (s.y > 4 && !started) started = now;
-        // The ship has left: the clock stops, and Send again comes up.
+        // The ship has left: the clock stops, and Send again comes up (usable: visible + not inert).
         const left = resp < 0.02;
         ended = left ? ended || now : 0;
         root.classList.toggle('rt-left', left);
+        againBtn?.toggleAttribute('inert', !left);
         hud(s.sec, clockText(started ? (ended || now) - started : 0), s.hop(s.sec));
         draw(s, map, resp, top);
     };
