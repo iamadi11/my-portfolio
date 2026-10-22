@@ -26,7 +26,7 @@ const FINISH = {
         float h(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
         void main() {
             vec2 c = vUv - 0.5; float r = length(c * vec2(uAspect, 1.0)) / uAspect;
-            vec2 off = c * (0.0012 + uVel * 0.014 + uJump * 0.05) * (0.4 + r);
+            vec2 off = c * (0.0012 + uVel * 0.004 + uJump * 0.05) * (0.4 + r);
             vec3 col = vec3(texture2D(tDiffuse, vUv + off).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - off).b);
             if (uJump > 0.01) {
                 // Zoom blur: average the image along the line from the centre, longer at the edges.
@@ -40,12 +40,15 @@ const FINISH = {
                 col += uTint * pow(uJump, 4.0) * (0.6 + r) * 1.6;
             }
             // A quiet change of place: the frame sinks into the night from the edges in, then rises.
-            col *= 1.0 - smoothstep(0.0, 1.0, uDip * (1.15 + r * 0.6));
+            // Its peak is true black: the dark is reached well before the dip's top and held there.
+            float dark = clamp(uDip * (1.3 + r * 0.6), 0.0, 1.0);
+            col *= pow(1.0 - smoothstep(0.0, 0.85, dark), 1.5);
             col *= 1.0 - smoothstep(0.42, 1.05, r) * 0.6;
             // Film grain: in the mid-tones, in screen space, never lifting the blacks.
             float lum = dot(col, vec3(0.3, 0.59, 0.11));
             col += (h(gl_FragCoord.xy + fract(uTime) * 91.0) - 0.5) * 0.05 * sqrt(max(lum, 0.0)) * (1.0 - min(lum, 1.0));
-            col += (h(gl_FragCoord.xy) - 0.5) / 255.0;
+            col += (h(gl_FragCoord.xy) - 0.5) / 255.0 * (1.0 - uDip);
+            col = max(col, 0.0);
             gl_FragColor = vec4(col, 1.0);
         }`,
 };

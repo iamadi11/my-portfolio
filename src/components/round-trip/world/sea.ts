@@ -62,11 +62,22 @@ const SEA_FRAG = /* glsl */ `
         fl.y = max(fl.y, bits.y * 0.5);
         return fl;
     }
-    // The aurora as the open leads mirror it: a soft green band low over the horizon ahead.
+    // The aurora as the open leads mirror it: a soft green band low over the horizon ahead, and a
+    // faint wash of it higher up, so even a lead seen from above holds a little green.
     vec3 auroraIn(vec3 R) {
-        float band = exp(-pow((R.y - 0.09) / 0.07, 2.0)) * smoothstep(-0.4, 0.4, -R.z);
+        float ahead = smoothstep(-0.4, 0.4, -R.z);
+        float band = exp(-pow((R.y - 0.09) / 0.07, 2.0)) * ahead;
         float fold = 0.6 + 0.4 * sin(atan(R.x, -R.z) * 9.0 + uTime * 0.1);
-        return vec3(0.12, 1.0, 0.55) * band * fold * 0.16 * uIce;
+        float wash = exp(-pow((R.y - 0.2) / 0.45, 2.0)) * (0.4 + 0.6 * ahead);
+        return vec3(0.12, 1.0, 0.55) * (band * fold * 0.16 + wash * 0.035) * uIce;
+    }
+    // Open water in the pack: deep blue-black in the leads, with a soft rim of grey new ice (nilas)
+    // and slush where it meets the floes, so leads read as water, not holes.
+    vec3 lead(vec3 water, vec4 fl, vec3 sky) {
+        float rim = 1.0 - smoothstep(0.015, 0.16, fl.y);
+        vec3 deep = water + vec3(0.004, 0.013, 0.04) + sky * 0.08;
+        vec3 nilas = vec3(0.07, 0.1, 0.13) * (uMoonCol * max(uMoon.y, 0.0) + 0.3);
+        return mix(deep, nilas, rim * 0.8);
     }
     // Floes: snow on top lit by the moon and faintly green by the aurora above, sparkling; a lit lip
     // on edges facing the moon, blue on those turned away, and where they crack and meet the water.
@@ -107,7 +118,12 @@ const SEA_FRAG = /* glsl */ `
         water += uMoonCol * vec3(0.0, 0.012, 0.011) * crest * (1.0 - fres);
         water += beamAt(vW) * 0.12;
         vec3 col = water;
-        if (uIce > 0.0) col = mix(water, floeColour(fl, p, V), fl.x);
+        if (uIce > 0.0) {
+            col = mix(lead(water, fl, sky), floeColour(fl, p, V), fl.x);
+            // Polar air: the pack fades into the haze gradually, over its whole depth, instead of
+            // in a thin line at the horizon, so the far ice meets the sky without a wall.
+            col = mix(col, haze(V), (1.0 - exp(-vD * 0.0045)) * 0.75);
+        }
         gl_FragColor = vec4(fogAt(col, vD, vW), 1.0);
     }
 `;
