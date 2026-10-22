@@ -3,8 +3,26 @@ import type { Sound } from '@/components/round-trip/sound';
 import { push, type Push, tilt } from '@/components/round-trip/tilt';
 import type { FrameOut, Mark, World } from '@/components/round-trip/world';
 
+const jsSeen = (): PerformanceResourceTiming[] =>
+    (performance.getEntriesByType('resource') as PerformanceResourceTiming[]).filter((r) =>
+        r.name.split('?')[0].endsWith('.js')
+    );
+
+/** The scripts that came in with the 3D world's chunk, so the 200 OK can count them apart. */
+const worldJs = new Set<string>();
+let worldChunk: Promise<typeof import('@/components/round-trip/world')> | null = null;
+
 /** three.js and the world live in a separate chunk: fetched on idle, built on the first scroll or Start. */
-const prefetchWorld = (): Promise<unknown> => import('@/components/round-trip/world');
+const loadWorld = (): Promise<typeof import('@/components/round-trip/world')> => {
+    if (worldChunk) return worldChunk;
+    const before = new Set(jsSeen().map((r) => r.name));
+    worldChunk = import('@/components/round-trip/world').then((m) => {
+        jsSeen().forEach((r) => !before.has(r.name) && worldJs.add(r.name));
+        return m;
+    });
+    worldChunk.catch(() => (worldChunk = null));
+    return worldChunk;
+};
 
 export type DriveOptions = {
     rings: string[];
@@ -12,13 +30,14 @@ export type DriveOptions = {
     recordAt: number[];
     skills: Array<{ group: string; items: string }>;
     sound: () => Sound | null;
+    /** Whether the J/K single-key shortcuts are switched on (the HUD's J/K keys switch). */
+    keys: () => boolean;
 };
 
 type Els = {
     secs: HTMLElement[];
     route: HTMLElement[];
     req: HTMLElement | null;
-    ms: Array<HTMLElement | null>;
     skills: HTMLElement[];
     skillBox: HTMLElement | null;
     skillItems: HTMLElement[];
@@ -42,7 +61,6 @@ function find(root: HTMLElement): Els {
         secs: all('[data-sec]'),
         route: all('[data-route] li'),
         req: root.querySelector('[data-req]'),
-        ms: [0, 1, 2, 3, 4, 5].map((i) => root.querySelector<HTMLElement>(`[data-ms="${i}"]`)),
         skills: all('[data-skill]'),
         skillBox: root.querySelector('[data-skill-box]'),
         skillItems: all('[data-skill-items]'),
@@ -105,17 +123,19 @@ function scrollState(
 /** What this visit actually measured: the 200 OK shows real numbers, not a story's. */
 function measured(lcp: number): string {
     const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
-    const js = performance
-        .getEntriesByType('resource')
-        .filter((r) => r.name.split('?')[0].endsWith('.js'))
-        .reduce((sum, r) => {
-            const t = r as PerformanceResourceTiming;
-            return sum + (t.transferSize || t.encodedBodySize);
-        }, 0);
+    // The page's own scripts apart from the 3D world's chunk, which is fetched later, on idle.
+    const kb = (world: boolean): number =>
+        Math.round(
+            jsSeen()
+                .filter((r) => worldJs.has(r.name) === world)
+                .reduce((sum, r) => sum + (r.transferSize || r.encodedBodySize), 0) / 1024
+        );
+    const [page, world] = [kb(false), kb(true)];
     return [
         nav && nav.responseStart > 0 ? `first byte ${Math.round(nav.responseStart)} ms` : '',
         lcp > 0 ? `largest paint ${Math.round(lcp)} ms` : '',
-        js > 0 ? `${Math.round(js / 1024)} kB of JavaScript` : '',
+        page > 0 ? `${page} kB of JavaScript for the page` : '',
+        world > 0 ? `${world} kB more for the 3D world` : '',
     ]
         .filter(Boolean)
         .join(' · ');
@@ -190,10 +210,12 @@ function stopsOf({ tops, hs }: Layout, ringAt: number[], recordAt: number[], end
     return ys.filter((y, i) => i === 0 || y - ys[i - 1] > 40);
 }
 
-const FIELD = 'input, textarea, select, [contenteditable]';
+/** Anything that takes focus: while one has it, J and K are left to it (and to assistive tech). */
+const CONTROL = 'a[href], button, input, textarea, select, summary, [contenteditable], [tabindex]';
 /** A press here is not a press on the world. */
 const NOT_WORLD = 'a, button, summary, .rt-panel, .rt-hud';
 const BOOST = 2200;
+const RELEASE = 18;
 
 type Count = { head: string; from: number; to: number; dp: number; tail: string; minus: string };
 
@@ -300,11 +322,15 @@ function stillness(): { idle: () => number; touched: () => void; stop: () => voi
     };
 }
 
-const plainKey = (e: KeyboardEvent): string | null => {
+/**
+ * J or K for the world (WCAG 2.1.4): only bare presses, only while the J/K switch is on, and only
+ * while focus is on the page itself, not in any control.
+ */
+const plainKey = (e: KeyboardEvent, on: boolean): string | null => {
     const k = e.key.toLowerCase();
-    if (k !== 'j' && k !== 'k') return null;
+    if (!on || (k !== 'j' && k !== 'k')) return null;
     if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return null;
-    return (e.target as Element | null)?.closest?.(FIELD) ? null : k;
+    return (e.target as Element | null)?.closest?.(CONTROL) ? null : k;
 };
 
 /** The panels' text is not clickable (it lets presses through to the world), so test where it is. */
@@ -326,7 +352,8 @@ function hands(
     page: Push,
     reduce: boolean,
     step: (dir: 1 | -1) => void,
-    onInput: () => void
+    onInput: () => void,
+    keysOn: () => boolean
 ): Hands {
     let timer = 0;
     let held = false;
@@ -339,11 +366,12 @@ function hands(
     const end = (): void => {
         clearTimeout(timer);
         down = null;
-        if (held && !reduce) page.aim('boost', 0, 5);
+        // Let go and it stops: under 100 px of coast from full boost, in about 200 ms.
+        if (held && !reduce) page.aim('boost', 0, RELEASE);
         held = false;
     };
     const onKeyDown = (e: KeyboardEvent): void => {
-        const k = plainKey(e);
+        const k = plainKey(e, keysOn());
         if (!k) return;
         e.preventDefault();
         onInput();
@@ -481,7 +509,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     const pick = (q: number, n: number): number => clamp(Math.floor(q * n), 0, n - 1);
 
     const build = async (): Promise<void> => {
-        const { createWorld } = await import('@/components/round-trip/world');
+        const { createWorld } = await loadWorld();
         if (dead) return;
         world = createWorld({
             canvas,
@@ -559,8 +587,6 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         const text = `· ${clock}`;
         const req = els.req?.querySelector('em');
         if (req) req.textContent = text;
-        const tag = els.ms[sec];
-        if (tag) tag.textContent = text;
     };
 
     // The cut: the scene swaps, so the panel blinks out of focus and the hand feels it, on the same
@@ -657,7 +683,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         aim = { y: to, at: performance.now() };
         scrollTo({ top: to, behavior: reduce ? 'instant' : 'smooth' });
     };
-    const held = hands(root, page, reduce, step, still.touched);
+    const held = hands(root, page, reduce, step, still.touched, o.keys);
 
     // Send again: the screen goes dark, the page goes back to the top under it, the trip restarts.
     let veilTimer = 0;
@@ -717,7 +743,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
 
     const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1200));
     const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
-    if (!saveData) idle(() => void prefetchWorld().catch(() => undefined));
+    if (!saveData) idle(() => void loadWorld().catch(() => undefined));
     raf = requestAnimationFrame(tick);
 
     return () => {
