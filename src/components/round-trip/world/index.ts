@@ -120,8 +120,8 @@ const AIR: Record<Place, Air> = {
  * and from the side, the aurora filling the top of the frame.
  */
 const FRAMING: Partial<Record<Place, Framing>> = {
-    // Bowl settle: pull back, swing right toward Illimani, shorter look-ahead so walls not canyon.
-    city: { side: 5.6, up: 1.05, back: 19, ahead: 20, look: 5.4, aim: 2.6, lens: 0.66 },
+    // Bowl settle: enough side for Illimani, enough ahead so tower corridor still reads (not mist).
+    city: { side: 4.4, up: 0.75, back: 16.5, ahead: 26, look: 3.6, aim: 1.85, lens: 0.72 },
     canyon: { side: -2.8, up: -4.2, back: 10, ahead: 30, look: 4.2, aim: 1.6, lens: 1.1 },
     volcano: { side: 1.6, up: 5.8, back: 14, ahead: 26, look: -3.2, aim: 0, lens: 0.93 },
     desert: { side: -0.7, up: -1.2, back: 26, ahead: 54, look: -0.6, aim: 0.55, lens: 0.68 },
@@ -131,7 +131,7 @@ const FRAMING: Partial<Record<Place, Framing>> = {
 const FRAME_KEYS = Object.keys(CHASE) as Array<keyof Framing>;
 /** Place-aware bloom: lava/city windows mush under one strength; ice/ocean need a touch more. */
 const GLOW_SCALE: Partial<Record<Place, number>> = {
-    city: 0.7,
+    city: 0.58,
     volcano: 0.72,
     canyon: 0.9,
     ocean: 1.12,
