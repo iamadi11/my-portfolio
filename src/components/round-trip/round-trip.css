@@ -221,8 +221,9 @@ html:has(.rt) body {
 .rt-sec[data-zone='data'] {
     --accent: #7af0ff;
 }
+/* 200 OK: warm dawn rim (film sunrise), not neon white */
 .rt-sec[data-zone='ok'] {
-    --accent: #ffffff;
+    --accent: #ffd7a8;
 }
 .rt-pin {
     position: sticky;
@@ -407,12 +408,13 @@ html:has(.rt) body {
     letter-spacing: -0.04em;
     font-optical-sizing: auto;
 }
-/* extra plate over the poster limb so who/why hold in the first five seconds */
+/* Hero plate: name/role hold AA over orbit limb — plate only, no dashboard chrome */
 .rt-sec[data-zone='browser'] .rt-name {
     text-shadow:
-        0 1px 2px var(--shade),
-        0 4px 28px var(--shade),
-        0 0 56px rgba(5, 7, 13, 0.75);
+        0 1px 1px rgba(5, 7, 13, 0.95),
+        0 2px 8px var(--shade),
+        0 6px 36px var(--shade),
+        0 0 72px rgba(5, 7, 13, 0.85);
 }
 .rt-role {
     margin: 0 0 18px;
@@ -422,14 +424,22 @@ html:has(.rt) body {
 }
 .rt-sec[data-zone='browser'] .rt-role {
     text-shadow:
-        0 1px 2px var(--shade),
-        0 2px 18px var(--shade);
+        0 1px 1px rgba(5, 7, 13, 0.9),
+        0 2px 12px var(--shade),
+        0 4px 28px rgba(5, 7, 13, 0.7);
 }
 .rt-lede {
     max-width: 52ch;
     margin: 0 0 14px;
     color: var(--soft);
     font-size: clamp(17px, 1.5vw, 20px);
+}
+/* supporting hero lines: soft plate so statement/status stay readable without chips */
+.rt-sec[data-zone='browser'] .rt-lede,
+.rt-sec[data-zone='browser'] .rt-meta {
+    text-shadow:
+        0 1px 2px var(--shade),
+        0 2px 16px rgba(5, 7, 13, 0.65);
 }
 .rt-lede + .rt-meta {
     margin-bottom: 26px;
@@ -876,12 +886,19 @@ html:has(.rt) body {
     line-height: 1.5;
 }
 
-/* response */
+/* response — dawn plate under the kinetic status so sunrise orbit stays readable */
 .rt-ok {
     margin: 0;
     /* capped by height too, so the whole response fits on short landscape screens */
     font: 400 min(clamp(88px, 15vw, 228px), 22svh) / 0.82 var(--display);
     letter-spacing: -0.045em;
+}
+.rt-sec[data-zone='ok'] .rt-ok {
+    text-shadow:
+        0 1px 1px rgba(5, 7, 13, 0.95),
+        0 2px 12px rgba(5, 7, 13, 0.9),
+        0 8px 40px rgba(5, 7, 13, 0.75),
+        0 0 48px rgba(255, 180, 110, 0.12);
 }
 .rt-done {
     margin: 18px 0 18px;
@@ -890,6 +907,12 @@ html:has(.rt) body {
     letter-spacing: 0.12em;
     text-transform: uppercase;
 }
+.rt-sec[data-zone='ok'] .rt-done,
+.rt-sec[data-zone='ok'] .rt-vitals {
+    text-shadow:
+        0 1px 2px var(--shade),
+        0 2px 14px rgba(5, 7, 13, 0.7);
+}
 .rt-vitals {
     max-width: 46ch;
     margin: 0 0 22px;
@@ -897,12 +920,12 @@ html:has(.rt) body {
     font-size: 14px;
     line-height: 1.5;
 }
-/* 200 OK close: status → primary mail → secondary actions, one column */
+/* 200 OK close: email → Copy → quieter links → Send again last */
 .rt-close {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 18px;
+    gap: 20px;
     max-width: 36rem;
 }
 /* what Copy email really did: placed over the gap above the pills, so it never moves anything */
@@ -920,34 +943,42 @@ html:has(.rt) body {
     line-height: 1.3;
     white-space: nowrap;
 }
-/* Send again: its place is kept from the start; it comes up once the ship has left */
+/* Send again: reserved layout; inert until the ship has left; then usable (44px) */
 .rt-pills .rt-again {
     opacity: 0;
     visibility: hidden;
+    pointer-events: none;
     transition:
         opacity 200ms ease-in,
         visibility 0s 200ms,
         background 200ms ease,
         color 200ms ease,
+        border-color 200ms ease,
         transform 160ms ease-out;
 }
 .rt-left .rt-pills .rt-again {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
     transition:
         opacity 600ms var(--out),
         background 200ms ease,
         color 200ms ease,
+        border-color 200ms ease,
         transform 160ms ease-out;
 }
+/* email is the close hero: display weight + dawn underline */
 .rt-mail {
     display: inline-block;
-    padding-bottom: 8px;
-    border-bottom: 2px solid var(--line);
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(255, 215, 168, 0.45);
     font: 400 clamp(26px, 3.2vw, 48px) / 1.1 var(--display);
     letter-spacing: -0.015em;
     text-decoration: none;
     overflow-wrap: anywhere;
+    text-shadow:
+        0 1px 2px var(--shade),
+        0 4px 24px rgba(5, 7, 13, 0.75);
     transition:
         border-color 220ms ease,
         color 220ms ease;
@@ -957,13 +988,22 @@ html:has(.rt) body {
     border-color: var(--accent);
     color: var(--ink);
 }
-/* secondary contact: quieter than the mail so hierarchy holds */
-.rt-close .rt-pills .rt-cta-secondary,
+/* phone / GitHub / LinkedIn: quieter than Copy — outline only, muted ink */
+.rt-close .rt-pills .rt-cta-secondary {
+    background: transparent;
+    border-color: rgba(238, 242, 248, 0.12);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 9px 14px;
+}
+/* Send again: quieter still — ghost link weight, still 44px target when shown */
 .rt-close .rt-pills .rt-again {
     background: transparent;
-    border-color: rgba(238, 242, 248, 0.16);
-    color: var(--soft);
-    font-size: 14px;
+    border-color: rgba(238, 242, 248, 0.1);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
     padding: 9px 14px;
 }
 /* Copy email: filled primary under the address — clearest next step without new copy */
@@ -974,13 +1014,18 @@ html:has(.rt) body {
     font-weight: 600;
     font-size: 15px;
     padding: 10px 18px;
+    box-shadow: 0 4px 18px rgba(5, 7, 13, 0.35);
 }
 @media (hover: hover) and (pointer: fine) {
-    .rt-close .rt-pills .rt-cta-secondary:hover,
+    .rt-close .rt-pills .rt-cta-secondary:hover {
+        background: rgba(238, 242, 248, 0.06);
+        color: var(--soft);
+        border-color: rgba(238, 242, 248, 0.22);
+    }
     .rt-close .rt-pills .rt-again:hover {
-        background: var(--ink);
-        color: var(--bg);
-        border-color: var(--ink);
+        background: transparent;
+        color: var(--soft);
+        border-color: rgba(238, 242, 248, 0.2);
     }
     .rt-close .rt-pills .rt-cta-primary:hover {
         background: var(--accent);
@@ -1169,9 +1214,6 @@ html:has(.rt) body {
 .rt-live .rt-req::before {
     background: var(--accent);
     box-shadow: 0 0 8px rgba(143, 211, 255, 0.55);
-}
-.rt[data-phase='building'] .rt-req::before {
-    animation: rt-blink 1s steps(2) infinite;
 }
 .rt-hint {
     display: flex;
@@ -1392,14 +1434,21 @@ html:has(.rt) body {
     .rt-sec[data-zone='services'] .rt-panel {
         filter: none !important;
         opacity: 1 !important;
+        transition: opacity 200ms ease !important;
     }
     .rt-panel::before {
         transition: opacity 200ms ease !important;
         transform: none !important;
     }
-    .rt :active {
+    .rt :active,
+    .rt-cue button:hover,
+    .rt-go:hover,
+    .rt-cue a:hover,
+    .rt-pills a:hover,
+    .rt-pills button:hover {
         transform: none !important;
     }
+    /* Start pulse, cue scrub, poster drift, beacon breath, req pip blink — all still */
     .rt-cue b::after,
     .rt-poster::before,
     .rt-beacon::after,
@@ -1407,17 +1456,38 @@ html:has(.rt) body {
     .rt-layer-items,
     .rt-count i,
     .rt-req em,
-    .rt-req::before {
+    .rt-req::before,
+    .rt[data-phase='building'] .rt-req em,
+    .rt[data-phase='building'] .rt-req::before {
         transition: none !important;
         animation: none !important;
     }
     .rt-go {
+        animation: none !important;
         box-shadow: 0 4px 18px rgba(5, 7, 13, 0.3);
     }
+    /* Send again veil / fade: instant settle (drive also skips veil when reduce) */
+    .rt-scrim::after,
+    .rt main,
+    .rt-veil .rt-scrim::after,
+    .rt-veil main,
+    .rt-pills .rt-again,
+    .rt-left .rt-pills .rt-again {
+        transition: none !important;
+    }
+    .rt-hint {
+        transition: opacity 200ms ease !important;
+    }
 }
-/* the world is building after the first scroll: the readout pulses until it lands */
-.rt[data-phase='building'] .rt-req em {
-    animation: rt-blink 1s steps(2) infinite;
+/* the world is building after the first scroll: the readout pulses until it lands
+   (motion-ok only — reduce block above kills these with higher specificity + !important) */
+@media (prefers-reduced-motion: no-preference) {
+    .rt[data-phase='building'] .rt-req em {
+        animation: rt-blink 1s steps(2) infinite;
+    }
+    .rt[data-phase='building'] .rt-req::before {
+        animation: rt-blink 1s steps(2) infinite;
+    }
 }
 @keyframes rt-blink {
     50% {

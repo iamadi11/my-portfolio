@@ -612,8 +612,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     // The cut: the scene swaps, so the panel blinks out of focus and the hand feels it, on the same
     // beat; into a project's landscape, its title is handed from the flash to the panel.
     const cutBeat = (sec: number, zone: string | undefined): void => {
-        if (coarse) navigator.vibrate?.(20);
         if (reduce) return;
+        if (coarse) navigator.vibrate?.(20);
         const h3 = zone === undefined ? null : els.projects[Number(zone)]?.querySelector<HTMLElement>('h3');
         if (sec === 3 && h3 && els.handoff) handoff(els.handoff, h3, o.rings[Number(zone)] ?? '#fff');
         const panel = els.secs[sec]?.querySelector('.rt-panel');
@@ -644,12 +644,12 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         if (out.passed !== null) {
             sound?.ping(out.passed, panOf(out.rings[out.passed]));
             // A small tick in the hand as the request flies through a project's ring.
-            if (coarse) navigator.vibrate?.(12);
+            if (coarse && !reduce) navigator.vibrate?.(12);
         }
         if (out.jumped) {
             // A wind-up in the hand as the jump begins (the ring's tick stands in when it is the
             // same frame); the thump is timed to land on the cut.
-            if (coarse && out.passed === null) navigator.vibrate?.(6);
+            if (coarse && !reduce && out.passed === null) navigator.vibrate?.(6);
             sound?.jump(out.lead);
         }
         if (out.cut) cutBeat(s.sec, zone);
