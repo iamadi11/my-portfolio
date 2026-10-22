@@ -136,7 +136,7 @@ function Hero({ trip }: { trip: Trip }): React.JSX.Element {
                 {trip.meta}
             </p>
             <div className="rt-cue rt-fade" style={stagger(2)}>
-                <button type="button" data-start="rt-wire">
+                <button type="button" className="rt-go" data-start="rt-wire">
                     Start the trip
                 </button>
                 <a href={`mailto:${trip.email}`}>Email me</a>
@@ -331,26 +331,29 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
             </h2>
             <p className="rt-done rt-fade">Round trip complete · {trip.meta}</p>
             <p className="rt-vitals" data-vitals hidden />
-            <a className="rt-mail rt-fade" style={stagger(1)} href={`mailto:${trip.email}`}>
-                {trip.email}
-            </a>
-            <div className="rt-pills rt-fade" style={stagger(2)}>
-                <p className="rt-said" role="status">
-                    {said}
-                </p>
-                <button type="button" onClick={copy}>
-                    Copy email
-                </button>
-                {trip.phone && <a href={trip.phone.href}>{trip.phone.label}</a>}
-                {trip.links.map((l) => (
-                    <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">
-                        {l.label}
-                    </a>
-                ))}
-                {/* Always laid out, shown once the ship has left, so nothing shifts when it comes up. */}
-                <button type="button" className="rt-again" data-again>
-                    Send again
-                </button>
+            {/* Primary contact first; secondary actions sit under it so the close reads as hierarchy. */}
+            <div className="rt-close">
+                <a className="rt-mail rt-fade" style={stagger(1)} href={`mailto:${trip.email}`}>
+                    {trip.email}
+                </a>
+                <div className="rt-pills rt-fade" style={stagger(2)}>
+                    <p className="rt-said" role="status">
+                        {said}
+                    </p>
+                    <button type="button" onClick={copy}>
+                        Copy email
+                    </button>
+                    {trip.phone && <a href={trip.phone.href}>{trip.phone.label}</a>}
+                    {trip.links.map((l) => (
+                        <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">
+                            {l.label}
+                        </a>
+                    ))}
+                    {/* Always laid out, shown once the ship has left, so nothing shifts when it comes up. */}
+                    <button type="button" className="rt-again" data-again>
+                        Send again
+                    </button>
+                </div>
             </div>
             <details className="rt-more rt-fade" style={stagger(3)}>
                 <summary>Credits</summary>

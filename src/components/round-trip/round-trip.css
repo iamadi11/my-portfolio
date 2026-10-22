@@ -328,9 +328,10 @@ html:has(.rt) body {
         opacity 700ms var(--out),
         filter 900ms var(--out),
         transform 900ms var(--out);
-    transition-delay: calc(var(--i, 0) * 70ms);
+    transition-delay: calc(var(--i, 0) * 80ms);
 }
-/* chapter titles: word by word (200 OK letter by letter), each piece in its own mask */
+/* chapter titles: word by word (200 OK letter by letter), each piece in its own mask.
+   Cascade lands with the panel hairline (~80ms) so type and place read as one beat. */
 .rt-kin {
     display: block;
 }
@@ -347,7 +348,7 @@ html:has(.rt) body {
 .rt-js .rt-w > span {
     opacity: 0;
     filter: blur(5px);
-    transform: translateY(0.4em);
+    transform: translateY(0.45em);
     transition:
         opacity 220ms ease-in,
         filter 220ms ease-in,
@@ -358,13 +359,14 @@ html:has(.rt) body {
     filter: none;
     transform: none;
     transition:
-        opacity 650ms var(--out),
-        filter 850ms var(--out),
-        transform 850ms var(--out);
-    transition-delay: calc(var(--i, 0) * 55ms);
+        opacity 600ms var(--out),
+        filter 780ms var(--out),
+        transform 780ms var(--out);
+    transition-delay: calc(80ms + var(--i, 0) * 48ms);
 }
 .rt-js .in .rt-kin-c .rt-w > span {
-    transition-delay: calc(var(--i, 0) * 32ms);
+    /* 200 OK: snappy letter cascade after the status settles */
+    transition-delay: calc(40ms + var(--i, 0) * 28ms);
 }
 /* leaving is quicker than arriving, so the old panel never lingers under the next */
 .rt-js .rt-fade {
@@ -384,7 +386,8 @@ html:has(.rt) body {
         opacity 650ms var(--out),
         filter 800ms var(--out),
         transform 800ms var(--out);
-    transition-delay: calc(var(--i, 0) * 70ms + 140ms);
+    /* body copy waits for the title cascade so the chapter reads top-down */
+    transition-delay: calc(var(--i, 0) * 70ms + 220ms);
 }
 
 /* hero: name (serif brand), then what he is, then why it matters */
@@ -416,16 +419,31 @@ html:has(.rt) body {
     gap: 14px 18px;
     margin: 0;
 }
-.rt-cue button {
+.rt-cue button,
+.rt-go {
+    position: relative;
     min-height: 44px;
-    padding: 12px 20px;
+    padding: 12px 22px;
     border: 0;
     border-radius: 999px;
     background: var(--ink);
     color: var(--bg);
     font: 600 15px var(--body);
     cursor: pointer;
-    transition: transform 160ms ease-out;
+    transition:
+        transform 160ms ease-out,
+        box-shadow 280ms var(--out);
+}
+/* Start: a soft cool ring that breathes with the poster beacon — one invitation into the trip */
+.rt-go {
+    box-shadow:
+        0 0 0 0 rgba(143, 211, 255, 0.45),
+        0 8px 28px rgba(5, 7, 13, 0.35);
+    animation: rt-go-pulse 2.8s var(--ease) infinite;
+}
+.rt-go:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
 }
 .rt-cue a {
     display: inline-flex;
@@ -447,17 +465,42 @@ html:has(.rt) body {
         background: var(--ink);
         color: var(--bg);
     }
-    .rt-cue button:hover {
+    .rt-cue button:hover,
+    .rt-go:hover {
         transform: translateY(-2px);
+        animation: none;
+        box-shadow:
+            0 0 0 3px rgba(143, 211, 255, 0.35),
+            0 10px 32px rgba(5, 7, 13, 0.4);
     }
 }
 .rt-cue button:active,
+.rt-go:active,
 .rt-cue a:active,
 .rt-links a:active,
 .rt-pills a:active,
 .rt-pills button:active,
 .rt-snd:active {
     transform: scale(0.97);
+}
+@keyframes rt-go-pulse {
+    0%,
+    100% {
+        box-shadow:
+            0 0 0 0 rgba(143, 211, 255, 0.4),
+            0 8px 28px rgba(5, 7, 13, 0.35);
+    }
+    55% {
+        box-shadow:
+            0 0 0 10px rgba(143, 211, 255, 0),
+            0 8px 28px rgba(5, 7, 13, 0.35);
+    }
+}
+/* once the trip is underway, the Start pulse stops so the world owns attention */
+.rt-scrolled .rt-go,
+.rt-live .rt-go {
+    animation: none;
+    box-shadow: 0 4px 18px rgba(5, 7, 13, 0.3);
 }
 .rt-cue span {
     display: flex;
@@ -818,7 +861,7 @@ html:has(.rt) body {
     letter-spacing: -0.045em;
 }
 .rt-done {
-    margin: 18px 0 26px;
+    margin: 18px 0 18px;
     color: var(--soft);
     font: 500 12px var(--mono);
     letter-spacing: 0.12em;
@@ -826,14 +869,23 @@ html:has(.rt) body {
 }
 .rt-vitals {
     max-width: 46ch;
-    margin: -14px 0 26px;
+    margin: 0 0 22px;
     color: var(--muted);
     font-size: 14px;
     line-height: 1.5;
 }
+/* 200 OK close: status → primary mail → secondary actions, one column */
+.rt-close {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+    max-width: 36rem;
+}
 /* what Copy email really did: placed over the gap above the pills, so it never moves anything */
 .rt-pills {
     position: relative;
+    margin-top: 0;
 }
 .rt-said {
     position: absolute;
@@ -867,15 +919,37 @@ html:has(.rt) body {
 }
 .rt-mail {
     display: inline-block;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--line);
-    font: 400 clamp(24px, 3vw, 44px) / 1.1 var(--display);
-    letter-spacing: -0.01em;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--line);
+    font: 400 clamp(26px, 3.2vw, 48px) / 1.1 var(--display);
+    letter-spacing: -0.015em;
     text-decoration: none;
     overflow-wrap: anywhere;
+    transition:
+        border-color 220ms ease,
+        color 220ms ease;
 }
-.rt-mail:hover {
-    border-color: var(--ink);
+.rt-mail:hover,
+.rt-mail:focus-visible {
+    border-color: var(--accent);
+    color: var(--ink);
+}
+/* secondary contact: quieter than the mail so hierarchy holds */
+.rt-close .rt-pills a,
+.rt-close .rt-pills button {
+    background: transparent;
+    border-color: rgba(238, 242, 248, 0.16);
+    color: var(--soft);
+    font-size: 14px;
+    padding: 9px 14px;
+}
+@media (hover: hover) and (pointer: fine) {
+    .rt-close .rt-pills a:hover,
+    .rt-close .rt-pills button:hover {
+        background: var(--ink);
+        color: var(--bg);
+        border-color: var(--ink);
+    }
 }
 .rt-note {
     margin: 10px 0 0;
@@ -1019,14 +1093,46 @@ html:has(.rt) body {
     border-color: var(--ink);
 }
 .rt-req {
+    position: relative;
     margin-right: auto;
-    color: var(--ink);
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+    transition: color 400ms var(--out);
 }
 .rt-req em {
     color: var(--muted);
     font-style: normal;
+    transition: color 400ms var(--out);
+}
+/* request line wakes with the trip: ink + a cool pip so GET /slug feels live with the ship */
+.rt-scrolled .rt-req,
+.rt-live .rt-req {
+    color: var(--ink);
+}
+.rt-live .rt-req em {
+    color: var(--soft);
+}
+.rt-req::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-right: 10px;
+    border-radius: 50%;
+    background: var(--line);
+    vertical-align: 0.05em;
+    transition:
+        background 400ms var(--out),
+        box-shadow 400ms var(--out);
+}
+.rt-scrolled .rt-req::before,
+.rt-live .rt-req::before {
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(143, 211, 255, 0.55);
+}
+.rt[data-phase='building'] .rt-req::before {
+    animation: rt-blink 1s steps(2) infinite;
 }
 .rt-hint {
     display: flex;
@@ -1057,7 +1163,8 @@ html:has(.rt) body {
     display: none;
 }
 
-/* the title handed from the portal's flash to the panel: placed by the script, moved by transform */
+/* the title handed from the portal's flash to the panel: placed by the script, moved by transform.
+   Dark plate under glyphs so ring colour still reads AA through the white flash. */
 .rt-handoff {
     position: fixed;
     top: 0;
@@ -1067,10 +1174,14 @@ html:has(.rt) body {
     font: 400 clamp(46px, 6vw, 92px) / 0.88 var(--display);
     letter-spacing: -0.035em;
     text-shadow:
-        0 0 28px currentColor,
-        0 1px 12px var(--shade);
+        0 0 1px rgba(5, 7, 13, 0.95),
+        0 1px 2px rgba(5, 7, 13, 0.95),
+        0 2px 24px rgba(5, 7, 13, 0.9),
+        0 0 40px rgba(5, 7, 13, 0.7),
+        0 0 32px currentColor;
     opacity: 0;
     pointer-events: none;
+    will-change: transform, opacity;
 }
 
 /* labels pinned to rings and records in the world */
@@ -1247,11 +1358,16 @@ html:has(.rt) body {
     .rt-cue b::after,
     .rt-poster::before,
     .rt-beacon::after,
+    .rt-go,
     .rt-layer-items,
     .rt-count i,
-    .rt-req em {
+    .rt-req em,
+    .rt-req::before {
         transition: none !important;
         animation: none !important;
+    }
+    .rt-go {
+        box-shadow: 0 4px 18px rgba(5, 7, 13, 0.3);
     }
 }
 /* the world is building after the first scroll: the readout pulses until it lands */

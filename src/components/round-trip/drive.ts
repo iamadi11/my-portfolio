@@ -182,19 +182,27 @@ function handoff(el: HTMLElement, h3: HTMLElement, colour: string): void {
         h.classList.remove('rt-handing');
     });
     el.getAnimations().forEach((a) => a.cancel());
-    const timing = { duration: 760 };
+    // Hold the ring-colour title readable through the flash, then settle into the panel heading.
+    const timing = { duration: 880 };
     el.animate(
         [
-            { transform: big, opacity: 0 },
-            { transform: big, opacity: 1, offset: 0.12, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
-            { transform: 'none', opacity: 1, offset: 0.88 },
-            { transform: 'none', opacity: 0 },
+            { transform: big, opacity: 0, filter: 'blur(2px)' },
+            {
+                transform: big,
+                opacity: 1,
+                filter: 'none',
+                offset: 0.1,
+                easing: 'cubic-bezier(0.23, 1, 0.32, 1)',
+            },
+            { transform: big, opacity: 1, filter: 'none', offset: 0.38 },
+            { transform: 'none', opacity: 1, filter: 'none', offset: 0.86 },
+            { transform: 'none', opacity: 0, filter: 'none' },
         ],
         timing
     );
     // The real heading, hidden meanwhile, fades back in under the copy as it lands (same clock).
     h3.classList.add('rt-handing');
-    h3.animate([{ opacity: 0 }, { opacity: 0, offset: 0.82 }, { opacity: 1 }], timing).onfinish = () =>
+    h3.animate([{ opacity: 0 }, { opacity: 0, offset: 0.84 }, { opacity: 1 }], timing).onfinish = () =>
         h3.classList.remove('rt-handing');
 }
 
