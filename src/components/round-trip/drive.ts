@@ -695,9 +695,9 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         // Boosting into the end of the page stops there.
         if (s.y >= layout.tops[5] + layout.hs[5] - vh - 2) page.halt('boost');
         panels(s.q);
-        // Climb → orbit cut early in Contact so 200 OK rides sunrise, not pack ice; leave after.
+        // Orbit early so 200 OK rides sunrise; leave late so the dawn limb holds before Send again.
         const map = smooth(0, 0.48, s.q(5));
-        const resp = 1 - smooth(0.42, 0.94, s.q(5));
+        const resp = 1 - smooth(0.62, 0.97, s.q(5));
         const now = performance.now();
         if (s.y > 4 && !started) started = now;
         // The ship has left: the clock stops, and Send again comes up (usable: visible + not inert).
