@@ -514,12 +514,7 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                 </Section>
             </main>
 
-            {trip.projects.map((p) => (
-                <div className="rt-tag" data-ring-tag key={p.id} aria-hidden="true">
-                    {p.title}
-                </div>
-            ))}
-            {/* The project title handed from the portal's flash to its panel (a copy; the h3 is the real one). */}
+            {/* Portal flash → panel handoff only; no floating ring tags (panel h3 is the title). */}
             <p className="rt-handoff" data-handoff aria-hidden="true" />
             {trip.records.map((r) => (
                 <div className="rt-tag" data-record-tag key={key(r)} aria-hidden="true">

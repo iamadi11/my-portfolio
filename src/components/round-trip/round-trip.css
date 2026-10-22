@@ -16,8 +16,10 @@ html:has(.rt) body {
     --muted: oklch(0.8 0.025 260);
     --soft: oklch(0.89 0.018 260);
     --line: rgba(238, 242, 248, 0.2);
-    --shade: rgba(5, 7, 13, 0.7);
+    /* denser shade under glyphs so a lighter scrim still holds AA */
+    --shade: rgba(5, 7, 13, 0.82);
     --accent: #8fd3ff;
+    /* Instrument Serif via --font-rt-display (page.tsx); editorial, not a SaaS grotesk */
     --display: var(--font-rt-display), 'Times New Roman', Georgia, serif;
     --body: var(--font-geist-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
     --mono: var(--font-geist-mono), ui-monospace, Menlo, Consolas, monospace;
@@ -30,6 +32,7 @@ html:has(.rt) body {
     background: var(--bg);
     font: 400 17px/1.55 var(--body);
     overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
 }
 .rt a {
     color: inherit;
@@ -162,12 +165,12 @@ html:has(.rt) body {
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    /* dark under the whole 640px panel, then open onto the world */
+    /* light veil under the panel column only — the world stays the stage on the right */
     background: linear-gradient(
         90deg,
-        rgba(5, 7, 13, 0.9) 0 46%,
-        rgba(5, 7, 13, 0.72) 58%,
-        rgba(5, 7, 13, 0) 76%
+        rgba(5, 7, 13, 0.72) 0 28%,
+        rgba(5, 7, 13, 0.4) 42%,
+        rgba(5, 7, 13, 0) 58%
     );
 }
 
@@ -235,12 +238,38 @@ html:has(.rt) body {
 .rt-panel {
     position: relative;
     max-width: 640px;
-    text-shadow: 0 1px 12px var(--shade);
+    /* double shadow: a tight plate for AA, a soft bloom so type sits in the night world */
+    text-shadow:
+        0 1px 2px var(--shade),
+        0 2px 18px var(--shade),
+        0 0 40px rgba(5, 7, 13, 0.55);
     transition:
         filter 250ms ease-out,
         opacity 250ms ease-out;
     align-self: end;
     max-height: 100%;
+}
+/* zone accent as a hairline — copy feels anchored to the place, not a generic card */
+.rt-panel::before {
+    content: '';
+    position: absolute;
+    top: 0.35em;
+    bottom: 0.35em;
+    left: -14px;
+    width: 2px;
+    border-radius: 1px;
+    background: var(--accent);
+    opacity: 0;
+    transform: scaleY(0.4);
+    transform-origin: center top;
+    transition:
+        opacity 500ms var(--out) 80ms,
+        transform 700ms var(--out) 80ms;
+    pointer-events: none;
+}
+.rt-js .rt-sec.in .rt-panel::before {
+    opacity: 0.85;
+    transform: scaleY(1);
 }
 .rt-panel:has(details[open]) {
     /* opened details scroll inside the panel instead of running under the HUD */
@@ -271,7 +300,8 @@ html:has(.rt) body {
     background: var(--accent);
 }
 
-/* reveals: armed only once the page runs, so without JS every word is still there */
+/* reveals: armed only once the page runs, so without JS every word is still there.
+   Rise out of the dark (opacity + soft blur clear) instead of a template mask slide. */
 .rt-ln {
     display: block;
     overflow: hidden;
@@ -282,13 +312,23 @@ html:has(.rt) body {
     display: block;
 }
 .rt-js .rt-ln > span {
-    transform: translateY(108%);
-    transition: transform 250ms ease-in;
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(0.35em);
+    transition:
+        opacity 220ms ease-in,
+        filter 220ms ease-in,
+        transform 220ms ease-in;
 }
 .rt-js .in .rt-ln > span {
+    opacity: 1;
+    filter: none;
     transform: none;
-    transition: transform 800ms var(--out);
-    transition-delay: calc(var(--i, 0) * 60ms);
+    transition:
+        opacity 700ms var(--out),
+        filter 900ms var(--out),
+        transform 900ms var(--out);
+    transition-delay: calc(var(--i, 0) * 70ms);
 }
 /* chapter titles: word by word (200 OK letter by letter), each piece in its own mask */
 .rt-kin {
@@ -305,44 +345,60 @@ html:has(.rt) body {
     display: inline-block;
 }
 .rt-js .rt-w > span {
-    transform: translateY(108%);
-    transition: transform 250ms ease-in;
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(0.4em);
+    transition:
+        opacity 220ms ease-in,
+        filter 220ms ease-in,
+        transform 220ms ease-in;
 }
 .rt-js .in .rt-w > span {
+    opacity: 1;
+    filter: none;
     transform: none;
-    transition: transform 800ms var(--out);
-    transition-delay: calc(var(--i, 0) * 50ms);
+    transition:
+        opacity 650ms var(--out),
+        filter 850ms var(--out),
+        transform 850ms var(--out);
+    transition-delay: calc(var(--i, 0) * 55ms);
 }
 .rt-js .in .rt-kin-c .rt-w > span {
-    transition-delay: calc(var(--i, 0) * 30ms);
+    transition-delay: calc(var(--i, 0) * 32ms);
 }
 /* leaving is quicker than arriving, so the old panel never lingers under the next */
 .rt-js .rt-fade {
     opacity: 0;
-    transform: translateY(14px);
+    filter: blur(4px);
+    transform: translateY(10px);
     transition:
         opacity 200ms ease-in,
-        transform 250ms ease-in;
+        filter 200ms ease-in,
+        transform 220ms ease-in;
 }
 .rt-js .in .rt-fade {
     opacity: 1;
+    filter: none;
     transform: none;
     transition:
-        opacity 600ms var(--out),
+        opacity 650ms var(--out),
+        filter 800ms var(--out),
         transform 800ms var(--out);
-    transition-delay: calc(var(--i, 0) * 60ms + 120ms);
+    transition-delay: calc(var(--i, 0) * 70ms + 140ms);
 }
 
-/* hero: name, then what he is, then why it matters */
+/* hero: name (serif brand), then what he is, then why it matters */
 .rt-name {
-    margin: 0 0 14px;
-    font: 400 clamp(64px, 11.5vw, 200px) / 0.9 var(--display);
-    letter-spacing: -0.025em;
+    margin: 0 0 12px;
+    font: 400 clamp(72px, 12.5vw, 208px) / 0.86 var(--display);
+    letter-spacing: -0.04em;
+    font-optical-sizing: auto;
 }
 .rt-role {
     margin: 0 0 18px;
     color: var(--ink);
-    font: 400 clamp(20px, 2.2vw, 28px) / 1.25 var(--body);
+    font: italic 400 clamp(21px, 2.35vw, 30px) / 1.22 var(--display);
+    letter-spacing: -0.015em;
 }
 .rt-lede {
     max-width: 52ch;
@@ -483,8 +539,8 @@ html:has(.rt) body {
 /* edge */
 .rt-h2 {
     margin: 0 0 22px;
-    font: 400 clamp(40px, 4.8vw, 72px) / 0.95 var(--display);
-    letter-spacing: -0.02em;
+    font: 400 clamp(42px, 5.2vw, 76px) / 0.9 var(--display);
+    letter-spacing: -0.035em;
 }
 .rt-layers,
 .rt-links,
@@ -596,8 +652,8 @@ html:has(.rt) body {
 }
 .rt-h3 {
     margin: 12px 0 16px;
-    font: 400 clamp(44px, 5.6vw, 88px) / 0.92 var(--display);
-    letter-spacing: -0.02em;
+    font: 400 clamp(46px, 6vw, 92px) / 0.88 var(--display);
+    letter-spacing: -0.035em;
 }
 .rt-h3-sm {
     margin: 0 0 8px;
@@ -758,8 +814,8 @@ html:has(.rt) body {
 .rt-ok {
     margin: 0;
     /* capped by height too, so the whole response fits on short landscape screens */
-    font: 400 min(clamp(84px, 14vw, 220px), 22svh) / 0.86 var(--display);
-    letter-spacing: -0.03em;
+    font: 400 min(clamp(88px, 15vw, 228px), 22svh) / 0.82 var(--display);
+    letter-spacing: -0.045em;
 }
 .rt-done {
     margin: 18px 0 26px;
@@ -877,8 +933,8 @@ html:has(.rt) body {
     white-space: nowrap;
     margin-right: auto;
     color: var(--ink);
-    font: 400 19px var(--display);
-    letter-spacing: 0;
+    font: 400 21px var(--display);
+    letter-spacing: -0.02em;
     text-decoration: none;
     text-transform: none;
 }
@@ -1008,8 +1064,8 @@ html:has(.rt) body {
     left: 0;
     z-index: 3;
     margin: 0;
-    font: 400 clamp(44px, 5.6vw, 88px) / 0.92 var(--display);
-    letter-spacing: -0.02em;
+    font: 400 clamp(46px, 6vw, 92px) / 0.88 var(--display);
+    letter-spacing: -0.035em;
     text-shadow:
         0 0 28px currentColor,
         0 1px 12px var(--shade);
@@ -1057,13 +1113,28 @@ html:has(.rt) body {
     .rt-pin {
         padding: 84px var(--g) 116px;
     }
+    /* phones: dark only under the bottom panel band — upper 40% stays the world */
     .rt-scrim {
         background: linear-gradient(
             0deg,
-            rgba(5, 7, 13, 0.92) 0 50%,
-            rgba(5, 7, 13, 0.8) 70%,
-            rgba(5, 7, 13, 0) 92%
+            rgba(5, 7, 13, 0.9) 0 34%,
+            rgba(5, 7, 13, 0.5) 46%,
+            rgba(5, 7, 13, 0) 60%
         );
+    }
+    /* accent hairline sits above the copy on phones (panel is full-bleed bottom) */
+    .rt-panel::before {
+        top: -10px;
+        right: 0;
+        bottom: auto;
+        left: 0;
+        width: auto;
+        height: 2px;
+        transform: scaleX(0.35);
+        transform-origin: left center;
+    }
+    .rt-js .rt-sec.in .rt-panel::before {
+        transform: scaleX(1);
     }
     .rt-nav-top,
     .rt-hint {
@@ -1153,19 +1224,26 @@ html:has(.rt) body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    /* no movement; fades stay, short */
+    /* no movement; fades stay, short — no blur thrash either */
     .rt-js .rt-fade,
     .rt-js .in .rt-fade,
+    .rt-js .rt-ln > span,
+    .rt-js .in .rt-ln > span,
+    .rt-js .rt-w > span,
+    .rt-js .in .rt-w > span,
     .rt-item,
     .rt-item.on {
         transform: none !important;
+        filter: none !important;
         transition: opacity 200ms ease !important;
+    }
+    .rt-panel::before {
+        transition: opacity 200ms ease !important;
+        transform: none !important;
     }
     .rt :active {
         transform: none !important;
     }
-    .rt-js .rt-ln > span,
-    .rt-js .rt-w > span,
     .rt-cue b::after,
     .rt-poster::before,
     .rt-beacon::after,
