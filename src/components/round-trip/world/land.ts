@@ -52,8 +52,15 @@ const HEIGHT = /* glsl */ `
         if (uKind == 2) {
             // Mesas everywhere except a dry wash along the path; walls rise on both sides of it.
             float m = (fbm(p * 0.005 + 4.0) * 1.3 - 0.45) * smoothstep(22.0, 70.0, d) + smoothstep(30.0, 140.0, d) * 0.85;
-            float t = clamp(m, 0.0, 1.4) * 150.0 / 16.0;
-            float h = (floor(t) + smoothstep(0.72, 1.0, fract(t))) * 16.0;
+            // Benches whose rims have been eaten back unevenly; each cliff starts at its own place
+            // and has a talus apron banked against its foot.
+            float t = max(clamp(m, 0.0, 1.4) * 150.0 / 16.0 + (fbm(p * 0.012 + 8.0) - 0.5) * 0.8 * smoothstep(0.0, 0.2, m), 0.0);
+            float i = floor(t), f = fract(t);
+            float lip = 0.6 + 0.28 * hash(vec2(i, 1.3));
+            float scree = smoothstep(0.1, lip, f);
+            float h = (i + smoothstep(lip, 1.0, f) * 0.88 + scree * scree * 0.12) * 16.0;
+            // Benches of uneven height (a monotone warp of the steps).
+            h += 5.0 * sin(h * 0.045);
             return -14.0 + h + (fbm(p * 0.06) - 0.5) * 2.5;
         }
         if (uKind == 3) {
@@ -118,6 +125,63 @@ const FRAG = /* glsl */ `
         float seg = smoothstep(0.45, 0.6, vnoise(vec2(a * 9.0, r * 0.04)));
         return line * seg * smoothstep(170.0, 30.0, r) * smoothstep(20.0, 70.0, vW.y);
     }
+    // What weather has done to a wall, at distance a along it and height y, in bed id: a vertical
+    // fracture (x, 1 in the crack), a desert-varnish streak running down (y), and how much of a
+    // hard ledge survives here (z: erosion breaks every ledge into lengths).
+    vec3 weathering(float a, float y, float id, float close) {
+        float fr = vnoise(vec2(a * 0.07, y * 0.006 + 3.0));
+        float crack = (1.0 - smoothstep(0.0, mix(0.035, 0.014, close), abs(fr - 0.5))) * smoothstep(0.45, 0.65, vnoise(vec2(a * 0.03, y * 0.04)));
+        float streak = smoothstep(0.45, 0.8, vnoise(vec2(a * 0.42, y * 0.018 + 9.0))) * smoothstep(0.3, 0.7, vnoise(vec2(a * 0.06, 2.0)));
+        float whole = smoothstep(0.25, 0.55, vnoise(vec2(a * 0.045, id * 3.1)));
+        return vec3(crack, streak, whole);
+    }
+    // Sandstone. Beds of uneven thickness (2 to 13 m) and hardness: hard ones stand out as ledges
+    // with an overhanging cap whose lip catches the moon and an undercut in shadow below; soft ones
+    // are scooped back. Each bed has its own colour (ochre, rust, pale, chocolate). Vertical
+    // fractures, varnish streaks under the ledges. The wash floor: wind ripples in the sand,
+    // pebbles, and rubble fallen from the walls at their foot. Fine detail fades before it aliases.
+    vec3 canyon(vec2 p, float slope, float rocky, float close, float g, inout vec3 n, inout float ao, out float rim) {
+        float wall = smoothstep(0.3, 0.7, slope);
+        float y = vW.y + (fbm(p * 0.012) - 0.5) * 7.0 + p.x * 0.015;
+        float bed = y * 0.32 + 1.6 * sin(y * 0.07) + 0.7 * sin(y * 0.19 + 1.7);
+        float id = floor(bed), fb = fract(bed);
+        float aa = 1.0 - smoothstep(0.3, 0.8, fwidth(bed));
+        float hard = hash(vec2(id, 3.7));
+        // Two projections along the wall, weighted by the way it faces, so any wall gets its marks.
+        vec2 nh = normalize(n.xz + vec2(1e-4, 0.0));
+        vec3 mk = mix(weathering(p.y, y, id, close), weathering(p.x, y, id, close), nh.y * nh.y) * wall;
+        float ledge = smoothstep(0.5, 0.8, hard) * mix(0.35, 1.0, mk.z) * aa;
+        float cap = smoothstep(0.55, 0.88, fb) * (1.0 - smoothstep(0.92, 1.0, fb));
+        float under = smoothstep(0.25, 0.5, fb) * (1.0 - smoothstep(0.5, 0.6, fb));
+        float scoop = sin(fb * 3.1416) * (1.0 - hard) * aa;
+        rim = ledge * smoothstep(0.8, 0.88, fb) * (1.0 - smoothstep(0.9, 0.95, fb)) * wall;
+        float lam = mix(0.5, vnoise(vec2((p.x + p.y) * 0.2, y * 3.0)), close * aa);
+        float xbed = mix(0.5, 0.5 + 0.5 * sin((y + (p.x - p.y) * 0.3) * 5.0), close * aa * step(0.5, fract(hard * 7.0)));
+        vec3 ochre = vec3(0.6, 0.36, 0.17), rust = vec3(0.46, 0.17, 0.08), pale = vec3(0.6, 0.46, 0.32), choc = vec3(0.3, 0.14, 0.08);
+        float hc = hash(vec2(id, 9.1));
+        vec3 rock = hc < 0.38 ? ochre : hc < 0.68 ? rust : hc < 0.86 ? pale : choc;
+        rock = mix(vec3(0.5, 0.29, 0.15), rock, aa * 0.6 + 0.1);
+        rock *= (0.78 + 0.3 * lam) * (0.9 + 0.12 * xbed) * (0.8 + 0.4 * fbm(p * 0.01 + 1.0)) * (0.88 + 0.24 * g);
+        rock = mix(rock, vec3(0.08, 0.055, 0.045), mk.y * 0.75);
+        rock *= 1.0 - 0.45 * mk.x;
+        rock = mix(rock, rock * 1.25 + 0.03, rim);
+        // The floor.
+        float drift = vnoise(p * 0.07 + 2.0) * 0.6 + vnoise(p * 0.19) * 0.4;
+        float rip = sin(dot(p, vec2(0.8, 0.6)) * 3.2 + vnoise(p * 0.3) * 5.0) * close;
+        float talus = max(smoothstep(0.06, 0.24, slope), smoothstep(0.5, 3.0, vCav)) * (1.0 - wall);
+        float rubble = smoothstep(0.55, 0.78, vnoise(p * 0.5 + 7.0)) * talus;
+        float pebble = smoothstep(0.7, 0.8, vnoise(p * 2.3 + 3.0) * 0.75 + drift * 0.25) * close;
+        vec3 sand = mix(vec3(0.52, 0.37, 0.24), vec3(0.4, 0.25, 0.15), smoothstep(0.35, 0.7, drift)) * (0.92 + 0.12 * rip);
+        sand = mix(sand, vec3(0.25, 0.14, 0.09), pebble * 0.75);
+        sand = mix(sand, vec3(0.42, 0.2, 0.1) * (0.7 + 0.5 * hash(floor(p * 0.5))), rubble);
+        // Relief in metres: caps and scoops a hand or two, cracks cut in, ripples a few centimetres.
+        float rb = (cap * ledge * 0.9 - scoop * 0.5 - mk.x * 0.3 + lam * 0.08) * wall;
+        float fl = rip * 0.025 * (1.0 - talus) + pebble * 0.04 + rubble * 0.5;
+        n = bumpN(n, mix(fl, rb, rocky), close);
+        ao *= mix(1.0, (1.0 - 0.6 * under * ledge) * (1.0 - 0.35 * scoop) * (1.0 - 0.4 * mk.x), rocky * wall);
+        ao *= 1.0 - 0.3 * rubble * (1.0 - rocky);
+        return mix(sand, rock, rocky);
+    }
     void main() {
         vec3 n = normalize(vN);
         vec2 p = vW.xz;
@@ -144,32 +208,9 @@ const FRAG = /* glsl */ `
             // Pale sand under the moon, dark on the slip faces away from it, dark rock on the mesas.
             albedo = mix(vec3(0.52, 0.42, 0.3) * (0.85 + 0.3 * fbm(p * 0.02)), vec3(0.2, 0.11, 0.07), rocky);
         } else if (uKind == 2) {
-            // Sandstone in beds a few metres thick, of uneven hardness: hard ones stand out as ledges
-            // and catch the moon, soft ones recess into shadow. The beds sag and wander along the
-            // wall, and show strongest where it is steepest. Fine detail fades out before it aliases.
-            float y = vW.y + (fbm(p * 0.015) - 0.5) * 9.0;
-            float bed = y * 0.3;
-            float aa = 1.0 - smoothstep(0.25, 0.7, fwidth(bed));
-            float hard = mix(0.5, hash(vec2(floor(bed), 3.7)), aa);
-            float fb = fract(bed);
-            float ledge = mix(0.6, smoothstep(0.0, 0.25, fb) * smoothstep(1.0, 0.7 - 0.3 * hard, fb), aa);
-            float tone = 0.5 + 0.5 * sin(y * 1.5 + fbm(p * 0.02) * 3.0);
-            float along = dot(p, vec2(0.6, 0.8));
-            float fine = mix(0.5, vnoise(vec2(along * 0.3, y * 1.8)), exp(-vD * 0.02));
-            float strata = smoothstep(0.3, 0.7, slope);
-            vec3 rock = mix(vec3(0.34, 0.12, 0.06), vec3(0.58, 0.31, 0.16), mix(0.5, hard * 0.55 + tone * 0.45, strata));
-            rock *= (0.75 + 0.35 * fine) * (0.85 + 0.3 * g) * mix(1.0, 0.72 + 0.28 * ledge, strata);
-            // The floor of the wash: sand in drifts, darker coarse gravel, scattered stones.
-            float drift = fbm(p * 0.07 + 2.0);
-            float grit = mix(0.5, vnoise(p * 1.7), close);
-            float stones = smoothstep(0.68, 0.76, vnoise(p * 1.3 + 3.0) * 0.7 + drift * 0.3) * close;
-            vec3 sand = mix(vec3(0.5, 0.35, 0.23), vec3(0.36, 0.22, 0.13), smoothstep(0.35, 0.65, drift)) * (0.9 + 0.2 * grit);
-            sand = mix(sand, vec3(0.27, 0.16, 0.1) * (0.85 + 0.3 * grit), stones * 0.7);
-            // Relief in metres: ledges a hand high, stones a few centimetres.
-            float b = mix(stones * 0.05 + grit * 0.012, (ledge * (0.5 + 0.5 * hard) + fine * 0.4) * 0.3 * strata, rocky);
-            n = bumpN(n, b, close);
-            ao *= mix(1.0, 0.65 + 0.35 * ledge, rocky * strata);
-            albedo = mix(sand, rock, rocky);
+            float rim;
+            albedo = canyon(p, slope, rocky, close, g, n, ao, rim);
+            glow = albedo * uMoonCol * rim * 0.55 * vSh;
         } else if (uKind == 3) {
             // Snow where it can lie: not on the steep faces, which stay bare dark rock.
             float steep = smoothstep(0.36, 0.6, slope + (g - 0.5) * 0.3);
