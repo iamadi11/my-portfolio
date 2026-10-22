@@ -93,11 +93,12 @@ const AIR_FRAG = /* glsl */ `
         // hugging the curve, deep orange at the surface going to gold above, running far from the
         // sun. It takes the place of the blue there (added on top, the tone curve turns it white),
         // and shows early, before the disc is up.
-        float graze = smoothstep(-0.1, 0.95, around);
-        float warmth = exp(-abs(h - 0.0015) / 0.0032) * graze * graze * smoothstep(0.0, 0.28, uDay);
-        vec3 warm = mix(vec3(0.95, 0.2, 0.02), vec3(1.0, 0.68, 0.22), smoothstep(-0.001, 0.007, h));
-        vec3 col = blue * (above + onTop) * 0.9 * (1.0 - 0.85 * warmth) + gold * sun * (above * 3.5 + onTop * 0.9) * uRise;
-        col += warm * warmth * 1.2;
+        float graze = smoothstep(-0.12, 0.95, around);
+        // Wider, earlier graze so the gold limb reads before the disc clears — signature #3.
+        float warmth = exp(-abs(h - 0.0015) / 0.004) * pow(max(graze, 0.0), 1.55) * smoothstep(0.0, 0.22, uDay);
+        vec3 warm = mix(vec3(0.95, 0.2, 0.02), vec3(1.0, 0.7, 0.24), smoothstep(-0.001, 0.007, h));
+        vec3 col = blue * (above + onTop) * 0.9 * (1.0 - 0.85 * warmth) + gold * sun * (above * 3.6 + onTop * 0.95) * uRise;
+        col += warm * warmth * 1.35;
         gl_FragColor = vec4(col * uOp, 1.0);
     }
 `;
@@ -131,8 +132,8 @@ const ISS_FRAG = /* glsl */ `
         float rim = pow(1.0 - abs(dot(n, V)), 3.0) * pow(max(dot(-V, uSun), 0.0), 2.0);
         vec3 earth = vec3(0.04, 0.06, 0.11) * (0.5 + 0.5 * n.y);
         // Edges also catch the warm band of the dawn air behind and below it, so the shape reads.
-        float edge = pow(1.0 - abs(dot(n, V)), 2.0);
-        vec3 col = uAlbedo * (sunCol * lit * 1.2 + earth) + sunCol * (spec + rim * 4.0) + vec3(1.0, 0.55, 0.25) * edge * 0.35 * uDawn;
+        float edge = pow(1.0 - abs(dot(n, V)), 1.85);
+        vec3 col = uAlbedo * (sunCol * lit * 1.25 + earth) + sunCol * (spec + rim * 4.6) + vec3(1.0, 0.55, 0.25) * edge * 0.5 * uDawn;
         gl_FragColor = vec4(col, 1.0);
     }
 `;
@@ -242,7 +243,7 @@ function placeIss(
     const y = tmp[5].crossVectors(z, x);
     iss.group.quaternion.setFromRotationMatrix(basis.makeBasis(x, y, z));
     // Slightly larger so the station reads against the dawn limb without dominating the globe.
-    iss.group.scale.setScalar(D * 0.095);
+    iss.group.scale.setScalar(D * 0.105);
 }
 
 /** The station: fetched when wanted, shown only in the finale, placed against the dawn. */
@@ -433,7 +434,7 @@ export function addSpace(
             .normalize()
             .applyAxisAngle(toEye, f.tall ? SUN_AT.tall : SUN_AT.wide);
         uRim.value.copy(rim);
-        uRise.value = 1 + 1.6 * smooth(0, 0.6, dawn);
+        uRise.value = 1 + 2.05 * smooth(0, 0.55, dawn);
         uDay.value = dawn;
         // Just under the visible limb, then clearing it: on the curve as seen from here.
         limbPoint(sunAt, f.eye, globe.position, rim, R * lerp(0.99, 1.03, dawn));

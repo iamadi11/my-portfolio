@@ -536,7 +536,7 @@ export function createWorld(o: WorldOptions): World {
      */
     /** At the end it climbs away, up and ahead over the Earth, shrinking in frame, lit by the sun. */
     const depart = (sun: THREE.Vector3 | null, leave: number, dawn: number): void => {
-        sunlight.intensity = sun ? 4.2 * dawn : 0;
+        sunlight.intensity = sun ? 4.6 * dawn : 0;
         if (!sun) return;
         if (leave > 0) {
             // Away along the view, rising a little: it shrinks against the Earth, not out of frame.
@@ -548,10 +548,13 @@ export function createWorld(o: WorldOptions): World {
             at.addScaledVector(toSun, gone);
             heading.lerp(toSun, leave).normalize();
         }
-        // The key comes from the camera's side and above (the sun is behind the ship, which would
-        // leave it a black silhouette on black space), so it reads however far it has gone.
+        // Side-and-above key (true sun is behind the ship); tip a little toward the dawn disc so
+        // departure keeps a warm limb-facing plane as the craft shrinks.
         sunlight.target.position.copy(at);
-        sunlight.position.copy(camera.position).addScaledVector(camera.up, 40);
+        sunlight.position
+            .copy(camera.position)
+            .addScaledVector(camera.up, 40)
+            .addScaledVector(toSun.copy(sun).sub(camera.position).normalize(), 18);
     };
 
     /** The visitor's input: a boost lights the afterburner once as it passes half; both ease. */
@@ -568,10 +571,10 @@ export function createWorld(o: WorldOptions): World {
 
     /** Rim light on the hull: the air of the place, the portal's colour as it nears, gold at sunrise. */
     const rimOf = (place: Place, zone: number, dawn: number): void => {
-        rim.setRGB(...AIR[place].horizon).multiplyScalar(3);
+        rim.setRGB(...AIR[place].horizon).multiplyScalar(place === 'orbit' ? 2.4 : 3.2);
         if (ringColours[zone]) rim.lerp(ringColours[zone], rings.close);
         // Sunrise craft: gold owns the hull rim as dawn climbs — signature #3.
-        if (place === 'orbit') rim.lerp(GOLD, Math.min(1, dawn * 1.15));
+        if (place === 'orbit') rim.lerp(GOLD, Math.min(1, dawn * 1.35));
     };
 
     /** Steered by the pointer (mouse or phone tilt): across the route and up; none in the hero. */
