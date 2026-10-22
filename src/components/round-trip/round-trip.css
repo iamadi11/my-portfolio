@@ -220,7 +220,8 @@ html:has(.rt) body {
     position: sticky;
     top: 0;
     display: grid;
-    align-content: end;
+    /* safe: a panel taller than the screen starts below the header instead of sliding under it */
+    align-content: safe end;
     height: 100svh;
     padding: 110px var(--g) clamp(88px, 13vh, 130px);
     pointer-events: none;
@@ -744,7 +745,8 @@ html:has(.rt) body {
 /* response */
 .rt-ok {
     margin: 0;
-    font: 400 clamp(84px, 14vw, 220px) / 0.86 var(--display);
+    /* capped by height too, so the whole response fits on short landscape screens */
+    font: 400 min(clamp(84px, 14vw, 220px), 22svh) / 0.86 var(--display);
     letter-spacing: -0.03em;
 }
 .rt-done {
@@ -1180,5 +1182,128 @@ html:has(.rt) body {
     /* phones: world labels keep the name only; the dates are in the panel */
     .rt-tag small {
         display: none;
+    }
+}
+
+/* short wide screens (small laptop windows, phones turned sideways): every panel must fit
+   between the HUD bars, so the secondary lines step back and the type is capped by height */
+@media (max-height: 620px) and (orientation: landscape) {
+    .rt-pin {
+        padding: 76px var(--g) 64px;
+    }
+    .rt-chips,
+    .rt-tech {
+        display: none;
+    }
+    .rt-js .rt-layers li {
+        min-height: 0;
+        padding: 7px 0;
+    }
+    .rt-layers b {
+        font-size: min(clamp(21px, 1.9vw, 28px), 5.5svh);
+    }
+    .rt-js .rt-layer-items {
+        padding-top: 9px;
+    }
+    .rt-impact {
+        gap: 14px 32px;
+    }
+    .rt-impact dd {
+        font-size: min(clamp(36px, 4vw, 56px), 9svh);
+    }
+    .rt-impact dt {
+        font-size: 14px;
+    }
+    .rt-bullets {
+        margin-top: 8px;
+    }
+    .rt-bullets li {
+        font-size: 15px;
+    }
+}
+
+/* very short (phones turned sideways): the route keeps only its dots */
+@media (max-height: 500px) and (orientation: landscape) {
+    .rt-pin {
+        padding: 58px var(--g) 28px;
+    }
+    .rt-lede {
+        margin-bottom: 8px;
+        font-size: 15px;
+    }
+    .rt-lede + .rt-meta {
+        margin-bottom: 14px;
+    }
+    .rt-js .rt-layers li {
+        padding: 5px 0;
+    }
+    /* items beside the list, as on wide screens, not under it */
+    .rt-js .rt-skills {
+        grid-template-columns: 9.5em 1fr;
+    }
+    .rt-js .rt-layer-items {
+        padding-top: 7px;
+    }
+    .rt-top {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    /* the route keeps its dots; names stay readable to screen readers */
+    .rt-top .rt-route span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+    .rt-top .rt-route a {
+        min-width: 24px;
+        min-height: 24px;
+        justify-content: center;
+    }
+    .rt-top .rt-route li + li::before {
+        width: 12px;
+        margin: 0 2px;
+    }
+    /* phones turned sideways too: the dots ride in the header, not in a second bottom row */
+    .rt-nav-top {
+        display: block;
+    }
+    .rt-nav-bottom {
+        display: none;
+    }
+    .rt-bottom {
+        flex-wrap: nowrap;
+        padding: 6px var(--g) calc(6px + env(safe-area-inset-bottom, 0px));
+    }
+    .rt-label {
+        margin-bottom: 8px;
+    }
+    .rt-name {
+        margin-bottom: 8px;
+        font-size: min(clamp(64px, 9vw, 128px), 18svh);
+    }
+    .rt-h2 {
+        margin-bottom: 12px;
+        font-size: min(clamp(40px, 4.8vw, 72px), 13svh);
+    }
+    .rt-h3 {
+        margin: 4px 0 8px;
+        font-size: min(clamp(44px, 5.6vw, 88px), 13svh);
+    }
+    .rt-ok {
+        font-size: 20svh;
+    }
+    .rt-done,
+    .rt-vitals {
+        display: none;
+    }
+    .rt-mail {
+        font-size: min(clamp(24px, 3vw, 44px), 8svh);
+    }
+    .rt-pills,
+    .rt-links {
+        margin-top: 10px;
     }
 }

@@ -353,7 +353,8 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                             by {by}
                         </React.Fragment>
                     ))}
-                    . Earth, Moon photograph and International Space Station model: NASA. Stars:{' '}
+                    . Moon photograph and International Space Station model: NASA. Earth textures: from an
+                    Earth model pack supplied by the owner. Stars:{' '}
                     <a href="https://svs.gsfc.nasa.gov/4851" target="_blank" rel="noopener noreferrer">
                         NASA/Goddard SVS Deep Star Maps
                     </a>
