@@ -206,7 +206,8 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
     const update = (f: ShipIn): void => {
         const now = performance.now() / 1000;
         rig.position.copy(f.at);
-        rig.position.y += Math.sin(now * 1.4) * (0.08 + f.idle * 0.1);
+        // Idle hover reads at chase distance; cruise keeps a quieter bob.
+        rig.position.y += Math.sin(now * 1.55) * (0.11 + f.idle * 0.18);
         rig.lookAt(look.copy(rig.position).add(f.heading));
         turn += ((f.hero ? Math.PI : 0) - turn) * (1 - Math.exp(-f.dt * 2.5));
         rig.rotateY(turn);
@@ -215,22 +216,23 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
         prev.copy(f.heading);
         // Steered, it banks into the move (positive roll drops the right wing; turned round to face
         // you, that flips) and lifts its nose into a climb.
-        const lean = clamp(-yaw * 40, -0.6, 0.6) + clamp(f.lean * 0.12, -0.5, 0.5) * Math.cos(turn);
-        bank += (lean - bank) * (1 - Math.exp(-f.dt * 3));
+        const lean = clamp(-yaw * 48, -0.72, 0.72) + clamp(f.lean * 0.14, -0.55, 0.55) * Math.cos(turn);
+        bank += (lean - bank) * (1 - Math.exp(-f.dt * 3.4));
         spin = Math.min(ROLL.wind + ROLL.len, spin + f.dt);
         const roll = bank + barrel(spin);
         body.rotation.set(
-            -Math.min(0.2, f.speed * 0.25) - f.pitch * 0.05,
+            -Math.min(0.22, f.speed * 0.28) - f.pitch * 0.055,
             0,
-            roll + Math.sin(now * 0.9) * 0.04
+            roll + Math.sin(now * 0.95) * (0.05 + f.idle * 0.03)
         );
         kick = Math.max(0, kick - f.dt * 1.5);
         uThrust.value = thrust(f, now);
         if (glint >= 0) glint = glint + f.dt / GLINT.len;
         // Hard thrust flares the engines, so a ship burning away reads as a bright point from afar.
-        // Cap the speed swell so bloom does not mush the hull on boost.
-        const swell = (1 + f.speed * f.speed * 0.6) * (1 + GLINT.gain * glintAt(glint));
-        engines.forEach((e) => e.scale.setScalar((0.5 + uThrust.value * 0.45) * swell));
+        // Cap the speed swell so bloom does not mush the hull on boost; pulse with thrust.
+        const pulse = 1 + Math.max(0, uThrust.value - 0.85) * 0.22 * (0.55 + 0.45 * Math.sin(now * 18.0));
+        const swell = (1 + f.speed * f.speed * 0.6) * (1 + GLINT.gain * glintAt(glint)) * pulse;
+        engines.forEach((e) => e.scale.setScalar((0.52 + uThrust.value * 0.5) * swell));
         uRim.value.lerp(f.rim, 1 - Math.exp(-f.dt * 4));
         nose.material.opacity = f.heat;
         nose.scale.setScalar(2 + f.heat * 5 + Math.sin(now * 29.0) * 0.12);

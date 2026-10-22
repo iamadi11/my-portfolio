@@ -47,9 +47,17 @@ const FINISH = {
             col *= pow(1.0 - smoothstep(0.0, 0.85, dark), 1.5);
             // Lighter vignette so night places keep corner detail (Illimani, portal marquees).
             col *= 1.0 - smoothstep(0.48, 1.08, r) * 0.32;
+            // Night-film grade: soft S-curve, cool shadow lift, gentle highlight roll — not neon.
+            col = max(col, 0.0);
+            col = pow(col, vec3(0.92));
+            float luma = dot(col, vec3(0.2126, 0.7152, 0.0722));
+            float contrast = smoothstep(0.0, 0.55, luma) * (1.0 - smoothstep(0.55, 1.15, luma));
+            col = mix(col, col * vec3(0.92, 0.96, 1.06), (1.0 - luma) * 0.12);
+            col = mix(col, col * 1.08, contrast * 0.18);
+            col = col / (1.0 + col * 0.22);
             // Film grain: in the mid-tones, in screen space, never lifting the blacks.
             float lum = dot(col, vec3(0.3, 0.59, 0.11));
-            col += (h(gl_FragCoord.xy + fract(uTime) * 91.0) - 0.5) * 0.05 * sqrt(max(lum, 0.0)) * (1.0 - min(lum, 1.0));
+            col += (h(gl_FragCoord.xy + fract(uTime) * 91.0) - 0.5) * 0.045 * sqrt(max(lum, 0.0)) * (1.0 - min(lum, 1.0));
             col += (h(gl_FragCoord.xy) - 0.5) / 255.0 * (1.0 - uDip);
             col = max(col, 0.0);
             gl_FragColor = vec4(col, 1.0);

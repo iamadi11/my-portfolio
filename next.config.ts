@@ -1,6 +1,8 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+    // Parallel cloud agents: `NEXT_DIST_DIR=.next-agent-b npm run build` avoids racing the shared `.next`.
+    ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
     poweredByHeader: false,
     reactStrictMode: true,
 

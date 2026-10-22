@@ -42,6 +42,11 @@ html:has(.rt) body {
     outline-offset: 3px;
     border-radius: 4px;
 }
+/* HUD controls sit on a translucent bar — keep the ring readable over the canvas */
+.rt-hud :focus-visible {
+    outline-color: var(--ink);
+    background: rgba(5, 7, 13, 0.72);
+}
 .rt-sr {
     position: absolute;
     width: 1px;
@@ -1347,6 +1352,12 @@ html:has(.rt) body {
         transform: none !important;
         filter: none !important;
         transition: opacity 200ms ease !important;
+    }
+    /* portal cut / rush soft-focus must not blur for reduced motion */
+    .rt-panel.rt-cut,
+    .rt-sec[data-zone='services'] .rt-panel {
+        filter: none !important;
+        opacity: 1 !important;
     }
     .rt-panel::before {
         transition: opacity 200ms ease !important;

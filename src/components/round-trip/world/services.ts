@@ -35,7 +35,7 @@ type Portal = {
     sign: Sign | null;
     /** A lighthouse in the project's colour, so the gate is something to aim at from far off. */
     beacon: THREE.Sprite;
-    horizon: { uOn: THREE.IUniform<number>; uFlash: THREE.IUniform<number> };
+    horizon: { uOn: THREE.IUniform<number>; uFlash: THREE.IUniform<number>; uPunch: THREE.IUniform<number> };
     colour: THREE.Color;
     near: number;
     passed: boolean;
@@ -87,7 +87,7 @@ function innerRadius(model: THREE.Object3D): number {
  * and flashes as the ship crosses.
  */
 const HORIZON_FRAG = /* glsl */ `
-    uniform vec3 uCol, uNext; uniform float uOn, uFlash, uKind;
+    uniform vec3 uCol, uNext; uniform float uOn, uFlash, uKind, uPunch;
     varying vec2 vUv; varying vec3 vW; varying float vD;
     // One conical mound (Chocolate Hills): peak height h at cell centre, falloff by half-width w.
     float coneSil(float az, float mid, float w, float h) {
@@ -204,10 +204,14 @@ const HORIZON_FRAG = /* glsl */ `
         float outer = smoothstep(0.55, 0.95, r);
         float rim = pow(smoothstep(0.8, 0.995, r), 3.0);
         float inside = 1.0 - smoothstep(0.985, 1.0, r);
-        vec3 col = uCol * ((arms * 0.3 + streaks * 0.4) * outer + rim * 1.1);
         // Premultiplied: the throat covers the scene behind with the place beyond; the swirl adds light.
-        float alpha = 0.92 * uOn * inside * fade(vD);
-        vec3 glow = col * uOn + mix(uCol, vec3(1.0), 0.5) * uFlash * (1.0 - r * 0.6);
+        // Rush punch: as the ship lines up, the throat brightens and the swirl tightens — not a RT.
+        float punch = clamp(uPunch, 0.0, 1.0);
+        float swirl = arms * (0.3 + punch * 0.22) + streaks * (0.4 + punch * 0.18);
+        vec3 col = uCol * (swirl * outer + rim * (1.1 + punch * 0.55));
+        float alpha = (0.92 + punch * 0.06) * uOn * inside * fade(vD);
+        vec3 glow = col * uOn * (1.0 + punch * 0.45)
+            + mix(uCol, vec3(1.0), 0.55) * uFlash * (1.0 - r * 0.55) * (1.0 + punch * 0.35);
         gl_FragColor = vec4(beyond(normalize(vW - cameraPosition)) * alpha + glow * inside * fade(vD), alpha);
     }
 `;
@@ -401,7 +405,7 @@ function buildPortal(scene: THREE.Object3D, s: Shared, route: Route, glowAt: Glo
     g.scale.setScalar(scale);
     scene.add(g);
     const strip = lightStrip(s, colour, k);
-    const horizon = { uOn: { value: 0 }, uFlash: { value: 0 } };
+    const horizon = { uOn: { value: 0 }, uFlash: { value: 0 }, uPunch: { value: 0 } };
     const disc = new THREE.Mesh(
         new THREE.CircleGeometry(INNER, 128),
         shader(
@@ -521,14 +525,16 @@ export function addRings(
             p.beacon.visible = k === show && u < p.u;
             p.beacon.scale.setScalar(3 + d * 0.03);
             p.beacon.material.opacity = 0.85 * smooth(30, 120, d);
-            p.glow.copy(p.colour).multiplyScalar(0.35 + p.near * 0.8);
-            if (p.sign) p.sign.uOn.value = 0.45 + 0.55 * p.near;
+            // Strip surges with the throat flash so the cross reads as one punch, not only the disc.
+            p.glow.copy(p.colour).multiplyScalar(0.35 + p.near * 0.8 + p.horizon.uFlash.value * 1.1);
+            if (p.sign) p.sign.uOn.value = 0.45 + 0.55 * p.near + p.horizon.uFlash.value * 0.35;
             p.horizon.uOn.value = smooth(0.15, 0.85, p.near);
+            p.horizon.uPunch.value = k === show ? rings.rush : 0;
             if (k === show) pool(p);
             p.horizon.uFlash.value *= Math.exp(-dt * 3.5);
             if (!p.passed && u > p.u) {
                 p.passed = true;
-                p.horizon.uFlash.value = 0.45;
+                p.horizon.uFlash.value = 0.72;
                 hit = k;
             }
             if (u < p.u - 0.002) p.passed = false;

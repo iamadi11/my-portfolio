@@ -69,13 +69,13 @@ const SEA_FRAG = /* glsl */ `
         float band = exp(-pow((R.y - 0.09) / 0.07, 2.0)) * ahead;
         float fold = 0.6 + 0.4 * sin(atan(R.x, -R.z) * 9.0 + uTime * 0.1);
         float wash = exp(-pow((R.y - 0.2) / 0.45, 2.0)) * (0.4 + 0.6 * ahead);
-        return vec3(0.12, 1.0, 0.55) * (band * fold * 0.16 + wash * 0.035) * uIce;
+        return vec3(0.12, 1.0, 0.55) * (band * fold * 0.22 + wash * 0.05) * uIce;
     }
     // Open water in the pack: deep blue-black in the leads, with a soft rim of grey new ice (nilas)
     // and slush where it meets the floes, so leads read as water, not holes.
     vec3 lead(vec3 water, vec4 fl, vec3 sky) {
         float rim = 1.0 - smoothstep(0.015, 0.16, fl.y);
-        vec3 deep = water + vec3(0.004, 0.013, 0.04) + sky * 0.08;
+        vec3 deep = water + vec3(0.002, 0.02, 0.055) + sky * 0.1;
         vec3 nilas = vec3(0.07, 0.1, 0.13) * (uMoonCol * max(uMoon.y, 0.0) + 0.3);
         return mix(deep, nilas, rim * 0.8);
     }
@@ -84,8 +84,9 @@ const SEA_FRAG = /* glsl */ `
     vec3 floeColour(vec4 fl, vec2 p, vec3 V) {
         vec3 iN = normalize(vec3((fbm(p * 0.3) - 0.5) * 0.25, 1.0, (fbm(p.yx * 0.3) - 0.5) * 0.25));
         vec3 albedo = mix(vec3(0.3, 0.42, 0.5), vec3(0.55, 0.58, 0.62), smoothstep(0.1, 0.3, fl.y));
-        vec3 amb = vec3(0.02, 0.03, 0.05) + vec3(0.012, 0.05, 0.03) * uIce * iN.y;
+        vec3 amb = vec3(0.02, 0.03, 0.05) + vec3(0.018, 0.06, 0.04) * uIce * iN.y;
         vec3 snow = albedo * (uMoonCol * max(dot(iN, uMoon), 0.0) + amb);
+        snow += vec3(0.02, 0.08, 0.12) * (1.0 - max(dot(iN, uMoon), 0.0)) * 0.35 * uIce;
         float rim = 1.0 - smoothstep(0.06, 0.16, fl.y);
         float face = dot(fl.zw, normalize(uMoon.xz));
         snow += uMoonCol * albedo * rim * max(face, 0.0) * 0.5;
@@ -112,7 +113,10 @@ const SEA_FRAG = /* glsl */ `
         vec3 nj = normalize(n + (vec3(hash(cellId), 0.0, hash(cellId + 7.1)) - 0.5) * 0.12 * near);
         float m = max(dot(reflect(V, nj), uMoon), 0.0);
         float ex = mix(1400.0, 150.0, smoothstep(40.0, 600.0, vD));
-        vec3 water = mix(vec3(0.002, 0.007, 0.012), sky, fres) + uMoonCol * (pow(m, ex) * 2.5 * (ex / 1400.0) + pow(max(dot(R, uMoon), 0.0), 220.0) * 0.06);
+        float deep = 1.0 - exp(-vD * 0.0018);
+        vec3 water = mix(vec3(0.0015, 0.006, 0.014), sky, fres * (1.0 - deep * 0.35));
+        water = mix(water, vec3(0.001, 0.01, 0.028), deep * 0.45 * (1.0 - fres));
+        water += uMoonCol * (pow(m, ex) * 2.5 * (ex / 1400.0) + pow(max(dot(R, uMoon), 0.0), 220.0) * 0.06);
         // Crests turned to the moon let a little teal light through.
         float crest = smoothstep(0.1, 0.8, swell(p)) * clamp(dot(n.xz, uMoon.xz) * 8.0, 0.0, 1.0);
         water += uMoonCol * vec3(0.0, 0.012, 0.011) * crest * (1.0 - fres);
@@ -139,9 +143,10 @@ const BERG_FRAG = /* glsl */ `
         float top = smoothstep(0.55, 0.85, n.y);
         vec3 albedo = mix(vec3(0.26, 0.42, 0.52), vec3(0.56, 0.6, 0.65), top);
         vec3 col = albedo * (uMoonCol * lit + vec3(0.015, 0.03, 0.045) + vec3(0.012, 0.05, 0.03) * max(n.y, 0.0));
-        col += vec3(0.02, 0.11, 0.17) * (1.0 - lit) * (0.6 + 0.4 * vR);
+        // Subsurface blue in the shadowed volume — bergs read as ice, not chalk.
+        col += vec3(0.025, 0.14, 0.22) * (1.0 - lit) * (0.65 + 0.35 * vR) * (0.55 + 0.45 * (1.0 - top));
         col += uMoonCol * pow(max(dot(reflect(-uMoon, n), V), 0.0), 24.0) * 0.5;
-        col += vec3(0.25, 0.45, 0.6) * pow(1.0 - abs(dot(n, V)), 3.0) * 0.08;
+        col += vec3(0.22, 0.5, 0.7) * pow(1.0 - abs(dot(n, V)), 2.6) * 0.12;
         float wet = 1.0 - smoothstep(${(SEA - 0.4).toFixed(1)}, ${(SEA + 0.6).toFixed(1)}, vW.y);
         col = mix(col, col * vec3(0.3, 0.55, 0.6), wet);
         col += beamAt(vW) * albedo * 3.0;

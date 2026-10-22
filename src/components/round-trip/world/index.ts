@@ -98,16 +98,16 @@ const AIR: Record<Place, Air> = {
     space: { fog: 0.03, horizon: [0, 0, 0], space: true, mist: 0 },
     // Altiplano night: cool moonlight + a hint of warm city spill; mist pools in the bowl.
     city: { fog: FOG * 0.42, horizon: [0.048, 0.036, 0.055], stars: 0.55, mist: 1.35 },
-    // Chocolate Hills / Lençóis / Danxia / Roraima / Erta Ale horizons sit in matching air.
-    grass: { fog: 0.0055, horizon: [0.03, 0.04, 0.05], mist: 1.05 },
-    desert: { fog: 0.005, horizon: [0.04, 0.045, 0.055], mist: 0.85 },
-    canyon: { fog: 0.0058, horizon: [0.055, 0.03, 0.035], mist: 1.1 },
-    alpine: { fog: 0.0042, horizon: [0.028, 0.04, 0.07], mist: 1.2 },
-    volcano: { fog: 0.0065, horizon: [0.1, 0.035, 0.02], stars: 0.75, mist: 0.9 },
-    ocean: { fog: 0.005, horizon: [0.022, 0.04, 0.066], mist: 1.15 },
+    // Each project land gets its own air so a portal jump changes the sky, not only the ground.
+    grass: { fog: 0.0048, horizon: [0.022, 0.048, 0.042], mist: 1.2, stars: 0.85 }, // Chocolate Hills
+    desert: { fog: 0.0038, horizon: [0.055, 0.06, 0.078], mist: 0.55, stars: 0.95 }, // Lençóis flats
+    canyon: { fog: 0.0064, horizon: [0.09, 0.035, 0.028], mist: 1.05, stars: 0.7 }, // Danxia bands
+    alpine: { fog: 0.0035, horizon: [0.02, 0.035, 0.085], mist: 1.45, stars: 1 }, // Roraima tepui
+    volcano: { fog: 0.0078, horizon: [0.14, 0.04, 0.018], stars: 0.55, mist: 0.7 }, // Erta Ale
+    ocean: { fog: 0.0046, horizon: [0.016, 0.038, 0.078], mist: 1.25, stars: 0.9 },
     // Darker and bluer than the sea air, and thinner: the far ice carries on to a horizon that
     // is already night sky, so no band of lit air sits between it and the aurora.
-    ice: { fog: 0.0022, horizon: [0.014, 0.03, 0.044], aurora: 1, mist: 0.65 },
+    ice: { fog: 0.0018, horizon: [0.01, 0.028, 0.05], aurora: 1, mist: 0.5, stars: 1.1 },
     orbit: { fog: 0.03, horizon: [0, 0, 0], space: true, mist: 0 },
 };
 /**
@@ -118,22 +118,24 @@ const AIR: Record<Place, Air> = {
  * and from the side, the aurora filling the top of the frame.
  */
 const FRAMING: Partial<Record<Place, Framing>> = {
-    // Side offset puts Illimani in the right third; lower eye + longer look reads the amphitheater.
-    city: { side: 2.6, up: 0.35, back: 16, ahead: 38, look: 2.4, aim: 0.7, lens: 0.86 },
-    canyon: { side: -2.6, up: -4, back: 10, ahead: 30, look: 4, aim: 1.5, lens: 1.08 },
-    volcano: { side: 1.5, up: 5.5, back: 14, ahead: 26, look: -3, aim: 0, lens: 0.95 },
-    desert: { side: -0.6, up: -1, back: 24, ahead: 52, look: -0.5, aim: 0.5, lens: 0.7 },
-    alpine: { side: 1.2, up: 2.5, back: 12, ahead: 30, look: -1, aim: 0, lens: 1 },
-    ice: { side: -4.5, up: -0.3, back: 10, ahead: 28, look: 4, aim: 2, lens: 1.1 },
+    // Stronger side/look so Illimani and bowl walls read as soon as the cloud deck clears.
+    city: { side: 3.2, up: 0.15, back: 17, ahead: 40, look: 3.1, aim: 0.85, lens: 0.84 },
+    canyon: { side: -2.8, up: -4.2, back: 10, ahead: 30, look: 4.2, aim: 1.6, lens: 1.1 },
+    volcano: { side: 1.6, up: 5.8, back: 14, ahead: 26, look: -3.2, aim: 0, lens: 0.93 },
+    desert: { side: -0.7, up: -1.2, back: 26, ahead: 54, look: -0.6, aim: 0.55, lens: 0.68 },
+    alpine: { side: 1.4, up: 2.8, back: 12, ahead: 32, look: -1.2, aim: 0.1, lens: 1.02 },
+    ice: { side: -4.8, up: -0.4, back: 10, ahead: 28, look: 4.2, aim: 2.2, lens: 1.12 },
 };
 const FRAME_KEYS = Object.keys(CHASE) as Array<keyof Framing>;
 /**
  * Eases the shot towards the place's framing: fast while a jump's flash or a dip's dark hides the
  * move (the place changes at their peak), slowly otherwise; reduced motion cuts straight to it.
+ * `urgency` (0–1) speeds the settle — used as the cloud-deck drop falls so La Paz lands sooner.
  */
-function reframe(f: Framing, place: Place, hidden: number, dt: number, reduce: boolean): void {
+function reframe(f: Framing, place: Place, hidden: number, dt: number, reduce: boolean, urgency = 0): void {
     const to = FRAMING[place] ?? CHASE;
-    const k = reduce ? 1 : 1 - Math.exp(-dt * (hidden > 0.3 ? 9 : 1.2));
+    const rate = hidden > 0.3 ? 9 : 1.2 + urgency * 4.5;
+    const k = reduce ? 1 : 1 - Math.exp(-dt * rate);
     for (const key of FRAME_KEYS) f[key] += (to[key] - f[key]) * k;
 }
 const isLand = (p: Place): p is LandKind => (LANDS as readonly string[]).includes(p);
@@ -715,7 +717,7 @@ export function createWorld(o: WorldOptions): World {
         s.uScan.value = p.y;
         s.uTime.value = t;
         beats(shown, f.map, f.resp);
-        reframe(shot.frame, shown, Math.max(jump, dip), dt, o.reduce);
+        reframe(shot.frame, shown, Math.max(jump, dip), dt, o.reduce, shown === 'city' ? beat.drop : 0);
         applyAir(AIR[shown], beat.drop * 0.6 + beat.climb * 0.85, beat.drop);
         s.uDrop.value = beat.drop;
         const { heat, sun, dawn } = showPlace(shown);

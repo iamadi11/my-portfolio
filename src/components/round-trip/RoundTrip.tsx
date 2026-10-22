@@ -503,20 +503,40 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                     {trip.name}
                 </a>
                 <Route where="top" />
-                <button className="rt-snd rt-tilt" type="button" data-tilt aria-pressed="false" hidden>
+                <button
+                    className="rt-snd rt-tilt"
+                    type="button"
+                    data-tilt
+                    aria-pressed="false"
+                    aria-label="Tilt to scroll — off until you turn it on"
+                    title="Tilt to scroll — permission required; off until you turn it on"
+                    hidden
+                >
                     Tilt to scroll
                 </button>
                 <button
                     className="rt-snd rt-keys"
                     type="button"
                     aria-pressed={keysOn}
+                    aria-label={
+                        keysOn
+                            ? 'J/K keys on: J next stop, K previous (when no control is focused)'
+                            : 'J/K keys off'
+                    }
                     onClick={toggleKeys}
                     title="J flies to the next stop, K to the one before (when no button or link has focus)"
                 >
                     J/K keys
                 </button>
-                <button className="rt-snd" type="button" aria-pressed={soundOn} onClick={toggleSound}>
-                    Sound
+                <button
+                    className="rt-snd"
+                    type="button"
+                    aria-pressed={soundOn}
+                    aria-label={soundOn ? 'Sound on — click to mute' : 'Sound off — click to enable'}
+                    onClick={toggleSound}
+                    title={soundOn ? 'Sound on — click to mute' : 'Sound off — click to enable'}
+                >
+                    {soundOn ? 'Sound on' : 'Sound'}
                 </button>
             </header>
             <div className="rt-hud rt-bottom">
