@@ -222,6 +222,8 @@ html:has(.rt) body {
     display: grid;
     /* safe: a panel taller than the screen starts below the header instead of sliding under it */
     align-content: safe end;
+    /* one row as tall as the room between the HUD bars; a panel never grows past it */
+    grid-template-rows: minmax(0, 1fr);
     height: 100svh;
     padding: 110px var(--g) clamp(88px, 13vh, 130px);
     pointer-events: none;
@@ -237,6 +239,15 @@ html:has(.rt) body {
     transition:
         filter 250ms ease-out,
         opacity 250ms ease-out;
+    align-self: end;
+    max-height: 100%;
+}
+.rt-panel:has(details[open]) {
+    /* opened details scroll inside the panel instead of running under the HUD */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    pointer-events: auto;
+    scrollbar-width: thin;
 }
 /* the jump's flash: the panel loses focus for a beat, then settles with the new place */
 .rt-panel.rt-cut {
@@ -579,7 +590,8 @@ html:has(.rt) body {
         opacity 300ms var(--out) 60ms,
         transform 400ms var(--out) 60ms;
 }
-.rt-item:not(.on) a {
+.rt-item:not(.on) :is(a, summary, button) {
+    /* hidden items sit in the same cell: they must never take a tap meant for the visible one */
     pointer-events: none;
 }
 .rt-h3 {
@@ -1192,7 +1204,7 @@ html:has(.rt) body {
         padding: 76px var(--g) 64px;
     }
     .rt-chips,
-    .rt-tech {
+    .rt-item > .rt-tech {
         display: none;
     }
     .rt-js .rt-layers li {
@@ -1222,7 +1234,7 @@ html:has(.rt) body {
     }
 }
 
-/* very short (phones turned sideways): the route keeps only its dots */
+/* very short (phones turned sideways): the route rides small in the header */
 @media (max-height: 500px) and (orientation: landscape) {
     .rt-pin {
         padding: 58px var(--g) 28px;
@@ -1248,14 +1260,16 @@ html:has(.rt) body {
         padding-top: 10px;
         padding-bottom: 10px;
     }
-    /* the route keeps its dots; names stay readable to screen readers */
-    .rt-top .rt-route span {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
+    /* the route keeps its names, set small, so sideways phones still read where each dot goes */
+    .rt-top .rt-route {
+        font-size: 10.5px;
+        letter-spacing: 0.02em;
+    }
+    .rt-top .rt-route a {
+        gap: 4px;
+    }
+    .rt-h3-sm {
+        font-size: min(clamp(28px, 3vw, 44px), 9svh);
     }
     .rt-top .rt-route a {
         min-width: 24px;
@@ -1263,7 +1277,7 @@ html:has(.rt) body {
         justify-content: center;
     }
     .rt-top .rt-route li + li::before {
-        width: 12px;
+        width: 6px;
         margin: 0 2px;
     }
     /* phones turned sideways too: the dots ride in the header, not in a second bottom row */

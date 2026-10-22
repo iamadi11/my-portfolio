@@ -76,7 +76,7 @@ type Connection = { saveData?: boolean; effectiveType?: string };
  * The landmarks are scenery, 0.7–3.6 MB each: left out on a connection that asks to save data or
  * is slow (3G or worse), where the land, portals and sky still make the place.
  */
-function lean(): boolean {
+export function lean(): boolean {
     const c = (navigator as Navigator & { connection?: Connection }).connection;
     return !!c && (c.saveData === true || ['slow-2g', '2g', '3g'].includes(c.effectiveType ?? ''));
 }
@@ -88,6 +88,8 @@ export function addLandmarks(
 ): Landmarks {
     if (lean()) return { show: () => undefined };
     const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+    // Each scan is fetched when its place comes up (and the next one), not all at once.
+    const loads: Array<(() => Promise<void>) | undefined> = [];
     const groups = portals.map((p, k) => {
         const mark = LANDMARKS[LANDS[k % LANDS.length]];
         if (!mark) return null;
@@ -101,30 +103,39 @@ export function addLandmarks(
             .addScaledVector(ahead, mark.ahead)
             .addScaledVector(right, mark.side)
             .setY(GROUND[LANDS[k % LANDS.length]] - mark.sink);
-        loader
-            .loadAsync(`/models/terrain/${mark.id}-${small ? 'lo' : 'hi'}.glb`)
-            .then((gltf) => {
-                const model = gltf.scene;
-                const box = new THREE.Box3().setFromObject(model);
-                const size = box.getSize(new THREE.Vector3());
-                model.scale.setScalar(mark.width / Math.max(size.x, size.z));
-                model.position.set(
-                    -box.getCenter(new THREE.Vector3()).x,
-                    -box.min.y,
-                    -box.getCenter(new THREE.Vector3()).z
-                );
-                model.position.multiplyScalar(model.scale.x);
-                model.traverse((o) => {
-                    const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
-                    if (m?.isMeshStandardMaterial) nightFar(m, mark.tint ?? [0.45, 0.5, 0.62]);
-                    o.frustumCulled = false;
-                });
-                g.add(model);
-            })
-            .catch(() => undefined);
+        loads[k] = () =>
+            loader
+                .loadAsync(`/models/terrain/${mark.id}-${small ? 'lo' : 'hi'}.glb`)
+                .then((gltf) => {
+                    const model = gltf.scene;
+                    const box = new THREE.Box3().setFromObject(model);
+                    const size = box.getSize(new THREE.Vector3());
+                    model.scale.setScalar(mark.width / Math.max(size.x, size.z));
+                    model.position.set(
+                        -box.getCenter(new THREE.Vector3()).x,
+                        -box.min.y,
+                        -box.getCenter(new THREE.Vector3()).z
+                    );
+                    model.position.multiplyScalar(model.scale.x);
+                    model.traverse((o) => {
+                        const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
+                        if (m?.isMeshStandardMaterial) nightFar(m, mark.tint ?? [0.45, 0.5, 0.62]);
+                        o.frustumCulled = false;
+                    });
+                    g.add(model);
+                })
+                .catch(() => undefined);
         return g;
     });
+    const fetch = (k: number): void => {
+        const go = loads[k];
+        loads[k] = undefined;
+        void go?.();
+    };
     return {
-        show: (zone) => groups.forEach((g, k) => g && (g.visible = k === zone)),
+        show: (zone) => {
+            if (zone >= 0) [zone, zone + 1].forEach(fetch);
+            groups.forEach((g, k) => g && (g.visible = k === zone));
+        },
     };
 }

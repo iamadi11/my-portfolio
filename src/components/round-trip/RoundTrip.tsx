@@ -398,9 +398,11 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
 
     useEffect(() => {
         try {
-            keys.current = localStorage.getItem(KEYS) !== 'off';
+            // Off by default where the switch isn't shown (no hover: tablets with keyboards).
+            const saved = localStorage.getItem(KEYS);
+            keys.current = saved ? saved !== 'off' : matchMedia('(hover: hover)').matches;
         } catch {
-            // storage blocked: the keys stay on for this visit
+            keys.current = matchMedia('(hover: hover)').matches;
         }
         setKeysOn(keys.current);
     }, []);

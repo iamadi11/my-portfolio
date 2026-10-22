@@ -53,6 +53,8 @@ const chipsOf = (records: Row[]): string[] =>
         records.filter((o) => o.org === r.org).length > 1 ? `${r.org} · ${initials(r.role)}` : r.org
     );
 
+const unbroken = (s: string): string => s.replace(/(\w)-(\w)/g, '$1\u2011$2');
+
 export function tripFrom(site: SiteContent): Trip {
     const { profile, projects, practice } = site;
     const records = [...practice.experience, ...(practice.education ?? [])];
@@ -61,8 +63,9 @@ export function tripFrom(site: SiteContent): Trip {
         slug: profile.name.split(' ')[0].toLowerCase(),
         role: profile.role,
         statement: profile.statement,
-        lede: profile.statement.split(': ')[0],
-        rest: profile.statement.split(': ').slice(1).join(': '),
+        // Hyphenated words never break at the hyphen ("e-commerce"): same text, non-breaking hyphen.
+        lede: unbroken(profile.statement.split(': ')[0]),
+        rest: unbroken(profile.statement.split(': ').slice(1).join(': ')),
         meta: [profile.status, profile.location].filter(Boolean).join(' · '),
         impact: practice.impact ?? [],
         skills: practice.skills ?? [],

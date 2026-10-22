@@ -6,6 +6,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 import { ADD, boxes, type Shared, shader, WRAP_VERT } from '@/components/round-trip/world/gl';
 import { addMotes } from '@/components/round-trip/world/land';
+import { lean } from '@/components/round-trip/world/landmarks';
 
 /** Street level, below the path; the grid the blocks sit on, and one tile of the endless city. */
 export const FLOOR = -60;
@@ -420,6 +421,8 @@ function addDowntown(
     });
     let period = 500;
     let x = DOWNTOWN_X - 220;
+    // 4.8 MB even for phones: skipped on Save-Data or a slow connection; the towers stand alone.
+    if (lean()) return { update: () => undefined };
     new GLTFLoader()
         .setMeshoptDecoder(MeshoptDecoder)
         .loadAsync(`/models/osaka-${small ? 'lo' : 'hi'}.glb`)

@@ -135,8 +135,8 @@ function measured(lcp: number): string {
     return [
         nav && nav.responseStart > 0 ? `first byte ${Math.round(nav.responseStart)} ms` : '',
         lcp > 0 ? `largest paint ${Math.round(lcp)} ms` : '',
-        page > 0 ? `${page} kB of JavaScript for the page` : '',
-        world > 0 ? `${world} kB more for the 3D world` : '',
+        page > 0 ? `${page}\u00a0kB of JavaScript for the page` : '',
+        world > 0 ? `${world}\u00a0kB more for the 3D world` : '',
     ]
         .filter(Boolean)
         .join(' · ');
@@ -443,6 +443,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     let forced: number | null = null;
     let lastPick = -1;
     let forcedRecord: number | null = null;
+    const recordOpen = (): boolean =>
+        forcedRecord !== null && !!els.records[forcedRecord]?.querySelector('details[open]');
     let lastRecord = -1;
     let raf = 0;
     let dead = false;
@@ -553,7 +555,8 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         const through = clamp(q(3) * n - p);
         els.dots.forEach((d, k) => fill(d, '--p', k < p ? 1 : k === p ? through : 0));
         const r = pick(q(4), els.records.length);
-        if (r !== lastRecord) forcedRecord = null;
+        // A record whose details are open holds the panel while they are read.
+        if (r !== lastRecord && !recordOpen()) forcedRecord = null;
         lastRecord = r;
         setOn('records', els.records, forcedRecord ?? r);
         setOn('chips', els.chips, forcedRecord ?? r);
@@ -727,6 +730,11 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
             .getElementById(start.dataset.start ?? '')
             ?.scrollIntoView({ behavior: reduce ? 'instant' : 'smooth' });
     };
+    const onToggle = (e: Event): void => {
+        const d = e.target as HTMLDetailsElement;
+        const rec = d.closest<HTMLElement>('[data-record]');
+        if (rec && d.open) forcedRecord = els.records.indexOf(rec);
+    };
     const onFocus = (e: FocusEvent): void => {
         // A keyboard user tabbing into a project or record that is not on screen brings it forward.
         const el = (e.target as HTMLElement).closest<HTMLElement>('[data-project], [data-record]');
@@ -742,10 +750,12 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     addEventListener('pointermove', onPointer, { passive: true });
     root.addEventListener('click', onClick);
     root.addEventListener('focusin', onFocus);
+    root.addEventListener('toggle', onToggle, true);
 
     const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1200));
     const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
-    if (!saveData) idle(() => void loadWorld().catch(() => undefined));
+    // No point fetching the world for a browser that cannot draw it.
+    if (!saveData && webgl()) idle(() => void loadWorld().catch(() => undefined));
     raf = requestAnimationFrame(tick);
 
     return () => {
@@ -765,6 +775,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         removeEventListener('pointermove', onPointer);
         root.removeEventListener('click', onClick);
         root.removeEventListener('focusin', onFocus);
+        root.removeEventListener('toggle', onToggle, true);
         tilted.stop();
         held.stop();
         page.stop();

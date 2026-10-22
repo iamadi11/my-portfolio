@@ -72,11 +72,11 @@ The route in the HUD fills between hops as the request travels; each project's d
 
 ## Budgets (measured 2026-10-17, production build)
 
-- First-load JS 112 kB (measured 2026-10-21; gate: ≤ 120 kB). The world is fetched on idle and built on the first scroll; sound loads only when switched on.
+- First-load JS 113 kB (Next.js build report, measured 2026-10-22; gate: ≤ 120 kB). The world is fetched on idle and built on the first scroll; sound loads only when switched on.
 - Lighthouse on `/`: performance 98 mobile / 100 desktop; accessibility, best practices and SEO 100; CLS 0.001.
 - 60 fps headless in every place at 1280×800 and 390×844 (GPU on; phones get lighter grass, motes, terrain and textures).
-- Downloads after Start: ship 1.3 MB (phones 0.6 MB), star map 2.8 MB (0.6 MB), Earth 1.6 MB (0.45 MB), night HDRI 1.6 MB. Per place, as it comes on screen: downtown scan 5.4 MB (4.8 MB), landmarks 1.9–3.6 MB each (0.7–3.4 MB).
+- Downloads after Start: ship 1.3 MB (phones 0.6 MB), star map 2.8 MB (0.6 MB), Earth 1.6 MB (0.45 MB), night HDRI 1.6 MB. Per place, as it comes on screen (each landmark is fetched when its landscape or the one before it is shown): downtown scan 5.4 MB (4.8 MB), landmarks 1.9–3.6 MB each (0.7–3.4 MB). On Save-Data or a 2g/3g connection neither the downtown scan nor the landmarks load.
 
 ## Accessibility
 
-The canvas, poster and scene labels are `aria-hidden`; every fact is in the HTML in reading order. Keyboard: skip link, name, Sound, Send a request, Email me, then each project's links (tabbing into a project brings it on screen); J/K fly between stops and the arrow keys steer. Reduced motion: no reveals, camera roll, shake, speed fringing or poster drift, and places change with a straight cut instead of a jump. Without WebGL the poster stays and every panel still works.
+The canvas, poster and scene labels are `aria-hidden`; every fact is in the HTML in reading order. Keyboard: skip link, name, the J/K keys switch (off by default on devices without hover), Sound, Start the trip, Email me, then each project's links (tabbing into a project brings it on screen); J/K fly between stops and the arrow keys steer. Reduced motion: no reveals, camera roll, shake, speed fringing or poster drift, and places change with a straight cut instead of a jump. Without WebGL the poster stays and every panel still works.
