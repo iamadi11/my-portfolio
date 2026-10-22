@@ -2,7 +2,7 @@
 
 Recruiters and leads need “who / why care” in under five seconds, then a ride that earns the scroll. Facts only from `src/content/site.ts`. City = La Paz; landscapes = five lesser-known Earth forms.
 
-**Status (2026-10-22):** DEM horizons and La Paz bowl/Illimani are on the branch (`public/models/places/`, `world/places.ts`). Presentation polish continues; Open Buildings footprints still open.
+**Status (2026-10-22):** DEM horizons and La Paz bowl/Illimani are on the branch (`public/models/places/`, `world/places.ts`). Microsoft Global ML Building Footprints (CDLA-Permissive-2.0) drive mid-rise instances on the slopes (`public/data/lapaz-footprints.json`); Osaka scan remains downtown hero.
 
 ---
 
@@ -39,7 +39,7 @@ Tone: **night film, not neon cyberpunk.** Request metaphor (`GET /aditya` → `2
 
 **Assets** — Keep ship, portal, Osaka scan. DEM from AWS Terrain Tiles for La Paz bowl, Illimani, and the five landscape horizons. Improve framing, grade, mist, portal marquees, per-place AIR.
 
-**Data (hard)** — Aleph may supply **OSM + AWS Terrain only**. No Google Street View, satellite, or Google 3D meshes. La Paz footprints later: Google Open Buildings v3 (CC BY 4.0); heights stylised.
+**Data (hard)** — Aleph may supply **OSM + AWS Terrain only**. No Google Street View, satellite, or Google 3D meshes. La Paz footprints: Microsoft Global ML Building Footprints (CDLA-Permissive-2.0, quadkey 210031333); heights stylised. Google Open Buildings v3 (CC BY 4.0) remains an allowed alternative.
 
 ---
 

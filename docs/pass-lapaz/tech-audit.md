@@ -85,14 +85,14 @@ What *not* to do: replace wrap with a finite city mesh, or load Google 3D / Stre
 | # | Status |
 | --- | --- |
 | 1 Flat city / bowl | **Done** — DEM `lapaz-bowl` + slope-lifted towers (`places.ts`, `city.ts`) |
-| 2 Osaka morphology | **Kept** — night scan as downtown massing (CC BY); footprints still open |
+| 2 Osaka morphology | **Kept** — night scan as downtown massing (CC BY); slopes use MS footprints |
 | 3 Bengaluru `HOME` | **Done** — dive targets La Paz; HTML location stays Bengaluru |
 | 4 Illimani wall | **Done** — DEM `illimani` wrapping on the right |
 | 5 City framing | **Done** — `FRAMING.city` + thinner Altiplano `AIR.city` |
-| 6 Planar streets | Open |
-| 7 Land biomes | Partial — DEM horizons swapped; `land.ts` HEIGHT still generic biomes |
+| 6 Planar streets | **Done** — `STREET_FRAG` bowl mask via path distance + H(x); Reflector kept on desktop |
+| 7 Land biomes | **Done** — land.ts remapped to unique places |
 | 8 Sketchfab landmarks | **Done** — DEM places via `landmarks.ts` → `places.ts` |
 | 9 Ship flicker | **Done** — time-based thrust/nose; capped swell |
 | 10 Idle fringe / vignette | **Done** — fringe gated on speed/jump; lighter vignette |
-| 11 Portal throat skyline | Open |
-| 12 Scan vs tower grade | Open |
+| 11 Portal throat skyline | **Done** — `HORIZON_FRAG` / `skyline()` retuned per place; `rings.entry` fly-through; warp streaks air-only (`services.ts`, `index.ts`, `warp.ts`) |
+| 12 Scan vs tower grade | **Done** — `SCAN_FRAG` uses moon / occupancy cool·warm / `fogAt` / `glowAt` like towers |

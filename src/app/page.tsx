@@ -7,11 +7,11 @@ import RoundTrip from '@/components/round-trip/RoundTrip';
 import { tripFrom } from '@/components/round-trip/trip';
 import { SITE } from '@/content/site';
 
-/** Display face for the name and headings (an editorial serif, one weight); body and mono come from the root layout (Geist). */
+/** Display face for the name, role, and headings (editorial serif + italic); body/mono from root (Geist). */
 const display = Instrument_Serif({
     subsets: ['latin'],
     weight: ['400'],
-    style: ['normal'],
+    style: ['normal', 'italic'],
     variable: '--font-rt-display',
     display: 'swap',
 });
