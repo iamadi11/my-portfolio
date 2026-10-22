@@ -33,12 +33,12 @@ Pass two shipped dawn accent, contact hierarchy, hero plates, and reduced-motion
 
 ## Acceptance
 
-- [ ] First viewport: name + role dominate over orbit plate at 375 and 1280; lede/meta readable but subordinate; no dashboard chrome
-- [ ] Contact reads **email (mailto) → Copy email → phone/GitHub/LinkedIn → Send again**; warm dawn accent held
-- [ ] Send again: not focusable / not clickable until `.rt-left`; then 44px, visible, activates veil (or instant home under reduced motion)
-- [ ] Every visible string still from `SITE` / existing Round trip copy / credits / browser-measured vitals
-- [ ] First Load JS `/` ≤ 120 kB
-- [ ] `npx tsc --noEmit` and `npm run lint` pass; no edits under `world/*`
+- [x] First viewport: name + role dominate over orbit plate at 375 and 1280; lede/meta readable but subordinate; no dashboard chrome
+- [x] Contact reads **email (mailto) → Copy email → phone/GitHub/LinkedIn → Send again**; warm dawn accent held (`--accent: #ffd7a8`)
+- [x] Send again: `inert` + opacity 0 / `pointer-events: none` until `.rt-left`; then inert cleared, 44px, visible; click returns home (smoke 375; 1280 leave-zone after settle)
+- [x] Every visible string still from `SITE` / existing Round trip copy / credits / browser-measured vitals
+- [x] First Load JS `/` ≤ 120 kB — **114 kB** (`NEXT_DIST_DIR=.next-pass3 npx next build`, 2026-10-22; page 10.8 kB + shared 103 kB)
+- [x] `npx tsc --noEmit` and `npm run lint` pass; no edits under `world/*`
 
 ---
 
