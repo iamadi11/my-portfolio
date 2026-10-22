@@ -29,7 +29,7 @@ Pass 1 already shipped filmic post, land AIR, portal punch, ship/sea polish, rus
 - [x] `prefers-reduced-motion: reduce`: no rush/cut blur, Start pulse, req pip blink, cue scrub, poster drift, beacon breath, Send-again veil; no vibrate on portal beats
 - [x] Every visible string still from `SITE` / credits / browser-measured vitals
 - [x] First Load JS `/` ≤ 120 kB — **114 kB** (`npx next build` route table, 2026-10-22; page 10.7 kB + shared 103 kB)
-- [ ] Real browser check at 375 and 1280 (hero plate + contact hierarchy + RM if forced)
+- [x] Real browser check at 375 and 1280 — hero name/role plate; contact `--accent: #ffd7a8` + dawn mail underline; RM: `.rt-go` `animation: none` + static shadow; no pageerrors (Playwright Chromium)
 
 ---
 
