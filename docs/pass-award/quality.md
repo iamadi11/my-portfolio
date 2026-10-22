@@ -127,3 +127,12 @@ Prefer `RoundTrip.tsx` / `round-trip.css` / `tilt.ts` (also landed via `aa407cb`
 | _(add rows after each integrate + build)_ | | |
 
 Lead confirmation: `GET /` **200** on `next start -p 4310`; HTML mount checks pass (`smoke-html-checks.json`); Lighthouse **not run**; interactive computerUse agent **blocked** (model usage) — smoke evidence is harness screenshots + empty pageerror lists.
+
+### Pass two smoke (2026-10-22)
+
+| Viewport | pageerror | Screenshots |
+| --- | --- | --- |
+| 375×812 | **none** | `p2-375-{load,start,scroll}.png` |
+| 1280×800 | **none** | `p2-1280-{load,start,scroll}.png` |
+
+`/opt/cursor/artifacts/p2-smoke-errors.json` (`ok: true`).
