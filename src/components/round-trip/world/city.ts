@@ -302,11 +302,117 @@ function planTowers(rand: () => number): Tower[] {
 }
 
 /**
- * The downtown: "Osaka downtown" by matousekfoto (Sketchfab, CC BY 4.0), a night photogrammetry
- * scan of lit towers, standing on the left of the path. Its own night is baked into the texture,
- * so it is drawn unlit. Three copies ride along the path so it never ends.
+ * The scan, graded for the night it is flown through. Its texture is a photograph: lamps, signs and
+ * lit windows (bright and saturated) are kept as light; the rest, and the grey filler where the
+ * camera never saw, sinks into a cool dark that the moon picks out by face (normals from the
+ * surface itself: the scan has none). On the walls, a grid of rooms lit here and there, averaged
+ * out with distance as the built towers do; warm light from the streets climbs the lowest floors.
  */
-function addDowntown(scene: THREE.Object3D, small: boolean): { update: (eye: THREE.Vector3) => void } {
+const SCAN_VERT = /* glsl */ `varying vec2 vUv; varying vec3 vW; varying float vD;
+    void main() { vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz;
+        vec4 mv = viewMatrix * w; vD = -mv.z; gl_Position = projectionMatrix * mv; }`;
+const SCAN_FRAG = /* glsl */ `
+    uniform sampler2D tMap; varying vec2 vUv; varying vec3 vW; varying float vD;
+    void main() {
+        vec3 t = texture2D(tMap, vUv).rgb;
+        float L = dot(t, vec3(0.2126, 0.7152, 0.0722));
+        float hi = max(t.r, max(t.g, t.b));
+        float sat = (hi - min(t.r, min(t.g, t.b))) / max(hi, 1e-3);
+        float lamp = smoothstep(0.1, 0.4, L) * smoothstep(0.25, 0.6, sat) + smoothstep(0.35, 0.75, L) * 0.5;
+        vec3 n = normalize(cross(dFdx(vW), dFdy(vW)));
+        float side = 1.0 - smoothstep(0.4, 0.7, abs(n.y));
+        float moon = max(dot(n, MOON_DIR), 0.0);
+        vec3 col = t * vec3(0.5, 0.6, 0.85) * (0.34 + 0.25 * moon) + vec3(0.006, 0.009, 0.016);
+        col += t * lamp * 2.4;
+        // Rooms: a window grid on the walls, about one in five lit.
+        // On fixed axes (whichever the wall faces more), so a rough scan keeps a steady grid.
+        vec2 f = vec2(abs(n.x) > abs(n.z) ? vW.z : vW.x, vW.y) / vec2(2.3, 3.4);
+        vec2 fw = clamp(fwidth(f), vec2(1e-4), vec2(0.5));
+        float far = smoothstep(0.08, 0.3, max(fw.x, fw.y));
+        vec2 g = fract(f);
+        vec2 wm = smoothstep(0.18 - fw, 0.18 + fw, g) * (1.0 - smoothstep(0.82 - fw, 0.82 + fw, g));
+        float h = hash(floor(f) + floor(f.x / 9.0) * 7.1);
+        float lit = mix(step(0.84, h) * wm.x * wm.y, 0.16 * 0.41, far) * side * smoothstep(${(FLOOR + 3).toFixed(1)}, ${(FLOOR + 6).toFixed(1)}, vW.y);
+        vec3 room = mix(vec3(1.0, 0.7, 0.42), vec3(0.75, 0.86, 1.0), step(0.93, h)) * (0.7 + 0.3 * fract(h * 13.0));
+        col += room * lit * 0.45 * (1.0 - lamp);
+        col += vec3(1.0, 0.6, 0.32) * 0.05 * exp(-(vW.y - ${FLOOR.toFixed(1)}) / 14.0);
+        gl_FragColor = vec4(fogAt(col, vD, vW), 1.0);
+    }
+`;
+
+/** Aviation lights on the scan's tallest roofs: local high points over its upper half (model units). */
+function scanRoofs(model: THREE.Object3D, box: THREE.Box3): THREE.Vector3[] {
+    const size = box.getSize(new THREE.Vector3());
+    const N = 28;
+    const top = new Float32Array(N * N).fill(-Infinity);
+    const at = new Array<THREE.Vector3 | null>(N * N).fill(null);
+    const v = new THREE.Vector3();
+    model.updateMatrixWorld(true);
+    model.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh) return;
+        const p = m.geometry.attributes.position;
+        for (let i = 0; i < p.count; i++) {
+            v.fromBufferAttribute(p, i).applyMatrix4(m.matrixWorld);
+            const cx = Math.min(N - 1, Math.floor(((v.x - box.min.x) / size.x) * N));
+            const cz = Math.min(N - 1, Math.floor(((v.z - box.min.z) / size.z) * N));
+            const c = cz * N + cx;
+            if (v.y > top[c]) {
+                top[c] = v.y;
+                at[c] = v.clone();
+            }
+        }
+    });
+    const peak = (cx: number, cz: number): boolean => {
+        const y = top[cz * N + cx];
+        if (y < box.min.y + size.y * 0.42) return false;
+        for (let dz = -1; dz <= 1; dz++)
+            for (let dx = -1; dx <= 1; dx++) {
+                const x = cx + dx;
+                const z = cz + dz;
+                if ((dx || dz) && x >= 0 && z >= 0 && x < N && z < N && top[z * N + x] > y) return false;
+            }
+        return true;
+    };
+    const roofs: THREE.Vector3[] = [];
+    for (let cz = 0; cz < N; cz++)
+        for (let cx = 0; cx < N; cx++) if (peak(cx, cz)) roofs.push(at[cz * N + cx] as THREE.Vector3);
+    return roofs;
+}
+
+/** Red obstruction lights at the given points: slow, out of step, a soft flash rather than a cut. */
+function roofLights(s: Shared, points: THREE.Vector3[]): THREE.Points {
+    const g = new THREE.BufferGeometry().setFromPoints(points);
+    const pts = new THREE.Points(
+        g,
+        shader(
+            s,
+            /* glsl */ `varying float vD, vP;
+            void main() { vP = fract(dot(position, vec3(0.137, 0.071, 0.113)));
+                vec4 mv = modelViewMatrix * vec4(position, 1.0); vD = -mv.z;
+                gl_PointSize = clamp(uPR * 1100.0 / vD, 2.0, 20.0); gl_Position = projectionMatrix * mv; }`,
+            /* glsl */ `varying float vD, vP;
+            void main() { float ph = fract(uTime * 0.5 + vP); float on = smoothstep(0.0, 0.08, ph) * (1.0 - smoothstep(0.35, 0.6, ph));
+                float a = smoothstep(0.5, 0.0, length(gl_PointCoord - 0.5));
+                gl_FragColor = vec4(vec3(2.6, 0.18, 0.1) * a * (0.12 + 0.88 * on) * fade(vD * 0.7), 1.0); }`,
+            {},
+            ADD
+        )
+    );
+    pts.frustumCulled = false;
+    return pts;
+}
+
+/**
+ * The downtown: "Osaka downtown" by matousekfoto (Sketchfab, CC BY 4.0), a night photogrammetry
+ * scan of lit towers, standing on the left of the path, graded by SCAN_FRAG and in the same air as
+ * the rest of the city. Three copies ride along the path so it never ends.
+ */
+function addDowntown(
+    scene: THREE.Object3D,
+    s: Shared,
+    small: boolean
+): { update: (eye: THREE.Vector3) => void } {
     const copies: THREE.Group[] = [0, 1, 2].map(() => {
         const g = new THREE.Group();
         scene.add(g);
@@ -326,23 +432,27 @@ function addDowntown(scene: THREE.Object3D, small: boolean): { update: (eye: THR
             period = size.z * k * 0.97;
             x = DOWNTOWN_X - (size.x * k) / 2;
             const center = box.getCenter(new THREE.Vector3());
+            const shift = new THREE.Vector3(-center.x * k, -box.min.y * k, -center.z * k);
+            const roofs = scanRoofs(model, box).map((p) => p.multiplyScalar(k).add(shift));
             model.traverse((o) => {
                 const m = o as THREE.Mesh;
                 if (!m.isMesh) return;
                 const old = m.material as THREE.MeshStandardMaterial;
-                // Lifted a little: the scan's own exposure is darker than the built towers.
-                m.material = new THREE.MeshBasicMaterial({
-                    map: old.map,
-                    color: new THREE.Color(1.35, 1.35, 1.45),
-                    fog: true,
-                });
+                m.material = shader(
+                    s,
+                    SCAN_VERT,
+                    SCAN_FRAG,
+                    { tMap: { value: old.map } },
+                    { side: THREE.DoubleSide }
+                );
                 m.frustumCulled = false;
             });
             copies.forEach((g) => {
                 const c = model.clone();
                 c.scale.setScalar(k);
-                c.position.set(-center.x * k, -box.min.y * k, -center.z * k);
+                c.position.copy(shift);
                 g.add(c);
+                if (roofs.length) g.add(roofLights(s, roofs));
             });
         })
         .catch(() => undefined);
@@ -641,7 +751,7 @@ export function addCity(
     skills: Array<{ group: string; items: string }> = []
 ): City {
     const towers = addTowers(scene, s, rand, env, skills);
-    const downtown = addDowntown(scene, density < 1);
+    const downtown = addDowntown(scene, s, density < 1);
     addBeacons(scene, towers, s, rand);
     addTraffic(scene, s, density, rand);
     addMotes(
