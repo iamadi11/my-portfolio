@@ -97,7 +97,7 @@ type Air = {
 const AIR: Record<Place, Air> = {
     space: { fog: 0.03, horizon: [0, 0, 0], space: true, mist: 0 },
     // Altiplano night: cool moonlight + a hint of warm city spill; mist pools in the bowl.
-    city: { fog: FOG * 0.42, horizon: [0.048, 0.036, 0.055], stars: 0.55, mist: 1.35 },
+    city: { fog: FOG * 0.42, horizon: [0.052, 0.038, 0.058], stars: 0.55, mist: 1.75 },
     // Each project land gets its own air so a portal jump changes the sky, not only the ground.
     grass: { fog: 0.0048, horizon: [0.022, 0.048, 0.042], mist: 1.2, stars: 0.85 }, // Chocolate Hills
     desert: { fog: 0.0038, horizon: [0.055, 0.06, 0.078], mist: 0.55, stars: 0.95 }, // Lençóis flats
@@ -120,8 +120,8 @@ const AIR: Record<Place, Air> = {
  * and from the side, the aurora filling the top of the frame.
  */
 const FRAMING: Partial<Record<Place, Framing>> = {
-    // Stronger side/look so Illimani and bowl walls read as soon as the cloud deck clears.
-    city: { side: 3.2, up: 0.15, back: 17, ahead: 40, look: 3.1, aim: 0.85, lens: 0.84 },
+    // Bowl settle: more side/look so Illimani and canyon walls own the frame as the deck clears.
+    city: { side: 3.9, up: 0.4, back: 15.5, ahead: 36, look: 3.85, aim: 1.15, lens: 0.76 },
     canyon: { side: -2.8, up: -4.2, back: 10, ahead: 30, look: 4.2, aim: 1.6, lens: 1.1 },
     volcano: { side: 1.6, up: 5.8, back: 14, ahead: 26, look: -3.2, aim: 0, lens: 0.93 },
     desert: { side: -0.7, up: -1.2, back: 26, ahead: 54, look: -0.6, aim: 0.55, lens: 0.68 },
@@ -145,7 +145,8 @@ const GLOW_SCALE: Partial<Record<Place, number>> = {
  */
 function reframe(f: Framing, place: Place, hidden: number, dt: number, reduce: boolean, urgency = 0): void {
     const to = FRAMING[place] ?? CHASE;
-    const rate = hidden > 0.3 ? 9 : 1.2 + urgency * 4.5;
+    // Drop urgency lands the amphitheater shot while the cloud still softens the cut.
+    const rate = hidden > 0.3 ? 9 : 1.4 + urgency * 6.8;
     const k = reduce ? 1 : 1 - Math.exp(-dt * rate);
     for (const key of FRAME_KEYS) f[key] += (to[key] - f[key]) * k;
 }
@@ -503,8 +504,10 @@ export function createWorld(o: WorldOptions): World {
         sky.uniforms.uSpace.value = air.space ? 1 : 0;
         sky.uniforms.uAurora.value = air.aurora ?? 0;
         sky.uniforms.uStars.value = (air.stars ?? 1) * (1 - cloud) * (1 + thin * 0.9);
-        // High air clears valley mist; the deck still holds a little so the cloud-break softens.
-        MIST.value = (air.mist ?? 1) * (1 - thin * 0.75) * (1 - cloud * 0.35);
+        // High air clears valley mist. Through the cloud-break, bowl mist rises as the deck thins
+        // so the amphitheater fills with haze before chase framing fully settles.
+        const deck = cloud > 0.02 ? lerp(1.55, 0.9, cloud) : 1;
+        MIST.value = (air.mist ?? 1) * (1 - thin * 0.75) * deck;
     };
 
     /** Only the place on screen is drawn; the rest wait for their jump. */
