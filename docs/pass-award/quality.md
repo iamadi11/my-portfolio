@@ -76,7 +76,7 @@ Mark after a real keyboard / AT pass on production build (`next start`). Status 
 
 | Check | Status |
 | --- | --- |
-| First Load JS `/` ≤ 120 kB | **Pass — 113 kB baseline; 114 kB after HUD a11y (`aa407cb`)** |
+| First Load JS `/` ≤ 120 kB | **Pass — 113–114 kB** (exclusive remasure after tip: **113 kB**) |
 | three.js not in first load | Pass (architecture: idle import in `drive.ts`) |
 | Sound not in first load | Pass (`import()` inside Sound click) |
 | No layout shift from panels / vitals / again | Pass (code intent) |
@@ -121,5 +121,8 @@ Prefer `RoundTrip.tsx` / `round-trip.css` / `tilt.ts` (also landed via `aa407cb`
 | SHA / note | First Load JS `/` | Notes |
 | --- | --- | --- |
 | Baseline (early this pass) | **113 kB** | Gate OK (−7 kB headroom); page 10.6 kB |
-| `aa407cb` (+ HUD a11y / journey / world integrate) | **114 kB** | `NEXT_DIST_DIR=.next-f`; page 10.6–10.7 kB; −6 kB headroom |
+| `aa407cb` (+ HUD a11y / journey / world integrate) | **114 kB** | Concurrent-agent build path |
+| Exclusive remasure after tip (this lead) | **113 kB** | `npx next build --no-lint`; page 10.5 kB; gate −7 kB |
 | _(add rows after each integrate + build)_ | | |
+
+Lead confirmation: `GET /` **200** on `next start -p 4310`; HTML mount checks pass (`smoke-html-checks.json`); Lighthouse **not run**; interactive computerUse agent **blocked** (model usage) — smoke evidence is harness screenshots + empty pageerror lists.
