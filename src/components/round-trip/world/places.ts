@@ -195,8 +195,8 @@ export function addCityPlaces(scene: THREE.Object3D, s: Shared, small: boolean):
         peaks.forEach((g) => {
             g.add(proto.clone());
             g.visible = true;
-            // Closer on the right so the snow cone sits in the city frame.
-            g.position.set(380, -60 + 20, 0);
+            // Closer on the right so the snow cone sits in the amphitheater frame.
+            g.position.set(240, -60 + 28, 0);
         });
     });
     return {
@@ -208,9 +208,9 @@ export function addCityPlaces(scene: THREE.Object3D, s: Shared, small: boolean):
             });
             const p0 = Math.round(eye.z / peakPeriod) * peakPeriod;
             peaks.forEach((g, i) => {
-                g.position.x = 380;
-                g.position.y = -40;
-                g.position.z = p0 + (i - 0.5) * peakPeriod + 200;
+                g.position.x = 240;
+                g.position.y = -28;
+                g.position.z = p0 + (i - 0.5) * peakPeriod + 120;
             });
         },
     };
