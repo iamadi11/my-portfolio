@@ -30,6 +30,17 @@
 
 Ship **#1–#6** only (LOW–MED risk, high perceptual impact, no new large assets). Atomic commits; `npx tsc --noEmit` before each code commit.
 
+| # | Status | Where |
+| --- | --- | --- |
+| 1 Filmic post grade | **Done** | `post.ts` `FINISH` |
+| 2 Dive / La Paz framing settle | **Done** | `index.ts` `FRAMING.city` + `reframe(…, urgency)` |
+| 3 Land atmosphere per place | **Done** | `index.ts` `AIR` deltas |
+| 4 Portal throat punch | **Done** | `services.ts` `uPunch` / flash / strip surge |
+| 5 Ship secondary motion | **Done** | `ship.ts` hover / bank / engine pulse |
+| 6 Sea / ice depth | **Done** | `sea.ts` absorption / leads / berg SSS |
+
+Landed in `aa407cb` (shared tip with `NEXT_DIST_DIR` + sibling HTML). First Load JS for `/` measured **114 kB** (≤120).
+
 Left open for sibling agents / later: #7–#11, any RT portal throat, glow texture bake, records pillar art pass, CSS/HUD (Agent E).
 
 ---
