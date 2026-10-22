@@ -120,8 +120,8 @@ const AIR: Record<Place, Air> = {
  * and from the side, the aurora filling the top of the frame.
  */
 const FRAMING: Partial<Record<Place, Framing>> = {
-    // Bowl settle: enough side for Illimani, enough ahead so tower corridor still reads (not mist).
-    city: { side: 4.4, up: 0.75, back: 16.5, ahead: 26, look: 3.6, aim: 1.85, lens: 0.72 },
+    // Bowl settle: keep a chase corridor of lit towers (side-heavy reads as mist mush on desktop).
+    city: { side: 2.2, up: 0.55, back: 12, ahead: 32, look: 2.1, aim: 1.1, lens: 0.88 },
     canyon: { side: -2.8, up: -4.2, back: 10, ahead: 30, look: 4.2, aim: 1.6, lens: 1.1 },
     volcano: { side: 1.6, up: 5.8, back: 14, ahead: 26, look: -3.2, aim: 0, lens: 0.93 },
     desert: { side: -0.7, up: -1.2, back: 26, ahead: 54, look: -0.6, aim: 0.55, lens: 0.68 },
