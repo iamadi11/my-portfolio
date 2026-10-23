@@ -1,32 +1,37 @@
 import * as THREE from 'three';
-import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
-import { ADD, boxes, type Shared, shader, WRAP_VERT } from '@/components/round-trip/world/gl';
+import { ADD, boxes, rng, type Shared, shader } from '@/components/round-trip/world/gl';
 import { addMotes } from '@/components/round-trip/world/land';
 import { lean } from '@/components/round-trip/world/landmarks';
 
-/** Street level, below the path; the grid the blocks sit on, and one tile of the endless city. */
-export const FLOOR = -60;
-const GRID = 18;
-const COLS = 27;
-const ROWS = 24;
-const TILE = new THREE.Vector2(COLS * GRID, ROWS * GRID);
-const CLEAR = 20;
-/** The scanned downtown stands left of the path, from this x outward; no built towers there. */
-const DOWNTOWN_X = -55;
+/**
+ * 2 · Edge: La Paz, Bolivia, at night. The city fills a canyon bowl below the El Alto plateau; its
+ * lights climb the walls from the towers of El Prado, and Illimani stands to the south-east. Built
+ * by scripts/lapaz.py from open data: ground from AWS Terrain Tiles (SRTM, GMTED2010: USGS; ETOPO1:
+ * NOAA), footprints from Google Open Buildings (CC BY 4.0). The map is drawn at 2:5 across and its
+ * relief at 0.55, levelled along the avenue the ship follows; building heights are stylised (no
+ * open height data): towers along the Prado, one to three storeys up the walls.
+ */
 
-/** The wrapping vertex shader, plus where each tower's roof and (wrapped) centre are. */
-const TOWER_VERT = WRAP_VERT.replace(
-    'varying float vR, vD;',
-    'varying float vR, vD, vTop; varying vec3 vS; varying vec2 vC;'
-).replace(
-    'vW = w.xyz;',
-    `vW = w.xyz; vC = wc; vTop = (modelMatrix * instanceMatrix * vec4(0.0, 0.5, 0.0, 1.0)).y;
-    vS = vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz));`
-);
+/** Street level of the avenue, below the path. */
+export const FLOOR = -60;
+/** The avenue the ship follows (the stretch under the flight path is levelled to FLOOR). */
+const AVENUE = { half: 13, edge: 48, from: -180, to: -1100 };
+/** Illimani is drawn at this fraction of its distance (and size), so it stands inside the sky. */
+const FAR_K = 0.2;
+/** Towers this tall carry red obstruction lights. */
+const BEACON_H = 75;
+
+/**
+ * The bowl's own air: far thinner than the world's fog so the canyon walls read across it, and
+ * only a trace of the ground mist (which would otherwise fill the bowl at street level).
+ */
+const CITY_AIR = /* glsl */ `
+    float cityAir(float d, vec3 w) { return 1.0 - exp(-uFog * 0.14 * d - 0.08 * mist(w, d)); }
+    vec3 cityFog(vec3 c, float d, vec3 w) { return mix(c, haze(normalize(w - cameraPosition)), cityAir(d, w)); }
+    float cityFade(float d) { return exp(-uFog * 0.1 * d); }
+`;
 
 /** Skill billboards: atlas row height and width (px), most rows the shader takes, text line height (m). */
 const ROW = 36;
@@ -88,10 +93,10 @@ function skillAtlas(skills: Array<{ group: string; items: string }>): {
 }
 
 /**
- * Who is in at night. Each tower keeps its own hours (`mood`); its floors are offices (stacks of
+ * Who is in at night. Each building keeps its own hours (`mood`); its floors are offices (stacks of
  * three, cool white, nearly every window on), flats (warm, lit in pairs, about half) or dark (a
  * stray lamp). Six windows in ten stay dark. Seen from far off, windows average out per floor and
- * then per tower, so distant facades resolve to calm bands and a calm glow, not static.
+ * then per building, so distant facades resolve to calm bands and a calm glow, not static.
  */
 const OCCUPANCY = /* glsl */ `
     struct Lights { float lit; vec3 col; float office; };
@@ -121,19 +126,43 @@ const OCCUPANCY = /* glsl */ `
 `;
 
 /**
- * Facades. Two kinds of tower: concrete with punched windows, and glass curtain walls. Unlit glass
- * reflects the sky (stronger at grazing angles, but held back so edges don't flare white). Lit
- * windows are fake rooms: the back wall shifts with the camera, so each window reads as a lit room
- * with depth; flats have blinds, a few flicker like a TV. Street level glows like shopfronts; some
- * towers wear a lit crown. Towers along the flight path turn a billboard towards it.
+ * Each block, from its real footprint's rectangle: where its centre and roof are, its size, and
+ * which way its own x axis runs (footprints are turned every which way).
  */
-const TOWER_FRAG = /* glsl */ `
+const BLOCK_VERT = /* glsl */ `
+    attribute float aRand;
+    varying vec3 vW, vN, vL, vWN, vS; varying vec2 vC, vAx; varying float vR, vD, vTop;
+    void main() {
+        vL = position; vN = normal; vR = aRand;
+        mat4 m = modelMatrix * instanceMatrix;
+        vC = (m * vec4(0.0, 0.0, 0.0, 1.0)).xz;
+        vTop = (m * vec4(0.0, 0.5, 0.0, 1.0)).y;
+        vS = vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz));
+        vAx = instanceMatrix[0].xz / vS.x;
+        vWN = normalize(mat3(m) * normal);
+        vec4 w = m * vec4(position, 1.0);
+        vW = w.xyz;
+        vec4 mv = viewMatrix * w;
+        vD = -mv.z;
+        gl_Position = projectionMatrix * mv;
+    }
+`;
+
+/**
+ * Facades. Two kinds of building: concrete with punched windows, and glass curtain walls. Unlit
+ * glass reflects the sky (stronger at grazing angles, but held back so edges don't flare white).
+ * Lit windows are fake rooms: the back wall shifts with the camera, so each window reads as a lit
+ * room with depth; flats have blinds, a few flicker like a TV. Street level glows like shopfronts;
+ * some towers wear a lit crown. Towers along the avenue turn a billboard towards the flight path.
+ */
+const BLOCK_FRAG = /* glsl */ `
     uniform sampler2D tEnv; uniform float uEnvOn;
-    varying vec3 vW, vN, vL, vWN, vS; varying vec2 vC; varying float vR, vD, vTop;
+    varying vec3 vW, vN, vL, vWN, vS; varying vec2 vC, vAx; varying float vR, vD, vTop;
+    ${CITY_AIR}
     ${BOARD}
     ${OCCUPANCY}
     void main() {
-        // The tower's random, snapped: interpolation can wobble a "constant" varying in its last
+        // The block's random, snapped: interpolation can wobble a "constant" varying in its last
         // bits, and the hashes below would turn that into per-pixel static.
         float R = (floor(vR * 4096.0) + 0.5) / 4096.0;
         vec3 n = normalize(vWN);
@@ -141,12 +170,13 @@ const TOWER_FRAG = /* glsl */ `
         vec2 nh = normalize(n.xz + vec2(1e-4, 0.0));
         vec3 T = vec3(-nh.y, 0.0, nh.x);
         vec2 f = vec2(dot(vW, T), vW.y);
-        float glassy = step(0.58, R);
+        float tower = step(30.0, vS.y);
+        float glassy = step(0.58, R) * tower;
         vec2 cs = mix(vec2(2.4, 3.4), vec2(1.7, 3.1), glassy);
         vec2 cell = floor(f / cs), g = fract(f / cs);
         vec2 lo = mix(vec2(0.15, 0.24), vec2(0.05, 0.12), glassy);
         // Box-filtered by the pixel's footprint in cells, per axis: once a pixel spans a good part
-        // of a window across, a floor shows its average; once it spans floors, the whole tower does.
+        // of a window across, a floor shows its average; once it spans floors, the whole block does.
         vec2 fw = clamp(fwidth(f / cs), vec2(1e-4), vec2(0.5));
         vec2 farA = smoothstep(vec2(0.06), vec2(0.22), fw);
         float far = max(farA.x, farA.y);
@@ -189,33 +219,37 @@ const TOWER_FRAG = /* glsl */ `
         float F = 0.04 + 0.96 * pow(1.0 - clamp(abs(dot(V, n)), 0.0, 1.0), 5.0);
         // Grazing glass is capped: full Fresnel lines every tower edge with a white strip.
         vec3 glass = env * (mix(0.12, 0.08, far) + mix(0.8, 0.3, far) * min(F, 0.6));
-        float hgt = clamp((vW.y + 60.0) / 210.0, 0.0, 1.0);
-        vec3 concrete = mix(vec3(0.02, 0.022, 0.03), vec3(0.06, 0.064, 0.078), hgt) * (0.78 + 0.22 * abs(nh.x));
+        float base = vTop - vS.y;
+        float hgt = clamp((vW.y - base) / 150.0, 0.0, 1.0);
+        // Towers in grey concrete; the low blocks up the walls in bare brick, as most are there.
+        vec3 wall = mix(vec3(0.02, 0.022, 0.03), vec3(0.035, 0.022, 0.018), 1.0 - tower);
+        vec3 concrete = mix(wall, vec3(0.06, 0.064, 0.078), hgt) * (0.78 + 0.22 * abs(nh.x));
         concrete *= 0.9 + 0.2 * hash(floor(f * 0.5));
         vec3 curtain = (vec3(0.016, 0.024, 0.04) + glass * 0.55) * mix(1.0, 0.5, mix(step(g.y, lo.y), lo.y, farA.y) * glassy);
         vec3 col = mix(concrete, curtain, glassy);
         col += mix(1.0 - smoothstep(0.0, 0.05, g.y), 0.03, farA.y) * side * (1.0 - glassy) * vec3(0.03);
-        col = mix(col, glass, win * (1.0 - litP));
+        col = mix(col, glass * mix(0.25, 1.0, tower), win * (1.0 - litP));
         col = mix(col, room * 1.15 + glass * 0.2, lit);
-        float shop = side * step(0.35, R) * smoothstep(-60.0, -59.0, vW.y) * (1.0 - smoothstep(-56.0, -55.0, vW.y));
+        float shop = side * step(0.35, R) * smoothstep(base, base + 1.0, vW.y) * (1.0 - smoothstep(base + 4.0, base + 5.0, vW.y));
         col += shop * mix(vec3(1.0, 0.7, 0.45), vec3(0.6, 0.85, 1.0), step(0.8, R)) * 0.8 * (1.0 - uDrop * 0.75);
         // Roofs: a parapet rim and a plant room in the middle, not a flat lid.
-        float hut = step(abs(vL.x), 0.2) * step(abs(vL.z), 0.2);
+        float hut = step(abs(vL.x), 0.2) * step(abs(vL.z), 0.2) * tower;
         float rim = step(0.44, max(abs(vL.x), abs(vL.z)));
         col = mix(col, vec3(0.025, 0.03, 0.042) * (1.0 + 0.8 * rim) + vec3(0.03, 0.028, 0.025) * hut, step(0.5, n.y));
         // LED billboards: a few of the taller towers carry one up high; most towers along the flight
-        // path turn one towards it at the ship's height, on their full-width face. A 9 m panel in a
-        // dark frame, scrolling one skill group (its name above, its items below).
+        // path turn one towards it at the ship's height, on their widest face to it. A 9 m panel in
+        // a dark frame, scrolling one skill group (its name above, its items below).
         float pick = fract(R * 11.3);
         float toPath = pathX(vC.y) - vC.x;
         float lane = (1.0 - step(46.0, abs(toPath))) * step(0.7, n.x * sign(toPath)) * step(0.45, max(abs(vL.x), abs(vL.z)));
         float yb = -14.0 + 9.0 * fract(R * 3.9);
-        lane *= step(0.45, pick) * step(yb + 11.0, vTop);
-        float high = step(0.82, pick) * step(60.0, vTop + 60.0) * (1.0 - lane);
+        lane *= step(0.45, pick) * step(yb + 11.0, vTop) * tower;
+        float high = step(0.82, pick) * step(60.0, vS.y) * (1.0 - lane);
         float board = max(high, lane) * side;
-        float bw = mix(0.72, 0.9, lane) * dot(vS.xz, abs(T.xz));
+        float faceW = vS.x * abs(dot(vAx, T.xz)) + vS.z * abs(dot(vec2(-vAx.y, vAx.x), T.xz));
+        float bw = mix(0.72, 0.9, lane) * faceW;
         // Metres from the panel's lower left as seen from outside (T runs right to left).
-        vec2 bm = vec2(bw * 0.5 - dot(vL.xz * vS.xz, T.xz), mix((vL.y + 0.25 - 0.3 * fract(R * 3.9)) * vS.y, vW.y - yb, lane));
+        vec2 bm = vec2(bw * 0.5 - dot(vW.xz - vC, T.xz), mix((vL.y + 0.25 - 0.3 * fract(R * 3.9)) * vS.y, vW.y - yb, lane));
         vec2 buv = bm / vec2(bw, 9.0);
         float onBoard = step(0.0, buv.x) * step(buv.x, 1.0) * step(0.0, buv.y) * step(buv.y, 1.0) * board;
         float frameB = step(0.03, buv.x) * step(buv.x, 0.97) * step(0.05, buv.y) * step(buv.y, 0.95);
@@ -239,153 +273,213 @@ const TOWER_FRAG = /* glsl */ `
         col += hueA * spill * 0.05;
         col += (screen * mix(1.7, 0.16, step(0.5, uGroups)) + text * 2.4 * dots) * onBoard * frameB;
         // A lit crown on some towers: a band of light around the top floors and a parapet line.
-        float crowned = step(0.7, fract(R * 7.31)) * side;
+        float crowned = step(0.7, fract(R * 7.31)) * side * step(45.0, vS.y);
         float band = smoothstep(vTop - 9.0, vTop - 8.0, vW.y) * (1.0 - smoothstep(vTop - 3.0, vTop - 2.4, vW.y));
         float parapet = smoothstep(vTop - 0.9, vTop - 0.4, vW.y);
         vec3 crownCol = mix(vec3(1.0, 0.82, 0.55), vec3(0.6, 0.85, 1.0), step(0.5, fract(R * 3.7)));
         col += crownCol * (band * 0.35 + parapet * 0.5) * crowned;
         col += vec3(1.0, 0.86, 0.7) * glowAt(vW, 18.0) * 0.1;
-        gl_FragColor = vec4(fogAt(col, vD, vW), 1.0);
+        gl_FragColor = vec4(cityFog(col, vD, vW), 1.0);
     }
 `;
-
-type Tower = { x: number; z: number; h: number; w: number; d: number; kind: number; spire: number };
-
-/** Tower shapes, each one unit tall around its centre: a plain slab, a setback, an octagon. */
-function shapes(): THREE.BufferGeometry[] {
-    const box = (w: number, h: number, y: number): THREE.BufferGeometry =>
-        new THREE.BoxGeometry(w, h, w).translate(0, y, 0);
-    // Flat-shaded: smooth normals would bend the window grid across each face and flare its edges.
-    const oct = (r: number, h: number, y: number): THREE.BufferGeometry => {
-        const g = new THREE.CylinderGeometry(r, r, h, 8, 1)
-            .rotateY(Math.PI / 8)
-            .translate(0, y, 0)
-            .toNonIndexed();
-        g.computeVertexNormals();
-        return g;
-    };
-    const setback = mergeGeometries(
-        [box(1, 0.22, -0.39), box(0.78, 0.5, -0.03), box(0.52, 0.28, 0.36)].map((g) => g.toNonIndexed())
-    );
-    const octagon = mergeGeometries([oct(0.56, 0.82, -0.09), oct(0.4, 0.18, 0.41)]);
-    return [new THREE.BoxGeometry(1, 1, 1), setback, octagon];
-}
-
-/** Tall towers step back or turn octagonal (a few short ones step back too). */
-const shapeFor = (h: number, pick: number): number => {
-    if (h <= 90) return pick < 0.2 ? 1 : 0;
-    return pick < 0.45 ? 1 : pick < 0.75 ? 2 : 0;
-};
-
-function tower(x: number, z: number, rand: () => number): Tower {
-    // A few supertalls stand clear of the rest.
-    const h =
-        (22 + Math.pow(rand(), 1.8) * 175 * (1 - (Math.abs(x) / 240) * 0.4)) * (rand() < 0.05 ? 1.55 : 1);
-    const kind = shapeFor(h, rand());
-    const w = 8 + rand() * 5;
-    const d = kind === 2 ? w : 8 + rand() * 5;
-    // The tallest shaped towers carry a spire.
-    const spire = h > 120 && kind > 0 ? 8 + rand() * 14 : 0;
-    return { x, z, h, w, d, kind, spire };
-}
-
-/** Lays out one tile of blocks, leaving the strip where the scanned downtown stands. */
-function planTowers(rand: () => number): Tower[] {
-    const towers: Tower[] = [];
-    for (let k = 0; k < COLS; k++)
-        for (let j = 0; j < ROWS; j++) {
-            const x = (k - (COLS - 1) / 2) * GRID + (rand() - 0.5) * 3;
-            const z = -j * GRID + (rand() - 0.5) * 3;
-            const t = tower(x, z, rand);
-            if (x > DOWNTOWN_X) towers.push(t);
-        }
-    return towers;
-}
 
 /**
- * The scan, graded for the night it is flown through. Its texture is a photograph: lamps, signs and
- * lit windows (bright and saturated) are kept as light; the rest, and the grey filler where the
- * camera never saw, sinks into a cool dark that the moon picks out by face (normals from the
- * surface itself: the scan has none). On the walls, a grid of rooms lit here and there, averaged
- * out with distance as the built towers do; warm light from the streets climbs the lowest floors.
+ * The bowl's ground: bare slopes and the plateau's edge pale under the moon; where it is built
+ * up, dark, with the warm glow of lit streets winding between the blocks.
  */
-const SCAN_VERT = /* glsl */ `varying vec2 vUv; varying vec3 vW; varying float vD;
-    void main() { vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz;
+const GROUND_VERT = /* glsl */ `attribute float aDen; varying vec3 vW, vN; varying float vD, vDen;
+    void main() { vDen = aDen; vN = normal; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz;
         vec4 mv = viewMatrix * w; vD = -mv.z; gl_Position = projectionMatrix * mv; }`;
-const SCAN_FRAG = /* glsl */ `
-    uniform sampler2D tMap; varying vec2 vUv; varying vec3 vW; varying float vD;
+const GROUND_FRAG = /* glsl */ `
+    uniform vec3 uGrid; varying vec3 vW, vN; varying float vD, vDen;
+    ${CITY_AIR}
     void main() {
-        vec3 t = texture2D(tMap, vUv).rgb;
-        float L = dot(t, vec3(0.2126, 0.7152, 0.0722));
-        float hi = max(t.r, max(t.g, t.b));
-        float sat = (hi - min(t.r, min(t.g, t.b))) / max(hi, 1e-3);
-        float lamp = smoothstep(0.1, 0.4, L) * smoothstep(0.25, 0.6, sat) + smoothstep(0.35, 0.75, L) * 0.5;
-        vec3 n = normalize(cross(dFdx(vW), dFdy(vW)));
-        float side = 1.0 - smoothstep(0.4, 0.7, abs(n.y));
+        vec3 n = normalize(vN);
         float moon = max(dot(n, MOON_DIR), 0.0);
-        vec3 col = t * vec3(0.5, 0.6, 0.85) * (0.34 + 0.25 * moon) + vec3(0.006, 0.009, 0.016);
-        col += t * lamp * 2.4;
-        // Rooms: a window grid on the walls, about one in five lit.
-        // On fixed axes (whichever the wall faces more), so a rough scan keeps a steady grid.
-        vec2 f = vec2(abs(n.x) > abs(n.z) ? vW.z : vW.x, vW.y) / vec2(2.3, 3.4);
-        vec2 fw = clamp(fwidth(f), vec2(1e-4), vec2(0.5));
-        float far = smoothstep(0.08, 0.3, max(fw.x, fw.y));
-        vec2 g = fract(f);
-        vec2 wm = smoothstep(0.18 - fw, 0.18 + fw, g) * (1.0 - smoothstep(0.82 - fw, 0.82 + fw, g));
-        float h = hash(floor(f) + floor(f.x / 9.0) * 7.1);
-        float lit = mix(step(0.84, h) * wm.x * wm.y, 0.16 * 0.41, far) * side * smoothstep(${(FLOOR + 3).toFixed(1)}, ${(FLOOR + 6).toFixed(1)}, vW.y);
-        vec3 room = mix(vec3(1.0, 0.7, 0.42), vec3(0.75, 0.86, 1.0), step(0.93, h)) * (0.7 + 0.3 * fract(h * 13.0));
-        col += room * lit * 0.45 * (1.0 - lamp);
-        col += vec3(1.0, 0.6, 0.32) * 0.05 * exp(-(vW.y - ${FLOOR.toFixed(1)}) / 14.0);
-        gl_FragColor = vec4(fogAt(col, vD, vW), 1.0);
+        vec3 bare = vec3(0.05, 0.052, 0.066) * (0.3 + 1.1 * moon) * (0.75 + 0.5 * fbm(vW.xz * 0.02));
+        float built = smoothstep(0.03, 0.5, vDen);
+        float lanes = pow(1.0 - abs(vnoise(vW.xz * 0.11) * 2.0 - 1.0), 14.0);
+        vec3 lit = vec3(1.0, 0.56, 0.26) * (0.03 + 0.07 * lanes) * built * (1.0 - uDrop * 0.4);
+        vec3 col = mix(bare, vec3(0.016, 0.014, 0.018), built) + lit;
+        // The map's edge, seen from high on the drop, melts into the air rather than ending.
+        float edge = smoothstep(uGrid.z - 700.0, uGrid.z - 40.0, max(abs(vW.x - uGrid.x), abs(vW.z - uGrid.y)));
+        gl_FragColor = vec4(mix(col, haze(normalize(vW - cameraPosition)), max(cityAir(vD, vW), edge)), 1.0);
     }
 `;
 
-/** Aviation lights on the scan's tallest roofs: local high points over its upper half (model units). */
-function scanRoofs(model: THREE.Object3D, box: THREE.Box3): THREE.Vector3[] {
-    const size = box.getSize(new THREE.Vector3());
-    const N = 28;
-    const top = new Float32Array(N * N).fill(-Infinity);
-    const at = new Array<THREE.Vector3 | null>(N * N).fill(null);
-    const v = new THREE.Vector3();
-    model.updateMatrixWorld(true);
-    model.traverse((o) => {
-        const m = o as THREE.Mesh;
-        if (!m.isMesh) return;
-        const p = m.geometry.attributes.position;
-        for (let i = 0; i < p.count; i++) {
-            v.fromBufferAttribute(p, i).applyMatrix4(m.matrixWorld);
-            const cx = Math.min(N - 1, Math.floor(((v.x - box.min.x) / size.x) * N));
-            const cz = Math.min(N - 1, Math.floor(((v.z - box.min.z) / size.z) * N));
-            const c = cz * N + cx;
-            if (v.y > top[c]) {
-                top[c] = v.y;
-                at[c] = v.clone();
-            }
-        }
-    });
-    const peak = (cx: number, cz: number): boolean => {
-        const y = top[cz * N + cx];
-        if (y < box.min.y + size.y * 0.42) return false;
-        for (let dz = -1; dz <= 1; dz++)
-            for (let dx = -1; dx <= 1; dx++) {
-                const x = cx + dx;
-                const z = cz + dz;
-                if ((dx || dz) && x >= 0 && z >= 0 && x < N && z < N && top[z * N + x] > y) return false;
-            }
-        return true;
+/**
+ * The lamps of the hillside barrios and of El Alto on the rim: a point of light per block beyond
+ * the built ones, and between the low ones. Mostly sodium, some warm white, some cool LED.
+ */
+const LIGHT_VERT = /* glsl */ `attribute float aKind; varying vec3 vCol; varying float vA;
+    ${CITY_AIR}
+    void main() {
+        vec4 w = modelMatrix * vec4(position, 1.0);
+        vec4 mv = viewMatrix * w;
+        float d = -mv.z;
+        float kind = floor(aKind / 64.0), b = mod(aKind, 64.0) / 63.0;
+        vCol = kind < 0.5 ? vec3(1.0, 0.55, 0.22) : kind < 1.5 ? vec3(1.0, 0.8, 0.56) : vec3(0.72, 0.86, 1.0);
+        float px = uPR * 700.0 / max(d, 1.0);
+        gl_PointSize = clamp(px, 1.5 * uPR, 9.0 * uPR);
+        // Smaller than the smallest point: dimmer, not bigger.
+        vA = (0.35 + 0.65 * b) * min(1.0, px / (1.5 * uPR)) * (1.0 - cityAir(d * 0.7, w.xyz)) * (1.0 - uDrop * 0.35);
+        gl_Position = projectionMatrix * mv;
+    }`;
+const LIGHT_FRAG = /* glsl */ `varying vec3 vCol; varying float vA;
+    void main() { float r = length(gl_PointCoord - 0.5); float a = smoothstep(0.5, 0.0, r);
+        gl_FragColor = vec4(vCol * vA * (a * a * 1.4 + smoothstep(0.16, 0.0, r)), 1.0); }`;
+
+/**
+ * Illimani (6,438 m), the triple-peaked massif to the south-east, from the same terrain data. It is
+ * drawn around the eye at FAR_K of its distance and size, so it keeps its place and size in view
+ * but stands inside the sky. Moonlit snow above the snowline; its foot dissolves into the haze.
+ */
+const FAR_VERT = /* glsl */ `uniform float uK; varying vec3 vT, vN;
+    void main() { vN = normal; vT = (modelMatrix * vec4(position, 1.0)).xyz;
+        vec3 w = cameraPosition + uK * (vT - cameraPosition);
+        gl_Position = projectionMatrix * viewMatrix * vec4(w, 1.0); }`;
+const FAR_FRAG = /* glsl */ `uniform vec2 uSnow, uFoot; varying vec3 vT, vN;
+    void main() {
+        vec3 n = normalize(vN);
+        vec3 V = normalize(vT - cameraPosition);
+        float key = max(dot(n, normalize(vec3(0.45, 0.55, 0.7))), 0.0);
+        float snow = smoothstep(uSnow.x, uSnow.y, vT.y + 80.0 * (fbm(vT.xz * 0.004) - 0.5)) * smoothstep(0.3, 0.7, n.y);
+        vec3 rock = vec3(0.025, 0.03, 0.045) * (0.4 + key);
+        vec3 ice = vec3(0.5, 0.6, 0.8) * (0.2 + 0.8 * key);
+        vec3 col = mix(rock, ice, snow);
+        float f = 1.0 - exp(-length(vT - cameraPosition) * 0.00004);
+        col = mix(col, haze(V), max(f, 1.0 - smoothstep(uFoot.x, uFoot.y, vT.y)));
+        gl_FragColor = vec4(col, 1.0);
+    }`;
+
+type Grid = { cx: number; cz: number; half: number; n: number };
+type Head = { grid: Grid; far: Grid; sections: Record<string, [number, number, string]> };
+/** lapaz-*.bin: a JSON header, then one typed array per section. */
+type LaPaz = { head: Head; i16: (name: string) => Int16Array; u8: (name: string) => Uint8Array };
+
+function parse(buf: ArrayBuffer): LaPaz {
+    const len = new DataView(buf).getUint32(0, true);
+    const head = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 4, len))) as Head;
+    const at = (name: string): [number, number] => {
+        const [off, n] = head.sections[name];
+        return [4 + len + off, n];
     };
-    const roofs: THREE.Vector3[] = [];
-    for (let cz = 0; cz < N; cz++)
-        for (let cx = 0; cx < N; cx++) if (peak(cx, cz)) roofs.push(at[cz * N + cx] as THREE.Vector3);
-    return roofs;
+    return {
+        head,
+        i16: (name) => new Int16Array(buf, ...at(name)),
+        u8: (name) => new Uint8Array(buf, ...at(name)),
+    };
 }
 
-/** Red obstruction lights at the given points: slow, out of step, a soft flash rather than a cut. */
-function roofLights(s: Shared, points: THREE.Vector3[]): THREE.Points {
-    const g = new THREE.BufferGeometry().setFromPoints(points);
+/** A heightfield grid as a mesh: x and z from the grid, y from the samples (times k). */
+function gridMesh(g: Grid, ys: Int16Array, k: number): THREE.BufferGeometry {
+    const { cx, cz, half, n } = g;
+    const step = (half * 2) / (n - 1);
+    const pos = new Float32Array(n * n * 3);
+    for (let v = 0; v < n * n; v++)
+        pos.set([cx - half + (v % n) * step, ys[v] * k, cz - half + Math.floor(v / n) * step], v * 3);
+    const idx = new Uint32Array((n - 1) * (n - 1) * 6);
+    let o = 0;
+    for (let j = 0; j < n - 1; j++)
+        for (let i = 0; i < n - 1; i++) {
+            const a = j * n + i;
+            idx.set([a, a + n, a + 1, a + 1, a + n, a + n + 1], o);
+            o += 6;
+        }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setIndex(new THREE.BufferAttribute(idx, 1));
+    geo.computeVertexNormals();
+    return geo;
+}
+
+function addGround(group: THREE.Object3D, s: Shared, lp: LaPaz): void {
+    const geo = gridMesh(lp.head.grid, lp.i16('ground'), 0.05);
+    geo.setAttribute('aDen', new THREE.BufferAttribute(lp.u8('density'), 1, true));
+    const { cx, cz, half } = lp.head.grid;
+    const mesh = new THREE.Mesh(
+        geo,
+        shader(s, GROUND_VERT, GROUND_FRAG, { uGrid: { value: new THREE.Vector3(cx, cz, half) } })
+    );
+    mesh.frustumCulled = false;
+    group.add(mesh);
+}
+
+function addIllimani(group: THREE.Object3D, s: Shared, lp: LaPaz): void {
+    const geo = gridMesh(lp.head.far, lp.i16('far'), 0.1);
+    // World heights of the snowline (~5,000 m) and of the haze its foot fades into (~4,300 m).
+    const mesh = new THREE.Mesh(
+        geo,
+        shader(s, FAR_VERT, FAR_FRAG, {
+            uK: { value: FAR_K },
+            uSnow: { value: new THREE.Vector2(640, 820) },
+            uFoot: { value: new THREE.Vector2(300, 620) },
+        })
+    );
+    mesh.frustumCulled = false;
+    group.add(mesh);
+}
+
+type Block = { at: THREE.Vector3; size: THREE.Vector3; angle: number };
+
+function blocksOf(lp: LaPaz): Block[] {
+    const [x, z, y] = ['bx', 'bz', 'by'].map((k) => lp.i16(k));
+    const [w, d, a, h] = ['bw', 'bd', 'ba', 'bh'].map((k) => lp.u8(k));
+    return Array.from(x, (_, i) => ({
+        at: new THREE.Vector3(x[i] * 0.125, y[i] * 0.05, z[i] * 0.125),
+        size: new THREE.Vector3(w[i] / 4, h[i], d[i] / 4),
+        angle: (a[i] / 256) * Math.PI,
+    }));
+}
+
+/** Every block in one draw call, each on its own footprint, turned to it, standing on the ground. */
+function addBlocks(
+    group: THREE.Object3D,
+    s: Shared,
+    blocks: Block[],
+    env: Env,
+    skills: Array<{ group: string; items: string }>
+): void {
+    const atlas = skillAtlas(skills);
+    const material = shader(s, BLOCK_VERT, BLOCK_FRAG, {
+        tEnv: env.tEnv,
+        uEnvOn: env.uEnvOn,
+        tSkill: { value: atlas.tex },
+        uGroups: { value: atlas.tex ? Math.min(skills.length, MAX_ROWS / 2) : 0 },
+        uLen: { value: atlas.len },
+    });
+    const up = new THREE.Vector3(0, 1, 0);
+    const q = new THREE.Quaternion();
+    const transforms = blocks.map((b) =>
+        new THREE.Matrix4().compose(
+            b.at.clone().setY(b.at.y + b.size.y / 2),
+            q.setFromAxisAngle(up, b.angle),
+            b.size
+        )
+    );
+    group.add(boxes(material, transforms, rng(1825)));
+}
+
+function addLights(group: THREE.Object3D, s: Shared, lp: LaPaz): void {
+    const [x, z, y] = ['px', 'pz', 'py'].map((k) => lp.i16(k));
+    const pos = new Float32Array(x.length * 3);
+    for (let i = 0; i < x.length; i++) pos.set([x[i] * 0.125, y[i] * 0.05, z[i] * 0.125], i * 3);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('aKind', new THREE.BufferAttribute(Float32Array.from(lp.u8('pk')), 1));
+    const pts = new THREE.Points(g, shader(s, LIGHT_VERT, LIGHT_FRAG, {}, ADD));
+    pts.frustumCulled = false;
+    group.add(pts);
+}
+
+/** Red obstruction lights on the tallest roofs: slow, out of step, a soft flash rather than a cut. */
+function addBeacons(group: THREE.Object3D, s: Shared, blocks: Block[]): void {
+    const points = blocks
+        .filter((b) => b.size.y >= BEACON_H)
+        .map((b) => b.at.clone().setY(b.at.y + b.size.y + 1.2));
+    if (!points.length) return;
     const pts = new THREE.Points(
-        g,
+        new THREE.BufferGeometry().setFromPoints(points),
         shader(
             s,
             /* glsl */ `varying float vD, vP;
@@ -393,180 +487,51 @@ function roofLights(s: Shared, points: THREE.Vector3[]): THREE.Points {
                 vec4 mv = modelViewMatrix * vec4(position, 1.0); vD = -mv.z;
                 gl_PointSize = clamp(uPR * 1100.0 / vD, 2.0, 20.0); gl_Position = projectionMatrix * mv; }`,
             /* glsl */ `varying float vD, vP;
+            ${CITY_AIR}
             void main() { float ph = fract(uTime * 0.5 + vP); float on = smoothstep(0.0, 0.08, ph) * (1.0 - smoothstep(0.35, 0.6, ph));
                 float a = smoothstep(0.5, 0.0, length(gl_PointCoord - 0.5));
-                gl_FragColor = vec4(vec3(2.6, 0.18, 0.1) * a * (0.12 + 0.88 * on) * fade(vD * 0.7), 1.0); }`,
+                gl_FragColor = vec4(vec3(2.6, 0.18, 0.1) * a * (0.12 + 0.88 * on) * cityFade(vD), 1.0); }`,
             {},
             ADD
         )
     );
     pts.frustumCulled = false;
-    return pts;
+    group.add(pts);
 }
 
 /**
- * The downtown: "Osaka downtown" by matousekfoto (Sketchfab, CC BY 4.0), a night photogrammetry
- * scan of lit towers, standing on the left of the path, graded by SCAN_FRAG and in the same air as
- * the rest of the city. Three copies ride along the path so it never ends.
+ * La Paz, once its data has arrived: phones and Save-Data or slow connections get the lighter
+ * tier (0.5 MB: a coarser ground, the blocks nearest the avenue, fewer lamps); others 1.3 MB.
  */
-function addDowntown(
+function addLaPaz(
     scene: THREE.Object3D,
     s: Shared,
-    small: boolean
-): { update: (eye: THREE.Vector3) => void } {
-    const copies: THREE.Group[] = [0, 1, 2].map(() => {
-        const g = new THREE.Group();
-        scene.add(g);
-        return g;
-    });
-    let period = 500;
-    let x = DOWNTOWN_X - 220;
-    // 4.8 MB even for phones: skipped on Save-Data or a slow connection; the towers stand alone.
-    if (lean()) return { update: () => undefined };
-    new GLTFLoader()
-        .setMeshoptDecoder(MeshoptDecoder)
-        .loadAsync(`/models/osaka-${small ? 'lo' : 'hi'}.glb`)
-        .then((gltf) => {
-            const model = gltf.scene;
-            const box = new THREE.Box3().setFromObject(model);
-            const size = box.getSize(new THREE.Vector3());
-            // Its tallest tower reaches 150 m; the block then runs ~470 m along the path.
-            const k = 150 / size.y;
-            period = size.z * k * 0.97;
-            x = DOWNTOWN_X - (size.x * k) / 2;
-            const center = box.getCenter(new THREE.Vector3());
-            const shift = new THREE.Vector3(-center.x * k, -box.min.y * k, -center.z * k);
-            const roofs = scanRoofs(model, box).map((p) => p.multiplyScalar(k).add(shift));
-            model.traverse((o) => {
-                const m = o as THREE.Mesh;
-                if (!m.isMesh) return;
-                const old = m.material as THREE.MeshStandardMaterial;
-                m.material = shader(
-                    s,
-                    SCAN_VERT,
-                    SCAN_FRAG,
-                    { tMap: { value: old.map } },
-                    { side: THREE.DoubleSide }
-                );
-                m.frustumCulled = false;
-            });
-            copies.forEach((g) => {
-                const c = model.clone();
-                c.scale.setScalar(k);
-                c.position.copy(shift);
-                g.add(c);
-                if (roofs.length) g.add(roofLights(s, roofs));
-            });
-        })
-        .catch(() => undefined);
-    return {
-        update: (eye) => {
-            const base = Math.round(eye.z / period) * period;
-            copies.forEach((g, i) => g.position.set(x, FLOOR - 1.5, base + (i - 1) * period));
-        },
-    };
-}
-
-/** Slim dark masts on the tallest setback and octagonal towers. */
-function addSpires(
-    scene: THREE.Object3D,
-    towers: Tower[],
-    s: Shared,
-    wrap: Record<string, THREE.IUniform>,
-    rand: () => number
-): void {
-    const q = new THREE.Quaternion();
-    const spires = towers
-        .filter((t) => t.spire > 0)
-        .map((t) =>
-            new THREE.Matrix4().compose(
-                new THREE.Vector3(t.x, FLOOR + t.h + t.spire / 2, t.z),
-                q,
-                new THREE.Vector3(0.9, t.spire, 0.9)
-            )
-        );
-    if (!spires.length) return;
-    const material = shader(
-        s,
-        WRAP_VERT,
-        /* glsl */ `varying vec3 vW, vN, vL, vWN; varying float vR, vD;
-        void main() { vec3 V = normalize(vW - cameraPosition); float rim = pow(1.0 - abs(dot(normalize(vWN), V)), 3.0);
-            gl_FragColor = vec4(fogIt(vec3(0.03, 0.035, 0.045) + vec3(0.12, 0.15, 0.22) * rim, vD), 1.0); }`,
-        wrap
-    );
-    scene.add(boxes(material, spires, rand, new THREE.CylinderGeometry(0.05, 0.5, 1, 6)));
-}
-
-/** One tile of blocks; the shader repeats it around the camera and keeps the flight path clear. */
-function addTowers(
-    scene: THREE.Object3D,
-    s: Shared,
-    rand: () => number,
+    small: boolean,
     env: Env,
     skills: Array<{ group: string; items: string }>
-): Tower[] {
-    const towers = planTowers(rand);
-    const q = new THREE.Quaternion();
-    const wrap = { uTile: { value: TILE }, uClear: { value: CLEAR } };
-    const atlas = skillAtlas(skills);
-    const material = shader(s, TOWER_VERT, TOWER_FRAG, {
-        ...wrap,
-        tEnv: env.tEnv,
-        uEnvOn: env.uEnvOn,
-        tSkill: { value: atlas.tex },
-        uGroups: { value: atlas.tex ? Math.min(skills.length, MAX_ROWS / 2) : 0 },
-        uLen: { value: atlas.len },
-    });
-    shapes().forEach((geo, kind) => {
-        const mine = towers.filter((t) => t.kind === kind);
-        if (!mine.length) return;
-        const transforms = mine.map((t) =>
-            new THREE.Matrix4().compose(
-                new THREE.Vector3(t.x, FLOOR + t.h / 2, t.z),
-                q,
-                new THREE.Vector3(t.w, t.h, t.d)
-            )
-        );
-        scene.add(boxes(material, transforms, rand, geo));
-    });
-    addSpires(scene, towers, s, wrap, rand);
-    return towers;
-}
-
-/** Blinking red aviation lights on the masts of the tallest towers. */
-function addBeacons(scene: THREE.Object3D, towers: Tower[], s: Shared, rand: () => number): void {
-    const lights: number[] = [];
-    for (const t of towers) if (t.h > 115) lights.push(t.x, FLOOR + t.h + (t.spire || 1.5 + rand()), t.z);
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(lights, 3));
-    const blink = new THREE.Points(
-        g,
-        shader(
-            s,
-            /* glsl */ `uniform vec2 uTile; uniform float uClear; varying float vD; varying float vP;
-            void main() {
-                vec3 p = position; p.xz = wrapAround(p.xz, uTile); vP = fract(position.x * 0.137);
-                vec4 mv = viewMatrix * vec4(p, 1.0); vD = -mv.z;
-                gl_PointSize = abs(p.x - pathX(p.z)) < uClear ? 0.0 : min(22.0, uPR * 900.0 / vD);
-                gl_Position = projectionMatrix * mv; }`,
-            /* glsl */ `varying float vD; varying float vP;
-            void main() { float on = step(0.55, fract(uTime * 0.6 + vP)); float a = smoothstep(0.5, 0.0, length(gl_PointCoord - 0.5));
-                gl_FragColor = vec4(vec3(2.4, 0.15, 0.1) * a * on * fade(vD), 1.0); }`,
-            { uTile: { value: TILE }, uClear: { value: CLEAR } },
-            ADD
-        )
-    );
-    blink.frustumCulled = false;
-    scene.add(blink);
+): void {
+    const group = new THREE.Group();
+    scene.add(group);
+    fetch(`/data/lapaz-${small || lean() ? 'lo' : 'hi'}.bin`)
+        .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
+        .then((buf) => {
+            const lp = parse(buf);
+            const blocks = blocksOf(lp);
+            addGround(group, s, lp);
+            addIllimani(group, s, lp);
+            addBlocks(group, s, blocks, env, skills);
+            addLights(group, s, lp);
+            addBeacons(group, s, blocks);
+        })
+        .catch(() => undefined);
 }
 
 /**
- * Wet streets. Grid streets run between the blocks (their centre lines 9 m off the 18 m grid) and a
- * boulevard follows the flight path, so there is always a lit street below the ship. Lamps every
- * 12 m pool sodium light on the grid and white light along the boulevard; shopfronts spill colour
- * on the pavement. Puddles (large-scale noise) mirror the city; between them the road only smears
- * the lights. Desktop renders a real mirrored city for the puddles; phones get the lamps' own sheen.
- * Lamps are light sources, so the haze dims them less than the asphalt.
+ * The avenue under the flight path, wet. Its lanes either side of the median, white LED lamps along
+ * the kerbs and the median, shopfronts spilling colour on the pavement. Puddles (large-scale noise)
+ * mirror the city; between them the road only smears the lights. Desktop renders a real mirrored
+ * city for the puddles; phones get the lamps' own sheen. Lamps are light sources, so the haze dims
+ * them less than the asphalt. Beyond the pavement the ground of the bowl takes over.
  */
 const STREET_FRAG = /* glsl */ `
     uniform sampler2D tReflect; uniform float uMirror;
@@ -578,29 +543,22 @@ const STREET_FRAG = /* glsl */ `
         return vec2(exp(-d2 / 10.0), exp(-d2 / 0.12));
     }
     void main() {
+        float bq = abs(vW.x - pathX(vW.z));
+        if (bq > ${AVENUE.edge.toFixed(1)} || vW.z > ${AVENUE.from.toFixed(1)} || vW.z < ${AVENUE.to.toFixed(1)}) discard;
         vec3 V = normalize(vW - cameraPosition);
         float puddle = smoothstep(0.48, 0.6, fbm(vW.xz * 0.045));
         float grain = fbm(vW.xz * 1.9);
-        // Metres to the nearest street centre line, along x and along z; and across the boulevard.
-        vec2 q = abs(fract(vW.xz / 18.0) - 0.5) * 18.0;
-        float bq = abs(vW.x - pathX(vW.z));
-        float road = max(max(step(q.x, 3.6), step(q.y, 3.6)), step(bq, 13.0));
+        float road = step(bq, ${AVENUE.half.toFixed(1)});
         vec3 asphalt = mix(vec3(0.03, 0.032, 0.038), vec3(0.01, 0.012, 0.018), road) * (0.6 + 0.8 * grain);
-        // Dashed centre lines, and the boulevard's lanes either side of its median.
-        float grid = step(13.0, bq);
-        float lanes = step(abs(fract(bq / 4.2) - 0.5) * 4.2, 0.1) * step(0.5, fract(vW.z / 7.0)) * (1.0 - grid);
-        float dashes = step(q.x, 0.1) * step(0.5, fract(vW.z / 6.0)) + step(q.y, 0.1) * step(0.5, fract(vW.x / 6.0));
-        float marks = max(dashes * grid, lanes);
-        vec3 base = asphalt + vec3(0.5, 0.52, 0.55) * marks * 0.06 * (1.0 - puddle * 0.6);
-        // Street lamps on the kerbs of the grid (sodium) and along the boulevard (white LED).
-        vec2 lx = lamps(q.x - 3.3, vW.z, 12.0), lz = lamps(q.y - 3.3, vW.x, 12.0);
-        vec2 lb = lamps(bq - 13.0, vW.z, 15.0), lm = lamps(bq, vW.z + 7.5, 15.0);
-        vec3 light = vec3(1.0, 0.68, 0.38) * (lx.x + lz.x) * 0.5 * grid + vec3(0.82, 0.9, 1.0) * (lb.x + lm.x) * 0.4;
-        vec3 heads = vec3(1.0, 0.8, 0.55) * (lx.y + lz.y) * grid + vec3(0.9, 0.95, 1.0) * (lb.y + lm.y);
-        // Shopfronts: colour spilling onto the pavement at the foot of the blocks.
-        vec2 blk = floor(vW.xz / 18.0);
-        vec3 shopCol = mix(vec3(1.0, 0.55, 0.3), vec3(0.4, 0.75, 1.0), step(0.6, hash(blk)));
-        float shop = (exp(-pow(q.x - 4.8, 2.0) / 1.2) + exp(-pow(q.y - 4.8, 2.0) / 1.2)) * step(0.35, hash(blk + 3.1));
+        float lanes = step(abs(fract(bq / 4.2) - 0.5) * 4.2, 0.1) * step(0.5, fract(vW.z / 7.0)) * road;
+        vec3 base = asphalt + vec3(0.5, 0.52, 0.55) * lanes * 0.06 * (1.0 - puddle * 0.6);
+        vec2 lb = lamps(bq - ${AVENUE.half.toFixed(1)}, vW.z, 15.0), lm = lamps(bq, vW.z + 7.5, 15.0);
+        vec3 light = vec3(0.82, 0.9, 1.0) * (lb.x + lm.x) * 0.4;
+        vec3 heads = vec3(0.9, 0.95, 1.0) * (lb.y + lm.y);
+        // Shopfronts: colour spilling onto the pavement, a shop every 18 m or so, either side.
+        vec2 shopAt = vec2(floor(vW.z / 18.0), step(0.0, vW.x - pathX(vW.z)));
+        vec3 shopCol = mix(vec3(1.0, 0.55, 0.3), vec3(0.4, 0.75, 1.0), step(0.6, hash(shopAt)));
+        float shop = exp(-pow(bq - 19.0, 2.0) / 6.0) * step(0.35, hash(shopAt + 3.1));
         light += shopCol * shop * 0.12;
         // Wet: puddles reflect strongly even looking down; the lamps glare off them.
         float wet = mix(0.15, 1.0, puddle) * mix(0.3, 1.0, pow(1.0 - abs(V.y), 3.0));
@@ -625,7 +583,7 @@ export type City = {
 export type Env = { tEnv: THREE.IUniform<THREE.Texture | null>; uEnvOn: THREE.IUniform<number> };
 
 function addStreets(scene: THREE.Object3D, s: Shared, mirror: boolean): City {
-    const geo = new THREE.PlaneGeometry(900, 900);
+    const geo = new THREE.PlaneGeometry(AVENUE.edge * 2 + 30, 900);
     // The reflector renders the mirrored city; its own material is swapped for the asphalt above.
     const floor = mirror
         ? new Reflector(geo, { textureWidth: 1024, textureHeight: 640, clipBias: 0.003 })
@@ -662,40 +620,28 @@ function addStreets(scene: THREE.Object3D, s: Shared, mirror: boolean): City {
     };
 }
 
-/** One car: where its lane starts, which way it drives, its speed and loop length, its light. */
-type Car = { base: number[]; dir: number[]; sp: number[]; col: number[]; blvd: number };
+/** How far a boulevard car drives before it comes round again. */
+const LOOP = 600;
 
-/** A car on the grid streets (`blvd` 0) or on the boulevard under the flight path (1). */
-function car(rand: () => number, onBoulevard: boolean): Car {
-    const fwd = rand() < 0.5 ? 1 : -1;
-    const phase = rand() * 1000; // kept in the unused y of the direction
-    const col = fwd > 0 ? [2.6, 2.2, 1.7] : [2.6, 0.35, 0.22];
-    const speed = 8 + rand() * 22;
-    if (onBoulevard) {
+/** Other requests driving the avenue under the flight path: white heading one way, red the other. */
+function addTraffic(scene: THREE.Object3D, s: Shared, density: number, rand: () => number): void {
+    const cars = Array.from({ length: Math.round(220 * density) }, () => {
+        const fwd = rand() < 0.5 ? 1 : -1;
         // Three lanes each way either side of the median; x is the offset from the path.
         const lane = fwd * (2 + Math.floor(rand() * 3) * 3.6);
-        return { base: [lane, FLOOR + 0.6, 0], dir: [0, phase, fwd], sp: [speed, TILE.y], col, blvd: 1 };
-    }
-    if (rand() < 0.55) {
-        const x = (Math.floor(rand() * COLS) - (COLS - 1) / 2) * GRID + 9 + fwd * 1.6;
-        return { base: [x, FLOOR + 0.6, 0], dir: [0, phase, fwd], sp: [speed, TILE.y], col, blvd: 0 };
-    }
-    const z = -Math.floor(rand() * ROWS) * GRID - 9 + fwd * 1.6;
-    return { base: [0, FLOOR + 0.6, z], dir: [fwd, phase, 0], sp: [speed, TILE.x], col, blvd: 0 };
-}
-
-/** Other requests driving the streets: white heading one way, red the other. */
-function addTraffic(scene: THREE.Object3D, s: Shared, density: number, rand: () => number): void {
-    const cars = [
-        ...Array.from({ length: Math.round(900 * density) }, () => car(rand, false)),
-        ...Array.from({ length: Math.round(220 * density) }, () => car(rand, true)),
-    ];
+        const phase = rand() * 1000; // kept in the unused y of the direction
+        const col = fwd > 0 ? [2.6, 2.2, 1.7] : [2.6, 0.35, 0.22];
+        return { base: [lane, FLOOR + 0.6, 0], dir: [0, phase, fwd], sp: [8 + rand() * 22, LOOP], col };
+    });
     const unit = new THREE.BoxGeometry(1, 1, 1);
     const g = new THREE.InstancedBufferGeometry();
     g.setIndex(unit.index);
     g.setAttribute('position', unit.getAttribute('position'));
     g.instanceCount = cars.length;
-    const attr = (pick: (c: Car) => number[], size: number): THREE.InstancedBufferAttribute =>
+    const attr = (
+        pick: (c: (typeof cars)[number]) => number[],
+        size: number
+    ): THREE.InstancedBufferAttribute =>
         new THREE.InstancedBufferAttribute(new Float32Array(cars.flatMap(pick)), size);
     g.setAttribute(
         'aBase',
@@ -713,38 +659,34 @@ function addTraffic(scene: THREE.Object3D, s: Shared, density: number, rand: () 
         'aCol',
         attr((c) => c.col, 3)
     );
-    g.setAttribute(
-        'aBlvd',
-        attr((c) => [c.blvd], 1)
-    );
     const mesh = new THREE.Mesh(
         g,
         shader(
             s,
-            /* glsl */ `uniform vec2 uTile; attribute vec3 aBase, aDir, aCol; attribute vec2 aSp; attribute float aBlvd;
+            /* glsl */ `uniform vec2 uTile; attribute vec3 aBase, aDir, aCol; attribute vec2 aSp;
             varying vec3 vC; varying float vD;
             void main() {
                 vec3 d = vec3(aDir.x, 0.0, aDir.z);
-                vec3 lp = (abs(d.x) > 0.5 ? position.zyx : position) * vec3(0.35, 0.18, 2.2);
+                vec3 lp = position * vec3(0.35, 0.18, 2.2);
                 float s = mod(uTime * aSp.x + aDir.y, aSp.y) - aSp.y * 0.5;
                 vC = aCol;
                 vec3 c = aBase + d * s;
                 c.xz = wrapAround(c.xz, uTile);
-                // Boulevard cars keep to their lane under the swaying flight path.
-                c.x = mix(c.x, pathX(c.z) + aBase.x, aBlvd);
+                // Cars keep to their lane under the swaying flight path.
+                c.x = pathX(c.z) + aBase.x;
                 vec4 mv = viewMatrix * vec4(c + lp, 1.0);
                 vD = -mv.z;
                 gl_Position = projectionMatrix * mv;
             }`,
             /* glsl */ `varying vec3 vC; varying float vD; void main() { gl_FragColor = vec4(fogIt(vC * (1.0 - uDrop * 0.8), vD * 0.7), 1.0); }`,
-            { uTile: { value: TILE } }
+            { uTile: { value: new THREE.Vector2(LOOP, LOOP) } }
         )
     );
     mesh.frustumCulled = false;
     scene.add(mesh);
 }
 
-/** 2 · Edge: an endless night city of towers the ship weaves above, in the rain. */
+/** 2 · Edge: La Paz at night, the canyon bowl of lights the ship dives into, in the rain. */
 export function addCity(
     scene: THREE.Object3D,
     s: Shared,
@@ -753,9 +695,7 @@ export function addCity(
     env: Env,
     skills: Array<{ group: string; items: string }> = []
 ): City {
-    const towers = addTowers(scene, s, rand, env, skills);
-    const downtown = addDowntown(scene, s, density < 1);
-    addBeacons(scene, towers, s, rand);
+    addLaPaz(scene, s, density < 1, env, skills);
     addTraffic(scene, s, density, rand);
     addMotes(
         scene,
@@ -772,10 +712,5 @@ export function addCity(
         rand
     );
     const streets = addStreets(scene, s, density >= 1);
-    return {
-        update: (eye, on) => {
-            streets.update(eye, on);
-            downtown.update(eye);
-        },
-    };
+    return { update: (eye, on) => streets.update(eye, on) };
 }
