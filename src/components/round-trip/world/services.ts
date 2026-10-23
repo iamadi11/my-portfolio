@@ -47,8 +47,18 @@ export type Rings = {
     rush: number;
     /** 0–1: how close the ship is to the portal on screen, before or after it. */
     close: number;
-    /** Advances the portals, showing only `show` (the current landscape's exit; -1 for none). */
-    update: (u: number, t: number, dt: number, show: number) => number | null;
+    /**
+     * 0–1: how far the camera is through the throat of the portal it is entering: rising with the
+     * jump to 1 at the cut, held at 1 while the window fades into the new place, then 0.
+     */
+    entry: number;
+    /** 1 while a portal's entry is under way (from the crossing to the end of its jump), else 0. */
+    crossing: number;
+    /**
+     * Advances the portals, showing only `show` (the current landscape's exit; -1 for none).
+     * `jump` (0–1) is the jump under way, which drives the entry through the window.
+     */
+    update: (u: number, t: number, dt: number, show: number, jump?: number) => number | null;
 };
 
 /** The gateway model: its ring is 5 m across, centred 2.5 m above its base. */
@@ -74,15 +84,13 @@ function innerRadius(model: THREE.Object3D): number {
 }
 
 /**
- * The portal's event horizon: a window onto the next place, held by a swirl in the project's
- * colour that stays out at the rim. The view through it is looked up by direction (so it sits at
- * infinity, like a real window): that place's skyline (rolling hills, dunes, mesas, peaks, a
- * volcano's cone with its glowing crater, or the flat sea), a bright line of air along it, its sky
- * darkening overhead, and stars. It forms as the ship comes close and flashes as the ship crosses.
+ * The view through a portal: the next place, looked up by direction (so it sits at infinity, like
+ * a real window): that place's skyline (rolling hills, dunes, mesas, peaks, a volcano's cone with
+ * its glowing crater, or the flat sea), a bright line of air along it, its sky darkening overhead,
+ * and stars. Shared by the event horizon and the lens the camera enters through.
  */
-const HORIZON_FRAG = /* glsl */ `
-    uniform vec3 uCol, uNext; uniform float uOn, uFlash, uKind;
-    varying vec2 vUv; varying vec3 vW; varying float vD;
+const BEYOND = /* glsl */ `
+    uniform vec3 uNext; uniform float uKind;
     // Height of the next place's skyline (radians above the horizon) at azimuth az.
     float skyline(float az) {
         float n = vnoise(vec2(az * 5.0, 1.7)), m = vnoise(vec2(az * 19.0, 4.1));
@@ -112,23 +120,81 @@ const HORIZON_FRAG = /* glsl */ `
         // The line of air on the skyline, so the horizon reads at a glance.
         return c + hz * 1.4 * exp(-pow((el - top) / 0.01, 2.0));
     }
-    void main() {
-        vec2 c = vUv - 0.5;
-        float r = max(length(c) * 2.0, 1e-3);
-        float a = atan(c.y, c.x) / 6.2831853;
-        // Spiral arms wound in log-polar space, drifting inward; fine streaks ride on them. They
-        // keep to the outer ring, leaving the middle clear as glass.
-        vec2 sp = vec2(a * 3.0 + log(r) * 0.9 + uTime * 0.12, log(r) * 1.6 - uTime * 0.35);
+    // The swirl round a throat of radius 1 at r: spiral arms wound in log-polar space, drifting
+    // inward, fine streaks riding on them, kept to the outer ring; pull winds them faster.
+    vec3 swirl(vec3 col, float r, float a, float pull) {
+        vec2 sp = vec2(a * 3.0 + log(r) * 0.9 + uTime * 0.12, log(r) * 1.6 - uTime * 0.35 - pull);
         float arms = smoothstep(0.42, 0.78, fbm(sp * vec2(2.0, 1.4)));
         float streaks = smoothstep(0.55, 0.9, fbm(sp * vec2(7.0, 3.0) + 3.1));
         float outer = smoothstep(0.55, 0.95, r);
         float rim = pow(smoothstep(0.8, 0.995, r), 3.0);
+        return col * ((arms * 0.3 + streaks * 0.4) * outer + rim * 1.1);
+    }
+`;
+
+/**
+ * The portal's event horizon: a window onto the next place (BEYOND), held by a swirl in the
+ * project's colour that stays out at the rim, leaving the middle clear as glass. It forms as the
+ * ship comes close and flashes as the ship crosses.
+ */
+const HORIZON_FRAG =
+    BEYOND +
+    /* glsl */ `
+    uniform vec3 uCol; uniform float uOn, uFlash;
+    varying vec2 vUv; varying vec3 vW; varying float vD;
+    void main() {
+        vec2 c = vUv - 0.5;
+        float r = max(length(c) * 2.0, 1e-3);
         float inside = 1.0 - smoothstep(0.985, 1.0, r);
-        vec3 col = uCol * ((arms * 0.3 + streaks * 0.4) * outer + rim * 1.1);
+        vec3 col = swirl(uCol, r, atan(c.y, c.x) / 6.2831853, 0.0);
         // Premultiplied: the throat covers the scene behind with the place beyond; the swirl adds light.
         float alpha = 0.92 * uOn * inside * fade(vD);
         vec3 glow = col * uOn + mix(uCol, vec3(1.0), 0.5) * uFlash * (1.0 - r * 0.6);
         gl_FragColor = vec4(beyond(normalize(vW - cameraPosition)) * alpha + glow * inside * fade(vD), alpha);
+    }
+`;
+
+/**
+ * The lens: how the camera enters a portal. A screen-filling quad (built in clip space, so it
+ * needs no camera) that cuts a circle the size and place of the portal's window on screen; as the
+ * camera goes through the throat (uOpen 0–1) the circle swells to the centre and past the
+ * corners, so the next place arrives through the window, its swirling rim sweeping out past the
+ * lens, its light spilling a little outside. At the cut the frame flashes briefly in the ring's
+ * colour; then the window fades (uShow) into the place itself.
+ */
+const LENS_VERT = /* glsl */ `
+    uniform vec3 uAt; uniform float uR, uOpen;
+    varying vec2 vS, vC; varying vec3 vDir; varying float vRad;
+    void main() {
+        float asp = projectionMatrix[1][1] / projectionMatrix[0][0];
+        vS = position.xy * vec2(asp, 1.0);
+        vDir = (vec4(position.x / projectionMatrix[0][0], position.y / projectionMatrix[1][1], -1.0, 0.0) * viewMatrix).xyz;
+        vec4 c = projectionMatrix * viewMatrix * vec4(uAt, 1.0);
+        bool ahead = c.w > 0.5;
+        vec2 at = ahead ? c.xy / c.w * vec2(asp, 1.0) : vec2(0.0);
+        float rn = ahead ? uR * projectionMatrix[1][1] / c.w : 9.0;
+        float reach = length(vec2(asp, 1.0)) * 1.45;
+        vC = mix(at, vec2(0.0), smoothstep(0.1, 0.85, uOpen));
+        vRad = max(rn, mix(rn, reach, smoothstep(0.04, 0.96, uOpen)));
+        gl_Position = vec4(position.xy, 0.0, 1.0);
+    }
+`;
+const LENS_FRAG =
+    BEYOND +
+    /* glsl */ `
+    uniform vec3 uCol; uniform float uOpen, uShow, uFlash;
+    varying vec2 vS, vC; varying vec3 vDir; varying float vRad;
+    void main() {
+        vec2 q = (vS - vC) / vRad;
+        float r = max(length(q), 1e-3);
+        float aa = fwidth(r) * 1.5;
+        float inside = 1.0 - smoothstep(1.0 - aa, 1.0, r);
+        // The rim thickens and burns brighter as it rushes past.
+        vec3 col = swirl(uCol, r, atan(q.y, q.x) / 6.2831853, uOpen * 3.0) * (1.0 + uOpen) * inside;
+        col += uCol * 0.7 * exp(-max(r - 1.0, 0.0) * 10.0) * (1.0 - inside);
+        float alpha = uShow * inside;
+        vec3 flash = mix(uCol, vec3(1.0), 0.45) * uFlash * (0.6 + 0.4 * inside);
+        gl_FragColor = vec4(beyond(normalize(vDir)) * alpha + col * uShow + flash, alpha);
     }
 `;
 
@@ -145,11 +211,12 @@ const STRIP_FRAG = /* glsl */ `
 `;
 
 /**
- * The marquee over each gate, mounted on it like a cinema's: a dark cabinet in a metal trim, the
- * project's title in channel letters lit in the ring's colour (white-hot only at the letter cores,
- * so only they bloom), their glow washing the backing, and a track of bulbs chasing round inside
- * the trim. Now and then the letters buzz. Mask channels: r the letters, g their halo, b the
- * letters eased in (near 1 only well inside a stroke: the core).
+ * The marquee over each gate, mounted on it like a cinema's: a black cabinet in a thin dark trim,
+ * the project's title in channel letters lit in the ring's colour, their cores white-hot (well
+ * over the bloom's threshold, so only they bloom), their glow washing the backing, and a track of
+ * bulbs chasing round inside the trim (kept under the threshold). Now and then the letters buzz.
+ * Mask channels: r the letters, g their halo, b the letters eased in (near 1 only well inside a
+ * stroke: the core). The letters' edge is cut from r at half coverage, so up close they stay crisp.
  */
 const SIGN_FRAG = /* glsl */ `
     uniform sampler2D tText; uniform vec3 uCol; uniform vec2 uSize; uniform float uOn, uSpin, uSegs, uK;
@@ -168,23 +235,24 @@ const SIGN_FRAG = /* glsl */ `
         float fp = max(fwidth(q.x), fwidth(q.y));
         float buzz = 1.0 - 0.55 * step(0.9, hash(vec2(floor(uTime * 15.0), uK))) * step(0.82, fract(uTime * 0.09 + uK * 0.37));
         float on = (0.55 + 0.45 * uOn) * buzz;
-        // Backing: dark, faintly brushed. What is lit (the glow, the letters, the bulbs) is a light
-        // source: the haze dims it less than the cabinet, so the title reads from far off.
-        float brushed = 0.85 + 0.15 * hash(vec2(floor(vUv.y * 220.0), uK));
-        vec3 base = vec3(0.01, 0.011, 0.014) * brushed;
-        vec3 light = uCol * m.g * 0.06 * on;
+        // Backing: black. What is lit (the glow, the letters, the bulbs) is a light source: the haze
+        // dims it less than the cabinet, so the title reads from far off; the black holds too.
+        vec3 base = vec3(0.004, 0.004, 0.005);
+        vec3 light = uCol * m.g * 0.05 * on;
         // Letters: the ring's colour through each stroke, white-hot only in its core.
-        float core = smoothstep(0.93, 1.0, m.b);
-        light = mix(light, mix(uCol * 1.1, mix(uCol, vec3(1.0), 0.3) * 1.9, core) * on, m.r);
-        base *= 1.0 - m.r;
-        // Trim: brushed metal, lighter along the top where the moon catches it; a coloured inner edge.
+        float cut = clamp(fwidth(m.r) * 0.75, 0.02, 0.5);
+        float letter = smoothstep(0.5 - cut, 0.5 + cut, m.r);
+        float core = smoothstep(0.94, 1.0, m.b);
+        light = mix(light, mix(uCol * 0.85, mix(uCol, vec3(1.0), 0.45) * 3.0, core) * on, letter);
+        base *= 1.0 - letter;
+        // Trim: dark metal, a touch lighter along the top where the moon catches it; a coloured inner edge.
         vec2 e = uSize * 0.5 - abs(q);
         float border = min(e.x, e.y);
         float trim = 1.0 - smoothstep(0.07, 0.07 + fp, border);
-        vec3 metal = mix(vec3(0.05, 0.055, 0.065), vec3(0.2, 0.22, 0.26), smoothstep(-0.5, 0.5, q.y / uSize.y));
-        base = mix(base, metal * (0.8 + 0.2 * sin(border * 90.0)), trim);
+        vec3 metal = mix(vec3(0.015, 0.016, 0.02), vec3(0.06, 0.065, 0.075), smoothstep(-0.5, 0.5, q.y / uSize.y));
+        base = mix(base, metal, trim);
         light *= 1.0 - trim;
-        light += uCol * 0.5 * (1.0 - smoothstep(0.0, 0.015 + fp, abs(border - 0.08))) * on;
+        light += uCol * 0.4 * (1.0 - smoothstep(0.0, 0.015 + fp, abs(border - 0.08))) * on;
         // The bulb track, chasing in segments, the off bulbs glowing faintly; far off, a bulb
         // averages out over its share of the track.
         vec2 t = track(q, uSize * 0.5 - 0.17);
@@ -193,16 +261,16 @@ const SIGN_FRAG = /* glsl */ `
         bulb = mix(bulb, 0.3 * (1.0 - smoothstep(0.0, 0.06, abs(t.x))), smoothstep(0.012, 0.04, fp));
         float chase = step(0.55, fract(floor(t.y / sp) / uSegs - uTime * uSpin));
         vec3 warm = mix(vec3(1.0, 0.86, 0.62), uCol, 0.35);
-        light += bulb * warm * mix(0.12, 2.2, chase) * (0.5 + 0.5 * uOn);
-        gl_FragColor = vec4(fogIt(base, vD) + light * fade(vD * 0.6), 1.0);
+        light += bulb * warm * mix(0.08, 0.85, chase) * (0.5 + 0.5 * uOn);
+        gl_FragColor = vec4(fogIt(base, vD * 0.45) + light * fade(vD * 0.6), 1.0);
     }
 `;
 
 /** Sign units (the gate's own, ring 5 across): mask pixels per unit, height, widest, centre height. */
 const PX = 128;
-const SIGN_H = 1.5;
-const SIGN_MAX_W = 7;
-const SIGN_Y = 6.2;
+const SIGN_H = 3;
+const SIGN_MAX_W = 12;
+const SIGN_Y = 7.2;
 
 /** The title as a mask (see SIGN_FRAG); null without a title or a canvas. */
 function titleMask(title: string): { tex: THREE.Texture; w: number } | null {
@@ -217,7 +285,7 @@ function titleMask(title: string): { tex: THREE.Texture; w: number } | null {
     c.height = Math.round(SIGN_H * PX);
     x.fillStyle = '#000';
     x.fillRect(0, 0, c.width, c.height);
-    x.font = font(c.height * 0.5);
+    x.font = font(c.height * 0.56);
     x.textAlign = 'center';
     x.textBaseline = 'middle';
     x.globalCompositeOperation = 'lighter';
@@ -233,7 +301,7 @@ function titleMask(title: string): { tex: THREE.Texture; w: number } | null {
         x.fillText(title, c.width / 2 - off, c.height * 0.53, c.width - 0.7 * PX);
     };
     pass('#00ff00', 0.16 * PX);
-    pass('#0000ff', 0.03 * PX);
+    pass('#0000ff', 0.06 * PX);
     pass('#ff0000', 0);
     const tex = new THREE.CanvasTexture(c);
     tex.minFilter = THREE.LinearMipmapLinearFilter;
@@ -246,7 +314,7 @@ const FLAT_VERT = /* glsl */ `varying vec2 vUv; varying float vD;
     void main() { vUv = uv; vec4 mv = modelViewMatrix * vec4(position, 1.0); vD = -mv.z; gl_Position = projectionMatrix * mv; }`;
 
 /** Dark brushed metal for the sign's cabinet and the struts that hold it on the ring. */
-const CABINET = new THREE.MeshStandardMaterial({ color: 0x14161b, metalness: 0.9, roughness: 0.4 });
+const CABINET = new THREE.MeshStandardMaterial({ color: 0x050506, metalness: 0.3, roughness: 0.75 });
 
 /** The marquee for project k, mounted over its ring; null when there is no title. */
 function marquee(s: Shared, title: string, colour: THREE.Color, k: number): Sign | null {
@@ -266,14 +334,14 @@ function marquee(s: Shared, title: string, colour: THREE.Color, k: number): Sign
         })
     );
     face.position.z = 0.22;
-    const box = new THREE.Mesh(new THREE.BoxGeometry(mask.w + 0.12, SIGN_H + 0.12, 0.36), CABINET);
+    const box = new THREE.Mesh(new THREE.BoxGeometry(mask.w + 0.16, SIGN_H + 0.16, 0.36), CABINET);
     box.position.z = 0.02;
     const mesh = new THREE.Group();
     mesh.add(face, box);
     // Two struts down onto the top of the ring.
     for (const side of [-1, 1]) {
-        const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 1.1, 8), CABINET);
-        strut.position.set(side * Math.min(1.2, mask.w * 0.3), -SIGN_H / 2 - 0.45, 0);
+        const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.1, 8), CABINET);
+        strut.position.set(side * Math.min(1.6, mask.w * 0.3), -SIGN_H / 2 - 0.45, 0);
         mesh.add(strut);
     }
     mesh.position.set(0, SIGN_Y, 0);
@@ -360,6 +428,74 @@ function buildPortal(scene: THREE.Object3D, s: Shared, route: Route, glowAt: Glo
     };
 }
 
+type Lens = {
+    /** The camera starts through portal k: the lens takes on its colour and the place beyond. */
+    enter: (p: Portal, k: number) => void;
+    /** Steps the entry (see `Rings.entry`) and returns it. */
+    step: (u: number, show: number, jump: number) => number;
+    on: () => boolean;
+};
+
+/** The lens the camera enters a portal through (LENS_FRAG). */
+function addLens(scene: THREE.Object3D, s: Shared): Lens {
+    const u = {
+        uCol: { value: new THREE.Color() },
+        uNext: { value: new THREE.Color() },
+        uKind: { value: 0 },
+        uAt: { value: new THREE.Vector3() },
+        uR: { value: 1 },
+        uOpen: { value: 0 },
+        uShow: { value: 0 },
+        uFlash: { value: 0 },
+    };
+    const mesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(2, 2),
+        shader(s, LENS_VERT, LENS_FRAG, u, { ...WINDOW, depthTest: false })
+    );
+    mesh.frustumCulled = false;
+    mesh.renderOrder = 1000;
+    mesh.visible = false;
+    scene.add(mesh);
+    let at: { p: Portal; k: number } | null = null;
+    let cut = false;
+    const show = (open: number, alpha: number, flash: number): void => {
+        u.uOpen.value = open;
+        u.uShow.value = alpha;
+        u.uFlash.value = flash;
+        mesh.visible = alpha > 0.002 || flash > 0.002;
+    };
+    return {
+        enter: (p, k) => {
+            at = { p, k };
+            cut = false;
+            const disc = p.disc.material as THREE.ShaderMaterial;
+            u.uCol.value.copy(p.colour);
+            u.uNext.value.copy(disc.uniforms.uNext.value as THREE.Color);
+            u.uKind.value = disc.uniforms.uKind.value as number;
+            u.uAt.value.copy(p.center);
+            u.uR.value = INNER * p.disc.scale.x * p.g.scale.x;
+        },
+        step: (pos, shown, jump) => {
+            // Scrolled back out of the throat, or the jump is over (or was a straight cut).
+            if (at && (pos < at.p.u || (cut && jump < 0.01) || (shown !== at.k && jump < 0.01))) at = null;
+            if (!at) {
+                show(0, 0, 0);
+                return 0;
+            }
+            cut = cut || shown !== at.k;
+            if (!cut) {
+                // Through the throat: the window swells to fill the frame; a flash as it closes over.
+                show(jump, smooth(0, 0.12, jump), 0.6 * smooth(0.75, 1, jump));
+                return jump;
+            }
+            // Through: the window fades into the place itself; the flash is gone in a blink.
+            show(1, smooth(0, 0.9, jump), 0.6 * Math.pow(jump, 6));
+            return 1;
+        },
+        on: () => at !== null,
+    };
+}
+
 /**
  * 3 · Services: one gateway per project ("Sci-Fi Portal Gateway" by Igrium, CC BY 4.0), standing
  * on the ground of that project's landscape and sized so the ship flies through the middle of its
@@ -417,35 +553,49 @@ export function addRings(
         POOL.uPool.value.set(p.g.position.x, p.g.position.y, p.g.position.z, r * p.horizon.uOn.value);
         POOL.uPoolCol.value.copy(p.colour).multiplyScalar(0.6);
     };
-    const rings: Rings = { centers: portals.map((p) => p.center), rush: 0, close: 0, update: () => null };
-    const update = (u: number, _t: number, dt: number, show: number): number | null => {
+    const rings: Rings = {
+        centers: portals.map((p) => p.center),
+        rush: 0,
+        close: 0,
+        entry: 0,
+        crossing: 0,
+        update: () => null,
+    };
+    const lens = addLens(scene, s);
+    /** One portal, as the ship nears it, passes it (returns true on the crossing) or leaves it. */
+    const advance = (p: Portal, k: number, u: number, dt: number, show: number): boolean => {
+        p.g.visible = k === show;
+        // The run-up: the last 90 m before the ring, building until the ship is through.
+        if (k === show && u < p.u) rings.rush = smooth(90, 8, (p.u - u) * route.len);
+        const d = Math.abs(u - p.u) * route.len;
+        if (k === show) rings.close = smooth(60, 12, d);
+        p.near += (smooth(400, 40, d) - p.near) * (1 - Math.exp(-dt * 4));
+        // The beacon holds its size on screen from far off and fades as the ring takes over.
+        p.beacon.visible = k === show && u < p.u;
+        p.beacon.scale.setScalar(3 + d * 0.03);
+        p.beacon.material.opacity = 0.85 * smooth(30, 120, d);
+        p.glow.copy(p.colour).multiplyScalar(0.35 + p.near * 0.8);
+        if (p.sign) p.sign.uOn.value = 0.45 + 0.55 * p.near;
+        p.horizon.uOn.value = smooth(0.15, 0.85, p.near);
+        if (k === show) pool(p);
+        p.horizon.uFlash.value *= Math.exp(-dt * 3.5);
+        if (u < p.u - 0.002) p.passed = false;
+        if (p.passed || u <= p.u) return false;
+        p.passed = true;
+        p.horizon.uFlash.value = 0.45;
+        return true;
+    };
+    const update = (u: number, _t: number, dt: number, show: number, jump = 0): number | null => {
         let hit: number | null = null;
         rings.rush = 0;
         rings.close = 0;
         POOL.uPool.value.w = 0;
         portals.forEach((p, k) => {
-            p.g.visible = k === show;
-            // The run-up: the last 90 m before the ring, building until the ship is through.
-            if (k === show && u < p.u) rings.rush = smooth(90, 8, (p.u - u) * route.len);
-            const d = Math.abs(u - p.u) * route.len;
-            if (k === show) rings.close = smooth(60, 12, d);
-            p.near += (smooth(400, 40, d) - p.near) * (1 - Math.exp(-dt * 4));
-            // The beacon holds its size on screen from far off and fades as the ring takes over.
-            p.beacon.visible = k === show && u < p.u;
-            p.beacon.scale.setScalar(3 + d * 0.03);
-            p.beacon.material.opacity = 0.85 * smooth(30, 120, d);
-            p.glow.copy(p.colour).multiplyScalar(0.35 + p.near * 0.8);
-            if (p.sign) p.sign.uOn.value = 0.45 + 0.55 * p.near;
-            p.horizon.uOn.value = smooth(0.15, 0.85, p.near);
-            if (k === show) pool(p);
-            p.horizon.uFlash.value *= Math.exp(-dt * 3.5);
-            if (!p.passed && u > p.u) {
-                p.passed = true;
-                p.horizon.uFlash.value = 0.45;
-                hit = k;
-            }
-            if (u < p.u - 0.002) p.passed = false;
+            if (advance(p, k, u, dt, show)) hit = k;
         });
+        if (hit !== null) lens.enter(portals[hit], hit);
+        rings.entry = lens.step(u, show, jump);
+        rings.crossing = lens.on() ? 1 : 0;
         return hit;
     };
     rings.update = update;

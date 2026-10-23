@@ -7,8 +7,10 @@ import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
 /**
- * Colour fringing that grows with speed, film grain, vignette, dither against banding, and the jump
- * between scenes: everything smears outward from the centre and flashes at the cut.
+ * Colour fringing that comes in with speed (none at rest), film grain, a light vignette, dither
+ * against banding, and the jump through the air: everything smears outward from the centre and
+ * flashes at the cut. `uStreak` (0–1) keeps the smear and flash to the passages through the air; a
+ * portal is entered through its window instead (services.ts).
  */
 const FINISH = {
     uniforms: {
@@ -17,33 +19,36 @@ const FINISH = {
         uVel: { value: 0 },
         uJump: { value: 0 },
         uDip: { value: 0 },
+        uStreak: { value: 1 },
         uTint: { value: new THREE.Color(0.8, 0.9, 1) },
         uAspect: { value: 1.6 },
     },
     vertexShader: /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
     fragmentShader: /* glsl */ `
-        uniform sampler2D tDiffuse; uniform float uTime, uVel, uJump, uDip, uAspect; uniform vec3 uTint; varying vec2 vUv;
+        uniform sampler2D tDiffuse; uniform float uTime, uVel, uJump, uDip, uAspect, uStreak; uniform vec3 uTint; varying vec2 vUv;
         float h(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
         void main() {
             vec2 c = vUv - 0.5; float r = length(c * vec2(uAspect, 1.0)) / uAspect;
-            vec2 off = c * (0.0012 + uVel * 0.004 + uJump * 0.05) * (0.4 + r);
+            float jump = uJump * uStreak;
+            vec2 off = c * (smoothstep(0.1, 0.35, uVel) * (0.0012 + uVel * 0.004) + jump * 0.05) * (0.4 + r);
             vec3 col = vec3(texture2D(tDiffuse, vUv + off).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - off).b);
-            if (uJump > 0.01) {
+            if (jump > 0.01) {
                 // Zoom blur: average the image along the line from the centre, longer at the edges.
                 vec3 acc = vec3(0.0);
                 float j = h(gl_FragCoord.xy) * 0.07;
                 for (int i = 0; i < 14; i++) {
                     float t = (float(i) + j) / 14.0;
-                    acc += texture2D(tDiffuse, 0.5 + c * (1.0 - uJump * 0.42 * t)).rgb;
+                    acc += texture2D(tDiffuse, 0.5 + c * (1.0 - jump * 0.42 * t)).rgb;
                 }
-                col = mix(col, acc / 14.0, smoothstep(0.0, 0.35, uJump));
-                col += uTint * pow(uJump, 4.0) * (0.6 + r) * 1.6;
+                col = mix(col, acc / 14.0, smoothstep(0.0, 0.35, jump));
+                col += uTint * pow(jump, 4.0) * (0.6 + r) * 1.6;
             }
             // A quiet change of place: the frame sinks into the night from the edges in, then rises.
             // Its peak is true black: the dark is reached well before the dip's top and held there.
             float dark = clamp(uDip * (1.3 + r * 0.6), 0.0, 1.0);
             col *= pow(1.0 - smoothstep(0.0, 0.85, dark), 1.5);
-            col *= 1.0 - smoothstep(0.42, 1.05, r) * 0.6;
+            // Vignette: a long, soft falloff by distance from the centre, the corners at 1.
+            col *= 1.0 - 0.35 * pow(smoothstep(0.3, 1.15, length(c) * 1.4142), 1.6);
             // Film grain: in the mid-tones, in screen space, never lifting the blacks.
             float lum = dot(col, vec3(0.3, 0.59, 0.11));
             col += (h(gl_FragCoord.xy + fract(uTime) * 91.0) - 0.5) * 0.05 * sqrt(max(lum, 0.0)) * (1.0 - min(lum, 1.0));
@@ -92,8 +97,17 @@ function pinBloom(bloom: UnrealBloomPass): void {
 export type Post = {
     composer: EffectComposer;
     /** `jump` 0–1 is the cut between scenes; `tint` colours its flash; `glow` scales the bloom;
-     * `dip` 0–1 is a quiet change of place, through the dark. */
-    finish: (t: number, speed: number, jump: number, tint: THREE.Color, glow: number, dip: number) => void;
+     * `dip` 0–1 is a quiet change of place, through the dark; `streak` 0–1 is how much of the
+     * jump's zoom blur, fringing and flash to show (1 for the air passages, 0 through a portal). */
+    finish: (
+        t: number,
+        speed: number,
+        jump: number,
+        tint: THREE.Color,
+        glow: number,
+        dip: number,
+        streak?: number
+    ) => void;
 };
 
 export function createPost(
@@ -126,7 +140,8 @@ export function createPost(
         jump: number,
         tint: THREE.Color,
         glow: number,
-        dip: number
+        dip: number,
+        streak = 1
     ): void => {
         bloom.strength = strength * glow;
         pass.uniforms.uAspect.value = innerWidth / Math.max(1, innerHeight);
@@ -134,6 +149,7 @@ export function createPost(
         pass.uniforms.uVel.value = speed;
         pass.uniforms.uJump.value = jump;
         pass.uniforms.uDip.value = dip;
+        pass.uniforms.uStreak.value = streak;
         pass.uniforms.uTint.value.copy(tint);
     };
     return { composer, finish };
