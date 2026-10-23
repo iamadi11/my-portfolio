@@ -743,18 +743,30 @@ export function createWorld(o: WorldOptions): World {
         applyAir(AIR[shown], beat.drop * 0.6 + beat.climb * 0.85, beat.drop);
         s.uDrop.value = beat.drop;
         const { heat, sun, dawn } = showPlace(shown);
-        const passed = rings.update(u, t, dt, zone);
+        const passed = rings.update(u, t, dt, zone, jump);
+        // A portal is entered through its window; streaks, zoom blur and the camera punch are kept
+        // for the two passages through the air.
+        const streak = 1 - rings.crossing;
         const rush = rushing(zone, heat, u >= prev);
         rushNow = rush;
         shot.shake = o.reduce ? 0 : rush * 0.004;
         const aim = aimShip(shown, f.resp);
-        rig.update(u, t, dt, Math.min(1, speed + rush * 0.6), jump, f.pointer, !AIR[shown].space, shot);
+        rig.update(
+            u,
+            t,
+            dt,
+            Math.min(1, speed + rush * 0.6),
+            jump * streak,
+            f.pointer,
+            !AIR[shown].space,
+            shot
+        );
         landmarks.show(zone);
         rimOf(shown, zone, dawn);
         flyShip(shown, dt, aim, heat, sun, dawn);
         records.update(p, u);
         warp.update(
-            Math.max(jump, !o.reduce && beat.climb > 0.45 ? (beat.climb - 0.45) * 1.4 : 0),
+            Math.max(jump * streak, !o.reduce && beat.climb > 0.45 ? (beat.climb - 0.45) * 1.4 : 0),
             tint,
             shot.boost * shot.boost
         );
@@ -766,7 +778,8 @@ export function createWorld(o: WorldOptions): World {
             tint,
             // Up close, a gateway's metal throws specular glints that bloom into white blobs.
             (1 - Math.max(beat.drop * 0.8, beat.dive * 0.45)) * (1 - 0.75 * rings.close),
-            dip
+            dip,
+            streak
         );
         post.composer.render();
         return {
