@@ -1,6 +1,8 @@
 # Handover prompt (paste into Cursor)
 
-> Last updated: 2026-10-22, during quality round 3. `main` is the source of truth; this file is refreshed at the end of every round.
+> Last updated: 2026-10-23, round 3 merged (`06e613a`). `main` is the source of truth; this file is refreshed at the end of every round.
+>
+> **Note:** a Cursor pass (53 commits, `9b647b9..213e3b4`) was judged a visual regression by the owner and reverted in `bdf5bdb` (history kept). Do not rebuild on it. Work in small, reviewed steps and compare rendered frames before/after.
 
 You are continuing an award-calibre quality pass on the portfolio home page `/` ("Round trip") in this repo. Work autonomously, in small validated steps, and commit + push to `main` after each round.
 
@@ -20,6 +22,12 @@ Scrolling flies an alien ship (three.js r184, `src/components/round-trip/world/*
 - Motion: interruptible jumps; portal-only warp with quiet dips; cues land on the cut; steerable ship (pointer/tilt/arrows), hold-to-boost, idle breathing; per-place camera framing; eased barrel roll; departure glint.
 - World: shared haze + valley mist; aurora-lit ice; NASA Moon photo; NASA ISS at the sunrise limb; bloom resolution fix; anti-aliased city windows; skill billboards (exact `site.ts` strings); portals with lit title signs and window throats; blackbody lava; sandstone canyon; night-graded Osaka scan; Seychelles "blob" fixed.
 - Page: plain nav (Intro/Impact/Stack/Projects/Experience/Contact); "Start the trip"; WCAG 2.1.4-compliant J/K (switch, off where no hover); honest trip clock; measured vitals at `200 OK`; impact counters; portal title handoff; Send again; JSON-LD from `site.ts`; every panel fits short/landscape screens; disclosures fixed; scenery lazy-loaded; Save-Data/slow gates.
+
+## Round 3 merged into `main` (06e613a)
+
+- Ship polish: graded two-tone hull from the model's own maps, red/green nav lights on the real wingtips, spine beacon, running lights, violet→white plume with shock diamonds on boost; engine glow capped (no bubble); time-based flicker.
+- Framing & world: ship framed right of the text panel on desktop; night Earth darker with city lights; alpine rock/snow by slope; cooler Milky Way; roll only at the first portal.
+- HTML layer: scrims that no longer hide the world (phone and desktop), a condensed display face with HUD-bracket controls, project titles shown once.
 
 ## In flight when this was written (may or may not have landed — check `git log` and `git branch`)
 
