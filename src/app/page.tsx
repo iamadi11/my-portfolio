@@ -1,17 +1,21 @@
 import React from 'react';
 
 import type { Viewport } from 'next';
-import { Instrument_Serif } from 'next/font/google';
+import { Big_Shoulders } from 'next/font/google';
 
 import RoundTrip from '@/components/round-trip/RoundTrip';
 import { tripFrom } from '@/components/round-trip/trip';
 import { SITE } from '@/content/site';
 
-/** Display face for the name and headings (an editorial serif, one weight); body and mono come from the root layout (Geist). */
-const display = Instrument_Serif({
+/**
+ * Display face for the name, headings, numbers and controls: Big Shoulders, a condensed grotesk drawn
+ * from Chicago's civic signage, read at speed from a distance, which is how a HUD over a moving
+ * world is read. One weight (700), Latin only. Body and the request line's mono come from the root
+ * layout (Geist).
+ */
+const display = Big_Shoulders({
     subsets: ['latin'],
-    weight: ['400'],
-    style: ['normal'],
+    weight: ['700'],
     variable: '--font-rt-display',
     display: 'swap',
 });

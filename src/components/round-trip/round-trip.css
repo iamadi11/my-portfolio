@@ -18,7 +18,8 @@ html:has(.rt) body {
     --line: rgba(238, 242, 248, 0.2);
     --shade: rgba(5, 7, 13, 0.7);
     --accent: #8fd3ff;
-    --display: var(--font-rt-display), 'Times New Roman', Georgia, serif;
+    /* condensed signage grotesk: the name, headings, numbers and the controls' labels */
+    --display: var(--font-rt-display), 'Arial Narrow', 'Roboto Condensed', sans-serif;
     --body: var(--font-geist-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
     --mono: var(--font-geist-mono), ui-monospace, Menlo, Consolas, monospace;
     --g: clamp(16px, 4vw, 56px);
@@ -37,7 +38,6 @@ html:has(.rt) body {
 .rt :focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
-    border-radius: 4px;
 }
 .rt-sr {
     position: absolute;
@@ -162,12 +162,15 @@ html:has(.rt) body {
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    /* dark under the whole 640px panel, then open onto the world */
+    /* dark at the left edge only, open well before the middle: the ship and the place are the
+       subject; the text keeps its own backing (.rt-panel::before) */
     background: linear-gradient(
         90deg,
-        rgba(5, 7, 13, 0.9) 0 46%,
-        rgba(5, 7, 13, 0.72) 58%,
-        rgba(5, 7, 13, 0) 76%
+        rgba(5, 7, 13, 0.85) 0 30%,
+        rgba(5, 7, 13, 0.7) 37%,
+        rgba(5, 7, 13, 0.4) 46%,
+        rgba(5, 7, 13, 0.15) 53%,
+        rgba(5, 7, 13, 0) 58%
     );
 }
 
@@ -235,7 +238,10 @@ html:has(.rt) body {
 .rt-panel {
     position: relative;
     max-width: 640px;
-    text-shadow: 0 1px 12px var(--shade);
+    /* a tight dark edge on every glyph, then a soft halo: legible over snow, lava and sunrise */
+    text-shadow:
+        0 0 2px rgba(5, 7, 13, 0.8),
+        0 1px 14px var(--shade);
     transition:
         filter 250ms ease-out,
         opacity 250ms ease-out;
@@ -248,6 +254,25 @@ html:has(.rt) body {
     overscroll-behavior: contain;
     pointer-events: auto;
     scrollbar-width: thin;
+}
+/* a local backing behind the text block only (not the screen): a soft-edged dusk that follows
+   the panel, there only while its section is on, so the world stays open around it */
+.rt-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0 -8px;
+    z-index: -1;
+    background: rgba(5, 7, 13, 0.62);
+    box-shadow: 0 0 56px 40px rgba(5, 7, 13, 0.62);
+    border-radius: 48px;
+    opacity: 0;
+    transition: opacity 250ms ease-in;
+    pointer-events: none;
+}
+.rt-sec.in .rt-panel::before,
+.rt:not(.rt-js) .rt-panel::before {
+    opacity: 1;
+    transition: opacity 500ms var(--out);
 }
 /* the jump's flash: the panel loses focus for a beat, then settles with the new place */
 .rt-panel.rt-cut {
@@ -271,50 +296,51 @@ html:has(.rt) body {
     background: var(--accent);
 }
 
-/* reveals: armed only once the page runs, so without JS every word is still there */
-.rt-ln {
+/* reveals: armed only once the page runs, so without JS every word is still there.
+   Headings lock on like a HUD acquiring a target: a scan line in the zone's colour sweeps across
+   and the text resolves behind it (clip-path and transform only; drive.ts runs it again on a cut). */
+.rt-lock {
+    position: relative;
     display: block;
-    overflow: hidden;
-    padding-bottom: 0.08em;
-    margin-bottom: -0.08em;
+    text-wrap: balance;
 }
-.rt-ln > span {
-    display: block;
+.rt-lock::after {
+    content: '';
+    position: absolute;
+    top: -0.06em;
+    bottom: -0.02em;
+    left: 0;
+    width: 100%;
+    /* the line rides the right edge of a box that slides in from the left */
+    background: linear-gradient(90deg, transparent calc(100% - 3px), var(--accent) 0);
+    filter: drop-shadow(0 0 6px var(--accent));
+    opacity: 0;
+    pointer-events: none;
 }
-.rt-js .rt-ln > span {
-    transform: translateY(108%);
-    transition: transform 250ms ease-in;
+.rt-js .rt-lock {
+    clip-path: inset(-0.3em 100% -0.3em -0.15em);
+    transition: clip-path 200ms ease-in;
 }
-.rt-js .in .rt-ln > span {
-    transform: none;
-    transition: transform 800ms var(--out);
-    transition-delay: calc(var(--i, 0) * 60ms);
+.rt-js .in .rt-lock {
+    clip-path: inset(-0.3em -0.15em -0.3em -0.15em);
+    transition: clip-path 620ms cubic-bezier(0.65, 0, 0.35, 1) 80ms;
 }
-/* chapter titles: word by word (200 OK letter by letter), each piece in its own mask */
-.rt-kin {
-    display: block;
+.rt-js .in .rt-lock::after {
+    animation: rt-scan 620ms cubic-bezier(0.65, 0, 0.35, 1) 80ms both;
 }
-.rt-w {
-    display: inline-block;
-    overflow: hidden;
-    padding: 0 0.04em 0.08em;
-    margin: 0 -0.04em -0.08em;
-    vertical-align: top;
-}
-.rt-w > span {
-    display: inline-block;
-}
-.rt-js .rt-w > span {
-    transform: translateY(108%);
-    transition: transform 250ms ease-in;
-}
-.rt-js .in .rt-w > span {
-    transform: none;
-    transition: transform 800ms var(--out);
-    transition-delay: calc(var(--i, 0) * 50ms);
-}
-.rt-js .in .rt-kin-c .rt-w > span {
-    transition-delay: calc(var(--i, 0) * 30ms);
+@keyframes rt-scan {
+    from {
+        transform: translateX(-100%);
+        opacity: 1;
+    }
+    90% {
+        transform: none;
+        opacity: 1;
+    }
+    to {
+        transform: none;
+        opacity: 0;
+    }
 }
 /* leaving is quicker than arriving, so the old panel never lingers under the next */
 .rt-js .rt-fade {
@@ -335,9 +361,11 @@ html:has(.rt) body {
 
 /* hero: name, then what he is, then why it matters */
 .rt-name {
-    margin: 0 0 14px;
-    font: 400 clamp(64px, 11.5vw, 200px) / 0.9 var(--display);
-    letter-spacing: -0.025em;
+    margin: 0 0 16px;
+    /* the name as a callsign: condensed caps, as large as the panel takes */
+    font: 700 clamp(68px, 10vw, 176px) / 0.84 var(--display);
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
 }
 .rt-role {
     margin: 0 0 18px;
@@ -357,42 +385,93 @@ html:has(.rt) body {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 14px 18px;
+    gap: 12px 14px;
     margin: 0;
 }
-.rt-cue button {
-    min-height: 44px;
-    padding: 12px 20px;
-    border: 0;
-    border-radius: 999px;
-    background: var(--ink);
-    color: var(--bg);
-    font: 600 15px var(--body);
-    cursor: pointer;
-    transition: transform 160ms ease-out;
+/*
+ * Controls are targets in the HUD: square, labelled in the display face's caps, with four corner
+ * ticks that close into a full frame when hovered, focused or switched on (the HUD locking on).
+ */
+@property --k {
+    syntax: '<length-percentage>';
+    inherits: false;
+    initial-value: 10px;
 }
-.rt-cue a {
+.rt-cue a,
+.rt-links a,
+.rt-pills a,
+.rt-pills button,
+.rt-snd {
+    --t: linear-gradient(var(--tick), var(--tick));
+    --tick: var(--soft);
+    --k: 10px;
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    padding: 11px 18px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
+    padding: 10px 18px 9px;
+    border: 0;
+    border-radius: 0;
+    background:
+        var(--t) 0 0 / var(--k) 1px no-repeat,
+        var(--t) 0 0 / 1px var(--k) no-repeat,
+        var(--t) 100% 0 / var(--k) 1px no-repeat,
+        var(--t) 100% 0 / 1px var(--k) no-repeat,
+        var(--t) 0 100% / var(--k) 1px no-repeat,
+        var(--t) 0 100% / 1px var(--k) no-repeat,
+        var(--t) 100% 100% / var(--k) 1px no-repeat,
+        var(--t) 100% 100% / 1px var(--k) no-repeat,
+        rgba(5, 7, 13, 0.62);
     color: var(--ink);
-    font: 500 15px var(--body);
+    font: 700 17px/1 var(--display);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     text-decoration: none;
+    text-shadow: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        --k 260ms var(--out),
+        transform 160ms ease-out;
+}
+.rt-cue a:focus-visible,
+.rt-links a:focus-visible,
+.rt-pills a:focus-visible,
+.rt-pills button:focus-visible,
+.rt-snd:focus-visible,
+.rt-snd[aria-pressed='true'] {
+    --k: 100%;
+    --tick: var(--ink);
+}
+@media (hover: hover) and (pointer: fine) {
+    .rt-cue a:hover,
+    .rt-links a:hover,
+    .rt-pills a:hover,
+    .rt-pills button:hover,
+    .rt-snd:hover {
+        --k: 100%;
+        --tick: var(--ink);
+    }
+}
+/* the one filled control: the way in */
+.rt-cue button {
+    min-height: 44px;
+    padding: 10px 22px 9px;
+    border: 0;
+    border-radius: 0;
+    background: var(--ink);
+    color: var(--bg);
+    font: 700 17px/1 var(--display);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-shadow: none;
+    cursor: pointer;
     transition:
         background 200ms ease,
-        color 200ms ease,
         transform 160ms ease-out;
 }
 @media (hover: hover) and (pointer: fine) {
-    .rt-cue a:hover {
-        background: var(--ink);
-        color: var(--bg);
-    }
     .rt-cue button:hover {
-        transform: translateY(-2px);
+        background: var(--accent);
     }
 }
 .rt-cue button:active,
@@ -402,35 +481,6 @@ html:has(.rt) body {
 .rt-pills button:active,
 .rt-snd:active {
     transform: scale(0.97);
-}
-.rt-cue span {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--muted);
-    font: 500 12px var(--mono);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-}
-.rt-cue b {
-    position: relative;
-    width: 56px;
-    height: 1px;
-    overflow: hidden;
-    background: var(--line);
-}
-.rt-cue b::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--accent);
-    transform: translateX(-100%);
-    animation: rt-cue 2.2s var(--ease) infinite;
-}
-@keyframes rt-cue {
-    to {
-        transform: translateX(100%);
-    }
 }
 
 /* wire: results */
@@ -449,8 +499,8 @@ html:has(.rt) body {
 .rt-impact dd {
     margin: 0;
     color: var(--accent);
-    font: 400 clamp(36px, 4vw, 56px) / 1 var(--display);
-    letter-spacing: -0.015em;
+    font: 700 clamp(40px, 4.6vw, 64px) / 0.95 var(--display);
+    letter-spacing: 0;
     font-variant-numeric: tabular-nums;
 }
 /* counting: the real value keeps its box (and is still read); the moving digits sit over it */
@@ -483,8 +533,8 @@ html:has(.rt) body {
 /* edge */
 .rt-h2 {
     margin: 0 0 22px;
-    font: 400 clamp(40px, 4.8vw, 72px) / 0.95 var(--display);
-    letter-spacing: -0.02em;
+    font: 700 clamp(44px, 5.2vw, 80px) / 0.9 var(--display);
+    letter-spacing: 0;
 }
 .rt-layers,
 .rt-links,
@@ -558,8 +608,8 @@ html:has(.rt) body {
     opacity: 1;
 }
 .rt-layers b {
-    font: 400 clamp(21px, 1.9vw, 28px) / 1.05 var(--display);
-    letter-spacing: 0;
+    font: 700 clamp(22px, 2vw, 30px) / 1.05 var(--display);
+    letter-spacing: 0.01em;
 }
 .rt-layers li.on b {
     color: var(--accent);
@@ -596,8 +646,8 @@ html:has(.rt) body {
 }
 .rt-h3 {
     margin: 12px 0 16px;
-    font: 400 clamp(44px, 5.6vw, 88px) / 0.92 var(--display);
-    letter-spacing: -0.02em;
+    font: 700 clamp(48px, 6vw, 96px) / 0.9 var(--display);
+    letter-spacing: 0;
 }
 .rt-h3-sm {
     margin: 0 0 8px;
@@ -620,33 +670,6 @@ html:has(.rt) body {
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 20px;
-}
-.rt-links a,
-.rt-pills a,
-.rt-pills button {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    padding: 10px 18px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: rgba(18, 22, 32, 0.85);
-    color: var(--ink);
-    font: 500 15px var(--body);
-    text-decoration: none;
-    cursor: pointer;
-    transition:
-        background 200ms ease,
-        color 200ms ease,
-        transform 160ms ease-out;
-}
-@media (hover: hover) and (pointer: fine) {
-    .rt-links a:hover,
-    .rt-pills a:hover,
-    .rt-pills button:hover {
-        background: var(--ink);
-        color: var(--bg);
-    }
 }
 .rt-count {
     display: flex;
@@ -685,7 +708,6 @@ html:has(.rt) body {
 .rt-chips span {
     padding: 5px 10px;
     border: 1px solid var(--line);
-    border-radius: 999px;
     color: var(--muted);
     font-size: 14px;
     transition:
@@ -758,15 +780,14 @@ html:has(.rt) body {
 .rt-ok {
     margin: 0;
     /* capped by height too, so the whole response fits on short landscape screens */
-    font: 400 min(clamp(84px, 14vw, 220px), 22svh) / 0.86 var(--display);
-    letter-spacing: -0.03em;
+    font: 700 min(clamp(96px, 15vw, 240px), 24svh) / 0.84 var(--display);
+    letter-spacing: 0;
 }
 .rt-done {
-    margin: 18px 0 26px;
+    margin: 16px 0 24px;
     color: var(--soft);
-    font: 500 12px var(--mono);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: 16px;
+    line-height: 1.4;
 }
 .rt-vitals {
     max-width: 46ch;
@@ -813,8 +834,8 @@ html:has(.rt) body {
     display: inline-block;
     padding-bottom: 6px;
     border-bottom: 1px solid var(--line);
-    font: 400 clamp(24px, 3vw, 44px) / 1.1 var(--display);
-    letter-spacing: -0.01em;
+    font: 700 clamp(28px, 3.4vw, 50px) / 1.05 var(--display);
+    letter-spacing: 0.01em;
     text-decoration: none;
     overflow-wrap: anywhere;
 }
@@ -844,9 +865,7 @@ html:has(.rt) body {
     gap: 18px;
     padding: 18px var(--g);
     color: var(--muted);
-    font: 500 11.5px var(--mono);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font: 500 14px var(--body);
     pointer-events: none;
 }
 .rt-hud a,
@@ -877,10 +896,10 @@ html:has(.rt) body {
     white-space: nowrap;
     margin-right: auto;
     color: var(--ink);
-    font: 400 19px var(--display);
-    letter-spacing: 0;
+    font: 700 21px var(--display);
+    letter-spacing: 0.04em;
     text-decoration: none;
-    text-transform: none;
+    text-transform: uppercase;
 }
 .rt-route {
     display: flex;
@@ -902,8 +921,6 @@ html:has(.rt) body {
     color: inherit;
     /* plain section names read as names: the body face, as written */
     font: 500 14px var(--body);
-    letter-spacing: 0;
-    text-transform: none;
     text-decoration: none;
 }
 @media (hover: hover) and (pointer: fine) {
@@ -945,26 +962,22 @@ html:has(.rt) body {
     border-color: var(--z, #8fd3ff);
     background: var(--z, #8fd3ff);
 }
+.rt-snd[hidden] {
+    display: none;
+}
 .rt-snd {
-    white-space: nowrap;
+    --k: 7px;
     min-height: 36px;
-    padding: 9px 14px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: rgba(238, 242, 248, 0.04);
-    color: var(--ink);
-    font: inherit;
-    letter-spacing: inherit;
-    text-transform: inherit;
-    cursor: pointer;
-    transition: transform 160ms ease-out;
+    padding: 8px 13px 7px;
+    font-size: 15px;
 }
-.rt-snd[aria-pressed='true'] {
-    border-color: var(--ink);
-}
+/* the request line: the one deliberate mono element, read as the request it is */
 .rt-req {
     margin-right: auto;
     color: var(--ink);
+    font: 500 11.5px var(--mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }
@@ -972,20 +985,8 @@ html:has(.rt) body {
     color: var(--muted);
     font-style: normal;
 }
-.rt-hint {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    white-space: nowrap;
-}
-.rt-hint {
-    transition: opacity 0.6s;
-}
-.rt-scrolled .rt-hint {
-    opacity: 0;
-}
 /* J / K step between stops: the switch shows only where there is a keyboard to hand */
-.rt-keys {
+.rt-keys.rt-keys {
     display: none;
 }
 .rt-keys[aria-pressed='false'] {
@@ -993,8 +994,8 @@ html:has(.rt) body {
     text-decoration: line-through;
 }
 @media (hover: hover) and (pointer: fine) {
-    .rt-keys {
-        display: inline-block;
+    .rt-keys.rt-keys {
+        display: inline-flex;
     }
 }
 .rt-nav-bottom {
@@ -1008,8 +1009,8 @@ html:has(.rt) body {
     left: 0;
     z-index: 3;
     margin: 0;
-    font: 400 clamp(44px, 5.6vw, 88px) / 0.92 var(--display);
-    letter-spacing: -0.02em;
+    font: 700 clamp(48px, 6vw, 96px) / 0.9 var(--display);
+    letter-spacing: 0;
     text-shadow:
         0 0 28px currentColor,
         0 1px 12px var(--shade);
@@ -1017,7 +1018,7 @@ html:has(.rt) body {
     pointer-events: none;
 }
 
-/* labels pinned to rings and records in the world */
+/* labels pinned to the records' light pillars in the world, in the display face's caps */
 .rt-tag {
     position: fixed;
     top: 0;
@@ -1027,11 +1028,10 @@ html:has(.rt) body {
     align-items: center;
     gap: 8px;
     padding: 4px 8px;
-    border-radius: 6px;
     background: var(--shade);
     color: var(--ink);
-    font: 500 12px var(--mono);
-    letter-spacing: 0.1em;
+    font: 700 15px/1 var(--display);
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     white-space: nowrap;
     opacity: 0;
@@ -1057,16 +1057,25 @@ html:has(.rt) body {
     .rt-pin {
         padding: 84px var(--g) 116px;
     }
+    /* phones: dark under the bottom third only; the world keeps the top half (and the sunrise) */
     .rt-scrim {
         background: linear-gradient(
             0deg,
-            rgba(5, 7, 13, 0.92) 0 50%,
-            rgba(5, 7, 13, 0.8) 70%,
-            rgba(5, 7, 13, 0) 92%
+            rgba(5, 7, 13, 0.9) 0 30%,
+            rgba(5, 7, 13, 0.76) 37%,
+            rgba(5, 7, 13, 0.5) 46%,
+            rgba(5, 7, 13, 0.18) 54%,
+            rgba(5, 7, 13, 0) 60%
         );
     }
-    .rt-nav-top,
-    .rt-hint {
+    .rt-panel::before {
+        /* full width, fading out above the panel's first line so it has no edge */
+        inset: -72px calc(var(--g) * -1) -24px;
+        border-radius: 0;
+        background: linear-gradient(rgba(5, 7, 13, 0), rgba(5, 7, 13, 0.62) 72px);
+        box-shadow: none;
+    }
+    .rt-nav-top {
         display: none;
     }
     /* phones: the request line, then the sections as six equal 44 px tall targets, every name
@@ -1075,12 +1084,12 @@ html:has(.rt) body {
         flex-wrap: wrap;
         gap: 2px 0;
         padding: 10px 6px calc(4px + env(safe-area-inset-bottom, 0px));
-        font-size: 10.5px;
-        letter-spacing: 0.06em;
     }
     .rt-req {
         margin: 0;
         padding: 0 calc(var(--g) - 6px);
+        font-size: 10.5px;
+        letter-spacing: 0.06em;
     }
     .rt-nav-bottom {
         display: block;
@@ -1136,19 +1145,19 @@ html:has(.rt) body {
         font-size: 15px;
     }
     .rt-impact dd {
-        font-size: 30px;
+        font-size: 36px;
     }
     .rt-top {
         gap: 8px;
     }
     .rt-snd {
-        padding: 8px 12px;
+        padding: 8px 11px 7px;
     }
     .rt-bullets li {
         font-size: 15px;
     }
     .rt-tag {
-        font-size: 11px;
+        font-size: 14px;
     }
 }
 
@@ -1164,9 +1173,12 @@ html:has(.rt) body {
     .rt :active {
         transform: none !important;
     }
-    .rt-js .rt-ln > span,
-    .rt-js .rt-w > span,
-    .rt-cue b::after,
+    .rt-js .rt-lock,
+    .rt-js .in .rt-lock {
+        clip-path: none;
+        transition: none !important;
+    }
+    .rt-lock::after,
     .rt-poster::before,
     .rt-beacon::after,
     .rt-layer-items,
@@ -1187,10 +1199,6 @@ html:has(.rt) body {
 }
 
 @media (max-width: 760px) {
-    /* phones: no "or scroll" cue; the page itself is the cue */
-    .rt-cue span {
-        display: none;
-    }
     /* phones: world labels keep the name only; the dates are in the panel */
     .rt-tag small {
         display: none;
@@ -1212,7 +1220,7 @@ html:has(.rt) body {
         padding: 7px 0;
     }
     .rt-layers b {
-        font-size: min(clamp(21px, 1.9vw, 28px), 5.5svh);
+        font-size: min(clamp(22px, 2vw, 30px), 5.5svh);
     }
     .rt-js .rt-layer-items {
         padding-top: 9px;
@@ -1221,7 +1229,7 @@ html:has(.rt) body {
         gap: 14px 32px;
     }
     .rt-impact dd {
-        font-size: min(clamp(36px, 4vw, 56px), 9svh);
+        font-size: min(clamp(40px, 4.6vw, 64px), 9svh);
     }
     .rt-impact dt {
         font-size: 14px;
@@ -1296,15 +1304,15 @@ html:has(.rt) body {
     }
     .rt-name {
         margin-bottom: 8px;
-        font-size: min(clamp(64px, 9vw, 128px), 18svh);
+        font-size: min(clamp(68px, 9vw, 128px), 18svh);
     }
     .rt-h2 {
         margin-bottom: 12px;
-        font-size: min(clamp(40px, 4.8vw, 72px), 13svh);
+        font-size: min(clamp(44px, 5.2vw, 80px), 13svh);
     }
     .rt-h3 {
         margin: 4px 0 8px;
-        font-size: min(clamp(44px, 5.6vw, 88px), 13svh);
+        font-size: min(clamp(48px, 6vw, 96px), 13svh);
     }
     .rt-ok {
         font-size: 20svh;
@@ -1314,7 +1322,7 @@ html:has(.rt) body {
         display: none;
     }
     .rt-mail {
-        font-size: min(clamp(24px, 3vw, 44px), 8svh);
+        font-size: min(clamp(28px, 3.4vw, 50px), 8svh);
     }
     .rt-pills,
     .rt-links {

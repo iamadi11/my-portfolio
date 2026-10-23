@@ -62,56 +62,22 @@ function Label({ zone }: { zone: string }): React.JSX.Element {
     );
 }
 
-function Line({ i, children }: { i: number; children: React.ReactNode }): React.JSX.Element {
-    return (
-        <span className="rt-ln" style={stagger(i)}>
-            <span>{children}</span>
-        </span>
-    );
-}
-
-/** Where each piece of a title starts in it, so every piece has a key of its own. */
-function pieces(text: string, chars: boolean): Array<{ p: string; at: number; n: number }> {
-    const parts = chars ? [...text] : text.split(' ');
-    let at = 0;
-    return parts.map((p, n) => {
-        const piece = { p, at, n };
-        at += p.length + (chars ? 0 : 1);
-        return piece;
-    });
-}
-
 /**
- * A chapter title that comes in word by word (200 OK letter by letter), each piece rising in its
- * own mask. Read as one line: the pieces are aria-hidden, the whole title is there for readers.
+ * A heading that locks on, as the HUD acquires a place: a scan line sweeps across it and the text
+ * resolves behind the line (clip-path and transform only; see `.rt-lock`). One run of text, so it
+ * reads as written; without the script it is simply there.
  */
-function Kinetic({ text, chars = false }: { text: string; chars?: boolean }): React.JSX.Element {
-    return (
-        <span className={chars ? 'rt-kin rt-kin-c' : 'rt-kin'}>
-            <span className="rt-sr">{text}</span>
-            <span aria-hidden="true">
-                {pieces(text, chars).map(({ p, at, n }) => (
-                    <React.Fragment key={at}>
-                        {n > 0 && !chars && ' '}
-                        <span className="rt-w" style={stagger(n)}>
-                            <span>{p === ' ' ? '\u00a0' : p}</span>
-                        </span>
-                    </React.Fragment>
-                ))}
-            </span>
-        </span>
-    );
+function Lock({ text }: { text: string }): React.JSX.Element {
+    return <span className="rt-lock">{text}</span>;
 }
 
 function Hero({ trip }: { trip: Trip }): React.JSX.Element {
     return (
         <>
             <h1 className="rt-name">
-                <Line i={0}>{trip.name}</Line>
+                <Lock text={trip.name} />
             </h1>
-            <p className="rt-role">
-                <Line i={1}>{trip.role}</Line>
-            </p>
+            <p className="rt-role rt-fade">{trip.role}</p>
             <p className="rt-lede rt-fade">
                 {trip.lede}
                 {trip.rest && <span>: {trip.rest}</span>}
@@ -124,10 +90,6 @@ function Hero({ trip }: { trip: Trip }): React.JSX.Element {
                     Start the trip
                 </button>
                 <a href={`mailto:${trip.email}`}>Email me</a>
-                <span aria-hidden="true">
-                    <b />
-                    or scroll
-                </span>
             </div>
         </>
     );
@@ -139,7 +101,7 @@ function Impact({ trip }: { trip: Trip }): React.JSX.Element | null {
         <>
             <Label zone="Impact" />
             <h2 className="rt-h2">
-                <Kinetic text="What changed when I shipped" />
+                <Lock text="What changed when I shipped" />
             </h2>
             <dl className="rt-impact">
                 {trip.impact.map((m, i) => {
@@ -169,7 +131,7 @@ function Stack({ trip }: { trip: Trip }): React.JSX.Element | null {
         <>
             <Label zone="Stack" />
             <h2 className="rt-h2">
-                <Kinetic text="The stack" />
+                <Lock text="The stack" />
             </h2>
             <div className="rt-skills">
                 <ul className="rt-layers">
@@ -264,7 +226,7 @@ function Career({ trip }: { trip: Trip }): React.JSX.Element {
         <>
             <Label zone="Experience" />
             <h2 className="rt-h2 rt-h2-sm">
-                <Kinetic text="Career" />
+                <Lock text="Career" />
             </h2>
             <p className="rt-chips rt-fade" aria-hidden="true">
                 {trip.records.map((r, i) => (
@@ -311,7 +273,7 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
         <>
             <Label zone="Contact" />
             <h2 className="rt-ok">
-                <Kinetic text="200 OK" chars />
+                <Lock text="200 OK" />
             </h2>
             <p className="rt-done rt-fade">Round trip complete · {trip.meta}</p>
             <p className="rt-vitals" data-vitals hidden />
@@ -477,9 +439,6 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                     GET /{trip.slug} <em>· 0 s</em>
                 </span>
                 <Route where="bottom" />
-                <span className="rt-hint" aria-hidden="true">
-                    Scroll to send
-                </span>
             </div>
 
             <main id="main-content">
@@ -503,11 +462,6 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                 </Section>
             </main>
 
-            {trip.projects.map((p) => (
-                <div className="rt-tag" data-ring-tag key={p.id} aria-hidden="true">
-                    {p.title}
-                </div>
-            ))}
             {/* The project title handed from the portal's flash to its panel (a copy; the h3 is the real one). */}
             <p className="rt-handoff" data-handoff aria-hidden="true" />
             {trip.records.map((r) => (

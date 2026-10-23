@@ -46,7 +46,6 @@ type Els = {
     dots: HTMLElement[];
     records: HTMLElement[];
     chips: HTMLElement[];
-    ringTags: HTMLElement[];
     recordTags: HTMLElement[];
     vitals: HTMLElement | null;
     huds: HTMLElement[];
@@ -69,7 +68,6 @@ function find(root: HTMLElement): Els {
         dots: all('[data-dot]'),
         records: all('[data-record]'),
         chips: all('[data-chip]'),
-        ringTags: all('[data-ring-tag]'),
         recordTags: all('[data-record-tag]'),
         vitals: root.querySelector('[data-vitals]'),
         huds: all('.rt-hud'),
@@ -142,7 +140,7 @@ function measured(lcp: number): string {
         .join(' · ');
 }
 
-/** Labels follow rings and records on screen, but never sit on the text panel (`top` is its edge). */
+/** Labels follow the records' pillars on screen, but never sit on the text panel (`top` is its edge). */
 function place(el: HTMLElement, m: Mark, show: boolean, small: boolean, top: number): void {
     const w = innerWidth;
     const h = innerHeight;
@@ -198,6 +196,24 @@ function handoff(el: HTMLElement, h3: HTMLElement, colour: string): void {
     h3.classList.add('rt-handing');
     h3.animate([{ opacity: 0 }, { opacity: 0, offset: 0.82 }, { opacity: 1 }], timing).onfinish = () =>
         h3.classList.remove('rt-handing');
+}
+
+/** The scan that locks a heading on (as `.rt-lock` runs it), run again from the flash of a cut. */
+const SHUT = 'inset(-0.3em 100% -0.3em -0.15em)';
+const OPEN = 'inset(-0.3em -0.15em -0.3em -0.15em)';
+function relock(panel: HTMLElement): void {
+    const timing = { duration: 620, easing: 'cubic-bezier(0.65, 0, 0.35, 1)' };
+    panel.querySelectorAll<HTMLElement>('.rt-lock').forEach((el) => {
+        el.animate([{ clipPath: SHUT }, { clipPath: OPEN }], timing);
+        el.animate(
+            [
+                { transform: 'translateX(-100%)', opacity: 1 },
+                { transform: 'none', opacity: 1, offset: 0.9 },
+                { transform: 'none', opacity: 0 },
+            ],
+            { ...timing, pseudoElement: '::after' }
+        );
+    });
 }
 
 /** Where J and K stop: each section's top, then each project's landscape and each record's stretch. */
@@ -601,8 +617,9 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         if (reduce) return;
         const h3 = zone === undefined ? null : els.projects[Number(zone)]?.querySelector<HTMLElement>('h3');
         if (sec === 3 && h3 && els.handoff) handoff(els.handoff, h3, o.rings[Number(zone)] ?? '#fff');
-        const panel = els.secs[sec]?.querySelector('.rt-panel');
+        const panel = els.secs[sec]?.querySelector<HTMLElement>('.rt-panel');
         panel?.classList.add('rt-cut');
+        if (panel) relock(panel);
         clearTimeout(cutTimer);
         cutTimer = window.setTimeout(() => panel?.classList.remove('rt-cut'), 120);
     };
@@ -618,7 +635,6 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         shownProject = s.sec === 3 ? (zone !== undefined ? Number(zone) : into) : null;
         // Set on the two HUD bars only: a variable on the root would restyle the whole page each frame.
         els.huds.forEach((el) => fill(el, '--flash', out.flash));
-        els.ringTags.forEach((el, k) => place(el, out.rings[k], s.sec === 3 && map < 0.1, small, top));
         els.recordTags.forEach((el, k) => place(el, out.records[k], s.sec === 4 && map < 0.1, small, top));
         const sound = o.sound();
         const panOf = (m: Mark): number => (m ? (m.x / innerWidth - 0.5) * 2 : 0);
