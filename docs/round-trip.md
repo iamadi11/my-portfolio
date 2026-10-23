@@ -30,7 +30,7 @@ The route in the HUD fills between hops as the request travels; each project's d
 | `world/city.ts` | The endless city: towers, aviation lights, traffic, the wet street (mirrored on desktop). |
 | `world/land.ts` | The landscapes: one GLSL terrain with five kinds, grass blades, fireflies, embers, snow. |
 | `world/sea.ts` | Open sea with a moon path; at the pole, pack ice and icebergs. |
-| `world/landmarks.ts` | One real terrain model (Sketchfab, CC BY) on the horizon of some landscapes, beyond the exit portal. |
+| `world/landmarks.ts` | One real, little-known place on the horizon of each landscape, beyond its exit portal: Chocolate Hills (Bohol, Philippines), Badain Jaran megadunes (Inner Mongolia), Zhangye Danxia (Gansu), Mount Roraima (Venezuela/Brazil/Guyana), Nyiragongo (DR Congo), from AWS Terrain Tiles; relief exaggerated so it reads at a kilometre. |
 | `world/services.ts`, `world/records.ts` | The project portals (gateway model, light strip, event horizon; one visible at a time); one light pillar per record. |
 | `world/ship.ts` | The ship: PBR model, engine plasma, search beam, re-entry glow, wingtip strobes, banking and barrel rolls. |
 | `world/warp.ts` | Light streaks rushing past the camera during a jump. |
@@ -55,11 +55,7 @@ The route in the HUD fills between hops as the request travels; each project's d
 | `env/earth-*.jpg` | Earth model textures supplied by the owner (`59-earth.zip`) | As supplied |
 | `env/stars-*.jpg` | NASA/Goddard SVS Deep Star Maps 2020 | NASA/GSFC SVS; ESA/Gaia/DPAC |
 | `env/night.hdr` | Modern Buildings Night, Poly Haven | CC0 |
-| `models/terrain/mountain_range_01-*.glb` | Mountain Range 01, solararchitect, Sketchfab | CC BY 4.0; on the grassland horizon |
-| `models/terrain/snowy_volcano-*.glb` | Snowy Volcano, Pukar Shiwakoti, Sketchfab | CC BY 4.0; on the volcanic horizon |
-| `models/terrain/horseshoe-*.glb` | Horseshoe bend near Grand Canyon, Ignazio Pillitteri, Sketchfab | CC BY 4.0; on the canyon horizon |
-| `models/terrain/snowy_mountain-*.glb` | Snowy Mountain - Terrain, artfromheath, Sketchfab | CC BY 4.0; on the alpine horizon |
-| `models/terrain/death_valley-*.glb` | Death Valley - Terrain, artfromheath, Sketchfab | CC BY 4.0; on the desert horizon |
+| `env/places/*-{hi,lo}.bin` | AWS Terrain Tiles (Mapzen/Tilezen) from SRTM (NASA), ETOPO1 (NOAA), GMTED2010 (USGS); built by `scripts/places.py` | Open data with attribution (github.com/tilezen/joerd/blob/master/docs/attribution.md); heights exaggerated |
 | `models/osaka-*.glb` | Osaka downtown, matousekfoto, Sketchfab (night photogrammetry) | CC BY 4.0; the downtown left of the city path |
 | `env/moon.webp` | Moon photograph, NASA (nasa/NASA-3D-Resources @11ebb4e, `Images and Textures/Moon/Moon.jpg`) | NASA media, free and without copyright; credit NASA |
 | `models/iss.glb` | International Space Station (B), NASA (nasa/NASA-3D-Resources @11ebb4e) | NASA media, free and without copyright; credit NASA; the finale |
@@ -75,7 +71,7 @@ The route in the HUD fills between hops as the request travels; each project's d
 - First-load JS 113 kB (Next.js build report, measured 2026-10-22; gate: ≤ 120 kB). The world is fetched on idle and built on the first scroll; sound loads only when switched on.
 - Lighthouse on `/`: performance 98 mobile / 100 desktop; accessibility, best practices and SEO 100; CLS 0.001.
 - 60 fps headless in every place at 1280×800 and 390×844 (GPU on; phones get lighter grass, motes, terrain and textures).
-- Downloads after Start: ship 1.3 MB (phones 0.6 MB), star map 2.8 MB (0.6 MB), Earth 1.6 MB (0.45 MB), night HDRI 1.6 MB. Per place, as it comes on screen (each landmark is fetched when its landscape or the one before it is shown): downtown scan 5.4 MB (4.8 MB), landmarks 1.9–3.6 MB each (0.7–3.4 MB). On Save-Data or a 2g/3g connection neither the downtown scan nor the landmarks load.
+- Downloads after Start: ship 1.3 MB (phones 0.6 MB), star map 2.8 MB (0.6 MB), Earth 1.6 MB (0.45 MB), night HDRI 1.6 MB. Per place, as it comes on screen (each landmark is fetched when its landscape or the one before it is shown): downtown scan 5.4 MB (4.8 MB), real-place horizons 295 KB each (74 KB). On Save-Data or a 2g/3g connection neither the downtown scan nor the landmarks load.
 
 ## Accessibility
 

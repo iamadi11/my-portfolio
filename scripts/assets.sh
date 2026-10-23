@@ -35,23 +35,8 @@ npx -y @gltf-transform/cli@4 optimize "$P/portal-raw.glb" public/models/portal-1
 "$BLENDER" -b --python scripts/assets/stars.py -- "$A/stars/starmap_2020_4k.exr" public/env
 cp "$A/story/hdri/modern_buildings_night_1k.hdr" public/env/night.hdr
 
-# Horizon landmarks on / (Sketchfab, CC BY 4.0), from the files the owner downloaded into
-# assets-src/sketchfab/terrain/: "Mountain Range 01" (solararchitect), "Snowy Volcano" (Pukar
-# Shiwakoti), "Horseshoe bend near Grand Canyon" (Ignazio Pillitteri). Two tiers each: -hi for wide
-# screens, -lo for phones. Add a line per new landmark; landmarks.ts picks them by LandKind.
-T=$A/sketchfab/terrain
-mkdir -p public/models/terrain
-land() { # name, source, hi texture size, lo texture size
-  base="--compress meshopt --texture-compress webp --flatten true --join true --instance false --palette false"
-  npx -y @gltf-transform/cli@4 optimize "$2" "public/models/terrain/$1-hi.glb" $base --texture-size "$3" --simplify-ratio 0.6
-  npx -y @gltf-transform/cli@4 optimize "$2" "public/models/terrain/$1-lo.glb" $base --texture-size "$4" --simplify-ratio 0.3
-}
-land mountain_range_01 "$T/mountain_range_01.glb" 2048 1024
-land snowy_volcano "$T/snowy_volcano.glb" 2048 1024
-land horseshoe "$T/horseshoe/source/grancanyon.gltf" 512 256
-# "Snowy Mountain - Terrain" and "Death Valley - Terrain" (artfromheath, CC BY 4.0), 4k GLBs.
-land snowy_mountain "$T/snowy_mountain.glb" 2048 1024
-land death_valley "$T/death_valley.glb" 2048 1024
+# Horizon landmarks on /: real places from AWS Terrain Tiles, built by scripts/places.py into
+# public/env/places/<id>-{hi,lo}.bin (the earlier Sketchfab terrain scans are no longer used).
 # "Osaka downtown" (matousekfoto, CC BY 4.0): a scanned night skyline standing beside the city
 # path. 790k triangles in the source, so it is simplified hard; one tile per city block.
 C=$A/sketchfab/city

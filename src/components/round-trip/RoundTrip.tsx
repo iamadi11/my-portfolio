@@ -21,11 +21,6 @@ const CC_BY = 'https://creativecommons.org/licenses/by/4.0/';
 const CREDITS: Array<[string, string]> = [
     ['Sci-Fi Portal Gateway', 'Igrium'],
     ['Osaka downtown', 'matousekfoto'],
-    ['Mountain Range 01', 'solararchitect'],
-    ['Snowy Volcano', 'Pukar Shiwakoti'],
-    ['Horseshoe bend near Grand Canyon', 'Ignazio Pillitteri'],
-    ['Snowy Mountain - Terrain', 'artfromheath'],
-    ['Death Valley - Terrain', 'artfromheath'],
 ];
 const sketchfab = (title: string, by: string): string =>
     `https://sketchfab.com/search?type=models&q=${encodeURIComponent(`${title} ${by}`)}`;
@@ -320,7 +315,16 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                     <a href="https://svs.gsfc.nasa.gov/4851" target="_blank" rel="noopener noreferrer">
                         NASA/Goddard SVS Deep Star Maps
                     </a>
-                    , ESA/Gaia/DPAC.
+                    , ESA/Gaia/DPAC. Real-place horizons (Chocolate Hills, Badain Jaran, Zhangye Danxia, Mount
+                    Roraima, Nyiragongo):{' '}
+                    <a
+                        href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        AWS Terrain Tiles (Mapzen/Tilezen)
+                    </a>{' '}
+                    from SRTM (NASA), ETOPO1 (NOAA) and GMTED2010 (USGS), heights exaggerated.
                 </p>
             </details>
         </>
