@@ -117,13 +117,7 @@ export function tilt(pointer: { x: number; y: number }, button: HTMLButtonElemen
         page.halt('tilt');
         level = seen ? pitch : null;
         button?.setAttribute('aria-pressed', String(on));
-        if (button) {
-            button.textContent = on ? 'Tilt on' : 'Tilt to scroll';
-            button.setAttribute(
-                'aria-label',
-                on ? 'Tilt on — click to turn off' : 'Tilt to scroll — off until you turn it on'
-            );
-        }
+        if (button) button.textContent = on ? 'Tilt on' : 'Tilt to scroll';
         button?.style.setProperty('--tilt', '0');
     };
     const ask = (DeviceOrientationEvent as unknown as Ask).requestPermission;

@@ -107,8 +107,7 @@ export function addRecords(scene: THREE.Object3D, route: Route, s: Shared, us: n
     });
     const points = bases.map((b) => b.clone().add(new THREE.Vector3(0, 30, 0)));
     const rand = us.map((_, k) => ((k * 0.618) % 1) * 0.6);
-    // Baseline high enough that résumé weather reads on the first sea stretch, not only at close range.
-    const hot = new THREE.InstancedBufferAttribute(new Float32Array(us.length).fill(0.38), 1);
+    const hot = new THREE.InstancedBufferAttribute(new Float32Array(us.length).fill(0.25), 1);
     hot.setUsage(THREE.DynamicDrawUsage);
     const column = new THREE.PlaneGeometry(1, 1, 1, 24).translate(0, 0.5, 0);
     const pillars = new THREE.Mesh(
@@ -143,8 +142,8 @@ export function addRecords(scene: THREE.Object3D, route: Route, s: Shared, us: n
     });
     const update = (ship: THREE.Vector3, u: number): void => {
         bases.forEach((b, k) => {
-            const near = smooth(220, 36, Math.hypot(ship.x - b.x, ship.z - b.z));
-            hot.setX(k, Math.max(0.38, near * 1.15, u > us[k] ? 0.62 : 0));
+            const near = smooth(160, 30, Math.hypot(ship.x - b.x, ship.z - b.z));
+            hot.setX(k, Math.max(0.25, near * 1.1, u > us[k] ? 0.55 : 0));
         });
         hot.needsUpdate = true;
     };

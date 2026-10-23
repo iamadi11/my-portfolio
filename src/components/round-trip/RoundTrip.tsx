@@ -17,34 +17,18 @@ const stagger = (i: number): React.CSSProperties => ({ '--i': i }) as React.CSSP
 const key = (r: { org: string; role: string }): string => `${r.org}-${r.role}`;
 
 const CC_BY = 'https://creativecommons.org/licenses/by/4.0/';
-/**
- * CC BY models on /: title, author, Sketchfab model page (not a search URL).
- * Portal: https://sketchfab.com/3d-models/sci-fi-portal-gateway-58d2570e88c642bba8ef92f3175391cf
- * Osaka: https://sketchfab.com/3d-models/osaka-downtown-53e0980d555a4af6b921cc00c208e4a3
- */
-const CREDITS: Array<[string, string, string]> = [
-    [
-        'Sci-Fi Portal Gateway',
-        'Igrium',
-        'https://sketchfab.com/3d-models/sci-fi-portal-gateway-58d2570e88c642bba8ef92f3175391cf',
-    ],
-    [
-        'Osaka downtown',
-        'matousekfoto',
-        'https://sketchfab.com/3d-models/osaka-downtown-53e0980d555a4af6b921cc00c208e4a3',
-    ],
+/** The CC BY models on /, as titled and credited on Sketchfab. */
+const CREDITS: Array<[string, string]> = [
+    ['Sci-Fi Portal Gateway', 'Igrium'],
+    ['Osaka downtown', 'matousekfoto'],
+    ['Mountain Range 01', 'solararchitect'],
+    ['Snowy Volcano', 'Pukar Shiwakoti'],
+    ['Horseshoe bend near Grand Canyon', 'Ignazio Pillitteri'],
+    ['Snowy Mountain - Terrain', 'artfromheath'],
+    ['Death Valley - Terrain', 'artfromheath'],
 ];
-/** DEM places on / from AWS Terrain Tiles (see scripts/places/build-dem.py). */
-const TERRAIN = 'https://github.com/tilezen/joerd/blob/master/docs/attribution.md';
-const PLACES = [
-    'La Paz bowl',
-    'Illimani',
-    'Chocolate Hills',
-    'Lençóis Maranhenses',
-    'Zhangye Danxia',
-    'Mount Roraima',
-    'Erta Ale',
-];
+const sketchfab = (title: string, by: string): string =>
+    `https://sketchfab.com/search?type=models&q=${encodeURIComponent(`${title} ${by}`)}`;
 /** Where the J/K switch is remembered for this viewer. */
 const KEYS = 'rt-keys';
 
@@ -136,7 +120,7 @@ function Hero({ trip }: { trip: Trip }): React.JSX.Element {
                 {trip.meta}
             </p>
             <div className="rt-cue rt-fade" style={stagger(2)}>
-                <button type="button" className="rt-go" data-start="rt-wire">
+                <button type="button" data-start="rt-wire">
                     Start the trip
                 </button>
                 <a href={`mailto:${trip.email}`}>Email me</a>
@@ -331,39 +315,26 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
             </h2>
             <p className="rt-done rt-fade">Round trip complete · {trip.meta}</p>
             <p className="rt-vitals" data-vitals hidden />
-            {/* Primary contact first; secondary actions sit under it so the close reads as hierarchy. */}
-            <div className="rt-close">
-                <a className="rt-mail rt-fade" style={stagger(1)} href={`mailto:${trip.email}`}>
-                    {trip.email}
-                </a>
-                <div className="rt-pills rt-fade" style={stagger(2)}>
-                    <p className="rt-said" role="status">
-                        {said}
-                    </p>
-                    <button type="button" className="rt-cta-primary" onClick={copy}>
-                        Copy email
-                    </button>
-                    {trip.phone && (
-                        <a className="rt-cta-secondary" href={trip.phone.href}>
-                            {trip.phone.label}
-                        </a>
-                    )}
-                    {trip.links.map((l) => (
-                        <a
-                            key={l.href}
-                            className="rt-cta-secondary"
-                            href={l.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            {l.label}
-                        </a>
-                    ))}
-                    {/* Always laid out, shown once the ship has left, so nothing shifts when it comes up. */}
-                    <button type="button" className="rt-again" data-again>
-                        Send again
-                    </button>
-                </div>
+            <a className="rt-mail rt-fade" style={stagger(1)} href={`mailto:${trip.email}`}>
+                {trip.email}
+            </a>
+            <div className="rt-pills rt-fade" style={stagger(2)}>
+                <p className="rt-said" role="status">
+                    {said}
+                </p>
+                <button type="button" onClick={copy}>
+                    Copy email
+                </button>
+                {trip.phone && <a href={trip.phone.href}>{trip.phone.label}</a>}
+                {trip.links.map((l) => (
+                    <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">
+                        {l.label}
+                    </a>
+                ))}
+                {/* Always laid out, shown once the ship has left, so nothing shifts when it comes up. */}
+                <button type="button" className="rt-again" data-again>
+                    Send again
+                </button>
             </div>
             <details className="rt-more rt-fade" style={stagger(3)}>
                 <summary>Credits</summary>
@@ -373,45 +344,17 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                         CC BY 4.0
                     </a>
                     , modified (optimised):{' '}
-                    {CREDITS.map(([title, by, href], i) => (
+                    {CREDITS.map(([title, by], i) => (
                         <React.Fragment key={title}>
                             {i > 0 && ', '}
-                            <a href={href} target="_blank" rel="noopener noreferrer">
+                            <a href={sketchfab(title, by)} target="_blank" rel="noopener noreferrer">
                                 {title}
                             </a>{' '}
                             by {by}
                         </React.Fragment>
                     ))}
-                    . Terrain for {PLACES.join(', ')}:{' '}
-                    <a href={TERRAIN} target="_blank" rel="noopener noreferrer">
-                        AWS Terrain Tiles
-                    </a>{' '}
-                    (Mapzen Joerd sources; rebuilt by scripts/places/build-dem.py). Moon photograph and
-                    International Space Station model: NASA. Earth textures:{' '}
-                    <a
-                        href="https://visibleearth.nasa.gov/images/73909/december-blue-marble-next-generation-w-topography-and-bathymetry"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        NASA Blue Marble Next Generation
-                    </a>{' '}
-                    (day),{' '}
-                    <a
-                        href="https://visibleearth.nasa.gov/images/144898/earth-at-night-black-marble-2016-color-maps"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Black Marble 2016
-                    </a>{' '}
-                    (night lights),{' '}
-                    <a
-                        href="https://visibleearth.nasa.gov/images/57747/blue-marble-clouds"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Blue Marble clouds
-                    </a>
-                    ; credit NASA. Stars:{' '}
+                    . Moon photograph and International Space Station model: NASA. Earth textures: from an
+                    Earth model pack supplied by the owner. Stars:{' '}
                     <a href="https://svs.gsfc.nasa.gov/4851" target="_blank" rel="noopener noreferrer">
                         NASA/Goddard SVS Deep Star Maps
                     </a>
@@ -513,40 +456,20 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                     {trip.name}
                 </a>
                 <Route where="top" />
-                <button
-                    className="rt-snd rt-tilt"
-                    type="button"
-                    data-tilt
-                    aria-pressed="false"
-                    aria-label="Tilt to scroll — off until you turn it on"
-                    title="Tilt to scroll — permission required; off until you turn it on"
-                    hidden
-                >
+                <button className="rt-snd rt-tilt" type="button" data-tilt aria-pressed="false" hidden>
                     Tilt to scroll
                 </button>
                 <button
                     className="rt-snd rt-keys"
                     type="button"
                     aria-pressed={keysOn}
-                    aria-label={
-                        keysOn
-                            ? 'J/K keys on: J next stop, K previous (when no control is focused)'
-                            : 'J/K keys off'
-                    }
                     onClick={toggleKeys}
                     title="J flies to the next stop, K to the one before (when no button or link has focus)"
                 >
                     J/K keys
                 </button>
-                <button
-                    className="rt-snd"
-                    type="button"
-                    aria-pressed={soundOn}
-                    aria-label={soundOn ? 'Sound on — click to mute' : 'Sound off — click to enable'}
-                    onClick={toggleSound}
-                    title={soundOn ? 'Sound on — click to mute' : 'Sound off — click to enable'}
-                >
-                    {soundOn ? 'Sound on' : 'Sound'}
+                <button className="rt-snd" type="button" aria-pressed={soundOn} onClick={toggleSound}>
+                    Sound
                 </button>
             </header>
             <div className="rt-hud rt-bottom">
@@ -580,7 +503,12 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
                 </Section>
             </main>
 
-            {/* Portal flash → panel handoff only; no floating ring tags (panel h3 is the title). */}
+            {trip.projects.map((p) => (
+                <div className="rt-tag" data-ring-tag key={p.id} aria-hidden="true">
+                    {p.title}
+                </div>
+            ))}
+            {/* The project title handed from the portal's flash to its panel (a copy; the h3 is the real one). */}
             <p className="rt-handoff" data-handoff aria-hidden="true" />
             {trip.records.map((r) => (
                 <div className="rt-tag" data-record-tag key={key(r)} aria-hidden="true">

@@ -16,10 +16,8 @@ html:has(.rt) body {
     --muted: oklch(0.8 0.025 260);
     --soft: oklch(0.89 0.018 260);
     --line: rgba(238, 242, 248, 0.2);
-    /* denser shade under glyphs so a lighter scrim still holds AA */
-    --shade: rgba(5, 7, 13, 0.82);
+    --shade: rgba(5, 7, 13, 0.7);
     --accent: #8fd3ff;
-    /* Instrument Serif via --font-rt-display (page.tsx); editorial, not a SaaS grotesk */
     --display: var(--font-rt-display), 'Times New Roman', Georgia, serif;
     --body: var(--font-geist-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
     --mono: var(--font-geist-mono), ui-monospace, Menlo, Consolas, monospace;
@@ -32,7 +30,6 @@ html:has(.rt) body {
     background: var(--bg);
     font: 400 17px/1.55 var(--body);
     overflow-x: clip;
-    -webkit-font-smoothing: antialiased;
 }
 .rt a {
     color: inherit;
@@ -41,11 +38,6 @@ html:has(.rt) body {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
     border-radius: 4px;
-}
-/* HUD controls sit on a translucent bar — keep the ring readable over the canvas */
-.rt-hud :focus-visible {
-    outline-color: var(--ink);
-    background: rgba(5, 7, 13, 0.72);
 }
 .rt-sr {
     position: absolute;
@@ -170,12 +162,12 @@ html:has(.rt) body {
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    /* light veil under the panel column only — the world stays the stage on the right */
+    /* dark under the whole 640px panel, then open onto the world */
     background: linear-gradient(
         90deg,
-        rgba(5, 7, 13, 0.72) 0 28%,
-        rgba(5, 7, 13, 0.4) 42%,
-        rgba(5, 7, 13, 0) 58%
+        rgba(5, 7, 13, 0.9) 0 46%,
+        rgba(5, 7, 13, 0.72) 58%,
+        rgba(5, 7, 13, 0) 76%
     );
 }
 
@@ -221,9 +213,8 @@ html:has(.rt) body {
 .rt-sec[data-zone='data'] {
     --accent: #7af0ff;
 }
-/* 200 OK: warm dawn rim (film sunrise), not neon white */
 .rt-sec[data-zone='ok'] {
-    --accent: #ffd7a8;
+    --accent: #ffffff;
 }
 .rt-pin {
     position: sticky;
@@ -244,38 +235,12 @@ html:has(.rt) body {
 .rt-panel {
     position: relative;
     max-width: 640px;
-    /* double shadow: a tight plate for AA, a soft bloom so type sits in the night world */
-    text-shadow:
-        0 1px 2px var(--shade),
-        0 2px 18px var(--shade),
-        0 0 40px rgba(5, 7, 13, 0.55);
+    text-shadow: 0 1px 12px var(--shade);
     transition:
         filter 250ms ease-out,
         opacity 250ms ease-out;
     align-self: end;
     max-height: 100%;
-}
-/* zone accent as a hairline — copy feels anchored to the place, not a generic card */
-.rt-panel::before {
-    content: '';
-    position: absolute;
-    top: 0.35em;
-    bottom: 0.35em;
-    left: -14px;
-    width: 2px;
-    border-radius: 1px;
-    background: var(--accent);
-    opacity: 0;
-    transform: scaleY(0.4);
-    transform-origin: center top;
-    transition:
-        opacity 500ms var(--out) 80ms,
-        transform 700ms var(--out) 80ms;
-    pointer-events: none;
-}
-.rt-js .rt-sec.in .rt-panel::before {
-    opacity: 0.85;
-    transform: scaleY(1);
 }
 .rt-panel:has(details[open]) {
     /* opened details scroll inside the panel instead of running under the HUD */
@@ -284,15 +249,10 @@ html:has(.rt) body {
     pointer-events: auto;
     scrollbar-width: thin;
 }
-/* portal approach: soften the projects panel as the ship rushes the gate (--rush from drive) */
-.rt-sec[data-zone='services'] .rt-panel:not(.rt-cut) {
-    filter: blur(calc(var(--rush, 0) * 1.8px));
-    opacity: calc(1 - var(--rush, 0) * 0.22);
-}
 /* the jump's flash: the panel loses focus for a beat, then settles with the new place */
 .rt-panel.rt-cut {
-    filter: blur(3.5px);
-    opacity: 0.5;
+    filter: blur(2px);
+    opacity: 0.6;
     transition: none;
 }
 /* chapter labels: a calm plain name in the body face; the clock lives in the HUD only */
@@ -311,8 +271,7 @@ html:has(.rt) body {
     background: var(--accent);
 }
 
-/* reveals: armed only once the page runs, so without JS every word is still there.
-   Rise out of the dark (opacity + soft blur clear) instead of a template mask slide. */
+/* reveals: armed only once the page runs, so without JS every word is still there */
 .rt-ln {
     display: block;
     overflow: hidden;
@@ -323,26 +282,15 @@ html:has(.rt) body {
     display: block;
 }
 .rt-js .rt-ln > span {
-    opacity: 0;
-    filter: blur(6px);
-    transform: translateY(0.35em);
-    transition:
-        opacity 220ms ease-in,
-        filter 220ms ease-in,
-        transform 220ms ease-in;
+    transform: translateY(108%);
+    transition: transform 250ms ease-in;
 }
 .rt-js .in .rt-ln > span {
-    opacity: 1;
-    filter: none;
     transform: none;
-    transition:
-        opacity 700ms var(--out),
-        filter 900ms var(--out),
-        transform 900ms var(--out);
-    transition-delay: calc(var(--i, 0) * 80ms);
+    transition: transform 800ms var(--out);
+    transition-delay: calc(var(--i, 0) * 60ms);
 }
-/* chapter titles: word by word (200 OK letter by letter), each piece in its own mask.
-   Cascade lands with the panel hairline (~80ms) so type and place read as one beat. */
+/* chapter titles: word by word (200 OK letter by letter), each piece in its own mask */
 .rt-kin {
     display: block;
 }
@@ -357,89 +305,50 @@ html:has(.rt) body {
     display: inline-block;
 }
 .rt-js .rt-w > span {
-    opacity: 0;
-    filter: blur(5px);
-    transform: translateY(0.45em);
-    transition:
-        opacity 220ms ease-in,
-        filter 220ms ease-in,
-        transform 220ms ease-in;
+    transform: translateY(108%);
+    transition: transform 250ms ease-in;
 }
 .rt-js .in .rt-w > span {
-    opacity: 1;
-    filter: none;
     transform: none;
-    transition:
-        opacity 600ms var(--out),
-        filter 780ms var(--out),
-        transform 780ms var(--out);
-    transition-delay: calc(80ms + var(--i, 0) * 48ms);
+    transition: transform 800ms var(--out);
+    transition-delay: calc(var(--i, 0) * 50ms);
 }
 .rt-js .in .rt-kin-c .rt-w > span {
-    /* 200 OK: snappy letter cascade after the status settles */
-    transition-delay: calc(40ms + var(--i, 0) * 28ms);
+    transition-delay: calc(var(--i, 0) * 30ms);
 }
 /* leaving is quicker than arriving, so the old panel never lingers under the next */
 .rt-js .rt-fade {
     opacity: 0;
-    filter: blur(4px);
-    transform: translateY(10px);
+    transform: translateY(14px);
     transition:
         opacity 200ms ease-in,
-        filter 200ms ease-in,
-        transform 220ms ease-in;
+        transform 250ms ease-in;
 }
 .rt-js .in .rt-fade {
     opacity: 1;
-    filter: none;
     transform: none;
     transition:
-        opacity 650ms var(--out),
-        filter 800ms var(--out),
+        opacity 600ms var(--out),
         transform 800ms var(--out);
-    /* body copy waits for the title cascade so the chapter reads top-down */
-    transition-delay: calc(var(--i, 0) * 70ms + 220ms);
+    transition-delay: calc(var(--i, 0) * 60ms + 120ms);
 }
 
-/* hero: name (serif brand), then what he is, then why it matters */
+/* hero: name, then what he is, then why it matters */
 .rt-name {
-    margin: 0 0 12px;
-    font: 400 clamp(72px, 12.5vw, 208px) / 0.86 var(--display);
-    letter-spacing: -0.04em;
-    font-optical-sizing: auto;
-}
-/* Pass three: name/role own first paint over orbit limb — denser plate, no dashboard chrome */
-.rt-sec[data-zone='browser'] .rt-name {
-    text-shadow:
-        0 1px 1px rgba(5, 7, 13, 0.98),
-        0 2px 10px var(--shade),
-        0 8px 42px var(--shade),
-        0 0 80px rgba(5, 7, 13, 0.9);
+    margin: 0 0 14px;
+    font: 400 clamp(64px, 11.5vw, 200px) / 0.9 var(--display);
+    letter-spacing: -0.025em;
 }
 .rt-role {
     margin: 0 0 18px;
     color: var(--ink);
-    font: italic 400 clamp(21px, 2.35vw, 30px) / 1.22 var(--display);
-    letter-spacing: -0.015em;
-}
-.rt-sec[data-zone='browser'] .rt-role {
-    text-shadow:
-        0 1px 1px rgba(5, 7, 13, 0.95),
-        0 2px 14px var(--shade),
-        0 6px 32px rgba(5, 7, 13, 0.78);
+    font: 400 clamp(20px, 2.2vw, 28px) / 1.25 var(--body);
 }
 .rt-lede {
     max-width: 52ch;
     margin: 0 0 14px;
     color: var(--soft);
     font-size: clamp(17px, 1.5vw, 20px);
-}
-/* supporting lines: softer plate so statement/status stay readable without rivaling name/role */
-.rt-sec[data-zone='browser'] .rt-lede,
-.rt-sec[data-zone='browser'] .rt-meta {
-    text-shadow:
-        0 1px 2px var(--shade),
-        0 2px 14px rgba(5, 7, 13, 0.55);
 }
 .rt-lede + .rt-meta {
     margin-bottom: 26px;
@@ -451,36 +360,16 @@ html:has(.rt) body {
     gap: 14px 18px;
     margin: 0;
 }
-/* Email me: outline tertiary under Start — brand stays the hero signal */
-.rt-sec[data-zone='browser'] .rt-cue a {
-    border-color: rgba(238, 242, 248, 0.14);
-    color: var(--soft);
-}
-.rt-cue button,
-.rt-go {
-    position: relative;
+.rt-cue button {
     min-height: 44px;
-    padding: 12px 22px;
+    padding: 12px 20px;
     border: 0;
     border-radius: 999px;
     background: var(--ink);
     color: var(--bg);
     font: 600 15px var(--body);
     cursor: pointer;
-    transition:
-        transform 160ms ease-out,
-        box-shadow 280ms var(--out);
-}
-/* Start: a soft cool ring that breathes with the poster beacon — one invitation into the trip */
-.rt-go {
-    box-shadow:
-        0 0 0 0 rgba(143, 211, 255, 0.45),
-        0 8px 28px rgba(5, 7, 13, 0.35);
-    animation: rt-go-pulse 2.8s var(--ease) infinite;
-}
-.rt-go:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 4px;
+    transition: transform 160ms ease-out;
 }
 .rt-cue a {
     display: inline-flex;
@@ -502,42 +391,17 @@ html:has(.rt) body {
         background: var(--ink);
         color: var(--bg);
     }
-    .rt-cue button:hover,
-    .rt-go:hover {
+    .rt-cue button:hover {
         transform: translateY(-2px);
-        animation: none;
-        box-shadow:
-            0 0 0 3px rgba(143, 211, 255, 0.35),
-            0 10px 32px rgba(5, 7, 13, 0.4);
     }
 }
 .rt-cue button:active,
-.rt-go:active,
 .rt-cue a:active,
 .rt-links a:active,
 .rt-pills a:active,
 .rt-pills button:active,
 .rt-snd:active {
     transform: scale(0.97);
-}
-@keyframes rt-go-pulse {
-    0%,
-    100% {
-        box-shadow:
-            0 0 0 0 rgba(143, 211, 255, 0.4),
-            0 8px 28px rgba(5, 7, 13, 0.35);
-    }
-    55% {
-        box-shadow:
-            0 0 0 10px rgba(143, 211, 255, 0),
-            0 8px 28px rgba(5, 7, 13, 0.35);
-    }
-}
-/* once the trip is underway, the Start pulse stops so the world owns attention */
-.rt-scrolled .rt-go,
-.rt-live .rt-go {
-    animation: none;
-    box-shadow: 0 4px 18px rgba(5, 7, 13, 0.3);
 }
 .rt-cue span {
     display: flex;
@@ -619,8 +483,8 @@ html:has(.rt) body {
 /* edge */
 .rt-h2 {
     margin: 0 0 22px;
-    font: 400 clamp(42px, 5.2vw, 76px) / 0.9 var(--display);
-    letter-spacing: -0.035em;
+    font: 400 clamp(40px, 4.8vw, 72px) / 0.95 var(--display);
+    letter-spacing: -0.02em;
 }
 .rt-layers,
 .rt-links,
@@ -732,8 +596,8 @@ html:has(.rt) body {
 }
 .rt-h3 {
     margin: 12px 0 16px;
-    font: 400 clamp(46px, 6vw, 92px) / 0.88 var(--display);
-    letter-spacing: -0.035em;
+    font: 400 clamp(44px, 5.6vw, 88px) / 0.92 var(--display);
+    letter-spacing: -0.02em;
 }
 .rt-h3-sm {
     margin: 0 0 8px;
@@ -806,7 +670,6 @@ html:has(.rt) body {
     background: var(--accent);
     transform: scaleX(var(--p, 0));
     transform-origin: left;
-    box-shadow: 0 0 calc(var(--p, 0) * 12px) color-mix(in oklab, var(--accent) 65%, transparent);
 }
 
 /* data */
@@ -891,52 +754,30 @@ html:has(.rt) body {
     line-height: 1.5;
 }
 
-/* response — dawn plate under the kinetic status so sunrise orbit stays readable */
+/* response */
 .rt-ok {
     margin: 0;
     /* capped by height too, so the whole response fits on short landscape screens */
-    font: 400 min(clamp(88px, 15vw, 228px), 22svh) / 0.82 var(--display);
-    letter-spacing: -0.045em;
-}
-.rt-sec[data-zone='ok'] .rt-ok {
-    text-shadow:
-        0 1px 1px rgba(5, 7, 13, 0.95),
-        0 2px 12px rgba(5, 7, 13, 0.9),
-        0 8px 40px rgba(5, 7, 13, 0.75),
-        0 0 48px rgba(255, 180, 110, 0.12);
+    font: 400 min(clamp(84px, 14vw, 220px), 22svh) / 0.86 var(--display);
+    letter-spacing: -0.03em;
 }
 .rt-done {
-    margin: 18px 0 18px;
+    margin: 18px 0 26px;
     color: var(--soft);
     font: 500 12px var(--mono);
     letter-spacing: 0.12em;
     text-transform: uppercase;
 }
-.rt-sec[data-zone='ok'] .rt-done,
-.rt-sec[data-zone='ok'] .rt-vitals {
-    text-shadow:
-        0 1px 2px var(--shade),
-        0 2px 14px rgba(5, 7, 13, 0.7);
-}
 .rt-vitals {
     max-width: 46ch;
-    margin: 0 0 22px;
+    margin: -14px 0 26px;
     color: var(--muted);
     font-size: 14px;
     line-height: 1.5;
 }
-/* 200 OK close: email → Copy → quieter links → Send again last */
-.rt-close {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-    max-width: 36rem;
-}
 /* what Copy email really did: placed over the gap above the pills, so it never moves anything */
 .rt-pills {
     position: relative;
-    margin-top: 0;
 }
 .rt-said {
     position: absolute;
@@ -948,108 +789,37 @@ html:has(.rt) body {
     line-height: 1.3;
     white-space: nowrap;
 }
-/* Send again: reserved layout; inert until the ship has left; then usable (44px) */
+/* Send again: its place is kept from the start; it comes up once the ship has left */
 .rt-pills .rt-again {
     opacity: 0;
     visibility: hidden;
-    pointer-events: none;
     transition:
         opacity 200ms ease-in,
         visibility 0s 200ms,
         background 200ms ease,
         color 200ms ease,
-        border-color 200ms ease,
         transform 160ms ease-out;
 }
 .rt-left .rt-pills .rt-again {
     opacity: 1;
     visibility: visible;
-    pointer-events: auto;
     transition:
         opacity 600ms var(--out),
         background 200ms ease,
         color 200ms ease,
-        border-color 200ms ease,
         transform 160ms ease-out;
 }
-/* Pass three: mailto is the close hero — display weight + dawn underline; pills sit under it */
 .rt-mail {
     display: inline-block;
-    padding-bottom: 10px;
-    border-bottom: 2px solid rgba(255, 215, 168, 0.5);
-    font: 400 clamp(26px, 3.2vw, 48px) / 1.1 var(--display);
-    letter-spacing: -0.015em;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+    font: 400 clamp(24px, 3vw, 44px) / 1.1 var(--display);
+    letter-spacing: -0.01em;
     text-decoration: none;
     overflow-wrap: anywhere;
-    text-shadow:
-        0 1px 2px var(--shade),
-        0 4px 24px rgba(5, 7, 13, 0.75),
-        0 0 36px rgba(255, 180, 110, 0.08);
-    transition:
-        border-color 220ms ease,
-        color 220ms ease;
 }
-.rt-mail:hover,
-.rt-mail:focus-visible {
-    border-color: var(--accent);
-    color: var(--ink);
-}
-.rt-sec[data-zone='ok'] .rt-mail:focus-visible {
-    outline-color: var(--accent);
-}
-/* phone / GitHub / LinkedIn: quieter than Copy — outline only, muted ink */
-.rt-close .rt-pills .rt-cta-secondary {
-    background: transparent;
-    border-color: rgba(238, 242, 248, 0.12);
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 500;
-    padding: 9px 14px;
-}
-/* Send again: ghost last — 44px target when .rt-left (drive clears inert then) */
-.rt-close .rt-pills .rt-again {
-    background: transparent;
-    border-color: rgba(238, 242, 248, 0.1);
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 500;
-    min-height: 44px;
-    padding: 9px 14px;
-}
-.rt-left .rt-pills .rt-again:focus-visible {
-    outline-color: var(--accent);
-    color: var(--soft);
-}
-/* Copy email: filled primary under the address — clearest next step without new copy */
-.rt-close .rt-pills .rt-cta-primary {
-    background: var(--ink);
+.rt-mail:hover {
     border-color: var(--ink);
-    color: var(--bg);
-    font-weight: 600;
-    font-size: 15px;
-    min-height: 44px;
-    padding: 10px 18px;
-    box-shadow: 0 4px 18px rgba(5, 7, 13, 0.35);
-}
-.rt-close .rt-pills .rt-cta-primary:focus-visible {
-    outline-color: var(--accent);
-}
-@media (hover: hover) and (pointer: fine) {
-    .rt-close .rt-pills .rt-cta-secondary:hover {
-        background: rgba(238, 242, 248, 0.06);
-        color: var(--soft);
-        border-color: rgba(238, 242, 248, 0.22);
-    }
-    .rt-close .rt-pills .rt-again:hover {
-        background: transparent;
-        color: var(--soft);
-        border-color: rgba(238, 242, 248, 0.2);
-    }
-    .rt-close .rt-pills .rt-cta-primary:hover {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: var(--bg);
-    }
 }
 .rt-note {
     margin: 10px 0 0;
@@ -1107,8 +877,8 @@ html:has(.rt) body {
     white-space: nowrap;
     margin-right: auto;
     color: var(--ink);
-    font: 400 21px var(--display);
-    letter-spacing: -0.02em;
+    font: 400 19px var(--display);
+    letter-spacing: 0;
     text-decoration: none;
     text-transform: none;
 }
@@ -1190,48 +960,17 @@ html:has(.rt) body {
     transition: transform 160ms ease-out;
 }
 .rt-snd[aria-pressed='true'] {
-    border-color: var(--accent);
-    background: rgba(143, 211, 255, 0.12);
-    color: var(--ink);
+    border-color: var(--ink);
 }
 .rt-req {
-    position: relative;
     margin-right: auto;
-    color: var(--muted);
+    color: var(--ink);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
-    transition: color 400ms var(--out);
 }
 .rt-req em {
     color: var(--muted);
     font-style: normal;
-    transition: color 400ms var(--out);
-}
-/* request line wakes with the trip: ink + a cool pip so GET /slug feels live with the ship */
-.rt-scrolled .rt-req,
-.rt-live .rt-req {
-    color: var(--ink);
-}
-.rt-live .rt-req em {
-    color: var(--soft);
-}
-.rt-req::before {
-    content: '';
-    display: inline-block;
-    width: 5px;
-    height: 5px;
-    margin-right: 10px;
-    border-radius: 50%;
-    background: var(--line);
-    vertical-align: 0.05em;
-    transition:
-        background 400ms var(--out),
-        box-shadow 400ms var(--out);
-}
-.rt-scrolled .rt-req::before,
-.rt-live .rt-req::before {
-    background: var(--accent);
-    box-shadow: 0 0 8px rgba(143, 211, 255, 0.55);
 }
 .rt-hint {
     display: flex;
@@ -1262,25 +1001,20 @@ html:has(.rt) body {
     display: none;
 }
 
-/* the title handed from the portal's flash to the panel: placed by the script, moved by transform.
-   Dark plate under glyphs so ring colour still reads AA through the white flash. */
+/* the title handed from the portal's flash to the panel: placed by the script, moved by transform */
 .rt-handoff {
     position: fixed;
     top: 0;
     left: 0;
     z-index: 3;
     margin: 0;
-    font: 400 clamp(46px, 6vw, 92px) / 0.88 var(--display);
-    letter-spacing: -0.035em;
+    font: 400 clamp(44px, 5.6vw, 88px) / 0.92 var(--display);
+    letter-spacing: -0.02em;
     text-shadow:
-        0 0 1px rgba(5, 7, 13, 0.95),
-        0 1px 2px rgba(5, 7, 13, 0.95),
-        0 2px 24px rgba(5, 7, 13, 0.9),
-        0 0 40px rgba(5, 7, 13, 0.7),
-        0 0 32px currentColor;
+        0 0 28px currentColor,
+        0 1px 12px var(--shade);
     opacity: 0;
     pointer-events: none;
-    will-change: transform, opacity;
 }
 
 /* labels pinned to rings and records in the world */
@@ -1323,28 +1057,13 @@ html:has(.rt) body {
     .rt-pin {
         padding: 84px var(--g) 116px;
     }
-    /* phones: dark only under the bottom panel band — upper 40% stays the world */
     .rt-scrim {
         background: linear-gradient(
             0deg,
-            rgba(5, 7, 13, 0.9) 0 34%,
-            rgba(5, 7, 13, 0.5) 46%,
-            rgba(5, 7, 13, 0) 60%
+            rgba(5, 7, 13, 0.92) 0 50%,
+            rgba(5, 7, 13, 0.8) 70%,
+            rgba(5, 7, 13, 0) 92%
         );
-    }
-    /* accent hairline sits above the copy on phones (panel is full-bleed bottom) */
-    .rt-panel::before {
-        top: -10px;
-        right: 0;
-        bottom: auto;
-        left: 0;
-        width: auto;
-        height: 2px;
-        transform: scaleX(0.35);
-        transform-origin: left center;
-    }
-    .rt-js .rt-sec.in .rt-panel::before {
-        transform: scaleX(1);
     }
     .rt-nav-top,
     .rt-hint {
@@ -1434,78 +1153,32 @@ html:has(.rt) body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    /* no movement; fades stay, short — no blur thrash either */
+    /* no movement; fades stay, short */
     .rt-js .rt-fade,
     .rt-js .in .rt-fade,
-    .rt-js .rt-ln > span,
-    .rt-js .in .rt-ln > span,
-    .rt-js .rt-w > span,
-    .rt-js .in .rt-w > span,
     .rt-item,
     .rt-item.on {
         transform: none !important;
-        filter: none !important;
         transition: opacity 200ms ease !important;
     }
-    /* portal cut / rush soft-focus must not blur for reduced motion */
-    .rt-panel.rt-cut,
-    .rt-sec[data-zone='services'] .rt-panel {
-        filter: none !important;
-        opacity: 1 !important;
-        transition: opacity 200ms ease !important;
-    }
-    .rt-panel::before {
-        transition: opacity 200ms ease !important;
+    .rt :active {
         transform: none !important;
     }
-    .rt :active,
-    .rt-cue button:hover,
-    .rt-go:hover,
-    .rt-cue a:hover,
-    .rt-pills a:hover,
-    .rt-pills button:hover {
-        transform: none !important;
-    }
-    /* Start pulse, cue scrub, poster drift, beacon breath, req pip blink — all still */
+    .rt-js .rt-ln > span,
+    .rt-js .rt-w > span,
     .rt-cue b::after,
     .rt-poster::before,
     .rt-beacon::after,
-    .rt-go,
     .rt-layer-items,
     .rt-count i,
-    .rt-req em,
-    .rt-req::before,
-    .rt[data-phase='building'] .rt-req em,
-    .rt[data-phase='building'] .rt-req::before {
+    .rt-req em {
         transition: none !important;
         animation: none !important;
-    }
-    .rt-go {
-        animation: none !important;
-        box-shadow: 0 4px 18px rgba(5, 7, 13, 0.3);
-    }
-    /* Send again veil / fade: instant settle (drive also skips veil when reduce) */
-    .rt-scrim::after,
-    .rt main,
-    .rt-veil .rt-scrim::after,
-    .rt-veil main,
-    .rt-pills .rt-again,
-    .rt-left .rt-pills .rt-again {
-        transition: none !important;
-    }
-    .rt-hint {
-        transition: opacity 200ms ease !important;
     }
 }
-/* the world is building after the first scroll: the readout pulses until it lands
-   (motion-ok only — reduce block above kills these with higher specificity + !important) */
-@media (prefers-reduced-motion: no-preference) {
-    .rt[data-phase='building'] .rt-req em {
-        animation: rt-blink 1s steps(2) infinite;
-    }
-    .rt[data-phase='building'] .rt-req::before {
-        animation: rt-blink 1s steps(2) infinite;
-    }
+/* the world is building after the first scroll: the readout pulses until it lands */
+.rt[data-phase='building'] .rt-req em {
+    animation: rt-blink 1s steps(2) infinite;
 }
 @keyframes rt-blink {
     50% {

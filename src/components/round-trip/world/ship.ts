@@ -3,7 +3,7 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import { clamp, smooth } from '@/components/round-trip/math';
-import { ADD, MOON, type Shared, shader } from '@/components/round-trip/world/gl';
+import { ADD, type Shared, shader } from '@/components/round-trip/world/gl';
 import type { Glow } from '@/components/round-trip/world/glow';
 
 export type ShipIn = {
@@ -57,13 +57,9 @@ function addRim(mat: THREE.MeshStandardMaterial, uRim: { value: THREE.Color }): 
             .replace(
                 '#include <emissivemap_fragment>',
                 `#include <emissivemap_fragment>
-                // Wider falloff than pow4 so graphite panels keep a readable edge against night
-                // and against the dawn limb when the key sits behind the craft.
-                float rim = pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 2.55);
-                totalEmissiveRadiance += uRim * rim * 1.45;`
+                totalEmissiveRadiance += uRim * pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 4.0);`
             );
     };
-    mat.needsUpdate = true;
 }
 
 const LEN = 3.2;
@@ -121,14 +117,9 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
     const strobes = [glow(0.28, new THREE.Color(3, 3, 3)), glow(0.28, new THREE.Color(3, 3, 3))];
     [nose, ...engines, ...strobes].forEach((g) => body.add(g));
 
-    // Cool moonlight bounce (MOON-aligned) + warm nose key; both warm toward dawn gold as `key` rises.
-    const fill = new THREE.PointLight('#c8d6ff', 0.95, 16, 2);
-    const key = new THREE.PointLight('#ffe2b8', 0.85, 9, 2);
-    scene.add(fill, key);
-    const fillMoon = new THREE.Color('#c8d6ff');
-    const fillDawn = new THREE.Color('#ffe0c4');
-    const keyWarm = new THREE.Color('#ffe2b8');
-    const keyDawn = new THREE.Color('#ffc48a');
+    // A little light of its own so it reads against the dark.
+    const fill = new THREE.PointLight('#ffe6c4', 1.4, 14, 2);
+    scene.add(fill);
 
     const uOn = { value: 0 };
     const uRim = { value: new THREE.Color(0, 0, 0) };
@@ -152,16 +143,14 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
             const k = LEN / hullBox.getSize(new THREE.Vector3()).z;
             model.scale.setScalar(k);
             model.position.copy(hullBox.getCenter(new THREE.Vector3())).multiplyScalar(-k);
-            // Graphite hull: darker base so normals and night HDRI speculars read; warm panels held
-            // back so emission does not flatten the free3d PBR maps.
+            // Premium grade: graphite hull, sharp night reflections, panels lit warm gold.
             const mat = (hull as THREE.Mesh).material as THREE.MeshStandardMaterial;
-            mat.envMapIntensity = 1.55;
-            mat.color.setRGB(0.32, 0.33, 0.36);
+            mat.envMapIntensity = 1.1;
+            mat.color.setRGB(0.46, 0.47, 0.5);
             mat.metalness = 1;
-            mat.roughness = Math.min(mat.roughness, 0.34);
-            mat.emissive.setRGB(1, 0.78, 0.48);
-            mat.emissiveIntensity = 0.72;
-            if (mat.aoMap) mat.aoMapIntensity = 1.2;
+            mat.roughness = Math.min(mat.roughness, 0.5);
+            mat.emissive.setRGB(1, 0.8, 0.5);
+            mat.emissiveIntensity = 1.3;
             addRim(mat, uRim);
             for (const f of flames) {
                 const box = new THREE.Box3().setFromBufferAttribute(
@@ -198,21 +187,18 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
     let kick = 0;
     let glint = -1;
     /** Engine thrust: idle hum, cruise, speed, steering, boost, the afterburner kick. */
-    const thrust = (f: ShipIn, now: number): number =>
+    const thrust = (f: ShipIn): number =>
         0.7 +
         f.speed * 0.9 +
         Math.hypot(f.lean, f.pitch) * 0.1 +
         f.boost * 0.8 -
         f.idle * 0.15 +
         kick +
-        // Time-based flicker (not Math.random): a soft beat that stays coherent under bloom.
-        Math.sin(now * 37.1) * 0.035 +
-        Math.sin(now * 61.3 + 1.7) * 0.025;
+        (Math.random() - 0.5) * 0.08;
     const update = (f: ShipIn): void => {
         const now = performance.now() / 1000;
         rig.position.copy(f.at);
-        // Idle hover reads at chase distance; cruise keeps a quieter bob.
-        rig.position.y += Math.sin(now * 1.55) * (0.11 + f.idle * 0.18);
+        rig.position.y += Math.sin(now * 1.4) * (0.08 + f.idle * 0.1);
         rig.lookAt(look.copy(rig.position).add(f.heading));
         turn += ((f.hero ? Math.PI : 0) - turn) * (1 - Math.exp(-f.dt * 2.5));
         rig.rotateY(turn);
@@ -221,36 +207,27 @@ export function addShip(scene: THREE.Scene, s: Shared, small: boolean, glow: Glo
         prev.copy(f.heading);
         // Steered, it banks into the move (positive roll drops the right wing; turned round to face
         // you, that flips) and lifts its nose into a climb.
-        const lean = clamp(-yaw * 48, -0.72, 0.72) + clamp(f.lean * 0.14, -0.55, 0.55) * Math.cos(turn);
-        bank += (lean - bank) * (1 - Math.exp(-f.dt * 3.4));
+        const lean = clamp(-yaw * 40, -0.6, 0.6) + clamp(f.lean * 0.12, -0.5, 0.5) * Math.cos(turn);
+        bank += (lean - bank) * (1 - Math.exp(-f.dt * 3));
         spin = Math.min(ROLL.wind + ROLL.len, spin + f.dt);
         const roll = bank + barrel(spin);
         body.rotation.set(
-            -Math.min(0.22, f.speed * 0.28) - f.pitch * 0.055,
+            -Math.min(0.2, f.speed * 0.25) - f.pitch * 0.05,
             0,
-            roll + Math.sin(now * 0.95) * (0.05 + f.idle * 0.03)
+            roll + Math.sin(now * 0.9) * 0.04
         );
         kick = Math.max(0, kick - f.dt * 1.5);
-        uThrust.value = thrust(f, now);
+        uThrust.value = thrust(f);
         if (glint >= 0) glint = glint + f.dt / GLINT.len;
         // Hard thrust flares the engines, so a ship burning away reads as a bright point from afar.
-        // Cap the speed swell so bloom does not mush the hull on boost; pulse with thrust.
-        const pulse = 1 + Math.max(0, uThrust.value - 0.85) * 0.22 * (0.55 + 0.45 * Math.sin(now * 18.0));
-        const swell = (1 + f.speed * f.speed * 0.6) * (1 + GLINT.gain * glintAt(glint)) * pulse;
-        engines.forEach((e) => e.scale.setScalar((0.52 + uThrust.value * 0.5) * swell));
+        const swell = (1 + f.speed * f.speed * 2.5) * (1 + GLINT.gain * glintAt(glint));
+        engines.forEach((e) => e.scale.setScalar((0.5 + uThrust.value * 0.45) * swell));
         uRim.value.lerp(f.rim, 1 - Math.exp(-f.dt * 4));
         nose.material.opacity = f.heat;
-        nose.scale.setScalar(2 + f.heat * 5 + Math.sin(now * 29.0) * 0.12);
+        nose.scale.setScalar(2 + f.heat * 5 + Math.random() * 0.4);
         strobes.forEach((g, i) => (g.material.opacity = (now + i * 0.7) % 1.4 < 0.07 ? 1 : 0));
-        // Fill rides the world moon so night hulls match the landscape; warm key ahead of the nose.
-        // At dawn both colours shift toward gold so the craft reads against the limb, not as a slab.
-        const dawn = clamp(f.key);
-        fill.position.copy(rig.position).addScaledVector(MOON, 5.2);
-        fill.color.copy(fillMoon).lerp(fillDawn, dawn);
-        fill.intensity = 0.92 + dawn * 4.6;
-        key.position.copy(rig.position).addScaledVector(f.heading, 2.55).y += 1.2;
-        key.color.copy(keyWarm).lerp(keyDawn, dawn);
-        key.intensity = 0.85 + f.heat * 0.4 + dawn * 7.0;
+        fill.position.copy(rig.position).add(look.set(0, 2.2, 0));
+        fill.intensity = 1.4 + f.key * 9;
         uOn.value += (f.beam - uOn.value) * (1 - Math.exp(-f.dt * 3));
         const h = rig.position.y - 0.6 - f.ground;
         if (f.beam > 0.01 && h > 0.5)

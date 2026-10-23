@@ -35,7 +35,7 @@ type Portal = {
     sign: Sign | null;
     /** A lighthouse in the project's colour, so the gate is something to aim at from far off. */
     beacon: THREE.Sprite;
-    horizon: { uOn: THREE.IUniform<number>; uFlash: THREE.IUniform<number>; uPunch: THREE.IUniform<number> };
+    horizon: { uOn: THREE.IUniform<number>; uFlash: THREE.IUniform<number> };
     colour: THREE.Color;
     near: number;
     passed: boolean;
@@ -43,11 +43,6 @@ type Portal = {
 
 export type Rings = {
     centers: THREE.Vector3[];
-    /**
-     * World-space centre of the open portal's window (the disc the ship flies through).
-     * Null when no landscape exit is on screen.
-     */
-    entry: THREE.Vector3 | null;
     /** 0–1: how hard the ship is rushing at the portal ahead (set by `update`). */
     rush: number;
     /** 0–1: how close the ship is to the portal on screen, before or after it. */
@@ -81,70 +76,21 @@ function innerRadius(model: THREE.Object3D): number {
 /**
  * The portal's event horizon: a window onto the next place, held by a swirl in the project's
  * colour that stays out at the rim. The view through it is looked up by direction (so it sits at
- * infinity, like a real window): that place's skyline matching the land kinds (Chocolate Hills
- * cones, Lençóis flats, Danxia bands, Roraima tepui, Erta Ale lava, or the flat sea), a bright
- * line of air along it, its sky darkening overhead, and stars. It forms as the ship comes close
- * and flashes as the ship crosses.
+ * infinity, like a real window): that place's skyline (rolling hills, dunes, mesas, peaks, a
+ * volcano's cone with its glowing crater, or the flat sea), a bright line of air along it, its sky
+ * darkening overhead, and stars. It forms as the ship comes close and flashes as the ship crosses.
  */
 const HORIZON_FRAG = /* glsl */ `
-    uniform vec3 uCol, uNext; uniform float uOn, uFlash, uKind, uPunch;
+    uniform vec3 uCol, uNext; uniform float uOn, uFlash, uKind;
     varying vec2 vUv; varying vec3 vW; varying float vD;
-    // One conical mound (Chocolate Hills): peak height h at cell centre, falloff by half-width w.
-    float coneSil(float az, float mid, float w, float h) {
-        float t = abs(az - mid) / max(w, 1e-3);
-        return h * pow(max(0.0, 1.0 - t), 1.55);
-    }
-    // Flat-top tepui block: sheer walls, level summit.
-    float tepuiSil(float az, float mid, float halfW, float h) {
-        float d = abs(az - mid);
-        return h * (1.0 - smoothstep(halfW - 0.018, halfW, d));
-    }
     // Height of the next place's skyline (radians above the horizon) at azimuth az.
     float skyline(float az) {
         float n = vnoise(vec2(az * 5.0, 1.7)), m = vnoise(vec2(az * 19.0, 4.1));
-        if (uKind < 0.5) {
-            // Chocolate Hills: many similar cones packed along the rim.
-            float h = 0.0;
-            for (int i = 0; i < 5; i++) {
-                float s = float(i);
-                float dens = 3.2 + s * 1.1;
-                float x = az * dens + s * 1.9;
-                float id = floor(x);
-                float f = fract(x) - 0.5;
-                float peak = 0.028 + 0.022 * hash(vec2(id, s + 0.4));
-                float w = 0.38 + 0.12 * hash(vec2(id, s + 2.7));
-                h = max(h, coneSil(f, 0.0, w, peak));
-            }
-            return 0.006 + h + 0.003 * m;
-        }
-        if (uKind < 1.5) {
-            // Lençóis Maranhenses: low dune crests over lagoon flats.
-            float crest = pow(max(0.0, 1.0 - abs(sin(az * 4.5 + n * 1.8))), 2.2) * 0.016;
-            float ripple = pow(max(0.0, 1.0 - abs(sin(az * 11.0 + 1.3))), 3.0) * 0.006;
-            return 0.003 + crest + ripple + 0.002 * m;
-        }
-        if (uKind < 2.5) {
-            // Zhangye Danxia: stepped banded cliffs — flat benches, sheer drops.
-            float field = vnoise(vec2(az * 3.5, 5.9));
-            float beds = floor(field * 5.0) / 5.0;
-            float face = smoothstep(0.32, 0.48, vnoise(vec2(az * 5.5, 2.1)));
-            float lip = smoothstep(0.55, 0.62, fract(field * 5.0)) * 0.012 * face;
-            return 0.008 + 0.095 * beds * face + lip + 0.004 * m;
-        }
-        if (uKind < 3.5) {
-            // Mount Roraima: sheer tepui walls under a flat summit (one hero, one far block).
-            float a = tepuiSil(az, 0.18, 0.32, 0.195);
-            float b = tepuiSil(az, -0.62, 0.16, 0.12);
-            float lip = 0.008 * m * step(0.08, max(a, b));
-            return 0.006 + max(a, b) + lip;
-        }
-        if (uKind < 4.5) {
-            // Erta Ale: broad shield with a crater notch on the summit.
-            float d = abs(az - 0.12);
-            float shield = 0.11 * clamp(1.0 - d * 1.7, 0.0, 1.0);
-            float crater = smoothstep(0.07, 0.025, abs(az - 0.12)) * 0.035;
-            return 0.01 + shield - crater + 0.006 * n;
-        }
+        if (uKind < 0.5) return 0.02 + 0.035 * n + 0.006 * m;
+        if (uKind < 1.5) return 0.012 + 0.04 * smoothstep(0.15, 0.95, vnoise(vec2(az * 3.0, 2.3)));
+        if (uKind < 2.5) return 0.015 + 0.075 * smoothstep(0.52, 0.56, vnoise(vec2(az * 7.0, 5.9))) + 0.004 * m;
+        if (uKind < 3.5) return 0.02 + 0.2 * pow(ridged(vec2(az * 2.4, 3.3)), 1.6);
+        if (uKind < 4.5) return 0.015 + 0.01 * n + 0.16 * clamp(1.0 - abs(az - 0.25) * 2.6, 0.0, 0.82);
         return 0.0;
     }
     vec3 beyond(vec3 d) {
@@ -158,36 +104,10 @@ const HORIZON_FRAG = /* glsl */ `
         vec2 id = floor(sp);
         float star = step(0.96, hash(id)) * smoothstep(0.3, 0.0, length(fract(sp) - 0.5));
         sky += vec3(0.9, 0.95, 1.0) * star * (0.5 + 1.4 * hash(id + 7.3)) * smoothstep(top + 0.02, top + 0.15, el);
-        // Ground silhouette per land kind (matches land.ts / creative places).
-        float shade = 0.6 + 0.4 * smoothstep(-0.3, 0.0, el);
-        vec3 ground;
-        if (uKind < 0.5) {
-            // Dark grass cones under moonlight.
-            ground = mix(hz * 0.14, vec3(0.035, 0.055, 0.028), 0.55) * shade;
-        } else if (uKind < 1.5) {
-            // Pale dune faces; darker lagoon flats in the lows.
-            float lagoon = smoothstep(-0.02, -0.08, el);
-            ground = mix(vec3(0.42, 0.36, 0.28) * 0.22, vec3(0.04, 0.07, 0.1) * 0.5, lagoon) * shade;
-            ground = mix(ground, hz * 0.2, 0.25);
-        } else if (uKind < 2.5) {
-            // Banded ochre / rust / pale strata reading even in silhouette.
-            float band = fract((el - top) * 55.0 + az * 2.0);
-            vec3 ochre = vec3(0.45, 0.22, 0.1), rust = vec3(0.32, 0.1, 0.05), pale = vec3(0.4, 0.3, 0.2);
-            ground = (band < 0.34 ? ochre : band < 0.67 ? rust : pale) * 0.28 * shade;
-            ground = mix(ground, hz * 0.18, 0.3);
-        } else if (uKind < 3.5) {
-            // Dark tepui rock, cooler on the sheer face.
-            ground = mix(hz * 0.1, vec3(0.04, 0.045, 0.055), 0.5) * shade;
-        } else if (uKind < 4.5) {
-            // Basalt shield; lava glows at the crater rim and low channels.
-            ground = mix(hz * 0.1, vec3(0.03, 0.025, 0.028), 0.45) * shade;
-            float lava = smoothstep(top - 0.035, top, el) * step(0.05, top);
-            lava = max(lava, smoothstep(-0.02, -0.12, el) * 0.35);
-            ground += vec3(1.7, 0.42, 0.06) * lava * (0.55 + 0.45 * hash(vec2(az * 8.0, 1.2)));
-        } else {
-            // Sea: dull sheen.
-            ground = hz * 0.3 * shade;
-        }
+        // Ground: a dark silhouette, the sea a dull sheen; lava glows in the crater and its flanks.
+        vec3 ground = hz * mix(0.12, 0.3, step(4.5, uKind)) * (0.6 + 0.4 * smoothstep(-0.3, 0.0, el));
+        float lava = step(3.5, uKind) * step(uKind, 4.5) * smoothstep(top - 0.03, top, el) * step(0.12, top);
+        ground += vec3(1.6, 0.45, 0.08) * lava;
         vec3 c = mix(ground, sky, smoothstep(-0.002, 0.002, el - top));
         // The line of air on the skyline, so the horizon reads at a glance.
         return c + hz * 1.4 * exp(-pow((el - top) / 0.01, 2.0));
@@ -204,14 +124,10 @@ const HORIZON_FRAG = /* glsl */ `
         float outer = smoothstep(0.55, 0.95, r);
         float rim = pow(smoothstep(0.8, 0.995, r), 3.0);
         float inside = 1.0 - smoothstep(0.985, 1.0, r);
+        vec3 col = uCol * ((arms * 0.3 + streaks * 0.4) * outer + rim * 1.1);
         // Premultiplied: the throat covers the scene behind with the place beyond; the swirl adds light.
-        // Rush punch: as the ship lines up, the throat brightens and the swirl tightens — not a RT.
-        float punch = clamp(uPunch, 0.0, 1.0);
-        float swirl = arms * (0.3 + punch * 0.22) + streaks * (0.4 + punch * 0.18);
-        vec3 col = uCol * (swirl * outer + rim * (1.1 + punch * 0.55));
-        float alpha = (0.92 + punch * 0.06) * uOn * inside * fade(vD);
-        vec3 glow = col * uOn * (1.0 + punch * 0.45)
-            + mix(uCol, vec3(1.0), 0.55) * uFlash * (1.0 - r * 0.55) * (1.0 + punch * 0.35);
+        float alpha = 0.92 * uOn * inside * fade(vD);
+        vec3 glow = col * uOn + mix(uCol, vec3(1.0), 0.5) * uFlash * (1.0 - r * 0.6);
         gl_FragColor = vec4(beyond(normalize(vW - cameraPosition)) * alpha + glow * inside * fade(vD), alpha);
     }
 `;
@@ -405,7 +321,7 @@ function buildPortal(scene: THREE.Object3D, s: Shared, route: Route, glowAt: Glo
     g.scale.setScalar(scale);
     scene.add(g);
     const strip = lightStrip(s, colour, k);
-    const horizon = { uOn: { value: 0 }, uFlash: { value: 0 }, uPunch: { value: 0 } };
+    const horizon = { uOn: { value: 0 }, uFlash: { value: 0 } };
     const disc = new THREE.Mesh(
         new THREE.CircleGeometry(INNER, 128),
         shader(
@@ -501,18 +417,11 @@ export function addRings(
         POOL.uPool.value.set(p.g.position.x, p.g.position.y, p.g.position.z, r * p.horizon.uOn.value);
         POOL.uPoolCol.value.copy(p.colour).multiplyScalar(0.6);
     };
-    const rings: Rings = {
-        centers: portals.map((p) => p.center),
-        entry: null,
-        rush: 0,
-        close: 0,
-        update: () => null,
-    };
+    const rings: Rings = { centers: portals.map((p) => p.center), rush: 0, close: 0, update: () => null };
     const update = (u: number, _t: number, dt: number, show: number): number | null => {
         let hit: number | null = null;
         rings.rush = 0;
         rings.close = 0;
-        rings.entry = show >= 0 && show < portals.length ? portals[show].center : null;
         POOL.uPool.value.w = 0;
         portals.forEach((p, k) => {
             p.g.visible = k === show;
@@ -525,16 +434,14 @@ export function addRings(
             p.beacon.visible = k === show && u < p.u;
             p.beacon.scale.setScalar(3 + d * 0.03);
             p.beacon.material.opacity = 0.85 * smooth(30, 120, d);
-            // Strip surges with the throat flash so the cross reads as one punch, not only the disc.
-            p.glow.copy(p.colour).multiplyScalar(0.35 + p.near * 0.8 + p.horizon.uFlash.value * 1.1);
-            if (p.sign) p.sign.uOn.value = 0.45 + 0.55 * p.near + p.horizon.uFlash.value * 0.35;
+            p.glow.copy(p.colour).multiplyScalar(0.35 + p.near * 0.8);
+            if (p.sign) p.sign.uOn.value = 0.45 + 0.55 * p.near;
             p.horizon.uOn.value = smooth(0.15, 0.85, p.near);
-            p.horizon.uPunch.value = k === show ? rings.rush : 0;
             if (k === show) pool(p);
             p.horizon.uFlash.value *= Math.exp(-dt * 3.5);
             if (!p.passed && u > p.u) {
                 p.passed = true;
-                p.horizon.uFlash.value = 0.72;
+                p.horizon.uFlash.value = 0.45;
                 hit = k;
             }
             if (u < p.u - 0.002) p.passed = false;

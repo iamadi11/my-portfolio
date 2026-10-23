@@ -8,18 +8,16 @@ const jsSeen = (): PerformanceResourceTiming[] =>
         r.name.split('?')[0].endsWith('.js')
     );
 
-/** Scripts present before the world import — page First Load. Anything after is world. */
-const pageJs = new Set<string>();
+/** The scripts that came in with the 3D world's chunk, so the 200 OK can count them apart. */
 const worldJs = new Set<string>();
 let worldChunk: Promise<typeof import('@/components/round-trip/world')> | null = null;
 
 /** three.js and the world live in a separate chunk: fetched on idle, built on the first scroll or Start. */
 const loadWorld = (): Promise<typeof import('@/components/round-trip/world')> => {
     if (worldChunk) return worldChunk;
+    const before = new Set(jsSeen().map((r) => r.name));
     worldChunk = import('@/components/round-trip/world').then((m) => {
-        jsSeen().forEach((r) => {
-            if (!pageJs.has(r.name)) worldJs.add(r.name);
-        });
+        jsSeen().forEach((r) => !before.has(r.name) && worldJs.add(r.name));
         return m;
     });
     worldChunk.catch(() => (worldChunk = null));
@@ -48,6 +46,7 @@ type Els = {
     dots: HTMLElement[];
     records: HTMLElement[];
     chips: HTMLElement[];
+    ringTags: HTMLElement[];
     recordTags: HTMLElement[];
     vitals: HTMLElement | null;
     huds: HTMLElement[];
@@ -70,6 +69,7 @@ function find(root: HTMLElement): Els {
         dots: all('[data-dot]'),
         records: all('[data-record]'),
         chips: all('[data-chip]'),
+        ringTags: all('[data-ring-tag]'),
         recordTags: all('[data-record-tag]'),
         vitals: root.querySelector('[data-vitals]'),
         huds: all('.rt-hud'),
@@ -124,13 +124,7 @@ function scrollState(
 /** What this visit actually measured: the 200 OK shows real numbers, not a story's. */
 function measured(lcp: number): string {
     const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
-    // Late world subchunks (city/land) often arrive after the first import resolves — keep them
-    // out of the page tally so the line matches First Load JS, not a world leak.
-    if (worldChunk) {
-        jsSeen().forEach((r) => {
-            if (!pageJs.has(r.name)) worldJs.add(r.name);
-        });
-    }
+    // The page's own scripts apart from the 3D world's chunk, which is fetched later, on idle.
     const kb = (world: boolean): number =>
         Math.round(
             jsSeen()
@@ -190,27 +184,19 @@ function handoff(el: HTMLElement, h3: HTMLElement, colour: string): void {
         h.classList.remove('rt-handing');
     });
     el.getAnimations().forEach((a) => a.cancel());
-    // Hold the ring-colour title readable through the flash, then settle into the panel heading.
-    const timing = { duration: 880 };
+    const timing = { duration: 760 };
     el.animate(
         [
-            { transform: big, opacity: 0, filter: 'blur(2px)' },
-            {
-                transform: big,
-                opacity: 1,
-                filter: 'none',
-                offset: 0.1,
-                easing: 'cubic-bezier(0.23, 1, 0.32, 1)',
-            },
-            { transform: big, opacity: 1, filter: 'none', offset: 0.38 },
-            { transform: 'none', opacity: 1, filter: 'none', offset: 0.86 },
-            { transform: 'none', opacity: 0, filter: 'none' },
+            { transform: big, opacity: 0 },
+            { transform: big, opacity: 1, offset: 0.12, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
+            { transform: 'none', opacity: 1, offset: 0.88 },
+            { transform: 'none', opacity: 0 },
         ],
         timing
     );
     // The real heading, hidden meanwhile, fades back in under the copy as it lands (same clock).
     h3.classList.add('rt-handing');
-    h3.animate([{ opacity: 0 }, { opacity: 0, offset: 0.84 }, { opacity: 1 }], timing).onfinish = () =>
+    h3.animate([{ opacity: 0 }, { opacity: 0, offset: 0.82 }, { opacity: 1 }], timing).onfinish = () =>
         h3.classList.remove('rt-handing');
 }
 
@@ -441,11 +427,6 @@ function hands(
 
 export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOptions): () => void {
     const els = find(root);
-    // Freeze First Load scripts before idle prefetch of the world chunk.
-    if (pageJs.size === 0) jsSeen().forEach((r) => pageJs.add(r.name));
-    // Send again: inert until the ship has left so tab order matches pointer-events / visibility.
-    const againBtn = root.querySelector<HTMLButtonElement>('[data-again]');
-    againBtn?.toggleAttribute('inert', true);
     const small = matchMedia('(max-width: 760px)').matches;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     // Haptics only once the visitor has touched the page (the browser refuses them before).
@@ -501,20 +482,11 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     resized.observe(root);
     // Web fonts change line wraps: measure again once they are in.
     void document.fonts?.ready.then(() => !dead && remeasure());
-    const fillIds = new WeakMap<HTMLElement, number>();
-    let fillSeq = 0;
-    const fills = new Map<string, string>();
+    const fills = new Map<HTMLElement, string>();
     const fill = (el: HTMLElement, prop: string, v: number): void => {
         const val = v.toFixed(2);
-        let id = fillIds.get(el);
-        if (id === undefined) {
-            id = fillSeq++;
-            fillIds.set(el, id);
-        }
-        // Key by element + prop so --flash / --rush / --p never collide on one node.
-        const k = `${id}:${prop}`;
-        if (fills.get(k) === val) return;
-        fills.set(k, val);
+        if (fills.get(el) === val) return;
+        fills.set(el, val);
         el.style.setProperty(prop, val);
     };
     let lcp = 0;
@@ -625,15 +597,14 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
     // The cut: the scene swaps, so the panel blinks out of focus and the hand feels it, on the same
     // beat; into a project's landscape, its title is handed from the flash to the panel.
     const cutBeat = (sec: number, zone: string | undefined): void => {
-        if (reduce) return;
         if (coarse) navigator.vibrate?.(20);
+        if (reduce) return;
         const h3 = zone === undefined ? null : els.projects[Number(zone)]?.querySelector<HTMLElement>('h3');
         if (sec === 3 && h3 && els.handoff) handoff(els.handoff, h3, o.rings[Number(zone)] ?? '#fff');
         const panel = els.secs[sec]?.querySelector('.rt-panel');
         panel?.classList.add('rt-cut');
         clearTimeout(cutTimer);
-        // Hold soft focus through the flash peak so the handoff title can land (~880 ms clock).
-        cutTimer = window.setTimeout(() => panel?.classList.remove('rt-cut'), 360);
+        cutTimer = window.setTimeout(() => panel?.classList.remove('rt-cut'), 120);
     };
 
     const draw = (s: ReturnType<typeof scrollState>, map: number, resp: number, top: number): void => {
@@ -647,22 +618,19 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         shownProject = s.sec === 3 ? (zone !== undefined ? Number(zone) : into) : null;
         // Set on the two HUD bars only: a variable on the root would restyle the whole page each frame.
         els.huds.forEach((el) => fill(el, '--flash', out.flash));
-        // Anticipation: soften the projects panel as the ship rushes a portal (HTML layer only).
-        const servicesPanel = els.secs[3]?.querySelector<HTMLElement>('.rt-panel');
-        if (servicesPanel) fill(servicesPanel, '--rush', reduce || s.sec !== 3 ? 0 : out.rush);
-        // Project titles live in the panel + handoff flash only (no duplicate ring tags).
+        els.ringTags.forEach((el, k) => place(el, out.rings[k], s.sec === 3 && map < 0.1, small, top));
         els.recordTags.forEach((el, k) => place(el, out.records[k], s.sec === 4 && map < 0.1, small, top));
         const sound = o.sound();
         const panOf = (m: Mark): number => (m ? (m.x / innerWidth - 0.5) * 2 : 0);
         if (out.passed !== null) {
             sound?.ping(out.passed, panOf(out.rings[out.passed]));
             // A small tick in the hand as the request flies through a project's ring.
-            if (coarse && !reduce) navigator.vibrate?.(12);
+            if (coarse) navigator.vibrate?.(12);
         }
         if (out.jumped) {
             // A wind-up in the hand as the jump begins (the ring's tick stands in when it is the
             // same frame); the thump is timed to land on the cut.
-            if (coarse && !reduce && out.passed === null) navigator.vibrate?.(6);
+            if (coarse && out.passed === null) navigator.vibrate?.(6);
             sound?.jump(out.lead);
         }
         if (out.cut) cutBeat(s.sec, zone);
@@ -695,16 +663,16 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         // Boosting into the end of the page stops there.
         if (s.y >= layout.tops[5] + layout.hs[5] - vh - 2) page.halt('boost');
         panels(s.q);
-        // Orbit early so 200 OK rides sunrise; leave late so the dawn limb holds before Send again.
-        const map = smooth(0, 0.48, s.q(5));
-        const resp = 1 - smooth(0.62, 0.97, s.q(5));
+        // The way out takes most of the last section: the climb, the cut at the halfway point of
+        // `map`, the rise into orbit; only then does the ship turn and leave.
+        const map = smooth(0, 0.8, s.q(5));
+        const resp = 1 - smooth(0.55, 0.96, s.q(5));
         const now = performance.now();
         if (s.y > 4 && !started) started = now;
-        // The ship has left: the clock stops, and Send again comes up (usable: visible + not inert).
+        // The ship has left: the clock stops, and Send again comes up.
         const left = resp < 0.02;
         ended = left ? ended || now : 0;
         root.classList.toggle('rt-left', left);
-        againBtn?.toggleAttribute('inert', !left);
         hud(s.sec, clockText(started ? (ended || now) - started : 0), s.hop(s.sec));
         draw(s, map, resp, top);
     };
