@@ -51,7 +51,54 @@ export type Shot = {
     boost: number;
     /** 0–1, eased: the visitor is still: the frame breathes, a slow sway and rise. */
     idle: number;
+    /** Where the ship is headed before the visitor steers it: the shot keeps this clear of the text. */
+    ship: THREE.Vector3;
+    /** 0–1: how firmly the shot keeps the ship in its place on screen (0 while it drops onto the city). */
+    hold: number;
 };
+
+/**
+ * Where the ship may sit on screen (normalised device coordinates, -1 to 1). Wide screens: right of
+ * the text panel on the left, at 63–71% of the width. Tall ones: in the top ~40%, above the panel.
+ * Inside the band it drifts freely; at its edges the camera turns to keep it in.
+ */
+const BAND = {
+    wide: { x: [0.26, 0.42], y: [-0.55, 0.6] },
+    tall: { x: [-0.3, 0.3], y: [0.22, 0.75] },
+};
+/**
+ * Wide screens shift the lens right (as a fraction of the half-width), so the whole picture, the
+ * path's vanishing point and the portal on it included, sits right of the text, not only the ship.
+ */
+const SHIFT = 0.2;
+const inv = new THREE.Quaternion();
+const rel = new THREE.Vector3();
+const clampTo = (x: number, [lo, hi]: number[]): number => Math.min(hi, Math.max(lo, x));
+
+/**
+ * Turns the camera (after it has looked down the path) just enough to bring the ship into its band.
+ * `tanV`/`tanH`: half the field of view, as tangents; `shift`: the lens shift in device units.
+ */
+function holdShip(
+    camera: THREE.PerspectiveCamera,
+    shot: Shot,
+    tanV: number,
+    tanH: number,
+    shift: number
+): void {
+    if (shot.hold <= 0) return;
+    rel.copy(shot.ship).sub(camera.position).applyQuaternion(inv.copy(camera.quaternion).invert());
+    if (rel.z > -1) return;
+    const band = camera.aspect < 1 ? BAND.tall : BAND.wide;
+    const ax = Math.atan2(rel.x, -rel.z);
+    const ay = Math.atan2(rel.y, -rel.z);
+    const nx = Math.tan(ax) / tanH + shift;
+    const ny = Math.tan(ay) / tanV;
+    const dx = Math.atan((clampTo(nx, band.x) - shift) * tanH) - ax;
+    const dy = Math.atan(clampTo(ny, band.y) * tanV) - ay;
+    camera.rotateY(clampTo(dx, [-0.5, 0.5]) * shot.hold);
+    camera.rotateX(-clampTo(dy, [-0.5, 0.5]) * shot.hold);
+}
 
 const softened: Framing = { ...CHASE };
 /** The framing `k` of the way from the chase towards `fr` (into a shared scratch object). */
@@ -119,6 +166,18 @@ export function createRig(
         }
         camera.up.set(0, 1, 0);
         camera.lookAt(look);
+        // The jump's punch outwards: enough to feel the boost, not so much that the frame warps.
+        fov +=
+            (base * fr.lens + (reduce ? 0 : speed * 16 + jump * 19 + shot.boost * 6) - fov) *
+            ease(dt, jump > 0.05 ? 14 : 5);
+        camera.fov = fov;
+        const tanV = Math.tan(THREE.MathUtils.degToRad(fov) / 2);
+        const tanH = tanV * camera.aspect;
+        const shift = camera.aspect >= 1 ? SHIFT : 0;
+        // The film offset is in mm on a 35 mm gate; negative moves the picture right.
+        camera.filmOffset = -shift * 35 * tanH;
+        camera.updateProjectionMatrix();
+        holdShip(camera, shot, tanV, tanH, shift);
         // Pitch for the dive onto Earth and the climb back out, eased so the cut never snaps it.
         tilt += (shot.tilt - tilt) * ease(dt, 4);
         camera.rotateX(-tilt);
@@ -132,13 +191,6 @@ export function createRig(
         const turn = t0.x * t1.z - t0.z * t1.x;
         roll += (clamp(-turn * 5, -0.32, 0.32) * (reduce ? 0 : 1) - roll) * ease(dt, 3);
         camera.rotateZ(roll);
-
-        // The jump's punch outwards: enough to feel the boost, not so much that the frame warps.
-        fov +=
-            (base * fr.lens + (reduce ? 0 : speed * 16 + jump * 19 + shot.boost * 6) - fov) *
-            ease(dt, jump > 0.05 ? 14 : 5);
-        camera.fov = fov;
-        camera.updateProjectionMatrix();
     };
     return { update };
 }
