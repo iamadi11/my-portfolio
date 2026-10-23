@@ -29,7 +29,10 @@ const FRAG =
         vec2 dx = dFdx(uv), dy = dFdy(uv);
         dx.x -= floor(dx.x + 0.5); dy.x -= floor(dy.x + 0.5);
         vec3 c = textureGrad(tStars, uv, dx, dy).rgb;
-        return c * c * 1.4;
+        c = c * c * 1.4;
+        // The map's dust lanes are a warm brown that fights the night palette: cooled, mostly grey.
+        float l = dot(c, vec3(0.3, 0.59, 0.11));
+        return mix(vec3(l), c, 0.3) * vec3(0.82, 0.92, 1.12);
     }
     void main() {
         vec3 d = normalize(vDir);
@@ -87,16 +90,19 @@ export type Sky = {
         uStars: THREE.IUniform<number>;
         uHorizon: THREE.IUniform<THREE.Color>;
     };
+    /** Turns the star map about the vertical (radians), so each place has its own sky. */
+    turn: (yaw: number) => void;
 };
 
 export function addSky(scene: THREE.Scene, s: Shared, small: boolean): Sky {
     const tStars = new THREE.TextureLoader().load(small ? '/env/stars-2k.jpg' : '/env/stars-4k.jpg');
     tStars.colorSpace = THREE.SRGBColorSpace;
     tStars.anisotropy = 4;
-    // Turn the sky so the bright core of the Milky Way rises ahead and to the left.
-    const turn = new THREE.Matrix3().setFromMatrix4(
-        new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(0.5, 2.3, 0.2))
-    );
+    // The sky's base orientation; each place turns it about the vertical from there.
+    const base = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(0.5, 2.3, 0.2));
+    const turn = new THREE.Matrix3().setFromMatrix4(base);
+    const spin = new THREE.Matrix4();
+    let yawNow = 0;
     const uniforms = {
         uTime: s.uTime,
         uMoon: { value: MOON },
@@ -132,5 +138,10 @@ export function addSky(scene: THREE.Scene, s: Shared, small: boolean): Sky {
     // The dome travels with the camera, so it is always at the horizon.
     mesh.onBeforeRender = (_r, _s, camera) => mesh.position.copy(camera.position);
     scene.add(mesh);
-    return { mesh, uniforms };
+    const turnTo = (yaw: number): void => {
+        if (yaw === yawNow) return;
+        yawNow = yaw;
+        turn.setFromMatrix4(spin.makeRotationY(yaw).premultiply(base));
+    };
+    return { mesh, uniforms, turn: turnTo };
 }

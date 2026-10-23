@@ -108,28 +108,44 @@ const AIR: Record<Place, Air> = {
     orbit: { fog: 0.03, horizon: [0, 0, 0], space: true },
 };
 /**
- * Each place's shot (see rig.ts); the rest keep the chase. The city keeps its drop through the
- * cloud deck (a lift, not a framing). The canyon is shot low and from the far side, the walls
- * towering over the ship; the volcano from a crane, looking down past it at the lava; the desert
- * through a long lens from far back, the dunes stacked flat; the pole wide and from the side, the
- * aurora filling the top of the frame.
+ * Each place's shot (see rig.ts). Wherever the camera stands, the rig keeps the ship right of the
+ * text on wide screens and above it on tall ones. Space is a three-quarter hero shot from the far
+ * side and a little above, the limb of the Earth curving under the ship; the city weaves low between
+ * the towers (and keeps its drop through the cloud deck, a lift); the canyon is shot low and from
+ * the far side, the walls towering over the ship; the volcano from a crane, looking down past it at
+ * the lava; the desert through a long lens from far back, the dunes stacked flat; the sea low over
+ * the water, looking out along the moon's path; the pole wide and from the side, the aurora filling
+ * the top of the frame. The rest keep the chase.
  */
 const FRAMING: Partial<Record<Place, Framing>> = {
+    space: { side: -3.4, up: 1.4, back: 9, ahead: 26, look: -2.5, aim: 1, lens: 1 },
+    city: { side: -1.4, up: -1.6, back: 9, ahead: 24, look: 2, aim: 0.5, lens: 1.06 },
     canyon: { side: -2.6, up: -4, back: 10, ahead: 30, look: 4, aim: 1.5, lens: 1.08 },
     volcano: { side: 1.5, up: 5.5, back: 14, ahead: 26, look: -3, aim: 0, lens: 0.95 },
     desert: { side: -0.6, up: -1, back: 24, ahead: 52, look: -0.5, aim: 0.5, lens: 0.7 },
     alpine: { side: 1.2, up: 2.5, back: 12, ahead: 30, look: -1, aim: 0, lens: 1 },
+    ocean: { side: -1.2, up: -10, back: 11, ahead: 34, look: -10, aim: 6, lens: 1.05 },
     ice: { side: -4.5, up: -0.3, back: 10, ahead: 28, look: 4, aim: 2, lens: 1.1 },
 };
+/** Over the open sea the ship comes down to skim the water (m below the path). */
+const SKIM = 10;
+/** In the city the camera weaves across the avenue as it flies (m either side, and how often). */
+const WEAVE = { side: 1.6, per: 0.018 };
+/**
+ * How each place's sky is turned (radians about the vertical), so the Milky Way does not hang in
+ * the same corner of every shot.
+ */
+const SKY_YAW: Partial<Record<Place, number>> = { space: 2.2, ice: -1.1, orbit: 3.4, ocean: 0.9 };
 const FRAME_KEYS = Object.keys(CHASE) as Array<keyof Framing>;
 /**
  * Eases the shot towards the place's framing: fast while a jump's flash or a dip's dark hides the
  * move (the place changes at their peak), slowly otherwise; reduced motion cuts straight to it.
  */
-function reframe(f: Framing, place: Place, hidden: number, dt: number, reduce: boolean): void {
+function reframe(f: Framing, place: Place, hidden: number, dt: number, reduce: boolean, along: number): void {
     const to = FRAMING[place] ?? CHASE;
     const k = reduce ? 1 : 1 - Math.exp(-dt * (hidden > 0.3 ? 9 : 1.2));
-    for (const key of FRAME_KEYS) f[key] += (to[key] - f[key]) * k;
+    const weave = place === 'city' && !reduce ? Math.sin(along * WEAVE.per) * WEAVE.side : 0;
+    for (const key of FRAME_KEYS) f[key] += (to[key] + (key === 'side' ? weave : 0) - f[key]) * k;
 }
 const isLand = (p: Place): p is LandKind => (LANDS as readonly string[]).includes(p);
 
@@ -463,7 +479,20 @@ export function createWorld(o: WorldOptions): World {
      * Earth once back in orbit.
      */
     const beat = { dive: 0, drop: 0, climb: 0, rise: 0, skim: 0, over: 0, leave: 0 };
-    const shot: Shot = { frame: { ...CHASE }, tilt: 0, lift: 0, shake: 0, boost: 0, idle: 0 };
+    const shot: Shot = {
+        frame: { ...CHASE },
+        tilt: 0,
+        lift: 0,
+        shake: 0,
+        boost: 0,
+        idle: 0,
+        ship: new THREE.Vector3(),
+        hold: 1,
+    };
+    /** Eased 0–1: over the open sea, where the ship comes down to skim the water. */
+    let low = 0;
+    /** The short bank the ship makes through a portal it does not roll through: seconds in, side. */
+    const bank = { c: -1, side: 1 };
     let kicked = false;
     const heading = new THREE.Vector3();
 
@@ -564,27 +593,27 @@ export function createWorld(o: WorldOptions): World {
             .copy(tangent)
             .setY(tangent.y - 0.9 * beat.dive - 0.55 * beat.drop + 0.9 * beat.climb + 0.4 * away)
             .normalize();
-        return shot.lift * 0.97 - beat.dive * 9 + beat.climb * 30 - away * 6;
+        return shot.lift * 0.97 - beat.dive * 9 + beat.climb * 30 - away * 6 - low * SKIM;
+    };
+
+    /** The short bank through a portal: over and back in under a second (a lean, in steer units). */
+    const banking = (dt: number): number => {
+        if (bank.c < 0) return 0;
+        bank.c += dt;
+        if (bank.c > 0.9) bank.c = -1;
+        return bank.c < 0 ? 0 : bank.side * 4.5 * Math.sin((Math.PI * bank.c) / 0.9);
     };
 
     /**
-     * The ship: beside the line of sight (right of centre on wide screens, above the bottom panel
-     * on tall ones). In the hero it waits a little further off, facing you; at the end it greets
-     * you, then turns and is gone towards the sunrise.
+     * Where the ship is headed, before the visitor steers it: beside the line of sight (right of
+     * centre on wide screens, above the bottom panel on tall ones). In the hero it waits a little
+     * further off, facing you. The camera frames this point.
      */
-    const flyShip = (
-        place: Place,
-        dt: number,
-        resp: number,
-        heat: number,
-        sun: THREE.Vector3 | null,
-        dawn: number
-    ): void => {
+    const aimShip = (place: Place, resp: number): { hero: number; leave: number } => {
         const orbit = place === 'orbit';
-        const air = AIR[place];
         const { n1 } = route.frame(clamp(u));
         if (camera.aspect >= 1) side.copy(n1).multiplyScalar(2.2).add(DOWN);
-        else side.set(0, air.space ? 3.6 : 4.6, 0);
+        else side.set(0, AIR[place].space ? 3.6 : 4.6, 0);
         route.curve.getTangentAt(clamp(u), tangent);
         const hero = 1 - smooth(route.seg[1] * 0.6, route.seg[1] * 1.6, u);
         const leave = orbit ? smooth(0.35, 1, 1 - resp) : 0;
@@ -594,7 +623,23 @@ export function createWorld(o: WorldOptions): World {
             .add(side)
             .addScaledVector(tangent, hero * 5 + lead);
         at.y += hero * 1.1 + leave * 6 + moves(orbit);
-        steerShip(n1, (1 - hero) * (1 - leave), dt);
+        shot.ship.copy(at);
+        return { hero, leave };
+    };
+
+    /** The ship itself, steered; at the end it greets you, then is gone towards the sunrise. */
+    const flyShip = (
+        place: Place,
+        dt: number,
+        aim: { hero: number; leave: number },
+        heat: number,
+        sun: THREE.Vector3 | null,
+        dawn: number
+    ): void => {
+        const orbit = place === 'orbit';
+        const air = AIR[place];
+        const { hero, leave } = aim;
+        steerShip(route.frame(clamp(u)).n1, (1 - hero) * (1 - leave), dt);
         depart(sun, leave, dawn);
         ship.update({
             at,
@@ -606,7 +651,7 @@ export function createWorld(o: WorldOptions): World {
             key: dawn,
             beam: air.space ? 0 : 1,
             ground: place === 'city' ? FLOOR : isLand(place) ? GROUND[place] : SEA,
-            lean: steer.vx,
+            lean: steer.vx + banking(dt),
             pitch: steer.vy,
             boost: feel.boost,
             idle: feel.idle,
@@ -646,12 +691,14 @@ export function createWorld(o: WorldOptions): World {
      * Rushing at a gate (a portal, the edge of the city, the edge of the ice) or burning through
      * the air: the frame widens and shudders; the barrel roll is the wind-up. Returns 0–1.
      */
-    const rushing = (shown: Place, heat: number, forward: boolean): number => {
-        // Only a portal is rushed; the quiet changes (city to land, sea to ice) are not.
+    const rushing = (zone: number, heat: number, forward: boolean): number => {
+        // Only a portal is rushed; the quiet changes (city to land, sea to ice) are not. The full
+        // roll is kept for the first portal, or for a visitor boosting through; the rest bank.
         const gate = rings.rush;
         if (gate > 0.5 && !rolled && forward && !o.reduce) {
             rolled = true;
-            ship.roll();
+            if (zone <= 0 || feel.boost > 0.5) ship.roll();
+            else Object.assign(bank, { c: 0, side: zone % 2 ? 1 : -1 });
         }
         if (gate < 0.2) rolled = false;
         return Math.max(gate, heat * 0.8, beat.climb > 0.45 ? (beat.climb - 0.45) * 1.6 : 0);
@@ -685,18 +732,26 @@ export function createWorld(o: WorldOptions): World {
         s.uScan.value = p.y;
         s.uTime.value = t;
         beats(shown, f.map, f.resp);
-        reframe(shot.frame, shown, Math.max(jump, dip), dt, o.reduce);
+        const hidden = Math.max(jump, dip);
+        reframe(shot.frame, shown, hidden, dt, o.reduce, u * route.len);
+        sky.turn(SKY_YAW[shown] ?? 0);
+        // Down to the water over the open sea: quickly under a jump or dip, gently otherwise.
+        const ease = o.reduce ? 1 : 1 - Math.exp(-dt * (hidden > 0.3 ? 9 : 0.8));
+        low += ((shown === 'ocean' ? 1 : 0) - low) * ease;
+        // Dropping onto the city from high above, the shot looks where it falls, not at the ship.
+        shot.hold = 1 - beat.drop;
         applyAir(AIR[shown], beat.drop * 0.6 + beat.climb * 0.85, beat.drop);
         s.uDrop.value = beat.drop;
         const { heat, sun, dawn } = showPlace(shown);
         const passed = rings.update(u, t, dt, zone);
-        const rush = rushing(shown, heat, u >= prev);
+        const rush = rushing(zone, heat, u >= prev);
         rushNow = rush;
         shot.shake = o.reduce ? 0 : rush * 0.004;
+        const aim = aimShip(shown, f.resp);
         rig.update(u, t, dt, Math.min(1, speed + rush * 0.6), jump, f.pointer, !AIR[shown].space, shot);
         landmarks.show(zone);
         rimOf(shown, zone, dawn);
-        flyShip(shown, dt, f.resp, heat, sun, dawn);
+        flyShip(shown, dt, aim, heat, sun, dawn);
         records.update(p, u);
         warp.update(
             Math.max(jump, !o.reduce && beat.climb > 0.45 ? (beat.climb - 0.45) * 1.4 : 0),

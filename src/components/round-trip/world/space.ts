@@ -36,19 +36,26 @@ const EARTH_FRAG = /* glsl */ `
         // hard glowing block. The big metros get a soft halo of light pollution from a blurred copy.
         float raw = texture2D(tLights, vUv).r;
         float halo = texture2D(tLights, vUv, 2.5).r;
-        float high = pow(raw, 1.6) * 7.0 + pow(halo, 1.3) * 2.0;
+        float high = pow(raw, 1.6) * 11.0 + pow(halo, 1.3) * 3.4;
         // Low down, the map's blocks are broken up into clusters of street grids and dark gaps.
         // (The map's texels are ~10 km: finer than a texel, so each one breaks into streets.)
         float streets = (0.15 + 1.4 * fbm(vUv * 9000.0)) * (0.25 + 0.75 * vnoise(vUv * 22000.0));
-        float lights = mix(high * (0.4 + fbm(vUv * 1400.0)), pow(raw * streets, 0.85) * 1.2, uNear);
-        // Low down the cloud map's texels would show as soft squares: fine noise breaks them up.
-        float cloud = smoothstep(0.12, 0.85, texture2D(tClouds, vUv + vec2(uTime * 0.0004, 0.0)).r
-            + (fbm(vUv * 1600.0 + uTime * 0.02) - 0.5) * 0.7 * uNear);
+        float lights = mix(high * (0.4 + fbm(vUv * 1400.0)), pow(raw * streets, 0.85) * 1.6, uNear);
+        // Cloud: soft from orbit; low down, billows with crisp tops (fine noise also breaks up the
+        // map's texels, which would show as soft squares).
+        vec2 cu = vUv + vec2(uTime * 0.0004, 0.0);
+        float billow = fbm(cu * 1600.0 + uTime * 0.02);
+        float dens = texture2D(tClouds, cu).r + (billow - 0.5) * 0.8 * uNear;
+        float cloud = smoothstep(mix(0.12, 0.4, uNear), mix(0.85, 0.52, uNear), dens);
+        // The tops catch the moon on the side facing it: relief from the billows, offset towards it.
+        float relief = clamp((billow - fbm(cu * 1600.0 + uTime * 0.02 + vec2(0.0012, 0.0008))) * 6.0 + 0.5, 0.0, 1.0);
         float moon = max(dot(n, uMoon), 0.0);
-        // Moonlit land and sea in blue-grey, as the night side looks from orbit, cities burning on it.
-        // City lights: brilliant from high orbit, held back on the way down so they do not bloom.
-        vec3 col = day * vec3(0.3, 0.38, 0.55) * (0.2 + 0.8 * moon) + vec3(1.0, 0.7, 0.36) * lights * (1.0 - cloud * 0.75);
-        col = mix(col, vec3(0.2, 0.23, 0.29) * (0.3 + 0.9 * moon), cloud * 0.8);
+        // The night side: land and sea barely there in blue-black, cities burning on it, coastlines
+        // traced in light. City lights: brilliant from orbit, held back on the way down so they do
+        // not bloom.
+        vec3 col = day * vec3(0.03, 0.04, 0.065) * (0.25 + 0.75 * moon) + vec3(1.0, 0.68, 0.34) * lights * (1.0 - cloud * 0.8);
+        vec3 cloudCol = mix(vec3(0.045, 0.052, 0.07), vec3(0.15, 0.18, 0.25) * (0.35 + 0.9 * relief), uNear) * (0.3 + 0.9 * moon);
+        col = mix(col, cloudCol, cloud * mix(0.75, 0.95, uNear));
         float sunLit = smoothstep(-0.04, 0.3, dot(n, uSun)) * uDay;
         float ocean = smoothstep(0.04, 0.18, day.b - max(day.r, day.g));
         vec3 H = normalize(uSun + V);
@@ -105,7 +112,8 @@ const STREAK_FRAG = /* glsl */ `
     void main() {
         float along = fract(vL.z * 0.5 + 0.5 - uTime * (1.2 + vR));
         vec3 c = mix(vec3(1.0, 0.38, 0.1), vec3(1.0, 0.85, 0.6), smoothstep(0.6, 1.0, vR));
-        float a = pow(along, 6.0) * (0.6 + vR);
+        // A short bright head with a tail behind it, gone before the next comes round.
+        float a = pow(along, 10.0) * smoothstep(1.0, 0.97, along) * (0.5 + vR);
         gl_FragColor = vec4(c * a * uHeat * 1.4, 1.0);
     }
 `;
@@ -308,8 +316,8 @@ function addStreaks(scene: THREE.Scene, route: Route, s: Shared, n: number, rand
             .addScaledVector(n1, Math.cos(a) * rad)
             .addScaledVector(n2, Math.sin(a) * rad);
         q.setFromUnitVectors(Z, t);
-        const w = 0.02 + rand() * 0.06;
-        mesh.setMatrixAt(i, m.compose(pos, q, size.set(w, w, 10 + rand() * 40)));
+        const w = 0.015 + rand() * 0.035;
+        mesh.setMatrixAt(i, m.compose(pos, q, size.set(w, w, 6 + rand() * 12)));
         r[i] = rand();
     }
     geo.setAttribute('aRand', new THREE.InstancedBufferAttribute(r, 1));
@@ -385,7 +393,7 @@ export function addSpace(
     scene.add(globe);
     globe.traverse((o) => (o.frustumCulled = false));
 
-    const uHeat = addStreaks(scene, route, s, Math.round(200 * density), rand);
+    const uHeat = addStreaks(scene, route, s, Math.round(80 * density), rand);
     // The sun about to clear the rim at the end: a hot white core, a wide gold glare.
     const SUN_SIZE = [34, 140];
     const sun = [glow(34, new THREE.Color(8, 7, 6)), glow(140, new THREE.Color(3, 2, 1.1), 0.5)];
