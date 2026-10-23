@@ -1329,3 +1329,9 @@ html:has(.rt) body {
         margin-top: 10px;
     }
 }
+
+/* the real place on the horizon: quieter than the portal signs and record tags */
+.rt-place-tag {
+    color: var(--soft);
+    font-size: 11px;
+}

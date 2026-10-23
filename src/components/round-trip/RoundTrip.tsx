@@ -468,6 +468,8 @@ export default function RoundTrip({ trip }: { trip: Trip }): React.JSX.Element {
 
             {/* The project title handed from the portal's flash to its panel (a copy; the h3 is the real one). */}
             <p className="rt-handoff" data-handoff aria-hidden="true" />
+            {/* the real place on the horizon of the landscape on screen (scenery, named by the world) */}
+            <div className="rt-tag rt-place-tag" data-place-tag aria-hidden="true" />
             {trip.records.map((r) => (
                 <div className="rt-tag" data-record-tag key={key(r)} aria-hidden="true">
                     {r.org} <small>· {r.period}</small>

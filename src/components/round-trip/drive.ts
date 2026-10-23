@@ -47,6 +47,7 @@ type Els = {
     records: HTMLElement[];
     chips: HTMLElement[];
     recordTags: HTMLElement[];
+    placeTag: HTMLElement | null;
     vitals: HTMLElement | null;
     huds: HTMLElement[];
     handoff: HTMLElement | null;
@@ -69,6 +70,7 @@ function find(root: HTMLElement): Els {
         records: all('[data-record]'),
         chips: all('[data-chip]'),
         recordTags: all('[data-record-tag]'),
+        placeTag: root.querySelector('[data-place-tag]'),
         vitals: root.querySelector('[data-vitals]'),
         huds: all('.rt-hud'),
         handoff: root.querySelector('[data-handoff]'),
@@ -624,6 +626,13 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         cutTimer = window.setTimeout(() => panel?.classList.remove('rt-cut'), 120);
     };
 
+    /** The real place on the horizon of the landscape on screen: its name, pinned beside it. */
+    const namePlace = (h: FrameOut['horizon'], onProjects: boolean, top: number): void => {
+        const tag = els.placeTag;
+        if (!tag) return;
+        if (tag.textContent !== h.name) tag.textContent = h.name;
+        place(tag, h.mark, onProjects && !!h.name, small, top);
+    };
     const draw = (s: ReturnType<typeof scrollState>, map: number, resp: number, top: number): void => {
         if (!world) return;
         const boost = clamp(page.speed('boost') / BOOST);
@@ -636,6 +645,7 @@ export function drive(root: HTMLElement, canvas: HTMLCanvasElement, o: DriveOpti
         // Set on the two HUD bars only: a variable on the root would restyle the whole page each frame.
         els.huds.forEach((el) => fill(el, '--flash', out.flash));
         els.recordTags.forEach((el, k) => place(el, out.records[k], s.sec === 4 && map < 0.1, small, top));
+        namePlace(out.horizon, s.sec === 3, top);
         const sound = o.sound();
         const panOf = (m: Mark): number => (m ? (m.x / innerWidth - 0.5) * 2 : 0);
         if (out.passed !== null) {

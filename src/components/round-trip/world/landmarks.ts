@@ -32,11 +32,11 @@ const PLACES: Record<LandKind, Place> = {
         id: 'chocolate_hills',
         name: 'Chocolate Hills, Bohol, Philippines',
         look: 0,
-        width: 1700,
+        width: 3060,
         lift: 4,
-        ahead: 1050,
-        sink: 30,
-        side: -80,
+        ahead: 1890,
+        sink: 15,
+        side: -144,
         turn: 0,
     },
     // Megadunes up to ~400 m with small lakes in the hollows between them.
@@ -44,11 +44,11 @@ const PLACES: Record<LandKind, Place> = {
         id: 'badain_jaran',
         name: 'Badain Jaran Desert, Inner Mongolia, China',
         look: 1,
-        width: 2200,
+        width: 3960,
         lift: 2.5,
-        ahead: 1250,
-        sink: 40,
-        side: 110,
+        ahead: 2250,
+        sink: 20,
+        side: 198,
         turn: 0,
     },
     // Folded sandstone ridges banded red, ochre, cream and grey-green.
@@ -56,11 +56,11 @@ const PLACES: Record<LandKind, Place> = {
         id: 'zhangye_danxia',
         name: 'Zhangye Danxia, Gansu, China',
         look: 2,
-        width: 2000,
+        width: 3600,
         lift: 1.5,
-        ahead: 1050,
-        sink: 60,
-        side: 170,
+        ahead: 1890,
+        sink: 30,
+        side: 306,
         turn: 0,
     },
     // Roraima and Kukenan, table mountains walled by cliffs some 400 m high, mist on their tops.
@@ -68,11 +68,11 @@ const PLACES: Record<LandKind, Place> = {
         id: 'roraima',
         name: 'Mount Roraima, Venezuela, Brazil and Guyana',
         look: 3,
-        width: 2600,
+        width: 4680,
         lift: 1.4,
-        ahead: 1300,
-        sink: 90,
-        side: 120,
+        ahead: 2340,
+        sink: 45,
+        side: 216,
         turn: 0,
     },
     // A steep cone with a lava lake in its summit crater.
@@ -80,11 +80,11 @@ const PLACES: Record<LandKind, Place> = {
         id: 'nyiragongo',
         name: 'Nyiragongo, DR Congo',
         look: 4,
-        width: 1600,
+        width: 2880,
         lift: 1.3,
-        ahead: 950,
-        sink: 30,
-        side: 160,
+        ahead: 1710,
+        sink: 15,
+        side: 288,
         turn: 0,
     },
 };
@@ -100,6 +100,8 @@ export type Landmarks = {
     show: (zone: number) => void;
     /** The real place on the horizon of each landscape, by zone (the portal it stands beyond). */
     names?: string[];
+    /** Where each place's name is pinned in the world (above its centre), by zone. */
+    points?: THREE.Vector3[];
     credit?: string;
 };
 
@@ -185,7 +187,8 @@ const FRAG = /* glsl */ `
             col = mix(col, vec3(0.16, 0.19, 0.24), smoothstep(2350.0, 2700.0, vH) * (0.4 + 0.5 * fb(vP * 0.0015 + uTime * 0.01)));
         }
         float hazeD = length(vW - cameraPosition);
-        float fogFactor = 1.0 - exp(-fogDensity * fogDensity * 0.02 * hazeD * hazeD - 0.3 * mist(vW, hazeD));
+        // Set 1.8x further and larger so they rise above the near ridges; the haze is eased to match.
+        float fogFactor = 1.0 - exp(-fogDensity * fogDensity * 0.0065 * hazeD * hazeD - 0.3 * mist(vW, hazeD));
         gl_FragColor = vec4(mix(col, haze((vW - cameraPosition) / hazeD), fogFactor), 1.0);
     }
 `;
@@ -325,6 +328,9 @@ export function addLandmarks(
     };
     return {
         names,
+        points: groups.map((g, k) =>
+            g.position.clone().add(new THREE.Vector3(0, PLACES[LANDS[k % LANDS.length]].width * 0.06, 0))
+        ),
         credit: PLACES_CREDIT,
         show: (zone) => {
             time.value = performance.now() / 1000;

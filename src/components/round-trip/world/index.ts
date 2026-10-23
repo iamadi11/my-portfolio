@@ -67,6 +67,8 @@ export type FrameOut = {
     cut: boolean;
     /** Seconds from the start of the jump that began this frame to its cut (0 when none began). */
     lead: number;
+    /** The real place on this landscape's horizon, and where its name sits on screen. */
+    horizon: { name: string; mark: Mark };
     /** The stop on screen: a place, plus which project's stretch for a landscape ("desert#1"). */
     place: string;
     /** Where the ship is on screen, for the sound of its engine. */
@@ -704,6 +706,11 @@ export function createWorld(o: WorldOptions): World {
         return Math.max(gate, heat * 0.8, beat.climb > 0.45 ? (beat.climb - 0.45) * 1.6 : 0);
     };
 
+    const horizonOf = (zone: number, onLand: boolean): FrameOut['horizon'] => {
+        const pin = onLand ? landmarks.points?.[zone] : undefined;
+        return { name: (onLand && landmarks.names?.[zone]) || '', mark: pin ? project(pin, 9000) : null };
+    };
+
     const frame = (f: FrameIn): FrameOut => {
         const now = performance.now();
         const dt = Math.min(0.05, (now - last) / 1000);
@@ -787,6 +794,7 @@ export function createWorld(o: WorldOptions): World {
                 k === zone ? project(v.copy(c).add(RING_TAG).clone(), 260) : null
             ),
             records: records.points.map((r) => (recordGroup.visible ? project(r, 240) : null)),
+            horizon: horizonOf(zone, isLand(shown)),
             passed,
             speed,
             jumped,
