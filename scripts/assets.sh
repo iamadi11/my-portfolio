@@ -37,12 +37,9 @@ cp "$A/story/hdri/modern_buildings_night_1k.hdr" public/env/night.hdr
 
 # Horizon landmarks on /: real places from AWS Terrain Tiles, built by scripts/places.py into
 # public/env/places/<id>-{hi,lo}.bin (the earlier Sketchfab terrain scans are no longer used).
-# "Osaka downtown" (matousekfoto, CC BY 4.0): a scanned night skyline standing beside the city
-# path. 790k triangles in the source, so it is simplified hard; one tile per city block.
-C=$A/sketchfab/city
-base="--compress meshopt --texture-compress webp --flatten true --join true --instance false --palette false"
-npx -y @gltf-transform/cli@4 optimize "$C/osaka_downtown.glb" public/models/osaka-hi.glb $base --texture-size 2048 --simplify-ratio 0.35
-npx -y @gltf-transform/cli@4 optimize "$C/osaka_downtown.glb" public/models/osaka-lo.glb $base --texture-size 1024 --simplify-ratio 0.15
+# The city: real La Paz, Bolivia (canyon bowl, El Alto rim, Illimani) from AWS Terrain Tiles and
+# Google Open Buildings v3 (CC BY 4.0), built by `python3 -I scripts/lapaz.py <workdir>` into
+# public/data/lapaz-{hi,lo}.bin (the earlier Osaka scan is no longer used).
 
 # NASA 3D Resources (github.com/nasa/NASA-3D-Resources @ 11ebb4ee043715aefbba6aeec8a61746fad67fa7),
 # "free and without copyright", credit NASA. Download into assets-src/nasa/:

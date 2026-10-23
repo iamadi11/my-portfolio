@@ -18,10 +18,7 @@ const key = (r: { org: string; role: string }): string => `${r.org}-${r.role}`;
 
 const CC_BY = 'https://creativecommons.org/licenses/by/4.0/';
 /** The CC BY models on /, as titled and credited on Sketchfab. */
-const CREDITS: Array<[string, string]> = [
-    ['Sci-Fi Portal Gateway', 'Igrium'],
-    ['Osaka downtown', 'matousekfoto'],
-];
+const CREDITS: Array<[string, string]> = [['Sci-Fi Portal Gateway', 'Igrium']];
 const sketchfab = (title: string, by: string): string =>
     `https://sketchfab.com/search?type=models&q=${encodeURIComponent(`${title} ${by}`)}`;
 /** Where the J/K switch is remembered for this viewer. */
@@ -324,7 +321,16 @@ function Contact({ trip }: { trip: Trip }): React.JSX.Element {
                     >
                         AWS Terrain Tiles (Mapzen/Tilezen)
                     </a>{' '}
-                    from SRTM (NASA), ETOPO1 (NOAA) and GMTED2010 (USGS), heights exaggerated.
+                    from SRTM (NASA), ETOPO1 (NOAA) and GMTED2010 (USGS), heights exaggerated. The city, La
+                    Paz: terrain from the same tiles; buildings from{' '}
+                    <a
+                        href="https://sites.research.google/open-buildings/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Google Open Buildings
+                    </a>{' '}
+                    (CC BY 4.0), heights stylised.
                 </p>
             </details>
         </>

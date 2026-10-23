@@ -7,7 +7,7 @@ Scrolling flies an alien ship down to Earth at night and across it. It comes in 
 1. **First paint (no 3D yet):** name, role, statement, availability and city in HTML over a CSS poster (stars over the curve of the night Earth), with **Start the trip** and **Email me**. The world's code is fetched on idle.
 2. **First scroll, wheel, swipe, scroll key or Send a request:** the world builds and fades in over the poster.
 3. **Hero and Wire (space):** the ship hovers over Earth at night, real stars and the Milky Way behind. Through `practice.impact` it closes in; then it noses down and dives at the moonlit globe, plasma building on the hull, the camera pitching down after it, until the cloud deck whites the screen out.
-4. **Edge (city):** out of the cloud high over an endless night city, sinking between the towers as the fog thins: lit rooms, LED billboards that scroll the skill groups and items from `practice.skills` (exact strings), street lamps, traffic and wet streets.
+4. **Edge (city): La Paz, Bolivia.** Out of the cloud high over the canyon bowl, the El Alto rim and the barrio-covered walls reading during the drop, then low down the main avenue (Av. Mariscal Santa Cruz into El Prado) between the towers, Illimani's snow on the horizon. Real ground and building footprints (each drawn as its minimum rectangle; the map at 2:5, relief at 0.55, heights stylised as there is no open height data). As the fog thins: lit rooms, LED billboards that scroll the skill groups and items from `practice.skills` (exact strings), street lamps, traffic and wet streets.
 5. **Services (one landscape per project):** grassland (wind in the grass, fireflies), desert dunes, red-rock canyon, alpine peaks in falling snow, a volcanic field with lava rivers and embers; then they repeat if there are more projects. Each landscape is a long stretch with one portal at its end, the only one in view: a sci-fi gateway standing on the ground, lined with the project's colour, an event horizon swirling inside it. Flying through it (with a barrel roll) is the jump to the next landscape. The panel shows that project.
 6. **Data:** experience then education, one record at a time; the first half over the open sea under the moon, the second over pack ice and icebergs under the aurora. Each record (every role, then education) is a light pillar beside the path, a column of light over a point of light, the way cold nights make them.
 7. **200 OK:** the ship pulls up off the ice, the air thins and the stars come back; a cut through the last of the air, and it climbs away from Earth into orbit at sunrise, the globe falling away below. The International Space Station (NASA model) crosses the dawn limb as a small backlit silhouette. The ship turns to greet you, then leaves towards the sun with a last glint of its engines. Under it, what this visit actually measured (first byte, largest paint, JavaScript transferred, from the browser's own timing; any it cannot measure are left out), then email, copy, phone and profile links, the credits, and **Send again** once the ship has gone (the frame fades to black and the trip starts over).
@@ -27,7 +27,7 @@ The route in the HUD fills between hops as the request travels; each project's d
 | `world/gl.ts` | Shared uniforms and GLSL: fog, noise, the path's sway, wrapping scenery around the camera, the beam's pool of light. |
 | `world/sky.ts` | Stars and Milky Way from the NASA star map, moon, horizon, aurora. |
 | `world/space.ts` | Earth (night lights, clouds, a sunlit crescent at the end), the air seen edge-on, the sun rising over the rim, re-entry plasma. |
-| `world/city.ts` | The endless city: towers, aviation lights, traffic, the wet street (mirrored on desktop). |
+| `world/city.ts` | The city, La Paz: real terrain and footprints (`data/lapaz-*.bin`), lit towers, obstruction lights, lamps on the canyon walls, traffic, the wet avenue, Illimani. |
 | `world/land.ts` | The landscapes: one GLSL terrain with five kinds, grass blades, fireflies, embers, snow. |
 | `world/sea.ts` | Open sea with a moon path; at the pole, pack ice and icebergs. |
 | `world/landmarks.ts` | One real, little-known place on the horizon of each landscape, beyond its exit portal: Chocolate Hills (Bohol, Philippines), Badain Jaran megadunes (Inner Mongolia), Zhangye Danxia (Gansu), Mount Roraima (Venezuela/Brazil/Guyana), Nyiragongo (DR Congo), from AWS Terrain Tiles; relief exaggerated so it reads at a kilometre. |
@@ -56,7 +56,7 @@ The route in the HUD fills between hops as the request travels; each project's d
 | `env/stars-*.jpg` | NASA/Goddard SVS Deep Star Maps 2020 | NASA/GSFC SVS; ESA/Gaia/DPAC |
 | `env/night.hdr` | Modern Buildings Night, Poly Haven | CC0 |
 | `env/places/*-{hi,lo}.bin` | AWS Terrain Tiles (Mapzen/Tilezen) from SRTM (NASA), ETOPO1 (NOAA), GMTED2010 (USGS); built by `scripts/places.py` | Open data with attribution (github.com/tilezen/joerd/blob/master/docs/attribution.md); heights exaggerated |
-| `models/osaka-*.glb` | Osaka downtown, matousekfoto, Sketchfab (night photogrammetry) | CC BY 4.0; the downtown left of the city path |
+| `data/lapaz-*.bin` | La Paz: AWS Terrain Tiles (SRTM, GMTED2010 courtesy of USGS; ETOPO1, NOAA) and Google Open Buildings v3 (cell 915f), built by `scripts/lapaz.py` | Terrain: open data with attribution; buildings: CC BY 4.0. 1.27 MB (0.51 MB phones) |
 | `env/moon.webp` | Moon photograph, NASA (nasa/NASA-3D-Resources @11ebb4e, `Images and Textures/Moon/Moon.jpg`) | NASA media, free and without copyright; credit NASA |
 | `models/iss.glb` | International Space Station (B), NASA (nasa/NASA-3D-Resources @11ebb4e) | NASA media, free and without copyright; credit NASA; the finale |
 
@@ -71,7 +71,7 @@ The route in the HUD fills between hops as the request travels; each project's d
 - First-load JS 113 kB (Next.js build report, measured 2026-10-22; gate: ≤ 120 kB). The world is fetched on idle and built on the first scroll; sound loads only when switched on.
 - Lighthouse on `/`: performance 98 mobile / 100 desktop; accessibility, best practices and SEO 100; CLS 0.001.
 - 60 fps headless in every place at 1280×800 and 390×844 (GPU on; phones get lighter grass, motes, terrain and textures).
-- Downloads after Start: ship 1.3 MB (phones 0.6 MB), star map 2.8 MB (0.6 MB), Earth 1.6 MB (0.45 MB), night HDRI 1.6 MB. Per place, as it comes on screen (each landmark is fetched when its landscape or the one before it is shown): downtown scan 5.4 MB (4.8 MB), real-place horizons 295 KB each (74 KB). On Save-Data or a 2g/3g connection neither the downtown scan nor the landmarks load.
+- Downloads after Start: ship 1.3 MB (phones 0.6 MB), star map 2.8 MB (0.6 MB), Earth 1.6 MB (0.45 MB), night HDRI 1.6 MB. Per place, as it comes on screen (each landmark is fetched when its landscape or the one before it is shown): La Paz 1.27 MB (0.51 MB; also on Save-Data), real-place horizons 295 KB each (74 KB). On Save-Data or a 2g/3g connection the city takes its light tier and the real-place horizons do not load.
 
 ## Accessibility
 
