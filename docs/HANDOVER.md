@@ -1,6 +1,6 @@
 # Handover prompt (paste into Cursor)
 
-> Last updated: 2026-10-23, round 3 merged (`06e613a`). `main` is the source of truth; this file is refreshed at the end of every round.
+> Last updated: 2026-10-23, round 3b merged (`2dec822`). `main` is the source of truth; this file is refreshed at the end of every round.
 >
 > **Note:** a Cursor pass (53 commits, `9b647b9..213e3b4`) was judged a visual regression by the owner and reverted in `bdf5bdb` (history kept). Do not rebuild on it. Work in small, reviewed steps and compare rendered frames before/after.
 
@@ -29,17 +29,15 @@ Scrolling flies an alien ship (three.js r184, `src/components/round-trip/world/*
 - Framing & world: ship framed right of the text panel on desktop; night Earth darker with city lights; alpine rock/snow by slope; cooler Milky Way; roll only at the first portal.
 - HTML layer: scrims that no longer hide the world (phone and desktop), a condensed display face with HUD-bracket controls, project titles shown once.
 
-## In flight when this was written (may or may not have landed — check `git log` and `git branch`)
+## Round 3b merged (2dec822)
 
-Worktree branches named `worktree-agent-*` (see `git worktree list`). Each owns specific files:
-- Ship polish (`world/ship.ts`): hull grade, running lights, plumes; cap engine glow swell (`1 + speed²×0.6`), time-based flicker instead of `Math.random`.
-- Portals & post (`services.ts`, `post.ts`, `warp.ts`): enter the next place through the portal window (expose e.g. `rings.entry`), streaks only for the two air passages, bigger black marquees with emissive letters, no fringe at rest, lighter vignette. Needs wiring in `index.ts`.
-- Framing & world (`index.ts`, `rig.ts`, `space.ts`, `land.ts`, `sky.ts`): ship at 62–70% width on desktop, framings for city/sea/space, roll only at the first portal, darker night Earth + city lights, alpine triplanar rock/snow, volcano detail, cooler Milky Way per place, crisper dive clouds.
-- HTML layer (`RoundTrip.tsx`, `round-trip.css`, `drive.ts`, `src/app/page.tsx`): phone scrim must not erase the world (stops ~`0.9 0 34%, 0.5 46%, 0 60%`), lighter desktop scrim, no duplicate project titles (drop ring tags), a distinctive display face and a world-tied reveal instead of the "template" look.
-- Real places (`landmarks.ts` + assets): DEM backdrops from AWS Terrain Tiles for Chocolate Hills (Bohol), Lençóis Maranhenses or Shibam, Zhangye Danxia, Mount Roraima, Erta Ale; expose `names` for world labels.
-- La Paz city (`city.ts` + assets): the city chapter as real La Paz (canyon bowl from AWS Terrain Tiles, footprints from Google Open Buildings v3, CC BY 4.0; heights stylised), Illimani behind.
+- Portals are entered through their window (the next place's sky opens past the frame and fades into the new place); streaks, zoom blur and camera punch only on the two air passages. Neon marquees with the exact project titles.
+- Real, little-known places on each landscape horizon from AWS Terrain Tiles (`scripts/places.py` → `public/env/places/`): Chocolate Hills, Badain Jaran, Zhangye Danxia, Mount Roraima, Nyiragongo; each named on its horizon by a quiet label.
+- The city is real La Paz (`scripts/lapaz.py` → `public/data/lapaz-*.bin`): canyon bowl, El Alto rim, Illimani; Google Open Buildings footprints (CC BY 4.0), heights stylised. The Osaka scan and Sketchfab terrain scans were removed from `public/` (kept in history).
 
-To finish an in-flight branch: `git merge main` into it, validate (below), merge into `main`, push. Then add the credit lines it reports to the Credits in `RoundTrip.tsx` and the asset table in `docs/round-trip.md`.
+## Next (round 4)
+
+Run the two harsh critics again (visuals/3D/motion; UX/a11y/licences), then fix. Known candidates: the La Paz drop reads grey and flat; the panel's dark text backing shows as a box over bright scenes; real places partly hidden behind near terrain in some landscapes.
 
 ## Validation (every change)
 
