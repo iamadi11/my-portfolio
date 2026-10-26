@@ -1,0 +1,202 @@
+/* Contact (sheet 6): the closing title-block strip. Rules draw with --e; text is always there. */
+
+.contact {
+    padding: 32px max(16px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px))
+        max(16px, env(safe-area-inset-left, 0px));
+}
+.contact-in {
+    max-width: 1440px;
+    margin: 0 auto;
+}
+.contact-sheet {
+    padding: 18px 16px 14px;
+}
+.contact-sheet .bp-sheet-foot {
+    flex-wrap: wrap;
+    margin-top: 18px;
+}
+
+/* ---------- the call to action: the email, large ---------- */
+
+.contact-cta {
+    margin-top: 28px;
+}
+.contact-lbl {
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+}
+.contact-mailbox {
+    position: relative;
+    width: min-content;
+    max-width: 100%;
+    margin-top: 8px;
+    padding-bottom: 40px;
+}
+.contact-mail {
+    display: block;
+    font-size: clamp(16px, 7.4vw, 34px);
+    line-height: 1.15;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    overflow-wrap: normal;
+    color: var(--ink);
+    text-decoration: none;
+}
+.contact-mail:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.12em;
+}
+.contact-dim {
+    position: absolute;
+    left: 0;
+    top: calc(100% - 28px);
+    width: 100%;
+    height: 1px;
+}
+
+/* ---------- the strip ---------- */
+
+.contact-strip {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 4px;
+    overflow: hidden;
+}
+.contact-strip-rule {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 0.8px;
+    background: var(--ink);
+    transform-origin: 0 50%;
+    transform: scaleX(var(--e));
+}
+.contact-cell {
+    position: relative;
+    min-width: 0;
+    padding: 12px 0 14px;
+}
+.contact-cell::before,
+.contact-cell::after {
+    content: '';
+    position: absolute;
+    background: var(--ink);
+    pointer-events: none;
+}
+.contact-cell::before {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 0.8px;
+    transform-origin: 0 50%;
+    transform: scaleX(var(--e));
+}
+.contact-cell::after {
+    top: 0;
+    bottom: 0;
+    right: -0.8px;
+    width: 0.8px;
+    transform-origin: 50% 0;
+    transform: scaleY(var(--e));
+}
+.contact-v {
+    margin-top: 6px;
+    font-size: 15px;
+    line-height: 22px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    overflow-wrap: break-word;
+    color: var(--ink);
+}
+.contact-v a {
+    display: inline-block;
+    min-height: 24px;
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-thickness: 0.8px;
+    text-underline-offset: 4px;
+}
+.contact-v a:hover {
+    text-decoration-thickness: 1.6px;
+}
+
+/* ---------- colophon ---------- */
+
+.contact-colophon {
+    display: grid;
+    gap: 6px;
+    margin-top: 20px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-3);
+    opacity: var(--e);
+}
+.contact-colophon a {
+    color: var(--ink-2);
+    text-decoration: underline;
+    text-decoration-thickness: 0.8px;
+    text-underline-offset: 3px;
+}
+.contact-colophon a:hover {
+    color: var(--ink);
+}
+
+@media (min-width: 640px) {
+    .contact-mailbox {
+        width: fit-content;
+    }
+    .contact-mail {
+        font-size: clamp(16px, 4.4vw, 60px);
+        white-space: nowrap;
+    }
+}
+
+@media (min-width: 768px) {
+    .contact {
+        padding-left: max(24px, env(safe-area-inset-left, 0px));
+        padding-right: max(24px, env(safe-area-inset-right, 0px));
+    }
+    .contact-sheet {
+        padding: 24px 28px 16px;
+    }
+    .contact-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .contact-cell {
+        padding: 12px 20px 14px;
+    }
+    .contact-cell:nth-child(2n) {
+        padding-left: 0;
+    }
+}
+
+@media (min-width: 1024px) {
+    .contact {
+        padding: 40px max(32px, env(safe-area-inset-right, 0px)) 32px
+            max(32px, env(safe-area-inset-left, 0px));
+    }
+    .contact-sheet {
+        padding: 28px 36px 18px;
+    }
+    .contact-strip {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .contact-cell,
+    .contact-cell:nth-child(2n) {
+        padding: 12px 20px 14px;
+    }
+    .contact-cell:nth-child(2) {
+        padding-left: 0;
+    }
+    .contact-colophon {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+    }
+}

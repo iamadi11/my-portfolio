@@ -1,3 +1,4 @@
+import { SHEETS, SHEET_COUNT } from '@/components/blueprint/sheets';
 import { SITE } from '@/content/site';
 import { getSiteOrigin } from '@/lib/site';
 
@@ -16,10 +17,12 @@ export function GET(): globalThis.Response {
 
 ## Main Pages
 
-- [Home](${origin}/): Round trip, a 3D walk-through of the stack and the work, with every fact also in plain HTML.
-- [About](${origin}/about): Work history and education.
-- [Tech Stack](${origin}/tech-stack): Skills and tools.
-- [Contact](${origin}/contact): Email, phone, GitHub and LinkedIn.
+\`/\` is a single page drawn as a set of ${SHEET_COUNT} sheets (${SHEETS.map((s) => s.title.toLowerCase()).join(', ')}); every fact is plain HTML.
+
+- [Home](${origin}/): The whole drawing set, starting at the title block.
+- [Revision history](${origin}/#revisions): Work history and education.
+- [Variables](${origin}/#variables): Skills and tools.
+- [Contact](${origin}/#contact): Email, phone, GitHub and LinkedIn.
 
 ## Experience
 

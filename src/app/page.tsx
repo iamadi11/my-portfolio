@@ -1,39 +1,32 @@
 import React from 'react';
 
-import type { Viewport } from 'next';
-import { Big_Shoulders } from 'next/font/google';
-
-import RoundTrip from '@/components/round-trip/RoundTrip';
-import { tripFrom } from '@/components/round-trip/trip';
-import { SITE } from '@/content/site';
+import Driver from '@/components/blueprint/Driver';
+import Assemblies from '@/components/blueprint/sections/Assemblies';
+import Contact from '@/components/blueprint/sections/Contact';
+import Nav from '@/components/blueprint/sections/Nav';
+import Results from '@/components/blueprint/sections/Results';
+import Revisions from '@/components/blueprint/sections/Revisions';
+import Title from '@/components/blueprint/sections/Title';
+import Variables from '@/components/blueprint/sections/Variables';
 
 /**
- * Display face for the name, headings, numbers and controls: Big Shoulders, a condensed grotesk drawn
- * from Chicago's civic signage, read at speed from a distance, which is how a HUD over a moving
- * world is read. One weight (700), Latin only. Body and the request line's mono come from the root
- * layout (Geist).
+ * `/` is a drawing set: six sheets drawn the way Apple's dimensional drawings are (via
+ * enesozturk/dimensional-drawing, MIT). Scrolling moves a pen across them. All copy comes from `SITE`
+ * (`src/content/site.ts`); spec in `docs/blueprint.md`.
  */
-const display = Big_Shoulders({
-    subsets: ['latin'],
-    weight: ['700'],
-    variable: '--font-rt-display',
-    display: 'swap',
-});
-
-/** Dark page: browser chrome follows it. Title, description and JSON-LD come from the root layout. */
-export const viewport: Viewport = {
-    width: 'device-width',
-    initialScale: 1,
-    themeColor: '#05070d',
-    colorScheme: 'dark',
-};
-
-const trip = tripFrom(SITE);
-
 export default function Page(): React.JSX.Element {
     return (
-        <div className={display.variable}>
-            <RoundTrip trip={trip} />
-        </div>
+        <>
+            <Nav />
+            <main id="main-content">
+                <Title />
+                <Results />
+                <Assemblies />
+                <Revisions />
+                <Variables />
+                <Contact />
+            </main>
+            <Driver />
+        </>
     );
 }

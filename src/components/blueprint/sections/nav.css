@@ -1,0 +1,146 @@
+/* Nav: the drawing-set index (fixed top, paper, 1px ink rule; pen progress line on the rule). */
+
+.nav {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 100;
+    height: calc(var(--nav-h) + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    background: var(--paper);
+    border-bottom: 1px solid var(--ink);
+}
+.nav-in {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+.nav-name {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--ink);
+    text-decoration: none;
+}
+.nav-list {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    color: var(--ink);
+    text-decoration: none;
+}
+.nav-n {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 0.9px solid var(--ink);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    transition:
+        background-color 0.15s ease-out,
+        color 0.15s ease-out;
+}
+.nav-link:hover .nav-n,
+.nav-link:focus-visible .nav-n {
+    background: var(--ink);
+    color: var(--paper);
+}
+.nav-t {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (min-width: 640px) {
+    .nav-in {
+        padding: 0 24px;
+    }
+    .nav-list {
+        gap: 6px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .nav-in {
+        padding: 0 40px;
+    }
+    .nav-list {
+        gap: 22px;
+    }
+    .nav-n {
+        width: 24px;
+        height: 24px;
+        font-size: 11px;
+    }
+    .nav-t {
+        position: static;
+        width: auto;
+        height: auto;
+        margin: 0;
+        overflow: visible;
+        clip: auto;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-2);
+    }
+    .nav-link:hover .nav-t {
+        color: var(--ink);
+    }
+}
+
+/* The pen: a 1.5px ink line that travels along the bottom rule with the page scroll. */
+.nav-pen {
+    display: none;
+}
+@supports (animation-timeline: scroll(root)) {
+    @media (prefers-reduced-motion: no-preference) {
+        .nav-pen {
+            display: block;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -1.5px;
+            height: 2px;
+            background: var(--ink);
+            transform-origin: 0 50%;
+            transform: scaleX(0);
+            animation: nav-pen linear both;
+            animation-timeline: scroll(root);
+        }
+    }
+}
+@keyframes nav-pen {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
+}

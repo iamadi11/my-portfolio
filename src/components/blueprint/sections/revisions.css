@@ -1,0 +1,396 @@
+/* Sheet 4 · Revision history. Lines rule in with scaleX/scaleY of --e (set by the driver); text fades. */
+
+.rev {
+    padding: 1.5rem 16px;
+}
+.rev-sheet {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 1.25rem 1rem 0.875rem;
+}
+.rev-sheet .bp-sheet-head {
+    margin-bottom: 1.5rem;
+}
+.rev-sheet .bp-sheet-foot {
+    margin-top: 2rem;
+}
+
+.rev-in {
+    opacity: var(--e);
+}
+
+/* ---------- chain ---------- */
+
+.rev-chainbox {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.rev-chain-wide {
+    display: none;
+}
+.rev-chain-tall {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    margin: 0 auto;
+}
+.rev-chainnote {
+    display: flex;
+    gap: 0.625rem;
+    max-width: 34rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--ink-2);
+}
+
+/* ---------- boxed numbers, labels ---------- */
+
+.rev-nb {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.125rem;
+    border: 0.9px solid var(--ink);
+    font-size: 0.75rem;
+    line-height: 1;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+}
+.rev-k {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+}
+
+/* ---------- rows (mobile first: stacked blocks) ---------- */
+
+.rev-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.rev-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+        'code period'
+        'desc desc'
+        'stack stack';
+    gap: 0.75rem 1rem;
+    padding: 1.25rem 0 1.5rem;
+}
+.rev-rule {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+    border-top: 0.9px solid var(--ink);
+    transform: scaleX(var(--e));
+    transform-origin: left;
+}
+.rev-div {
+    display: none;
+}
+.rev-code {
+    grid-area: code;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.rev-box {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.75rem;
+    height: 1.75rem;
+    padding: 0 0.25rem;
+    border: 1.2px solid var(--ink);
+    font-size: 0.9375rem;
+    letter-spacing: 0.04em;
+}
+.rev-current {
+    padding: 0.1875rem 0.375rem;
+    background: var(--fill-2);
+    border: 0.9px solid var(--ink);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+.rev-period {
+    grid-area: period;
+    align-self: center;
+    justify-self: end;
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+.rev-desc {
+    grid-area: desc;
+    min-width: 0;
+}
+.rev-role {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.35;
+    text-transform: uppercase;
+}
+.rev-org {
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+}
+.rev-notes {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+}
+.rev-note {
+    display: flex;
+    gap: 0.625rem;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--ink);
+    max-width: 44rem;
+}
+.rev-stack {
+    grid-area: stack;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 0.6px dashed var(--line-3);
+}
+.rev-stack ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.125rem 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--ink-2);
+}
+.rev-stack ul {
+    column-gap: 0.4em;
+}
+.rev-stack li:not(:last-child)::after {
+    content: ',';
+}
+.rev-head {
+    display: none;
+}
+
+.rev-refs {
+    margin-top: 2.5rem;
+}
+.rev-refs-h {
+    padding-bottom: 0.75rem;
+    font-size: 0.8125rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+/* ---------- tablet: chain beside its note, rows as two columns ---------- */
+
+@media (min-width: 600px) {
+    .rev {
+        padding: 2rem 24px;
+    }
+    .rev-sheet {
+        padding: 1.75rem 1.75rem 1rem;
+    }
+    .rev-chainbox {
+        flex-direction: row;
+        align-items: center;
+        gap: 2rem;
+    }
+    .rev-chain-tall {
+        flex: none;
+        width: 260px;
+        margin: 0;
+    }
+    .rev-row {
+        grid-template-columns: 9.5rem 1fr;
+        grid-template-areas:
+            'code desc'
+            'period desc'
+            'stack desc'
+            '. desc';
+        grid-template-rows: auto auto auto 1fr;
+        column-gap: 1.75rem;
+        row-gap: 0.625rem;
+    }
+    .rev-period {
+        justify-self: start;
+    }
+    .rev-stack {
+        display: block;
+        border-top: 0;
+        padding-top: 0.25rem;
+    }
+    .rev-stack ul {
+        display: block;
+        margin-top: 0.25rem;
+    }
+    .rev-stack li:not(:last-child)::after {
+        content: none;
+    }
+}
+
+/* ---------- desktop: a real revision block with ruled columns ---------- */
+
+@media (min-width: 960px) {
+    .rev {
+        padding: 2.5rem 32px;
+    }
+    .rev-sheet {
+        padding: 2rem 2.5rem 1.25rem;
+    }
+    .rev-chainbox {
+        display: block;
+    }
+    .rev-chain-tall {
+        display: none;
+    }
+    .rev-chain-wide {
+        display: block;
+        width: 100%;
+        max-width: 1200px;
+        height: auto;
+        margin: 0 auto;
+    }
+    .rev-chainnote {
+        margin: 1.25rem 0 0;
+    }
+    .rev-top {
+        padding-bottom: 0.5rem;
+    }
+    .rev-head,
+    .rev-row {
+        --c1: 6.25rem;
+        --c2: 11.5rem;
+        --c4: 15rem;
+        grid-template-columns: var(--c1) var(--c2) 1fr var(--c4);
+    }
+    .rev-head {
+        position: relative;
+        display: grid;
+        margin-top: 2.5rem;
+        padding: 0.625rem 0;
+        font-size: 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-2);
+    }
+    .rev-head > span:not(.rev-rule) {
+        padding-left: 1rem;
+    }
+    .rev-head > span:nth-child(2) {
+        padding-left: 0;
+    }
+    .rev-head .rev-rule {
+        border-top-width: 1.2px;
+    }
+    .rev-row {
+        grid-template-areas: 'code period desc stack';
+        grid-template-rows: auto;
+        gap: 0;
+        padding: 1.25rem 0 1.5rem;
+    }
+    .rev-row > * {
+        padding-left: 1rem;
+    }
+    .rev-row > .rev-code {
+        padding-left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        align-self: start;
+    }
+    .rev-code > .rev-k {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+    .rev-period {
+        align-self: start;
+        justify-self: start;
+        padding-top: 0.25rem;
+    }
+    .rev-desc {
+        padding-right: 1.5rem;
+    }
+    .rev-stack {
+        padding-top: 0.25rem;
+    }
+    .rev-stack-k {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+    .rev-stack ul {
+        margin-top: 0;
+    }
+    .rev-div {
+        display: block;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 0;
+        border-left: 0.6px solid var(--ink);
+        transform: scaleY(var(--e));
+        transform-origin: top;
+    }
+    .rev-div-1 {
+        left: var(--c1);
+    }
+    .rev-div-2 {
+        left: calc(var(--c1) + var(--c2));
+    }
+    .rev-div-3 {
+        right: var(--c4);
+    }
+    .rev-list > li:last-child .rev-row::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-bottom: 1.2px solid var(--ink);
+        transform: scaleX(var(--e, 1));
+    }
+    .rev-refs {
+        margin-top: 3rem;
+    }
+    .rev-refs .rev-row > .rev-code {
+        flex-direction: row;
+        align-items: center;
+    }
+    .rev-refs .rev-code > .rev-k {
+        position: static;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        clip-path: none;
+    }
+}

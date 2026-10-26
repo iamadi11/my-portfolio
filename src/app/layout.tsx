@@ -1,21 +1,18 @@
 import React, { JSX } from 'react';
 
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Arimo } from 'next/font/google';
 
 import { SITE } from '@/content/site';
-import { getSiteOrigin } from '@/lib/site';
+import { getSiteOrigin, siteDescription } from '@/lib/site';
 
 import './globals.css';
 
-const geistSans = Geist({
-    variable: '--font-geist-sans',
+/** Plain caps lettering of a technical drawing (Arimo, metric-compatible with Helvetica/Arial). */
+const arimo = Arimo({
+    variable: '--font-arimo',
     subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-    variable: '--font-geist-mono',
-    subsets: ['latin'],
+    weight: ['400', '700'],
 });
 
 /** Every skill the site lists (SITE.practice.skills), one entry each, as written there. */
@@ -38,8 +35,7 @@ const keywords = [
 const siteUrl = getSiteOrigin();
 
 /** Same resume-backed tagline as About + SOURCE_OF_TRUTH.md (search / OG / Twitter). */
-const defaultDescription =
-    'Senior Software Development Engineer at Amby Tech · Bengaluru. 5+ years building fast, scalable web products for fintech and e-commerce with React, Next.js, Node.js and TypeScript; performance and production systems focus.';
+const defaultDescription = siteDescription();
 
 /** GitHub profile image (https://github.com/iamadi11) — used for link previews without shipping a separate asset. */
 const openGraphImage = 'https://avatars.githubusercontent.com/u/34628188?v=4&s=512';
@@ -52,7 +48,7 @@ const googleSiteVerification =
  * Single @graph: linked Person / org / site / home WebPage (resume-backed).
  * Note: Google Rich Results Test lists only a subset of types (FAQ, JobPosting, etc.);
  * Person/WebSite are still valid for general understanding. Omit route-specific WebPage here so
- * inner URLs (/about, etc.) are not all labeled as the home URL in the same graph.
+ * other routes (the 404 page, /llms.txt, etc.) are not all labeled as the home URL in the same graph.
  */
 const structuredDataJsonLd = {
     '@context': 'https://schema.org',
@@ -96,12 +92,13 @@ const structuredDataJsonLd = {
     ],
 } as const;
 
-/** Mobile browser chrome + safe-area behavior; matches forced dark UI (`globals.css` / zinc-950). */
+/** White paper, single light theme by design (`globals.css`). */
 export const viewport: Viewport = {
     width: 'device-width',
     initialScale: 1,
-    themeColor: '#0c0b0a',
-    colorScheme: 'dark',
+    viewportFit: 'cover',
+    themeColor: '#ffffff',
+    colorScheme: 'light',
 };
 
 export const metadata: Metadata = {
@@ -132,9 +129,15 @@ export const metadata: Metadata = {
         description: defaultDescription,
     },
     icons: {
-        icon: [{ url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' }],
+        icon: [
+            { url: '/icon.svg', type: 'image/svg+xml' },
+            { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+            { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+        ],
         apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
     },
+    /** Installed on iOS: full-screen, white status bar over the white paper. */
+    appleWebApp: { capable: true, title: 'Aditya Raj', statusBarStyle: 'default' },
     robots: {
         index: true,
         follow: true,
@@ -150,8 +153,12 @@ export default function RootLayout({
     children: React.ReactNode;
 }>): JSX.Element {
     return (
-        <html lang="en-IN" className="motion-safe:scroll-smooth">
+        <html lang="en-IN" className="motion-safe:scroll-smooth" suppressHydrationWarning>
             <head>
+                {/* Before first paint: lets CSS hide what the driver will draw (see globals.css). */}
+                <script
+                    dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }}
+                />
                 <link rel="preconnect" href="https://opengraph.githubassets.com" crossOrigin="anonymous" />
                 <link
                     rel="alternate"
@@ -160,14 +167,13 @@ export default function RootLayout({
                     title="Plain-text site index for AI and tools (Aditya Raj)"
                 />
             </head>
-            <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+            <body className={`${arimo.variable} font-sans antialiased`}>
                 <a
                     href="#main-content"
-                    className="fixed left-4 top-0 z-[200] -translate-y-full rounded-b-md border border-t-0 border-white/10 bg-zinc-950 px-4 py-2.5 text-sm font-medium text-zinc-100 shadow-lg outline-none transition-transform duration-200 ease-out focus:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none"
+                    className="fixed left-4 top-0 z-[200] -translate-y-full border border-t-0 border-ink bg-paper px-4 py-2.5 text-sm uppercase tracking-[0.08em] text-ink outline-none transition-transform duration-200 ease-out focus:translate-y-0 motion-reduce:transition-none"
                 >
                     Skip to main content
                 </a>
-                <div className="app-backdrop" aria-hidden="true" />
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredDataJsonLd) }}

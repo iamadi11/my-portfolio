@@ -3,88 +3,106 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { SITE } from '@/content/site';
+
 export const metadata: Metadata = {
     title: {
-        absolute: 'Page not found · Aditya Raj',
+        absolute: `Sheet not found · ${SITE.profile.name}`,
     },
     description: 'This URL is not part of the portfolio. Use the links below to go home or get in touch.',
     robots: { index: false, follow: true },
 };
 
+const linkClass =
+    'inline-flex min-h-11 items-center whitespace-nowrap justify-center border-[1.2px] border-ink px-5 text-sm uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink hover:text-paper';
+
+/** A sheet with nothing on it: the dashed outline of a missing part, an X-box where it should be. */
+function MissingPart(): React.JSX.Element {
+    return (
+        <svg viewBox="0 0 320 140" className="block h-auto w-full" aria-hidden="true">
+            <defs>
+                <pattern
+                    id="nf-hatch"
+                    width="6"
+                    height="6"
+                    patternUnits="userSpaceOnUse"
+                    patternTransform="rotate(45)"
+                >
+                    <line x1="0" y1="0" x2="0" y2="6" stroke="var(--ink-3)" strokeWidth="0.8" />
+                </pattern>
+            </defs>
+            <rect x="40" y="24" width="240" height="92" rx="12" fill="url(#nf-hatch)" opacity="0.35" />
+            <rect
+                x="40"
+                y="24"
+                width="240"
+                height="92"
+                rx="12"
+                fill="var(--paper)"
+                fillOpacity="0.6"
+                stroke="var(--ink)"
+                strokeWidth="1.2"
+                strokeDasharray="6 4"
+            />
+            <g stroke="var(--ink-2)" strokeWidth="0.8" fill="none">
+                <rect x="120" y="46" width="80" height="48" />
+                <line x1="120" y1="46" x2="200" y2="94" />
+                <line x1="200" y1="46" x2="120" y2="94" />
+            </g>
+            <g stroke="var(--ink-3)" strokeWidth="0.6" strokeDasharray="10 3 2 3">
+                <line x1="20" y1="70" x2="300" y2="70" />
+                <line x1="160" y1="8" x2="160" y2="132" />
+            </g>
+            <circle
+                cx="280"
+                cy="24"
+                r="14"
+                fill="none"
+                stroke="var(--ink-2)"
+                strokeWidth="0.8"
+                strokeDasharray="3 3"
+            />
+        </svg>
+    );
+}
+
 export default function NotFound(): React.JSX.Element {
     return (
-        <div className="flex min-h-dvh flex-col items-center justify-center px-4 py-20 text-center">
-            <div className="max-w-md rounded-2xl border border-white/[0.08] bg-white/[0.03] px-8 py-10 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.75)] backdrop-blur-md">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400/90">404</p>
-                <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                    Page not found
-                </h1>
-                <p className="mt-4 text-sm leading-relaxed text-zinc-400">
-                    This URL does not match any page on the site.
-                </p>
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-                    <Link
-                        href="/"
-                        className="inline-flex items-center justify-center rounded-xl border border-cyan-400/35 bg-gradient-to-r from-cyan-500/15 to-sky-500/10 px-5 py-2.5 text-sm font-semibold text-cyan-100 transition-colors hover:border-cyan-300/50"
+        <main
+            id="main-content"
+            className="flex min-h-dvh items-center justify-center bg-paper px-4 py-16 text-ink"
+        >
+            <article className="w-full max-w-lg rounded-[16px] border-[1.2px] border-ink">
+                <header className="flex items-center justify-between gap-4 border-b-[1.2px] border-ink px-6 py-4">
+                    <h1 className="text-lg font-bold uppercase tracking-[0.14em]">Sheet not found</h1>
+                    <span
+                        className="border-[1.2px] border-ink px-2 py-0.5 text-sm font-bold tabular-nums tracking-[0.08em]"
+                        aria-label="Error 404"
                     >
-                        Back to home
-                    </Link>
-                    <Link
-                        href="/contact"
-                        className="border-white/12 inline-flex items-center justify-center rounded-xl border bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-zinc-200 transition-colors hover:border-white/20 hover:bg-white/[0.07]"
-                    >
-                        Contact
-                    </Link>
+                        404
+                    </span>
+                </header>
+                <div className="border-b border-rule p-6">
+                    <MissingPart />
                 </div>
-                <nav aria-label="Primary pages" className="mt-8 border-t border-white/[0.06] pt-6">
-                    <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm">
-                        <li>
-                            <Link href="/" className="text-zinc-400 transition-colors hover:text-white">
-                                Home
-                            </Link>
-                        </li>
-                        <li>
-                            <Link href="/about" className="text-zinc-400 transition-colors hover:text-white">
-                                About
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href="/tech-stack"
-                                className="text-zinc-400 transition-colors hover:text-white"
-                            >
-                                Tech
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href="/contact"
-                                className="text-zinc-400 transition-colors hover:text-white"
-                            >
-                                Contact
-                            </Link>
-                        </li>
-                    </ul>
-                </nav>
-                <nav
-                    aria-label="Site utilities"
-                    className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 border-t border-white/[0.06] pt-6 text-xs"
-                >
-                    <Link
-                        href="/sitemap.xml"
-                        className="text-zinc-500 underline-offset-4 transition-colors hover:text-zinc-300 hover:underline"
-                    >
-                        Sitemap
-                    </Link>
-                    <Link
-                        href="/llms.txt"
-                        title="Summary for AI and research crawlers"
-                        className="text-zinc-500 underline-offset-4 transition-colors hover:text-zinc-300 hover:underline"
-                    >
-                        llms.txt
-                    </Link>
-                </nav>
-            </div>
-        </div>
+                <div className="p-6">
+                    <p className="text-[15px] leading-relaxed text-ink-2">
+                        This URL is not a sheet in the set. Go back to the drawing set or get in touch.
+                    </p>
+                    <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                        <Link href="/" className={linkClass}>
+                            Back to home
+                        </Link>
+                        <Link href="/#contact" className={linkClass}>
+                            Contact
+                        </Link>
+                    </div>
+                </div>
+                <footer className="flex justify-between gap-4 border-t-[1.2px] border-ink px-6 py-3 text-xs uppercase tracking-[0.12em] text-ink-3">
+                    <span>{SITE.profile.name}</span>
+                    <span>Note 404</span>
+                </footer>
+            </article>
+        </main>
     );
 }

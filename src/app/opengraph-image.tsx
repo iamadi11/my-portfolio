@@ -2,194 +2,137 @@ import React from 'react';
 
 import { ImageResponse } from 'next/og';
 
-export const alt = 'Aditya Raj — Senior Software Development Engineer, Bengaluru';
+import { SHEET_COUNT } from '@/components/blueprint/sheets';
+import { SITE } from '@/content/site';
+
+const { profile } = SITE;
+
+export const alt = `${profile.name}, ${profile.role}, ${profile.location}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
+
+const INK = '#111111';
+const INK_2 = '#4a4a4a';
+const INK_3 = '#6b6b6b';
+const LINE = '1.2px solid #111111';
+
+/** One ruled cell of the title block: small caps label over its value. */
+function Cell({
+    label,
+    value,
+    grow = 1,
+    last = false,
+}: {
+    label: string;
+    value: string;
+    grow?: number;
+    last?: boolean;
+}): React.JSX.Element {
+    return (
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                flexGrow: grow,
+                flexBasis: 0,
+                padding: '18px 24px',
+                borderRight: last ? 'none' : LINE,
+            }}
+        >
+            <div style={{ fontSize: 15, letterSpacing: 3, color: INK_3, textTransform: 'uppercase' }}>
+                {label}
+            </div>
+            <div
+                style={{
+                    marginTop: 8,
+                    fontSize: 26,
+                    color: INK,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1.5,
+                }}
+            >
+                {value}
+            </div>
+        </div>
+    );
+}
 
 export default function OGImage(): ImageResponse {
     return new ImageResponse(
         (
             <div
                 style={{
-                    background: '#09090b',
                     width: '100%',
                     height: '100%',
                     display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontFamily: 'system-ui, -apple-system, sans-serif',
-                    position: 'relative',
-                    overflow: 'hidden',
+                    background: '#ffffff',
+                    padding: 40,
+                    fontFamily: 'sans-serif',
                 }}
             >
-                {/* Top gradient bar */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: 5,
-                        background: 'linear-gradient(90deg, #22d3ee 0%, #a78bfa 100%)',
-                    }}
-                />
-
-                {/* Ambient glow top-center */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: -160,
-                        left: 160,
-                        right: 160,
-                        height: 480,
-                        background:
-                            'radial-gradient(ellipse at 50% 50%, rgba(34,211,238,0.12) 0%, transparent 70%)',
-                    }}
-                />
-
-                {/* Content */}
                 <div
                     style={{
                         display: 'flex',
                         flexDirection: 'column',
-                        alignItems: 'center',
-                        textAlign: 'center',
-                        paddingLeft: 80,
-                        paddingRight: 80,
-                        gap: 0,
+                        flexGrow: 1,
+                        border: LINE,
+                        borderRadius: 16,
+                        overflow: 'hidden',
                     }}
                 >
-                    {/* Availability pill */}
-                    <div
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            background: 'rgba(16,185,129,0.1)',
-                            border: '1px solid rgba(16,185,129,0.22)',
-                            borderRadius: 40,
-                            padding: '8px 18px',
-                            marginBottom: 28,
-                        }}
-                    >
+                    <div style={{ display: 'flex', flexGrow: 1, borderBottom: LINE }}>
                         <div
                             style={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: 4,
-                                background: '#34d399',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'flex-end',
+                                flexGrow: 1,
+                                padding: '32px 36px',
+                                borderRight: LINE,
                             }}
-                        />
-                        <span style={{ color: '#6ee7b7', fontSize: 18, fontWeight: 500 }}>
-                            Available for opportunities
-                        </span>
-                    </div>
-
-                    {/* Name */}
-                    <div
-                        style={{
-                            fontSize: 92,
-                            fontWeight: 800,
-                            color: '#f4f4f5',
-                            letterSpacing: '-3px',
-                            lineHeight: 1,
-                            marginBottom: 18,
-                        }}
-                    >
-                        Aditya Raj
-                    </div>
-
-                    {/* Role */}
-                    <div
-                        style={{
-                            fontSize: 32,
-                            fontWeight: 600,
-                            color: '#22d3ee',
-                            letterSpacing: '-0.5px',
-                            marginBottom: 10,
-                        }}
-                    >
-                        Senior Software Development Engineer · Amby Tech
-                    </div>
-
-                    {/* Sub-line */}
-                    <div
-                        style={{
-                            fontSize: 22,
-                            color: '#71717a',
-                            marginBottom: 40,
-                        }}
-                    >
-                        Bengaluru · React · Next.js · TypeScript · 5+ yrs fintech
-                    </div>
-
-                    {/* Stats row */}
-                    <div style={{ display: 'flex', gap: 18 }}>
-                        {[
-                            { val: '5+', label: 'years exp' },
-                            { val: '80%', label: 'faster builds' },
-                            { val: '70→15%', label: 'SLA reduction' },
-                            { val: '~M/mo', label: 'txns processed' },
-                        ].map(({ val, label }) => (
+                        >
+                            <div style={{ fontSize: 16, letterSpacing: 4, color: INK_3 }}>TITLE BLOCK</div>
                             <div
-                                key={label}
                                 style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    background: 'rgba(255,255,255,0.04)',
-                                    border: '1px solid rgba(255,255,255,0.08)',
-                                    borderRadius: 14,
-                                    padding: '14px 22px',
-                                    minWidth: 115,
+                                    marginTop: 14,
+                                    fontSize: 92,
+                                    fontWeight: 700,
+                                    letterSpacing: 10,
+                                    color: INK,
+                                    textTransform: 'uppercase',
+                                    lineHeight: 1,
                                 }}
                             >
-                                <span
-                                    style={{
-                                        color: '#f4f4f5',
-                                        fontSize: 28,
-                                        fontWeight: 700,
-                                        lineHeight: 1,
-                                    }}
-                                >
-                                    {val}
-                                </span>
-                                <span
-                                    style={{
-                                        color: '#52525b',
-                                        fontSize: 13,
-                                        marginTop: 5,
-                                    }}
-                                >
-                                    {label}
-                                </span>
+                                {profile.name}
                             </div>
-                        ))}
+                        </div>
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                width: 220,
+                                padding: '28px 24px',
+                                fontSize: 16,
+                                letterSpacing: 3,
+                                color: INK_2,
+                            }}
+                        >
+                            <div style={{ display: 'flex' }}>DWG NO. AR-01</div>
+                            <div style={{ display: 'flex' }}>REV A</div>
+                            <div style={{ display: 'flex' }}>{`SHEET 1 OF ${SHEET_COUNT}`}</div>
+                        </div>
                     </div>
-                </div>
-
-                {/* Bottom domain hint */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        bottom: 30,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        color: '#3f3f46',
-                        fontSize: 16,
-                    }}
-                >
-                    <div
-                        style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: 3,
-                            background: 'rgba(34,211,238,0.4)',
-                        }}
-                    />
-                    github.com/iamadi11
+                    <div style={{ display: 'flex', borderBottom: LINE }}>
+                        <Cell label="Role" value={profile.role} grow={2.6} />
+                        <Cell label="Location" value={profile.location} last={!profile.status} />
+                        {profile.status ? <Cell label="Status" value={profile.status} last /> : null}
+                    </div>
+                    <div style={{ display: 'flex', padding: '22px 24px' }}>
+                        <div style={{ fontSize: 22, lineHeight: 1.45, color: INK_2 }}>
+                            {profile.statement}
+                        </div>
+                    </div>
                 </div>
             </div>
         ),

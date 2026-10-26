@@ -33,11 +33,14 @@
 
 ## Required sections (this repo)
 
-- Home: identity, primary CTA to contact / GitHub
-- About: summary aligned to resume, work history, education
-- Tech: skills that are resume-backed and/or GitHub-evidenced
-- Projects: **only** repos or work with a real GitHub URL (or resume-cited deliverable)
-- Contact: resume email, phone, LinkedIn, GitHub
+`/` is one page, a drawing set of six sheets (see `docs/blueprint.md`):
+
+1. Title block: identity, statement, primary CTA to email / GitHub / LinkedIn
+2. Measured results: `practice.impact`
+3. Assemblies: projects, **only** repos or work with a real GitHub URL (or resume-cited deliverable)
+4. Revision history: work history (resume-aligned) and education
+5. Variables: skills that are resume-backed and/or GitHub-evidenced
+6. Contact: resume email, phone, LinkedIn, GitHub
 
 ---
 
@@ -70,45 +73,39 @@
 my-portfolio/
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx              # Home (/): Round trip, the 3D scroll story (see docs/round-trip.md)
-│   │   ├── about/page.tsx        # About: Description + WorkExperience + Education
-│   │   ├── tech-stack/page.tsx   # Tech: TechStackCard
-│   │   ├── contact/page.tsx      # Contact: email, phone, LinkedIn, GitHub
-│   │   ├── layout.tsx            # Root layout: metadata, JSON-LD, fonts (Geist)
-│   │   ├── opengraph-image.tsx, manifest.ts, robots.ts, sitemap.ts, llms.txt/route.ts
-│   │   └── error.tsx, not-found.tsx, template.tsx, globals.css
+│   │   ├── page.tsx              # / : the drawing set (see docs/blueprint.md)
+│   │   ├── layout.tsx            # Root layout: metadata, JSON-LD, Arimo font, `.js` flag
+│   │   ├── manifest.ts           # PWA manifest
+│   │   ├── opengraph-image.tsx, robots.ts, sitemap.ts, llms.txt/route.ts
+│   │   └── error.tsx, not-found.tsx, globals.css (tokens + drawing classes)
 │   ├── content/
 │   │   ├── site.ts               # SITE: every fact on the site (canonical)
 │   │   └── types.ts              # SiteContent types + SAMPLE
-│   ├── components/
-│   │   ├── round-trip/           # / : RoundTrip.tsx, trip.ts, drive.ts, sound, tilt, CSS, world/* (three.js)
-│   │   ├── Description/, Education/, WorkExperience/, TechStackCard/   # /about, /tech-stack
-│   │   ├── Header/, Layout/, SiteChrome.tsx, SocialLinks/               # chrome for the inner pages
-│   │   └── PrimeEasterEgg/, PrimeUniverse/                              # easter egg
-│   ├── hooks/, lib/, types/
-├── public/                       # models/, env/ (rebuilt by scripts/assets.sh), icons
-├── docs/round-trip.md            # Spec, assets and licences for /
+│   ├── components/blueprint/     # pen.tsx, scene.tsx, drive.ts, Driver.tsx, sheets.ts, sections/*
+│   └── lib/                      # site origin helpers
+├── public/                       # icons, sw.js (offline)
+├── docs/blueprint.md             # Spec for /
 ├── SOURCE_OF_TRUTH.md            # This file
 └── CLAUDE.md                     # AI rules
 ```
 
 ## Portfolio project tech stack
 
-| Layer      | Technology                                                            |
-| ---------- | --------------------------------------------------------------------- |
-| Framework  | Next.js 15 (App Router)                                               |
-| UI library | React 19                                                              |
-| Language   | TypeScript 5 (strict)                                                 |
-| Styling    | Tailwind CSS 3 (inner pages); plain CSS for / (`round-trip.css`)      |
-| 3D         | three.js (/ only; fetched on idle, built on Start or scroll)          |
-| Type       | Instrument Serif (display on /), Geist Sans + Mono                    |
-| Animation  | CSS transitions + three.js on /; Motion (motion/react) on inner pages |
-| Icons      | react-icons 5                                                         |
-| Utility    | clsx                                                                  |
-| Linting    | ESLint 9 + eslint-config-next + eslint-plugin-prettier                |
-| Formatting | Prettier 3 with prettier-plugin-tailwindcss                           |
-| Git hooks  | commitlint + commitizen + husky + lint-staged                         |
-| Deployment | Vercel                                                                |
+| Layer      | Technology                                                      |
+| ---------- | --------------------------------------------------------------- |
+| Framework  | Next.js 15 (App Router)                                         |
+| UI library | React 19                                                        |
+| Language   | TypeScript 5 (strict)                                           |
+| Styling    | Tailwind CSS 3 + one plain CSS file per sheet                   |
+| Drawing    | Server-rendered SVG (`blueprint/pen.tsx`)                       |
+| Type       | Arimo (caps lettering)                                          |
+| Animation  | `blueprint/drive.ts`: scroll → scene time, no animation library |
+| PWA        | `manifest.ts` + `public/sw.js`                                  |
+| Utility    | clsx                                                            |
+| Linting    | ESLint 9 + eslint-config-next + eslint-plugin-prettier          |
+| Formatting | Prettier 3 with prettier-plugin-tailwindcss                     |
+| Git hooks  | commitlint + commitizen + husky + lint-staged                   |
+| Deployment | Vercel                                                          |
 
 ---
 
@@ -177,7 +174,7 @@ Role-level bullets now come from the LinkedIn export (`Profile.pdf`, 2026-10-17)
 
 ## Home (/)
 
-`/` is Round trip, a 3D world built in code (see `docs/round-trip.md`); `/v2` redirects to it: an alien ship flies from orbit into a night city, through one landscape per project (each ending in a portal in the project's colour), over the sea to the pole (one light pillar per record), and back to orbit at sunrise for `200 OK`. Content rules above apply unchanged: every fact on `/` comes from `src/content/site.ts`. Role highlights, tech and locations on `/` are the resume bullets also used on `/about`; the Tata 1mg roles are shown as one record (SDE I → II, Dec 2021 – Jul 2024) because the bullets cover the whole tenure.
+`/` is a drawing set (see `docs/blueprint.md`); `/about`, `/tech-stack`, `/contact` and `/v2` redirect to its sheets. Content rules above apply unchanged: every fact on `/` comes from `src/content/site.ts`, and drawing labels only restate it (each project's layers cite the phrase of its summary they come from).
 
 ---
 

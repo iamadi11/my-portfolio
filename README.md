@@ -18,15 +18,17 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to load Arimo, the caps lettering of the drawings.
 
 ## Make it yours
 
-The home page (Round trip) is driven by one file, so it works for any engineer (SDE-2, SDE-3, tech lead):
+The home page (a drawing set: six monochrome sheets that draw themselves as you scroll) is driven by one file, so it works for any engineer (SDE-2, SDE-3, tech lead):
 
-1. Edit `src/content/site.ts`: profile, impact numbers, projects (pick a `hue` for each ring), skills, experience (highlights, tech, location), education. Leave out what you can't back up; empty sections disappear.
+1. Edit `src/content/site.ts`: profile, impact numbers, projects, skills, experience (highlights, tech, location), education. Leave out what you can't back up; empty sections disappear.
 2. `src/content/types.ts` → `SAMPLE` shows every field with placeholder copy.
-3. How the page works and how to tune the 3D: `docs/round-trip.md`.
+3. How the page works, the drawing kit and how to tune the motion: `docs/blueprint.md`.
+
+The drawing style follows Apple's dimensional drawings via [enesozturk/dimensional-drawing](https://github.com/enesozturk/dimensional-drawing) (MIT).
 
 ## Learn More
 

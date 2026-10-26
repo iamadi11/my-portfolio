@@ -1,0 +1,211 @@
+/* Sheet 2 · Measured results. A pinned stage: the list of results beside (or under) a drawing the camera moves over. */
+
+.rs-stage {
+    display: flex;
+    padding: calc(var(--nav-h) + 8px) 16px 12px;
+}
+.rs-sheet {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0.875rem 0.875rem 0.625rem;
+}
+.rs-sheet .bp-sheet-head {
+    margin-bottom: 0.5rem;
+}
+.rs-sheet .bp-sheet-foot {
+    margin-top: 0.5rem;
+}
+
+/* Small screens: the drawing on top (one study at a time), the list under it. */
+.rs-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.5rem;
+    min-height: 0;
+}
+/* The box keeps the sheet's proportions so the camera frames exactly one study (no neighbours in a letterbox). */
+.rs-draw {
+    order: -1;
+    position: relative;
+    flex: none;
+    width: 100%;
+    aspect-ratio: var(--ar);
+    max-height: 46svh;
+    margin: 0 auto;
+}
+.rs-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.rs-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.rs-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 0.5rem;
+    align-content: start;
+    padding-bottom: 0.5rem;
+}
+.rs-nb {
+    grid-row: 1;
+    display: inline-grid;
+    place-items: center;
+    align-self: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 0.9px solid var(--ink);
+    font-size: 0.6875rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+.rs-value {
+    grid-row: 1;
+    font-size: 1.375rem;
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+.rs-label {
+    grid-column: 1 / -1;
+    margin-top: 0.25rem;
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    color: var(--ink);
+}
+.rs-org {
+    grid-column: 1 / -1;
+    margin-top: 0.125rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+}
+/* The pen rules a line under each result while its study is measured. */
+.rs-rule {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 0;
+    border-top: 0.8px solid var(--ink);
+    transform: scaleX(var(--e));
+    transform-origin: 0 0;
+}
+
+/* Drawing: larger lettering than the default sheet so it reads when the camera is close on a phone. */
+.rs-svg .dt {
+    font-size: 14px;
+}
+.rs-svg .dts {
+    font-size: 12px;
+}
+.rs-svg .vt {
+    font-size: 14px;
+}
+.rs-svg .rs-num {
+    font-variant-numeric: tabular-nums;
+}
+.rs-svg .rs-saw {
+    stroke-width: 1.6px;
+}
+/* Morph groups here only scale along x: horizontal strokes keep their weight in y, so widths are set without --u. */
+.rs-svg .rs-edge {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.2px;
+}
+.rs-svg .rs-fill {
+    fill: var(--fill-2);
+    stroke: none;
+}
+.rs-svg .bp-morph .dl,
+.rs-svg .bp-morph .thin {
+    stroke-width: 0.7px;
+}
+.rs-svg .bp-morph .ext {
+    stroke-width: 0.55px;
+}
+.rs-svg .bp-morph .rs-saw {
+    stroke-width: 1.6px;
+}
+/* The bar draws itself before it moves: its group is visible from the start (its stroke is what is timed). */
+.rs-svg .bp-morph:has(> .rs-bar) {
+    opacity: 1 !important;
+}
+.rs-svg .rs-box {
+    stroke-width: 0.6px;
+}
+
+@media (max-width: 380px) {
+    .rs-list {
+        gap: 0.625rem 0.75rem;
+    }
+    .rs-value {
+        font-size: 1.25rem;
+    }
+}
+
+/* Wide: the list beside the drawing. */
+@media (min-width: 900px) {
+    .rs-stage {
+        padding: calc(var(--nav-h) + 12px) 24px 16px;
+    }
+    .rs-sheet {
+        padding: 1.25rem 1.5rem 0.875rem;
+    }
+    .rs-sheet .bp-sheet-head {
+        margin-bottom: 1rem;
+    }
+    .rs-body {
+        display: grid;
+        grid-template-columns: minmax(260px, 22rem) minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+        gap: 2rem;
+    }
+    .rs-draw {
+        order: 0;
+        aspect-ratio: auto;
+        height: auto;
+        max-height: none;
+    }
+    .rs-list {
+        grid-template-columns: 1fr;
+        align-content: center;
+        gap: 1.25rem;
+    }
+    .rs-value {
+        font-size: clamp(1.75rem, 1.2rem + 1vw, 2.25rem);
+    }
+    .rs-item {
+        column-gap: 0.75rem;
+        padding-bottom: 0.875rem;
+    }
+}
+
+/* Phones: the camera holds one study across ~340 px, so the drawing letters a size up. */
+@media (max-width: 640px) {
+    .rs-svg .dt {
+        font-size: 16px;
+    }
+    .rs-svg .dts,
+    .rs-svg .vt {
+        font-size: 14px;
+    }
+}

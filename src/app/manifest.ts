@@ -1,38 +1,29 @@
 import type { MetadataRoute } from 'next';
 
-/** Same resume-backed tagline as root `layout.tsx` metadata + SOURCE_OF_TRUTH.md. */
-const description =
-    'Senior Software Development Engineer at Amby Tech · Bengaluru. 5+ years building fast, scalable web products for fintech and e-commerce with React, Next.js, Node.js and TypeScript; performance and production systems focus.';
+import { siteDescription } from '@/lib/site';
 
-/** Icons derived from https://github.com/iamadi11 profile image (same asset as OG preview). */
+/** Same SITE-built description as the root `layout.tsx` metadata. */
+const description = siteDescription();
+
+/** Installable PWA: the monochrome title-block mark (`public/icon*.png`, `icon.svg`); offline via `public/sw.js`. */
 export default function manifest(): MetadataRoute.Manifest {
     return {
+        id: '/',
         name: 'Aditya Raj — Senior Software Development Engineer',
         short_name: 'Aditya Raj',
         description,
+        lang: 'en-IN',
         start_url: '/',
+        scope: '/',
         display: 'standalone',
-        background_color: '#09090b',
-        theme_color: '#09090b',
+        background_color: '#ffffff',
+        theme_color: '#ffffff',
+        categories: ['business', 'productivity'],
         icons: [
-            {
-                src: '/avatar-logo.svg',
-                sizes: 'any',
-                type: 'image/svg+xml',
-                purpose: 'any',
-            },
-            {
-                src: '/icon-192x192.png',
-                sizes: '192x192',
-                type: 'image/png',
-                purpose: 'any',
-            },
-            {
-                src: '/icon-512x512.png',
-                sizes: '512x512',
-                type: 'image/png',
-                purpose: 'any',
-            },
+            { src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+            { src: '/icon-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+            { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+            { src: '/icon-maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
     };
 }

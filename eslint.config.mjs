@@ -8,6 +8,8 @@ const __dirname = dirname(__filename);
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
 const eslintConfig = [
+    /** Vendored skills (third-party, MIT) are kept byte-identical to upstream. */
+    { ignores: ['.claude/**'] },
     ...compat.extends(
         'next/core-web-vitals',
         'next/typescript',

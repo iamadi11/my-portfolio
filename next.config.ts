@@ -5,8 +5,6 @@ const nextConfig: NextConfig = {
     reactStrictMode: true,
 
     experimental: {
-        /** Tree-shake barrel packages — biggest win for react-icons (~400 icons → only used ones). */
-        optimizePackageImports: ['react-icons', 'motion'],
         /** Minify CSS with LightningCSS in prod. */
         optimizeCss: true,
     },
@@ -23,12 +21,24 @@ const nextConfig: NextConfig = {
                 destination: '/',
                 permanent: true,
             },
-            /** /v2 was the preview of the 3D home page; it is now / itself. */
+            /** /v2 was the preview of the old 3D home page. */
             { source: '/v2', destination: '/', permanent: false },
+            /** The inner pages became sheets of the drawing set on /. */
+            { source: '/about', destination: '/#revisions', permanent: true },
+            { source: '/tech-stack', destination: '/#variables', permanent: true },
+            { source: '/contact', destination: '/#contact', permanent: true },
         ];
     },
     async headers() {
         return [
+            /** The service worker must always be revalidated so a new deploy reaches installed copies. */
+            {
+                source: '/sw.js',
+                headers: [
+                    { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+                    { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
+                ],
+            },
             {
                 source: '/:path*',
                 headers: [
