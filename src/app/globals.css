@@ -290,3 +290,17 @@ main[tabindex='-1']:focus {
     fill: var(--ink);
     text-transform: none;
 }
+
+/* ---------- lettering ---------- */
+
+/* Pen-drawn titles (`lettering.tsx`): the SVG takes the box the text would (sized in em) and never overflows. */
+.bp-let-scene {
+    min-width: 0;
+    max-width: 100%;
+}
+.bp-let {
+    display: inline-block;
+    max-width: 100%;
+    height: auto;
+    overflow: visible;
+}

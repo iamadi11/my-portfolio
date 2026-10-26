@@ -7,6 +7,8 @@ import type { Project } from '@/content/types';
  * numbers or behaviour the summary does not state. A project without an entry falls back to `generic()`.
  *
  * Detail views draw in the sheet's detail region: x 430–850, y 478–605 (sheet units, viewBox 880 × 660).
+ * Section A–A (only where the summary describes something with an inside): a vertical cutting plane through the
+ * plan's left column; the section view shows what it cuts, top to bottom in plan order, as layers.
  */
 
 export type Kind = 'hug' | 'well' | 'slot' | 'x' | 'hatch';
@@ -26,6 +28,10 @@ export type Row = {
     note?: number;
 };
 
+/** One layer of section A–A, top to bottom. `t` = drawn thickness (schematic). `f`: cut material is hatched
+ * (`cut` 45°, `cut2` 135° so neighbours read apart), a thin part is drawn solid, `seen` = not cut, outline only. */
+export type Layer = { l: string; t: number; f: 'cut' | 'cut2' | 'solid' | 'seen' };
+
 export type Assembly = {
     rows: Row[];
     /** Row the camera opens on: the most characteristic part. */
@@ -33,6 +39,7 @@ export type Assembly = {
     /** Notes block; `n` = boxed number on the drawing, omitted for general notes. */
     notes: { n?: number; t: string }[];
     detail?: { row: number; title: string; draw: (p: Pen, t: number) => void };
+    section?: Layer[];
 };
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -106,6 +113,13 @@ const eidos: Assembly = {
             p.callout(699, 519, 730, 488, 'Idempotency key');
         },
     },
+    // Cut through the left column: the write, the key it carries, the durable queue, IndexedDB under it.
+    section: [
+        { l: 'Write', t: 14, f: 'cut' }, // 'Never lose a write'
+        { l: 'Idempotency key', t: 5, f: 'solid' }, // 'idempotency keys'
+        { l: 'Durable queue', t: 20, f: 'cut2' }, // 'a durable client-mutation queue'
+        { l: 'IndexedDB', t: 16, f: 'cut' }, // 'IndexedDB replay'
+    ],
 };
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -322,6 +336,14 @@ const sidecar: Assembly = {
             p.tx(755, 600, 'Loads in phases', 'dts', { 'text-anchor': 'middle' });
         },
     },
+    // Cut through the left column: the image, the build step (seen, not cut: it emits, it is not shipped), its
+    // tiny sidecar and the runtime. Only the sidecar's thinness is a claim ('tiny'); thicknesses are schematic.
+    section: [
+        { l: 'Image', t: 24, f: 'cut' }, // 'per image'
+        { l: 'Build step · emits', t: 12, f: 'seen' }, // 'a build step emits'
+        { l: 'Sidecar · tiny · binary', t: 4, f: 'solid' }, // 'a tiny binary sidecar'
+        { l: 'Runtime · under 1 KB', t: 8, f: 'cut2' }, // 'a runtime targeting under 1 KB'
+    ],
 };
 
 // ---------------------------------------------------------------------------------------------------------------

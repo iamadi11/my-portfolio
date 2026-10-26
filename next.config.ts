@@ -1,7 +1,27 @@
 import type { NextConfig } from 'next';
+import { execSync } from 'node:child_process';
+
+/** Git facts for the title block's revision cell (`src/lib/live.ts`). Vercel's variables first, then git. */
+function git(cmd: string): string {
+    try {
+        return execSync(`git ${cmd}`, { stdio: ['ignore', 'pipe', 'ignore'] })
+            .toString()
+            .trim();
+    } catch {
+        return '';
+    }
+}
+const BUILD_SHA = process.env.VERCEL_GIT_COMMIT_SHA ?? git('rev-parse HEAD');
+const BUILD_REPO =
+    process.env.VERCEL_GIT_REPO_OWNER && process.env.VERCEL_GIT_REPO_SLUG
+        ? `${process.env.VERCEL_GIT_REPO_OWNER}/${process.env.VERCEL_GIT_REPO_SLUG}`
+        : (/github\.com[/:]([\w.-]+\/[\w.-]+?)(?:\.git)?$/.exec(git('remote get-url origin'))?.[1] ?? '');
 
 const nextConfig: NextConfig = {
     poweredByHeader: false,
+    /** Lets parallel dev servers keep separate build folders (`NEXT_DIST_DIR=.next-a next dev`). */
+    distDir: process.env.NEXT_DIST_DIR ?? '.next',
+    env: { BUILD_SHA, BUILD_REPO, BUILD_DATE: new Date().toISOString().slice(0, 10) },
     reactStrictMode: true,
 
     experimental: {

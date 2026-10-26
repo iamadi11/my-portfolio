@@ -14,6 +14,9 @@ import Variables from '@/components/blueprint/sections/Variables';
  * enesozturk/dimensional-drawing, MIT). Scrolling moves a pen across them. All copy comes from `SITE`
  * (`src/content/site.ts`); spec in `docs/blueprint.md`.
  */
+/** Rebuilt daily (ISR): live project numbers and the career chain's "now" stay current without a deploy. */
+export const revalidate = 86400;
+
 export default function Page(): React.JSX.Element {
     return (
         <>

@@ -357,3 +357,41 @@
         max-width: 1376px;
     }
 }
+
+/* ---------- opening: close on the name, then the camera pulls back (scale only; text visible throughout) ---------- */
+
+.title {
+    overflow: clip;
+}
+.title-wrap {
+    --cz: 1.15;
+    transform-origin: 42% 26%;
+    transform: scale(calc(1 + (var(--cz) - 1) * (1 - var(--e))));
+}
+@media (min-width: 1024px) {
+    .title-wrap {
+        --cz: 1.3;
+    }
+}
+
+/* The revision cell links to the commit the page was built from. */
+.title-rev {
+    text-decoration: underline;
+    text-decoration-thickness: 0.8px;
+    text-underline-offset: 3px;
+}
+.title-revdate {
+    white-space: nowrap;
+}
+/* Three cells share a row on phones: the date drops under the commit, a size down. */
+@media (max-width: 639px) {
+    .title-revsep {
+        display: none;
+    }
+    .title-revdate {
+        display: block;
+        margin-top: 4px;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+    }
+}

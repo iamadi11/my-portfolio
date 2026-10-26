@@ -205,6 +205,35 @@
     letter-spacing: 0;
 }
 
+/* Live references (repo, package): a ruled cell in the title-block style, only the facts that were fetched. */
+.asm-ref {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 10px;
+    align-items: baseline;
+    margin: 14px 0 0;
+    padding: 6px 0 0;
+    border-top: 0.8px solid var(--ink);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-2);
+    opacity: var(--e);
+}
+.asm-ref-h {
+    grid-row: 1 / span 2;
+    padding: 0 5px;
+    border: 0.8px solid var(--ink);
+    line-height: 1.5;
+    color: var(--ink);
+}
+.asm-ref dd {
+    grid-column: 2;
+    margin: 0;
+    line-height: 1.6;
+}
+
 /* ---------- SVG classes (drawing) ---------- */
 
 .bp-svg .asm-bl {
@@ -256,6 +285,28 @@
     stroke-width: calc(1px * var(--u));
 }
 
+/* Section A–A: the cutting plane (thick chain), its view arrows and letters, a thin part drawn solid. */
+.bp-svg .cl.asm-cut {
+    stroke: var(--ink);
+    stroke-width: 1.5px;
+    stroke-dasharray: 18 4 3 4;
+}
+.bp-svg .asm-cuta {
+    stroke: var(--ink);
+    stroke-width: 1.5px;
+    fill: none;
+}
+.bp-svg .asm-cutl {
+    font-size: 13px;
+    font-weight: 700;
+    fill: var(--ink);
+}
+.bp-svg .asm-sol {
+    fill: var(--ink-2);
+    stroke: var(--ink);
+    stroke-width: 0.8px;
+}
+
 /* Phones: table and links side by side so the drawing keeps most of the stage. */
 @media (max-width: 640px) {
     .asm-beats {
@@ -288,6 +339,15 @@
     .asm-btn {
         min-width: 5.5rem;
         justify-content: space-between;
+    }
+    .asm-ref {
+        grid-column: 1 / -1;
+        margin-top: 10px;
+        padding-top: 5px;
+        letter-spacing: 0.05em;
+    }
+    .asm-ref dd {
+        line-height: 1.45;
     }
 }
 

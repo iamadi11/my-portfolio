@@ -2,6 +2,8 @@ import React from 'react';
 
 import { SITE } from '@/content/site';
 
+import { Lettering } from './lettering';
+
 /** Camera key: scene time, centre x, centre y (SVG units), zoom. */
 export type CamKey = [number, number, number, number];
 
@@ -70,7 +72,8 @@ export function win(a: number, b: number): { 'data-k': 'v'; 'data-w': string } {
 
 /**
  * The paper: rounded sheet border, sheet number and title (the section's h2), and the footer identity line the
- * original puts under every sheet (`SHEET n OF N | TITLE` left, name right).
+ * original puts under every sheet (`SHEET n OF N | TITLE` left, name right). The title is lettered by the pen
+ * (`Lettering`); the h2 still holds the plain title text.
  */
 export function SheetFrame({
     n,
@@ -95,9 +98,7 @@ export function SheetFrame({
                 <span className="bp-nbox" aria-hidden="true">
                     {n}
                 </span>
-                <h2 id={headingId} className="bp-h2">
-                    {title}
-                </h2>
+                <Lettering as="h2" id={headingId} className="bp-h2" text={title} />
                 {sub ? <p className="bp-sub">{sub}</p> : null}
             </header>
             {children}

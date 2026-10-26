@@ -7,15 +7,22 @@ import type { Assembly, Box } from './configs';
 
 /**
  * One assembly drawn like the reference film: plan view (draws itself in while the camera pulls back), layers
- * lifting into an exploded axonometric stack, one detail view, then the whole sheet. Scene time T = 10.
+ * lifting into an exploded axonometric stack, one detail view, section A–A where there is one, then the whole
+ * sheet. Scene time T = 10 (12 with a section).
  *
  * Sheet layout (viewBox 880 × 660): notes top-left, plan view left, exploded view top-right, detail bottom-right,
- * title block bottom-left.
+ * title block bottom-left. With a section the sheet grows to 880 × 724: section A–A under the plan view, title
+ * block bottom-right.
  */
 
-export const T = 10;
 const VW = 880;
 const VH = 660;
+const VH_S = 724;
+
+// Section A–A: cutting plane x on the plan; section view under the plan view.
+const SX = 100;
+const SEC_Y = 548;
+const SEC_W = 170;
 
 // Plan view.
 const X0 = 70;
@@ -90,7 +97,191 @@ function plateBox(p: Pen, b: PBox, oy: number, fill: (a: number) => Record<strin
     if (k === 'x') p.path(`M${x},${oy} l${b.w},${RH} M${x + b.w},${oy} l${-b.w},${RH}`, 'asm-bx');
 }
 
-export type Built = { svg: React.ReactNode; cam: CamKey[]; camSm: CamKey[] };
+export type Built = { svg: React.ReactNode; cam: CamKey[]; camSm: CamKey[]; T: number; len: number };
+
+/** Cutting plane A–A across the plan, then the section view: layers as cut solids, each with its callout. */
+function drawSection(p: Pen, a: Assembly, y0: number, y1: number, hb: string, t: number): number {
+    const L = a.section!;
+    const top = y0 - 40;
+    const bot = y1 + 38;
+    // The cutting plane: thick chain line, arrows show the direction of view, letters at both ends.
+    p.at(t, 0, 0.5);
+    p.line(SX, top, SX, bot, 'cl asm-cut');
+    p.at(t + 0.25, 0.1, 0.35);
+    p.flow(SX, top, SX + 20, top, 'asm-cuta');
+    p.flow(SX, bot, SX + 20, bot, 'asm-cuta');
+    p.at(t + 0.45, 0.08, 0.3);
+    p.tx(SX - 7, top + 4.5, 'A', 'asm-cutl', mid);
+    p.tx(SX - 7, bot + 4.5, 'A', 'asm-cutl', mid);
+
+    // Section view: outline, then each layer's boundary, then its fill (hatch = cut material).
+    const x = X0;
+    const th = L.reduce((s, l) => s + l.t, 0);
+    const s0 = t + 0.6;
+    p.at(s0, 0, 0.7);
+    p.rr(x, SEC_Y, SEC_W, th, 0, 'asm-frame');
+    let y = SEC_Y;
+    const ys = L.map((l) => {
+        const r = { y, m: y + l.t / 2 };
+        y += l.t;
+        return r;
+    });
+    p.at(s0 + 0.3, 0.12, 0.45);
+    L.forEach((l, i) => i > 0 && p.line(x, ys[i].y, x + SEC_W, ys[i].y, 'thin'));
+    p.at(s0 + 0.55, 0.12, 0.45);
+    L.forEach((l, i) => {
+        if (l.f === 'cut') p.rr(x, ys[i].y, SEC_W, l.t, 0, 'hs', { fill: p.hatch });
+        else if (l.f === 'cut2') p.rr(x, ys[i].y, SEC_W, l.t, 0, 'hs', { fill: hb });
+        else if (l.f === 'solid') p.rr(x, ys[i].y, SEC_W, l.t, 0, 'asm-sol');
+    });
+    // Callouts fan out to the right, one per layer, top to bottom.
+    p.at(s0 + 0.9, 0.04, 0.4);
+    L.forEach((l, i) => p.callout(x + SEC_W - 14 - i * 10, ys[i].m, x + SEC_W + 22, SEC_Y - 4 + i * 16, l.l));
+    p.at(s0 + 1.35, 0.1, 0.4);
+    p.title(CX, SEC_Y + Math.max(th, 52) + 30, 'Section A–A', 'Scale · schematic');
+    return th;
+}
+
+/** Exploded view: copies of each plan row lift into an axonometric stack, bottom layer first, then labels. */
+function drawExploded(
+    p: Pen,
+    a: Assembly,
+    rows: { y: number; boxes: PBox[] }[]
+): { ty: number; zTop: number; exBottom: number } {
+    const n = rows.length;
+    const ty = 235 - (PLATE_H - (n - 1) * ZG) / 2;
+    const M = iso(S, TX, ty);
+    const zTop = (n - 1) * ZG;
+    p.at(4.4, 0.15, 0.8);
+    for (const [cx, cy] of [
+        [0, PH],
+        [PW, 0],
+    ]) {
+        const [xa, ya] = project(M, cx, cy, 0);
+        const [, yb] = project(M, cx, cy, zTop);
+        p.line(xa, ya, xa, yb, 'ph');
+    }
+    const oy = (PH - RH) / 2;
+    const fw = (s: number, e: number): Record<string, string> => ({ 'data-k': 'f', 'data-w': `${s} ${e}` });
+    rows.map((r, i) => ({ r, i }))
+        .reverse()
+        .forEach(({ r }, j) => {
+            const s = 3.5 + j * 0.3;
+            p.morph({ flat: [1, 0, 0, 1, X0, r.y - oy], iso: M, z: j * ZG, a: s, b: s + 1.5 }, () => {
+                p.rr(0, 0, PW, PH, 10, 'asm-f0', fw(s + 0.55, s + 1.25));
+                p.rr(0, 0, PW, PH, 10, 'asm-plate', fw(s + 0.35, s + 1.0));
+                r.boxes.forEach((b) => plateBox(p, b, oy, (q) => fw(q + 0.55, q + 1.25), s));
+            });
+        });
+    // Leaders and layer labels, bottom first.
+    rows.map((_, i) => i)
+        .reverse()
+        .forEach((i, j) => {
+            const [lx, ly] = project(M, PW, PH / 2, j * ZG);
+            p.at(5.2 + j * 0.2, 0.08, 0.4);
+            p.circle(lx, ly, 1.8, 'dot');
+            p.line(lx, ly, LX - 6, ly, 'lead');
+            p.tx(LX, ly + 1, `L${j} · ${a.rows[i].layer}`, 'vt');
+            if (a.rows[i].layerSub) p.tx(LX, ly + 15, a.rows[i].layerSub!, 'dts');
+        });
+    const exBottom = ty + PLATE_H;
+    p.at(6.0, 0.1, 0.4);
+    p.title(560, exBottom + 46, 'Exploded view', 'Axonometric · Z gaps not to scale');
+    return { ty, zTop, exBottom };
+}
+
+/** Notes block, top-left: each note restates the summary; boxed numbers match the plan. */
+function drawNotes(p: Pen, a: Assembly, t: number): void {
+    if (!a.notes.length) return;
+    p.at(t, 0.06, 0.4);
+    p.tx(40, 34, 'Notes:', 'nth');
+    p.tx(96, 34, '(from the project summary)', 'dts');
+    a.notes.forEach((nt, i) => {
+        const y = 54 + i * 16;
+        if (nt.n) p.nb(46, y - 4, nt.n);
+        p.tx(60, y, nt.t, 'asm-nt');
+    });
+}
+
+/** Title block: drawing number, assembly, sheet. */
+function titleBlock(
+    p: Pen,
+    meta: { dwg: string; title: string; sheet: string },
+    t: number,
+    bx: number,
+    tb: number
+): void {
+    p.at(t, 0.04, 0.35);
+    p.rr(bx, tb, 340, 40, 0, 'thin');
+    p.line(bx + 100, tb, bx + 100, tb + 40, 'thin');
+    p.line(bx + 260, tb, bx + 260, tb + 40, 'thin');
+    p.at(t + 0.2, 0.04, 0.3);
+    p.tx(bx + 8, tb + 14, 'Dwg no.', 'dts');
+    p.tx(bx + 8, tb + 31, meta.dwg, 'th');
+    p.tx(bx + 108, tb + 14, 'Assembly', 'dts');
+    p.tx(bx + 108, tb + 31, meta.title, 'th');
+    p.tx(bx + 268, tb + 14, 'Sheet', 'dts');
+    p.tx(bx + 268, tb + 31, meta.sheet, 'th');
+}
+
+type CamIn = {
+    fy: number;
+    exCy: number;
+    y0: number;
+    y1: number;
+    detail: boolean;
+    sec: boolean;
+    T: number;
+    vh: number;
+};
+
+/** Camera keys: focus row → plan → exploded → detail → section → whole sheet. Phones end on the left column. */
+function cameras(c: CamIn): { cam: CamKey[]; camSm: CamKey[] } {
+    const { fy, exCy, y0, y1, T } = c;
+    const planCy = (y0 - 30 + y1 + 60) / 2;
+    const leftCy = (y0 - 50 + SEC_Y + 125) / 2;
+    const det = (k: CamKey[]): CamKey[] => (c.detail ? k : []);
+    const sec = (k: CamKey[]): CamKey[] => (c.sec ? k : []);
+    const cam: CamKey[] = [
+        [0, CX, fy, 3.0],
+        [0.9, CX, fy, 2.8],
+        [3.0, 210, planCy, 1.55],
+        [3.5, 210, planCy, 1.5],
+        [4.6, 640, exCy, 1.6],
+        [6.3, 640, exCy, 1.52],
+        ...det([
+            [7.0, 640, 556, 1.95],
+            [8.3, 640, 558, 1.85],
+        ]),
+        ...sec([
+            [9.0, 215, (y0 + y1) / 2 + 40, 1.3],
+            [9.7, 236, SEC_Y + 36, 1.62],
+            [10.6, 236, SEC_Y + 38, 1.56],
+        ]),
+        [T - 0.7, VW / 2, c.vh / 2, 1],
+        [T, VW / 2, c.vh / 2, 0.985],
+    ];
+    const camSm: CamKey[] = [
+        [0, CX, fy, 3.4],
+        [0.9, CX, fy, 3.2],
+        [3.0, 215, planCy, 2.1],
+        [3.5, 215, planCy, 2.05],
+        [4.6, 648, exCy, 2.05],
+        [6.3, 648, exCy, 2.0],
+        ...det([
+            [7.0, 642, 556, 2.05],
+            [8.3, 642, 558, 2.0],
+        ]),
+        ...sec([
+            [9.0, 200, (y0 + y1) / 2 + 30, 1.7],
+            [9.7, 238, SEC_Y + 30, 2.35],
+            [10.6, 238, SEC_Y + 32, 2.3],
+        ]),
+        [T - 0.7, 215, c.sec ? leftCy : planCy, c.sec ? 1.95 : 2.05],
+        [T, 215, c.sec ? leftCy : planCy, c.sec ? 1.93 : 2.03],
+    ];
+    return { cam, camSm };
+}
 
 export function drawAssembly(
     id: string,
@@ -98,6 +289,13 @@ export function drawAssembly(
     meta: { dwg: string; title: string; sheet: string }
 ): Built {
     const p = new Pen(id);
+    const hb = `${id}-hb`;
+    const sec = !!a.section?.length;
+    // Sheet size, scene length, last-beat start and title-block corner, with and without section A–A.
+    const G = sec
+        ? { T: 12, vh: VH_S, t4: 10.5, bx: 510, by: 666, len: 2.75 }
+        : { T: 10, vh: VH, t4: 8.5, bx: 40, by: 576, len: 2.3 };
+    const { T, vh, t4 } = G;
     const { y0, y1, rows } = layout(a);
     const n = rows.length;
     const focus = rows[a.focus];
@@ -167,44 +365,7 @@ export function drawAssembly(
     p.title(CX, y1 + 54, 'Plan view', 'Schematic · not to scale');
 
     // ---------- 2. exploded view: copies of each row lift off the plan, bottom layer first ----------
-    const ty = 235 - (PLATE_H - (n - 1) * ZG) / 2;
-    const M = iso(S, TX, ty);
-    const zTop = (n - 1) * ZG;
-    p.at(4.4, 0.15, 0.8);
-    for (const [cx, cy] of [
-        [0, PH],
-        [PW, 0],
-    ]) {
-        const [xa, ya] = project(M, cx, cy, 0);
-        const [, yb] = project(M, cx, cy, zTop);
-        p.line(xa, ya, xa, yb, 'ph');
-    }
-    const oy = (PH - RH) / 2;
-    const fw = (s: number, e: number): Record<string, string> => ({ 'data-k': 'f', 'data-w': `${s} ${e}` });
-    rows.map((r, i) => ({ r, i }))
-        .reverse()
-        .forEach(({ r }, j) => {
-            const s = 3.5 + j * 0.3;
-            p.morph({ flat: [1, 0, 0, 1, X0, r.y - oy], iso: M, z: j * ZG, a: s, b: s + 1.5 }, () => {
-                p.rr(0, 0, PW, PH, 10, 'asm-f0', fw(s + 0.55, s + 1.25));
-                p.rr(0, 0, PW, PH, 10, 'asm-plate', fw(s + 0.35, s + 1.0));
-                r.boxes.forEach((b) => plateBox(p, b, oy, (q) => fw(q + 0.55, q + 1.25), s));
-            });
-        });
-    // Leaders and layer labels, bottom first.
-    rows.map((_, i) => i)
-        .reverse()
-        .forEach((i, j) => {
-            const [lx, ly] = project(M, PW, PH / 2, j * ZG);
-            p.at(5.2 + j * 0.2, 0.08, 0.4);
-            p.circle(lx, ly, 1.8, 'dot');
-            p.line(lx, ly, LX - 6, ly, 'lead');
-            p.tx(LX, ly + 1, `L${j} · ${a.rows[i].layer}`, 'vt');
-            if (a.rows[i].layerSub) p.tx(LX, ly + 15, a.rows[i].layerSub!, 'dts');
-        });
-    const exBottom = ty + PLATE_H;
-    p.at(6.0, 0.1, 0.4);
-    p.title(560, exBottom + 46, 'Exploded view', 'Axonometric · Z gaps not to scale');
+    const { ty, zTop, exBottom } = drawExploded(p, a, rows);
 
     // ---------- 3. detail ----------
     if (a.detail) {
@@ -213,72 +374,42 @@ export function drawAssembly(
         p.title(640, 630, `Detail A · ${a.detail.title}`, 'Enlarged · schematic');
     }
 
-    // ---------- 4. whole sheet: notes and title block draw in on the last pull-back ----------
-    if (a.notes.length) {
-        p.at(8.5, 0.06, 0.4);
-        p.tx(40, 34, 'Notes:', 'nth');
-        p.tx(96, 34, '(from the project summary)', 'dts');
-        a.notes.forEach((nt, i) => {
-            const y = 54 + i * 16;
-            if (nt.n) p.nb(46, y - 4, nt.n);
-            p.tx(60, y, nt.t, 'asm-nt');
-        });
-    }
-    p.at(8.8, 0.04, 0.35);
-    const tb = 576;
-    p.rr(40, tb, 340, 40, 0, 'thin');
-    p.line(140, tb, 140, tb + 40, 'thin');
-    p.line(300, tb, 300, tb + 40, 'thin');
-    p.at(9.0, 0.04, 0.3);
-    p.tx(48, tb + 14, 'Dwg no.', 'dts');
-    p.tx(48, tb + 31, meta.dwg, 'th');
-    p.tx(148, tb + 14, 'Assembly', 'dts');
-    p.tx(148, tb + 31, meta.title, 'th');
-    p.tx(308, tb + 14, 'Sheet', 'dts');
-    p.tx(308, tb + 31, meta.sheet, 'th');
+    // ---------- 4. section A–A ----------
+    if (sec) drawSection(p, a, y0, y1, `url(#${hb})`, 8.55);
+
+    // ---------- 5. whole sheet: notes and title block draw in on the last pull-back ----------
+    drawNotes(p, a, t4);
+    titleBlock(p, meta, t4 + 0.3, G.bx, G.by);
 
     // ---------- camera ----------
-    const fy = focus.y + RH / 2;
-    const exCy = (ty - zTop + exBottom) / 2 + 10;
-    const planCy = (y0 - 30 + y1 + 60) / 2;
-    const hasD = !!a.detail;
-    const cam: CamKey[] = [
-        [0, CX, fy, 3.0],
-        [0.9, CX, fy, 2.8],
-        [3.0, 210, planCy, 1.55],
-        [3.5, 210, planCy, 1.5],
-        [4.6, 640, exCy, 1.6],
-        [6.3, 640, exCy, 1.52],
-        ...(hasD
-            ? ([
-                  [7.0, 640, 556, 1.95],
-                  [8.3, 640, 558, 1.85],
-              ] as CamKey[])
-            : []),
-        [9.3, VW / 2, VH / 2, 1],
-        [10, VW / 2, VH / 2, 0.985],
-    ];
-    const camSm: CamKey[] = [
-        [0, CX, fy, 3.4],
-        [0.9, CX, fy, 3.2],
-        [3.0, 215, planCy, 2.1],
-        [3.5, 215, planCy, 2.05],
-        [4.6, 648, exCy, 2.05],
-        [6.3, 648, exCy, 2.0],
-        ...(hasD
-            ? ([
-                  [7.0, 642, 556, 2.05],
-                  [8.3, 642, 558, 2.0],
-              ] as CamKey[])
-            : []),
-        [9.3, 215, planCy, 2.05],
-        [10, 215, planCy, 2.03],
-    ];
+    const { cam, camSm } = cameras({
+        fy: focus.y + RH / 2,
+        exCy: (ty - zTop + exBottom) / 2 + 10,
+        y0,
+        y1,
+        detail: !!a.detail,
+        sec,
+        T,
+        vh,
+    });
 
     const svg = (
-        <svg className="bp-svg asm-svg" viewBox={`0 0 ${VW} ${VH}`} aria-hidden="true" focusable="false">
+        <svg className="bp-svg asm-svg" viewBox={`0 0 ${VW} ${vh}`} aria-hidden="true" focusable="false">
+            {sec ? (
+                <defs>
+                    <pattern
+                        id={hb}
+                        width={5}
+                        height={5}
+                        patternUnits="userSpaceOnUse"
+                        patternTransform="rotate(-45)"
+                    >
+                        <line x1={0} y1={0} x2={0} y2={5} className="hl" />
+                    </pattern>
+                </defs>
+            ) : null}
             {p.render({ cam: true })}
         </svg>
     );
-    return { svg, cam, camSm };
+    return { svg, cam, camSm, T, len: G.len };
 }

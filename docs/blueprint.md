@@ -30,6 +30,11 @@
 - **Chapter-end calls to action** (desktop): "Discuss these results" after sheet 2, "Discuss this assembly" under each project. The contact sheet ends on the title block's **Approved by** cell: "Sign this drawing" opens an email.
 - Hovering a role highlights its segment of the career chain and the other way round (pointer devices, CSS `:has()`).
 - The hero's overall `W` / `H` dimensions show the title block's live size (`W = 1180 PX`), updated on resize.
+- The hero opens close on the name (scale ≈ 1.3, text visible throughout) and pulls back to the whole title block, as the motion skill's films do.
+- **Revision = deploy:** the title block's REV cell is the commit the page was built from, linked to GitHub, with its build date (`next.config.ts` stamps `BUILD_SHA`, `BUILD_REPO`, `BUILD_DATE` from Vercel's git variables or git; no commit → the cell falls back to SCALE 1:1).
+- **Live numbers:** each project shows a ruled REF line with its GitHub stars and last push and its npm downloads per week (`src/lib/live.ts`), only for what the APIs return. `/` is rebuilt daily (`revalidate = 86400`), which also keeps the career chain's "now" current. Set `GITHUB_TOKEN` in Vercel to lift GitHub's unauthenticated rate limit.
+- **Section cuts:** Eidos and Sidecar carry a cutting line A–A on the plan and a `SECTION A–A` view of the layers it passes through (45° hatch = cut material); labels cite their summary phrases in `configs.ts`.
+- **Lettering:** sheet titles are single-stroke Hershey Simplex capitals (`lettering-data.ts`, public domain via the MIT `hersheytext` package), drawn letter by letter by the pen when they come into view; the h2 keeps the real text for assistive tech.
 
 ## Kit (`src/components/blueprint/`)
 
@@ -47,7 +52,9 @@
 
 - `pin`: progress = scroll through the section (`len` viewport heights), starting `lead` viewport heights early so the stage never arrives blank.
 - `flow`: progress = how far the section's top has passed 90 % of the viewport, in section heights, so an element at fraction f of the section draws around f·T. At the page bottom, flow scenes finish.
-- `clock`: T seconds from first view (the hero).
+- `clock`: T seconds from when its top is inside 95 % of the viewport (the hero, lettered titles).
+- Scenes may nest (a lettered title inside a pinned sheet): each element belongs to its nearest scene.
+- Parallel dev servers: `NEXT_DIST_DIR=.next-a npx next dev -p 3101` keeps a separate build folder.
 
 ## Budgets and gates
 

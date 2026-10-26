@@ -59,6 +59,9 @@ function window2(el: Element): [number, number] {
 function build(root: HTMLElement): Scene {
     const regs: Reg[] = [];
     root.querySelectorAll<HTMLElement | SVGElement>('[data-k]').forEach((el) => {
+        // An element belongs to its nearest scene: a scene nested inside this one (e.g. a lettered title in a
+        // pinned sheet) runs its own elements.
+        if (el.parentElement?.closest('[data-sheet]') !== root) return;
         const k = el.getAttribute('data-k') ?? 'f';
         if (k === 'm') {
             const m = JSON.parse(el.getAttribute('data-m') ?? '{}');
@@ -182,13 +185,16 @@ function progress(s: Scene, vh: number, atEnd: boolean, now: number): number {
 function measure(): () => void {
     const labels = Array.from(document.querySelectorAll<SVGTextElement>('[data-measure]'));
     if (!labels.length || !('ResizeObserver' in window)) return () => {};
-    const set = (el: SVGTextElement): void => {
-        const box = el.ownerSVGElement?.getBoundingClientRect();
-        if (!box) return;
-        const v = el.getAttribute('data-measure') === 'h' ? box.height : box.width;
-        el.textContent = `${el.getAttribute('data-label') ?? ''} = ${Math.round(v)} PX`;
-    };
-    const ro = new ResizeObserver(() => labels.forEach(set));
+    // ResizeObserver reports the layout box, untouched by transforms (e.g. the hero's opening zoom).
+    const ro = new ResizeObserver((entries) => {
+        for (const e of entries)
+            for (const el of labels) {
+                if (el.ownerSVGElement !== e.target) continue;
+                const v =
+                    el.getAttribute('data-measure') === 'h' ? e.contentRect.height : e.contentRect.width;
+                el.textContent = `${el.getAttribute('data-label') ?? ''} = ${Math.round(v)} PX`;
+            }
+    });
     labels.forEach((el) => el.ownerSVGElement && ro.observe(el.ownerSVGElement));
     return () => ro.disconnect();
 }
@@ -201,7 +207,11 @@ function step(s: Scene, f: { vh: number; atEnd: boolean; now: number; k: number;
         s.cur = -1;
         return false;
     }
-    if (s.mode === 'clock' && s.t0 == null) s.t0 = f.now;
+    if (s.mode === 'clock' && s.t0 == null) {
+        // A clock plays once its top is well inside the viewport, not when it enters the look-ahead margin.
+        if (s.root.getBoundingClientRect().top > f.vh * 0.95) return false;
+        s.t0 = f.now;
+    }
     const target = progress(s, f.vh, f.atEnd, f.now);
     let moving = false;
     if (s.mode === 'clock' || s.cur < 0) s.cur = target;

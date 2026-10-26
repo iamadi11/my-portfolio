@@ -4,6 +4,7 @@ import { Pen } from '@/components/blueprint/pen';
 import { Scene, win } from '@/components/blueprint/scene';
 import { SHEET_COUNT, sheet } from '@/components/blueprint/sheets';
 import { SITE } from '@/content/site';
+import { buildRevision } from '@/lib/live';
 
 import './title.css';
 
@@ -16,6 +17,13 @@ import './title.css';
  */
 
 const T = 3.5;
+
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+/** `2026-10-26` → `26 Oct 2026`. */
+function day(iso: string): string {
+    const [y, m, d] = iso.split('-').map(Number);
+    return `${d} ${MON[m - 1]} ${y}`;
+}
 const S = sheet('title');
 
 /**
@@ -226,10 +234,12 @@ function Arrow(): React.JSX.Element {
 
 export default function Title(): React.JSX.Element {
     const { name, role, location, status, statement, email, links } = SITE.profile;
+    const rev = buildRevision();
     return (
         <section id={S.id} aria-labelledby="title-h" className="title">
             <Scene mode="clock" T={T} className="title-in">
-                <div className="title-wrap">
+                {/* Opens close on the name, then the camera pulls back to the whole title block. */}
+                <div className="title-wrap" {...win(0, 1.4)}>
                     <HDim id="ttl-w" a={2.4} f={22} label="W" measure className="title-dim-w" />
                     <VDim id="ttl-h" a={2.55} f={-28} label="H" measure className="title-dim-h" />
                     <div className="title-block">
@@ -270,9 +280,30 @@ export default function Title(): React.JSX.Element {
                                 <Detail />
                             </Cell>
                         ) : null}
-                        <Cell area="scale" label="Scale" a={0.9}>
-                            <p className="title-v">1:1</p>
-                        </Cell>
+                        {/* The drawing's revision is the deploy: the commit this page was built from. */}
+                        {rev ? (
+                            <Cell area="scale" label="Rev" a={0.9}>
+                                <p className="title-v">
+                                    {rev.url ? (
+                                        <a href={rev.url} className="title-rev" rel="noopener">
+                                            {rev.sha}
+                                        </a>
+                                    ) : (
+                                        rev.sha
+                                    )}
+                                    {rev.date ? (
+                                        <>
+                                            <span className="title-revsep"> · </span>
+                                            <span className="title-revdate">{day(rev.date)}</span>
+                                        </>
+                                    ) : null}
+                                </p>
+                            </Cell>
+                        ) : (
+                            <Cell area="scale" label="Scale" a={0.9}>
+                                <p className="title-v">1:1</p>
+                            </Cell>
+                        )}
                         <Cell
                             area="notes"
                             a={1.0}
