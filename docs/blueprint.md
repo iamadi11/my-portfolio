@@ -23,6 +23,14 @@
 
 `Nav.tsx` is the fixed drawing-set index (boxed sheet numbers, CSS scroll-driven pen line).
 
+### Story
+
+- Each sheet's subtitle answers one question, in order: who (title block) → **What changed** → **How it is built** → **Where** → **With what** → **What next**.
+- **Cross-references** (`xref.ts`), the way a drawing set links its sheets: each result on sheet 2 links to the role note that states the same numbers for the same organisation (`See Rev E/1`), and that note links back (`Measured · Sheet 2, Detail A`). Matching is derived from SITE, never hand-linked; a result with no matching note gets no link.
+- **Chapter-end calls to action** (desktop): "Discuss these results" after sheet 2, "Discuss this assembly" under each project. The contact sheet ends on the title block's **Approved by** cell: "Sign this drawing" opens an email.
+- Hovering a role highlights its segment of the career chain and the other way round (pointer devices, CSS `:has()`).
+- The hero's overall `W` / `H` dimensions show the title block's live size (`W = 1180 PX`), updated on resize.
+
 ## Kit (`src/components/blueprint/`)
 
 | File         | Job                                                                                                                                                                                                                                                                                                             |
@@ -45,6 +53,7 @@
 
 - First-load JS for `/` ≤ 120 kB (105 kB at launch; the page itself is ~2 kB). No animation library.
 - Only opacity, transform and stroke-dashoffset animate; pinned stages are fixed-height sticky boxes (no layout shift).
+- Off-screen sheets skip rendering work (`content-visibility: auto` on pinned stages, revisions and variables): mobile total blocking time went from ~150–230 ms to ~60–95 ms.
 - Devices: iPhone mini 375×812, iPhone 16 Pro 402×874, 768×1024, 1280×800, 1440×900, 1920×1080; no horizontal scroll; safe areas respected (`viewport-fit=cover`).
 - WCAG 2.2 AA; Lighthouse ≥ 90 in all four categories.
 

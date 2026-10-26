@@ -41,6 +41,8 @@ type Scene = {
     cam?: { el: SVGGElement; keys: Key[]; keysSm?: Key[]; w: number; h: number; last: string };
     t0?: number;
     on: boolean;
+    /** Smoothed scene time (scroll scenes ease toward their target; -1 = not yet seen, jump straight there). */
+    cur: number;
     lastT: number;
 };
 
@@ -79,6 +81,7 @@ function build(root: HTMLElement): Scene {
         lead: Number(root.getAttribute('data-lead') ?? 0),
         regs,
         on: false,
+        cur: -1,
         lastT: -1,
     };
     const camEl = root.querySelector<SVGGElement>('.bp-cam');
@@ -172,30 +175,72 @@ function progress(s: Scene, vh: number, atEnd: boolean, now: number): number {
     return s.T * clamp01((0.9 * vh - r.top) / Math.max(1, r.height));
 }
 
+/**
+ * Live measurements: an SVG <text data-measure="w|h" data-label="W"> inside a drawing shows the drawing's real
+ * size in CSS pixels ("W = 1238 PX") and follows it on resize. The server renders the bare label.
+ */
+function measure(): () => void {
+    const labels = Array.from(document.querySelectorAll<SVGTextElement>('[data-measure]'));
+    if (!labels.length || !('ResizeObserver' in window)) return () => {};
+    const set = (el: SVGTextElement): void => {
+        const box = el.ownerSVGElement?.getBoundingClientRect();
+        if (!box) return;
+        const v = el.getAttribute('data-measure') === 'h' ? box.height : box.width;
+        el.textContent = `${el.getAttribute('data-label') ?? ''} = ${Math.round(v)} PX`;
+    };
+    const ro = new ResizeObserver(() => labels.forEach(set));
+    labels.forEach((el) => el.ownerSVGElement && ro.observe(el.ownerSVGElement));
+    return () => ro.disconnect();
+}
+
+/** Advance one scene by a frame. Returns whether it is still moving (eased scroll or a running clock). */
+function step(s: Scene, f: { vh: number; atEnd: boolean; now: number; k: number; small: boolean }): boolean {
+    if (!s.on) {
+        // Leaving view mid-ease: settle on where the scroll actually is, so nothing stays half-drawn off screen.
+        if (s.cur >= 0) apply(s, progress(s, f.vh, f.atEnd, f.now), f.small);
+        s.cur = -1;
+        return false;
+    }
+    if (s.mode === 'clock' && s.t0 == null) s.t0 = f.now;
+    const target = progress(s, f.vh, f.atEnd, f.now);
+    let moving = false;
+    if (s.mode === 'clock' || s.cur < 0) s.cur = target;
+    else {
+        s.cur += (target - s.cur) * f.k;
+        if (Math.abs(target - s.cur) < s.T * 0.0005) s.cur = target;
+        else moving = true;
+    }
+    apply(s, s.cur, f.small);
+    return moving || (s.mode === 'clock' && s.cur < s.T);
+}
+
+/** Scroll time constant: scenes ease toward the scroll position over ~0.1 s instead of stepping with the wheel. */
+const TAU = 90;
+
 /** Start every scene on the page. Returns a cleanup. */
 export function drive(): () => void {
     const scenes = Array.from(document.querySelectorAll<HTMLElement>('[data-sheet]')).map(build);
     const smq = window.matchMedia('(max-width: 640px)');
+    const unmeasure = measure();
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         scenes.forEach((s) => apply(s, s.T, smq.matches));
         document.documentElement.classList.add('bp-still');
-        return () => {};
+        return unmeasure;
     }
 
     let raf = 0;
+    let last = 0;
     const tick = (now: number): void => {
         raf = 0;
+        const dt = last ? Math.min(64, now - last) : 16;
+        last = now;
+        const k = 1 - Math.exp(-dt / TAU);
         const vh = window.innerHeight;
         const atEnd = window.scrollY + vh >= document.documentElement.scrollHeight - 2;
-        let clockRunning = false;
-        for (const s of scenes) {
-            if (!s.on) continue;
-            if (s.mode === 'clock' && s.t0 == null) s.t0 = now;
-            const t = progress(s, vh, atEnd, now);
-            apply(s, t, smq.matches);
-            if (s.mode === 'clock' && t < s.T) clockRunning = true;
-        }
-        if (clockRunning) raf = requestAnimationFrame(tick);
+        let running = false;
+        for (const s of scenes) running = step(s, { vh, atEnd, now, k, small: smq.matches }) || running;
+        if (running) raf = requestAnimationFrame(tick);
+        else last = 0;
     };
     const schedule = (): void => {
         if (!raf) raf = requestAnimationFrame(tick);
@@ -229,6 +274,7 @@ export function drive(): () => void {
         window.removeEventListener('scroll', schedule);
         window.removeEventListener('resize', resize);
         smq.removeEventListener('change', resize);
+        unmeasure();
         if (raf) cancelAnimationFrame(raf);
     };
 }

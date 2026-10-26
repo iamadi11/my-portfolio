@@ -394,3 +394,80 @@
         clip-path: none;
     }
 }
+
+/* Cross-references: a note that a result on sheet 2 measured links back to it. */
+.rev-xref {
+    display: block;
+    width: fit-content;
+    margin-top: 0.375rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    text-decoration: underline;
+    text-decoration-thickness: 0.8px;
+    text-underline-offset: 3px;
+}
+.rev-xref:hover {
+    color: var(--ink);
+}
+/* Arriving from a cross-reference: the note is boxed like a called-out feature. */
+.rev-note:target {
+    outline: 1px dashed var(--ink);
+    outline-offset: 6px;
+}
+
+/* Hover a role and its segment of the career chain fills in, and the other way round (pointer devices only). */
+@media (hover: hover) {
+    .rev-li {
+        transition: background-color 200ms ease-out;
+    }
+    .rev:has(.rev-li-A:hover) .rev-seg-A,
+    .rev:has(.rev-seg-A:hover) .rev-seg-A,
+    .rev:has(.rev-li-B:hover) .rev-seg-B,
+    .rev:has(.rev-seg-B:hover) .rev-seg-B,
+    .rev:has(.rev-li-C:hover) .rev-seg-C,
+    .rev:has(.rev-seg-C:hover) .rev-seg-C,
+    .rev:has(.rev-li-D:hover) .rev-seg-D,
+    .rev:has(.rev-seg-D:hover) .rev-seg-D,
+    .rev:has(.rev-li-E:hover) .rev-seg-E,
+    .rev:has(.rev-seg-E:hover) .rev-seg-E,
+    .rev:has(.rev-li-F:hover) .rev-seg-F,
+    .rev:has(.rev-seg-F:hover) .rev-seg-F,
+    .rev:has(.rev-li-G:hover) .rev-seg-G,
+    .rev:has(.rev-seg-G:hover) .rev-seg-G,
+    .rev:has(.rev-li-H:hover) .rev-seg-H,
+    .rev:has(.rev-seg-H:hover) .rev-seg-H,
+    .rev:has(.rev-li-I:hover) .rev-seg-I,
+    .rev:has(.rev-seg-I:hover) .rev-seg-I,
+    .rev:has(.rev-li-J:hover) .rev-seg-J,
+    .rev:has(.rev-seg-J:hover) .rev-seg-J {
+        fill: var(--ink);
+    }
+    .rev:has(.rev-seg-A:hover) .rev-li-A,
+    .rev:has(.rev-seg-B:hover) .rev-li-B,
+    .rev:has(.rev-seg-C:hover) .rev-li-C,
+    .rev:has(.rev-seg-D:hover) .rev-li-D,
+    .rev:has(.rev-seg-E:hover) .rev-li-E,
+    .rev:has(.rev-seg-F:hover) .rev-li-F,
+    .rev:has(.rev-seg-G:hover) .rev-li-G,
+    .rev:has(.rev-seg-H:hover) .rev-li-H,
+    .rev:has(.rev-seg-I:hover) .rev-li-I,
+    .rev:has(.rev-seg-J:hover) .rev-li-J {
+        background: var(--fill-1);
+    }
+    .rev-seg {
+        transition: fill 200ms ease-out;
+    }
+}
+
+/* Off-screen until reached: skip its rendering work; `auto` remembers the real height once it has been drawn. */
+.rev {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 3200px;
+}
+
+/* Cross-reference targets land with room for their dashed callout box (the nav is in scroll-padding). */
+.rev-note {
+    scroll-margin-top: 24px;
+}

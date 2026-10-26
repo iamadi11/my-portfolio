@@ -27,12 +27,15 @@ export function HDim({
     a,
     f,
     label,
+    measure,
     className,
 }: {
     id: string;
     a: number;
     f: number;
     label: string;
+    /** Show the live width ("W = 1238 PX"); the server renders the bare label. */
+    measure?: boolean;
     className?: string;
 }): React.JSX.Element {
     const p = new Pen(id);
@@ -49,7 +52,18 @@ export function HDim({
         'marker-start': p.arrow,
         'marker-end': p.arrow,
     });
-    p.mk('text', { x: '50%', y: s > 0 ? 14 : -5, class: 'dt', 'text-anchor': 'middle' }, label);
+    p.mk(
+        'text',
+        {
+            x: '50%',
+            y: s > 0 ? 14 : -5,
+            class: 'dt',
+            'text-anchor': 'middle',
+            'data-measure': measure ? 'w' : undefined,
+            'data-label': measure ? label : undefined,
+        },
+        label
+    );
     return (
         <svg className={['bp-svg', className].filter(Boolean).join(' ')} aria-hidden="true">
             {p.render()}
@@ -63,12 +77,15 @@ function VDim({
     a,
     f,
     label,
+    measure,
     className,
 }: {
     id: string;
     a: number;
     f: number;
     label: string;
+    /** Show the live height ("H = 734 PX"). */
+    measure?: boolean;
     className?: string;
 }): React.JSX.Element {
     const p = new Pen(id);
@@ -84,7 +101,18 @@ function VDim({
         'marker-start': p.arrow,
         'marker-end': p.arrow,
     });
-    p.mk('text', { x: 8, y: '50%', dy: 4, class: 'dt' }, label);
+    p.mk(
+        'text',
+        {
+            x: 8,
+            y: '50%',
+            dy: 4,
+            class: 'dt',
+            'data-measure': measure ? 'h' : undefined,
+            'data-label': measure ? label : undefined,
+        },
+        label
+    );
     return (
         <svg className={['bp-svg', className].filter(Boolean).join(' ')} aria-hidden="true">
             {p.render()}
@@ -202,8 +230,8 @@ export default function Title(): React.JSX.Element {
         <section id={S.id} aria-labelledby="title-h" className="title">
             <Scene mode="clock" T={T} className="title-in">
                 <div className="title-wrap">
-                    <HDim id="ttl-w" a={2.4} f={22} label="W" className="title-dim-w" />
-                    <VDim id="ttl-h" a={2.55} f={-28} label="H" className="title-dim-h" />
+                    <HDim id="ttl-w" a={2.4} f={22} label="W" measure className="title-dim-w" />
+                    <VDim id="ttl-h" a={2.55} f={-28} label="H" measure className="title-dim-h" />
                     <div className="title-block">
                         <Frame />
                         <Cell area="name" label="Title" a={0.3}>

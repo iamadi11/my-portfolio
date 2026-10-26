@@ -3,6 +3,7 @@ import React from 'react';
 import { type Mat, Pen } from '@/components/blueprint/pen';
 import { type CamKey, Scene, SheetFrame, win } from '@/components/blueprint/scene';
 import { SHEET_COUNT, sheet } from '@/components/blueprint/sheets';
+import { noteId, resultId, revOf, sourceOf } from '@/components/blueprint/xref';
 import { SITE } from '@/content/site';
 import type { Impact } from '@/content/types';
 
@@ -338,6 +339,8 @@ export default function Results(): React.JSX.Element | null {
     if (!impact.length) return null;
     const meta = sheet('results');
     const studies = impact.map(parse);
+    const src = impact.map(sourceOf);
+    const rev = sheet('revisions');
     const cols = studies.length > 1 ? 2 : 1;
     const rows = Math.ceil(studies.length / cols);
     const W = cols * CW;
@@ -387,25 +390,54 @@ export default function Results(): React.JSX.Element | null {
                     n={meta.n}
                     of={SHEET_COUNT}
                     title={meta.title}
-                    sub={`${studies.length} dimension studies`}
+                    sub={`What changed · ${studies.length} dimension studies`}
                     headingId="results-h"
                     className="rs-sheet"
                 >
                     <div className="rs-body">
-                        <ol className="rs-list">
-                            {studies.map((st, i) => (
-                                <li key={st.label} className="rs-item">
-                                    <span className="rs-nb" aria-hidden="true">
-                                        {i + 1}
-                                    </span>
-                                    {/* The value exactly as SITE states it; only the drawing counts. */}
-                                    <p className="rs-value">{st.parts.join('')}</p>
-                                    <p className="rs-label">{st.label}</p>
-                                    {st.org ? <p className="rs-org">{st.org}</p> : null}
-                                    <span className="rs-rule" aria-hidden="true" {...win(st.s, st.s + 2.4)} />
-                                </li>
-                            ))}
-                        </ol>
+                        <div className="rs-col">
+                            <ol className="rs-list">
+                                {studies.map((st, i) => (
+                                    <li key={st.label} id={resultId(i)} className="rs-item">
+                                        <span className="rs-nb" aria-hidden="true">
+                                            {i + 1}
+                                        </span>
+                                        {/* The value exactly as SITE states it; only the drawing counts. */}
+                                        <p className="rs-value">{st.parts.join('')}</p>
+                                        <p className="rs-label">{st.label}</p>
+                                        {st.org ? (
+                                            <p className="rs-org">
+                                                {st.org}
+                                                {src[i] ? (
+                                                    <>
+                                                        {' · '}
+                                                        <a
+                                                            href={`#${noteId(revOf(src[i]!.row), src[i]!.note + 1)}`}
+                                                            className="rs-xref"
+                                                            aria-label={`See sheet ${rev.n}, revision ${revOf(src[i]!.row)}, note ${src[i]!.note + 1}`}
+                                                        >
+                                                            See Rev {revOf(src[i]!.row)}/{src[i]!.note + 1}
+                                                        </a>
+                                                    </>
+                                                ) : null}
+                                            </p>
+                                        ) : null}
+                                        <span
+                                            className="rs-rule"
+                                            aria-hidden="true"
+                                            {...win(st.s, st.s + 2.4)}
+                                        />
+                                    </li>
+                                ))}
+                            </ol>
+                            <p className="rs-cta">
+                                <a
+                                    href={`mailto:${SITE.profile.email}?subject=${encodeURIComponent('About your measured results')}`}
+                                >
+                                    Discuss these results <span aria-hidden="true">→</span>
+                                </a>
+                            </p>
+                        </div>
                         <div className="rs-draw" style={{ '--ar': `${W} / ${H}` } as React.CSSProperties}>
                             <svg
                                 className="bp-svg rs-svg"

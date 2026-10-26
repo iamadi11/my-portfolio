@@ -58,6 +58,8 @@ main[tabindex='-1']:focus {
 .bp-pin {
     position: relative;
     height: calc(var(--len, 2) * 100svh);
+    /* Off-screen stages skip style, layout and paint; their height is explicit, so nothing moves. */
+    content-visibility: auto;
 }
 .bp-stage {
     position: sticky;

@@ -74,7 +74,7 @@ export default function Variables(): React.JSX.Element {
                 n={s.n}
                 of={SHEET_COUNT}
                 title={s.title}
-                sub={`Skills · ${total} variables in ${groups.length} tables`}
+                sub={`With what · ${total} skills as variables in ${groups.length} tables`}
                 headingId={`${s.id}-h`}
                 className="var-sheet"
             >

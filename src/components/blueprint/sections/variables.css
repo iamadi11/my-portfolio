@@ -199,3 +199,9 @@
         gap: 3rem 2.5rem;
     }
 }
+
+/* Off-screen until reached: skip its rendering work; `auto` remembers the real height once it has been drawn. */
+.var {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1600px;
+}

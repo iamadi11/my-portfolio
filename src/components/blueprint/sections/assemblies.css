@@ -341,3 +341,30 @@
         gap: 56px;
     }
 }
+
+/* Chapter-end call to action: a quiet text link under the buttons (from 900 px; phones keep the stage for the drawing). */
+.asm-cta {
+    display: none;
+    margin-top: 1rem;
+    font-size: 0.8125rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: var(--e);
+}
+.asm-cta a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: var(--ink-2);
+    text-decoration: underline;
+    text-decoration-thickness: 0.8px;
+    text-underline-offset: 4px;
+}
+.asm-cta a:hover {
+    color: var(--ink);
+}
+@media (min-width: 900px) {
+    .asm-cta {
+        display: block;
+    }
+}

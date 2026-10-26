@@ -82,6 +82,13 @@ function Assembly({ project, i, total }: { project: Project; i: number; total: n
                             ))}
                         </ul>
                     ) : null}
+                    <p className="asm-cta" {...win(1.6, 2.4)}>
+                        <a
+                            href={`mailto:${SITE.profile.email}?subject=${encodeURIComponent(`About ${project.title}`)}`}
+                        >
+                            Discuss this assembly <span aria-hidden="true">→</span>
+                        </a>
+                    </p>
                 </div>
             </article>
         </Scene>
@@ -98,7 +105,7 @@ export default function Assemblies(): React.JSX.Element {
                 n={s.n}
                 of={SHEET_COUNT}
                 title={s.title}
-                sub={`${projects.length} projects · plan view, exploded view, detail`}
+                sub={`How it is built · ${projects.length} projects · plan view, exploded view, detail`}
                 headingId="assemblies-h"
                 className="asm-sheet"
             >

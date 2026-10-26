@@ -48,6 +48,7 @@ export default function Contact(): React.JSX.Element {
                     n={S.n}
                     of={SHEET_COUNT}
                     title={S.title}
+                    sub="What next"
                     headingId="contact-h"
                     className="contact-sheet"
                 >
@@ -92,6 +93,22 @@ export default function Contact(): React.JSX.Element {
                         <Cell label="Location" a={0.42 + links.length * 0.06}>
                             {location}
                         </Cell>
+                    </div>
+                    {/* A title block closes with its sign-off cell; signing it is the call to action. */}
+                    <div className="contact-approve">
+                        <div {...win(0.5, 0.75)} className="contact-approve-cell">
+                            <p className="contact-lbl">Approved by</p>
+                            <span className="contact-sign" aria-hidden="true" {...win(0.55, 0.85)} />
+                        </div>
+                        <div {...win(0.55, 0.8)} className="contact-approve-cell contact-approve-act">
+                            <a
+                                href={`mailto:${email}?subject=${encodeURIComponent('Approved: your drawing set')}`}
+                                className="contact-approve-btn"
+                            >
+                                Sign this drawing <span aria-hidden="true">→</span>
+                            </a>
+                            <p className="contact-approve-note">Opens an email to {name.split(' ')[0]}.</p>
+                        </div>
                     </div>
                     <div {...win(0.6, 0.85)} className="contact-colophon">
                         <p>

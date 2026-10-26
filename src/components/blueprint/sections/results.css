@@ -209,3 +209,56 @@
         font-size: 14px;
     }
 }
+
+/* The list and its chapter-end call to action share the first column. */
+.rs-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    min-height: 0;
+}
+.rs-xref {
+    color: var(--ink-2);
+    text-decoration: underline;
+    text-decoration-thickness: 0.8px;
+    text-underline-offset: 3px;
+}
+.rs-xref:hover {
+    color: var(--ink);
+}
+.rs-cta {
+    display: none;
+}
+.rs-cta a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0 0.875rem;
+    border: 1.2px solid var(--ink);
+    font-size: 0.8125rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition:
+        background-color 200ms ease-out,
+        color 200ms ease-out;
+}
+.rs-cta a:hover {
+    background: var(--ink);
+    color: var(--paper);
+}
+.rs-item:target {
+    outline: 1px dashed var(--ink);
+    outline-offset: 6px;
+}
+/* Phones keep the pinned stage for the results themselves; the call to action shows from 900 px. */
+@media (min-width: 900px) {
+    .rs-cta {
+        display: block;
+    }
+}
+
+.rs-item {
+    scroll-margin-top: 24px;
+}

@@ -3,6 +3,7 @@ import React from 'react';
 import { Pen } from '@/components/blueprint/pen';
 import { Scene, SheetFrame, win } from '@/components/blueprint/scene';
 import { SHEET_COUNT, sheet } from '@/components/blueprint/sheets';
+import { detailOf, measuredBy, noteId, resultId, revId } from '@/components/blueprint/xref';
 import { SITE } from '@/content/site';
 import type { Row } from '@/content/types';
 
@@ -65,7 +66,7 @@ function chainWide(s: Span[], t0: number, t1: number): React.ReactNode {
     }
     s.forEach((r, i) => {
         p.at(0.04 + i * 0.09, 0, 0.18);
-        p.rr(x(r.a), BY, x(r.b) - x(r.a), BH, 0, r.current ? 'hug' : 'obj');
+        p.rr(x(r.a), BY, x(r.b) - x(r.a), BH, 0, `${r.current ? 'hug' : 'obj'} rev-seg rev-seg-${r.rev}`);
         p.at(0.12 + i * 0.09, 0.015, 0.14);
         p.dimH(x(r.a), x(r.b), 74, BY, BY, `REV ${r.rev}`);
     });
@@ -102,7 +103,7 @@ function chainTall(s: Span[], t0: number, t1: number): React.ReactNode {
     }
     s.forEach((r, i) => {
         p.at(0.04 + i * 0.09, 0, 0.18);
-        p.rr(BX, y(r.a), BW, y(r.b) - y(r.a), 0, r.current ? 'hug' : 'obj');
+        p.rr(BX, y(r.a), BW, y(r.b) - y(r.a), 0, `${r.current ? 'hug' : 'obj'} rev-seg rev-seg-${r.rev}`);
         p.at(0.12 + i * 0.09, 0.015, 0.14);
         p.dimV(y(r.a), y(r.b), 92, BX, BX, `REV ${r.rev}`, { side: 'l' });
     });
@@ -124,15 +125,19 @@ function Revision({
     code,
     codeLabel,
     row,
+    xrow,
     current,
     level,
 }: {
     code: string;
     codeLabel: string;
     row: Row;
+    /** Index in SITE.practice.experience (revisions only): links notes back to the results they measured. */
+    xrow?: number;
     current?: boolean;
     level: 'h3' | 'h4';
 }): React.JSX.Element {
+    const results = sheet('results');
     const H = level;
     const notes = row.highlights ?? [];
     const stack = row.stack ? row.stack.split(', ') : [];
@@ -162,12 +167,25 @@ function Revision({
                     <ol className="rev-notes">
                         {notes.map((n, i) => {
                             const a = 0.22 + (0.5 * i) / notes.length;
+                            const m = xrow == null ? -1 : measuredBy(xrow, i);
                             return (
-                                <li key={n} className="rev-note rev-in" {...win(a, a + 0.24)}>
+                                <li
+                                    key={n}
+                                    id={xrow == null ? undefined : noteId(code, i + 1)}
+                                    className="rev-note rev-in"
+                                    {...win(a, a + 0.24)}
+                                >
                                     <span className="rev-nb" aria-hidden="true">
                                         {i + 1}
                                     </span>
-                                    <span>{n}</span>
+                                    <span>
+                                        {n}
+                                        {m >= 0 ? (
+                                            <a href={`#${resultId(m)}`} className="rev-xref">
+                                                Measured · Sheet {results.n}, Detail {detailOf(m)}
+                                            </a>
+                                        ) : null}
+                                    </span>
                                 </li>
                             );
                         })}
@@ -210,7 +228,7 @@ export default function Revisions(): React.JSX.Element {
                 n={s.n}
                 of={SHEET_COUNT}
                 title={s.title}
-                sub={`Experience, newest first · REV A = first role`}
+                sub={`Where · experience, newest first · REV A = first role`}
                 headingId={`${s.id}-h`}
                 className="rev-sheet"
             >
@@ -246,11 +264,16 @@ export default function Revisions(): React.JSX.Element {
                 </Scene>
                 <ol className="rev-list">
                     {newestFirst.map((c) => (
-                        <li key={c.row.org + c.row.period}>
+                        <li
+                            key={c.row.org + c.row.period}
+                            id={revId(c.rev)}
+                            className={`rev-li rev-li-${c.rev}`}
+                        >
                             <Revision
                                 code={c.rev}
                                 codeLabel="Rev"
                                 row={c.row}
+                                xrow={exp.indexOf(c.row)}
                                 current={c.current}
                                 level="h3"
                             />
