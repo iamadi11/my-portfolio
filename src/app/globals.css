@@ -48,6 +48,11 @@ button:focus-visible,
     border-radius: 2px;
 }
 
+/* The skip link's target takes focus without drawing a frame around the whole page. */
+main[tabindex='-1']:focus {
+    outline: none;
+}
+
 /* ---------- scenes ---------- */
 
 .bp-pin {

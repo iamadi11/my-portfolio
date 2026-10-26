@@ -66,6 +66,7 @@ export default function Error({ error, reset }: ErrorProps): React.JSX.Element {
     return (
         <main
             id="main-content"
+            tabIndex={-1}
             className="flex min-h-dvh items-center justify-center bg-paper px-4 py-16 text-ink"
         >
             <article className="w-full max-w-lg rounded-[16px] border-[1.2px] border-ink" role="alert">

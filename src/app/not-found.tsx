@@ -70,15 +70,13 @@ export default function NotFound(): React.JSX.Element {
     return (
         <main
             id="main-content"
+            tabIndex={-1}
             className="flex min-h-dvh items-center justify-center bg-paper px-4 py-16 text-ink"
         >
             <article className="w-full max-w-lg rounded-[16px] border-[1.2px] border-ink">
                 <header className="flex items-center justify-between gap-4 border-b-[1.2px] border-ink px-6 py-4">
                     <h1 className="text-lg font-bold uppercase tracking-[0.14em]">Sheet not found</h1>
-                    <span
-                        className="border-[1.2px] border-ink px-2 py-0.5 text-sm font-bold tabular-nums tracking-[0.08em]"
-                        aria-label="Error 404"
-                    >
+                    <span className="border-[1.2px] border-ink px-2 py-0.5 text-sm font-bold tabular-nums tracking-[0.08em]">
                         404
                     </span>
                 </header>

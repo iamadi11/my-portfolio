@@ -18,7 +18,7 @@ export default function Page(): React.JSX.Element {
     return (
         <>
             <Nav />
-            <main id="main-content">
+            <main id="main-content" tabIndex={-1}>
                 <Title />
                 <Results />
                 <Assemblies />
