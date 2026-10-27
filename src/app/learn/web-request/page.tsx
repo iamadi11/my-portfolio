@@ -580,10 +580,11 @@ export default function Page(): React.JSX.Element {
                     <p>
                         The parts of each source cited here were read in the project&rsquo;s public source
                         repository (the websites were unreachable when this chapter was written); links point
-                        to the published versions. RFC section numbers were worked out from the working
-                        groups&rsquo; source files and have not yet been checked against the published RFCs.
-                        MDN content is by Mozilla contributors under CC-BY-SA 2.5 and is paraphrased here, not
-                        copied.
+                        to the published versions. RFC 9110 and RFC 9111 section numbers were checked against
+                        the published RFC text as the HTTP Working Group publishes it (httpwg.org/specs). RFC
+                        9846&rsquo;s were checked only against the TLS Working Group&rsquo;s final source
+                        file, not the published RFC, which could not be reached. MDN content is by Mozilla
+                        contributors under CC-BY-SA 2.5 and is paraphrased here, not copied.
                     </p>
                     <ol className="ln-sources">
                         {SOURCES.map((s) => (

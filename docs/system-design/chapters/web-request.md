@@ -605,7 +605,11 @@ websites were unreachable from the authoring container.
   checked: 2026-10-27
   via: read
   supports: [client and server are roles in a connection; HTTP needs a reliable connection (§3.3); requests and responses, responses carry a status code (§3.4); user agent = client program that initiates a request (§3.5); a cache stores responses to cut response time on later equivalent requests (§3.8); https means HTTP over a TLS-secured connection to an authenticated server (§4.2.2); GET requests a representation of the target (§9.3.1); three-digit status codes, first digit is the class (§15)]
-  note: rfc9110.xml in httpwg/http-core commit bde37f6, the working group's source of the published RFC. Section numbers computed from the XML's section nesting.
+  note: >-
+    rfc9110.xml in httpwg/http-core commit bde37f6. Section numbers verified 2026-10-27 against the published RFC
+    as rendered by the HTTP WG (httpwg.org/specs/rfc9110.html, read from httpwg/httpwg.github.io @ ce03dd5;
+    dcterms.identifier urn:ietf:rfc:9110, issued 2022-06, creators Fielding, Nottingham, Reschke): §3.3, §3.4, §3.5,
+    §3.8, §4.2.2, §9.3.1 and §15 headings and opening paragraphs match. rfc-editor.org itself was unreachable.
 - id: rfc9111
   title: HTTP Caching (RFC 9111, STD 98)
   author: Fielding, Nottingham, Reschke (eds.)
@@ -615,7 +619,9 @@ websites were unreachable from the authoring container.
   checked: 2026-10-27
   via: read
   supports: [a fresh stored response can be reused without validation, reducing latency and network overhead (§1)]
-  note: rfc9111.xml in httpwg/http-core commit bde37f6.
+  note: >-
+    rfc9111.xml in httpwg/http-core commit bde37f6. §1 (Introduction) and its fresh-reuse sentence verified
+    2026-10-27 against httpwg.org/specs/rfc9111.html (httpwg/httpwg.github.io @ ce03dd5; issued 2022-06).
 - id: rfc9846
   title: The Transport Layer Security (TLS) Protocol Version 1.3 (RFC 9846)
   author: E. Rescorla
@@ -664,8 +670,11 @@ websites were unreachable from the authoring container.
   steps, five questions and one exercise.
 - Should the product show the reader's own `PerformanceNavigationTiming` entry? It would be real data, but it varies
   per reader, so the text could not quote it. Decide when the product is built.
-- The published RFC 9846 and RFC 9110 section numbers were computed from the working groups' source files. Check
-  them against rfc-editor.org when it is reachable.
+- RFC 9110 and RFC 9111 section numbers are verified against the published text (httpwg.org/specs, 2026-10-27).
+  RFC 9846's are verified only against the TLS WG's final source (tlswg/tls13-spec rfc9846.md @ c728b4e, last
+  changed 2026-07-07, unchanged at the repo's head; metadata: number 9846, submissiontype IETF, obsoletes 8446). Search
+  results say RFC 9846 was announced on 2026-07-11, but the published RFC (rfc-editor.org, datatracker, ietf.org,
+  ftp.nic.ad.jp mirror) could not be reached to compare. Check against it when reachable.
 
 ## Evidence
 

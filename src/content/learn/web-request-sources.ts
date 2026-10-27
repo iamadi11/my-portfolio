@@ -13,7 +13,7 @@ export const SOURCES: Source[] = [
         title: 'RFC 9110: HTTP Semantics (June 2022)',
         publisher: 'IETF (Fielding, Nottingham, Reschke, eds.)',
         url: 'https://www.rfc-editor.org/rfc/rfc9110',
-        read: 'httpwg/http-core rfc9110.xml @ bde37f6',
+        read: 'httpwg/http-core rfc9110.xml @ bde37f6; section numbers checked against the published text (httpwg.org/specs, httpwg/httpwg.github.io @ ce03dd5)',
     },
     {
         id: 'mdn-url',
@@ -34,7 +34,7 @@ export const SOURCES: Source[] = [
         title: 'RFC 9846: The Transport Layer Security (TLS) Protocol Version 1.3 (July 2026; obsoletes RFC 8446)',
         publisher: 'IETF (E. Rescorla)',
         url: 'https://www.rfc-editor.org/rfc/rfc9846',
-        read: 'tlswg/tls13-spec rfc9846.md @ c728b4e; section numbers from that file',
+        read: 'tlswg/tls13-spec rfc9846.md @ c728b4e (the working group’s final source; the published RFC could not be reached); section numbers from that file',
     },
     {
         id: 'mdn-http-overview',
@@ -69,7 +69,7 @@ export const SOURCES: Source[] = [
         title: 'RFC 9111: HTTP Caching (June 2022)',
         publisher: 'IETF (Fielding, Nottingham, Reschke, eds.)',
         url: 'https://www.rfc-editor.org/rfc/rfc9111',
-        read: 'httpwg/http-core rfc9111.xml @ bde37f6',
+        read: 'httpwg/http-core rfc9111.xml @ bde37f6; §1 checked against the published text (httpwg.org/specs, httpwg/httpwg.github.io @ ce03dd5)',
     },
     {
         id: 'mdn-crp',
