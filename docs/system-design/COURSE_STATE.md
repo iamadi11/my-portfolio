@@ -50,8 +50,6 @@ prerequisites. Owner review of the curriculum is welcome before chapter authorin
   search are recorded `via: search` and cannot support claims from `implemented` on (course).
 - `course.mjs` lives under `.claude/`, which `eslint.config.mjs` ignores; the skill's own tests run with
   `node --test` (course).
-- Path closure (a path never needs a chapter outside it) is checked by the mode B generator, not by `course.mjs
-  check`; a later edit to paths could break it unnoticed (course).
 - Scoping sources were read only as search snippets except the System Design Primer; `time-clocks`,
   `consistent-hashing`, `cap-pacelc`, `consensus` and `isolation` have no primary source found yet (course).
 - Beginner path has no end-to-end capstone; known gaps listed in `CURRICULUM.md` (course).
@@ -62,3 +60,5 @@ prerequisites. Owner review of the curriculum is welcome before chapter authorin
 - 2026-10-28 A course: not initialized → initialized; app audited, empty graph created, placement and budgets
   proposed, empty leftover `src/app/learn/` folders (untracked, no files) removed.
 - 2026-10-28 B course: curriculum empty → 119 chapters planned; `check` ok, `next` → web-request.
+- 2026-10-28 skill: `course.mjs check` now enforces path closure and rejects duplicate path/prerequisite entries
+  (closes the open issue); curriculum still passes.

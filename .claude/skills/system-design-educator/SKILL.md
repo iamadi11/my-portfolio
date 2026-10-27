@@ -43,7 +43,8 @@ Read references only when the step needs them (each is one level deep from here)
 Script (run it from the repo root; don't read it): `node ${CLAUDE_SKILL_DIR}/scripts/course.mjs <command>`
 
 - `next`: the next chapter and why (resume, finish started work, or start the next whose prerequisites are ready).
-- `check`: the graph (ids, rows, prerequisites, cycles, paths), COURSE_STATE's current unit, and that each chapter's
+- `check`: the graph (ids, rows, prerequisites, cycles, paths, and that every path holds its chapters'
+  prerequisites), COURSE_STATE's current unit, and that each chapter's
   spec holds the evidence its status claims (sources, passing checks, a reviewer, no open findings).
 - `show <id>`: one chapter's status, prerequisites and whether it can start; fails on an unknown id.
 - `skill`: this skill's own files. Tests: `node --test ${CLAUDE_SKILL_DIR}/scripts/course.test.mjs`.
