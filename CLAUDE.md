@@ -117,3 +117,14 @@ Examples:
 6. **PWA:** installable (`src/app/manifest.ts`, icons in `public/`) and offline-capable (`public/sw.js`: network-first page, cache-first build files). Bump `VERSION` in `sw.js` when its caching rules change.
 7. **Motion:** reduced motion shows every sheet finished, with no scroll-linked animation.
 8. **Backend:** Redis-backed features (Eidos contact form, live readers) render only when Redis env vars exist (`src/lib/redis.ts`); see `docs/blueprint.md` → Backend. Never store raw IPs or personal data beyond the message a visitor chooses to send.
+
+---
+
+## 11. SYSTEM DESIGN COURSE (PLANNED)
+
+A system design course (zero → advanced) is planned for this site; it does not exist yet. It teaches general engineering, so §0's "facts about the owner come from `site.ts`" does not apply to its content.
+
+1. **Only through the skill:** all course work (initialize, curriculum, next chapter, chapter audit) goes through `.claude/skills/system-design-educator` (`/system-design-educator [init | curriculum | next | chapter <id> | audit <id>]`), one unit per invocation.
+2. **State:** `docs/system-design/COURSE_STATE.md` (where it is, what's next) and `docs/system-design/CURRICULUM.md` (learning graph; the only place chapter status lives). Read them first, update them last.
+3. **Truth:** every technical claim traces to a recorded source (primary first) with honest `via: read | search`; example numbers are labelled assumptions; simulations are labelled teaching models and every number they show comes from tested model state.
+4. **Look and performance:** the drawing-set language of `/` (monochrome; states by line/fill + text, never colour), WCAG 2.2 AA, reduced motion, and `/` must stay unaffected; budgets are set in mode A and recorded in `COURSE_STATE.md`.
