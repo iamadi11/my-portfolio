@@ -691,6 +691,9 @@ websites were unreachable from the authoring container.
   equal `connectEnd` and the TLS share 0. This looks like an editorial slip: the "record connection timing info"
   text the chapter quotes takes secure connection start before the handshake, and MDN's guidance matches. The
   chapter's TCP/TLS split is labelled derived; upstream issue not checked (GitHub search unavailable here).
+  Re-checked 2026-10-27: whatwg/fetch head is still 59afe34 and the wording is unchanged (step 2 sets the secure
+  connection start time from `timingInfo`'s connection end time). A search of the repository's issues was refused
+  (this session's GitHub API access is limited to its own repository), so whether it is a known slip is unknown.
 - The round-trip counts assume TCP plus TLS 1.3, without TCP Fast Open, 0-RTT or HTTP/3. Those are deferred,
   without claims, to `tcp`, `tls` and `http-versions`.
 - The worked example's 30, 40 and 50 ms are assumptions, not measurements. The chapter never presents them as
