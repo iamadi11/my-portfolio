@@ -20,6 +20,12 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to load Arimo, the caps lettering of the drawings.
 
+## Tests
+
+- `npm test`: unit and model tests (Vitest).
+- `npm run test:browser`: browser suites for `/learn` against a running production build; see
+  [tests/browser/README.md](tests/browser/README.md).
+
 ## Make it yours
 
 The home page (a drawing set: six monochrome sheets that draw themselves as you scroll) is driven by one file, so it works for any engineer (SDE-2, SDE-3, tech lead):
