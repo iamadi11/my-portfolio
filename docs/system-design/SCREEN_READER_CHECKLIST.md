@@ -16,10 +16,11 @@ focus and live-region text; they are **not** a substitute for this. Record each 
 
 1. On load, the page title and the `h1` are read; the "Skip to main content" link is the first Tab stop and moves
    focus into the main content.
-2. The headings list (rotor or NVDA+F7) shows the chapter's sections in order, with no empty or duplicated headings.
+2. The headings list (rotor or NVDA+F7) shows the chapter's sections in order, with no empty headings; a repeated
+   sub-heading (e.g. "Check yourself") sits under a different section each time.
 3. Citation marks are read as "Source n: title, section" rather than as bare numbers.
 4. "Show the answer" disclosures announce collapsed/expanded, and the answer is read only after opening.
-5. The figure is introduced by its caption ("Fig. 1 · …"); the drawing itself is skipped (it is decorative and
+5. The figure is named by its heading ("Fig. 1 · …"); the drawing itself is skipped (it is decorative and
    `aria-hidden`); nothing is read twice.
 
 ## /learn/web-request (Fig. 1, "Where the time goes before the first byte")
@@ -35,13 +36,15 @@ focus and live-region text; they are **not** a substitute for this. Record each 
    announcements are not so frequent that they become unusable while holding an arrow key (note the experience).
 6. **Steps:** Next/Previous announce "Step n. title. text"; at the last step, Next stays focused and is announced as
    unavailable.
-7. **Predict, then run:** the prompt (80 ms round trip) is read; an empty or negative guess is refused with a
-   message; a guess then Run announces "You guessed … the model gives 130 ms …". Before Run, 130 ms is never heard.
+7. **Predict, then run** (sliders untouched, so the server time is the default 50 ms): the prompt (80 ms round
+   trip) is read; an empty or negative guess is refused with a message; a guess then Run announces "You guessed …
+   the model gives 130 ms …". Before Run, 130 ms is never heard.
 
 ## /learn/client-server (Fig. 1, "One exchange, and what each side knows")
 
-1. **Predict first:** the three questions are read as group labels with their choices. Before Check, Skip or Run,
-   nothing heard states an outcome (no "409", no counts, no "replay").
+1. **Predict first:** the three questions are read as group labels with their choices. The answer options
+   themselves (0 / 1 / 2, 201 Created / 409 Conflict / No response) are read as choices; before Check, Skip or Run,
+   nothing heard tells you which option is right.
 2. **Check with questions open:** "Answer … first" is announced and no answers are read.
 3. **Check with all answered, one wrong:** each line is read: "right" with the reason, or "not quite, it is …" with a
    reason for the option picked. **Skip:** focus stays; answers are read.

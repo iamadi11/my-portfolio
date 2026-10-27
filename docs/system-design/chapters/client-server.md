@@ -659,7 +659,8 @@ Final evidence: every line below was run on the final code (6b5f8d5 plus the thi
   fault, late-case event order per method, the late "starts" step naming the order its reply carries, 32-case invariants, determinism, prediction answers from the model; 93
   web-request; 3 curriculum). Mutation check: telling the late reply before the retry fails 5 tests (2026-10-27)
 - pre-commit audit: pass — fallow audit (new-only): verdict pass, 0 complexity findings; the one listed issue
-  (unused dependency `critters`) is pre-existing, `introduced: false` (2026-10-27)
+  (unused dependency `critters`) is pre-existing, `introduced: false` (2026-10-27); that finding was a false
+  positive: Next's `optimizeCss` requires critters (corrected in be564fe)
 - course checks: pass — course.mjs check ok; course.test.mjs 23/23 (2026-10-27)
 - build and JS budget: pass — next build: /learn/client-server 112 kB first-load JS (budget 120 kB); /learn 107 kB,
   /learn/web-request 111 kB, / 110 kB (unchanged). Browser, script bodies before the load event (gzip):

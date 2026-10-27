@@ -1,7 +1,7 @@
 // Browser checks for /learn/web-request (Chapter 1) and the routes it touches, against a production build.
 // Run with `npm run test:browser` (see README.md in this folder).
-const { chromium } = require('playwright');
 const path = require('path');
+const { chromium } = require('playwright');
 
 const { AXE, BASE, OUT, SIZES } = require('./config.cjs');
 
@@ -49,7 +49,6 @@ async function section2(browser) {
             await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)));
             await page.addScriptTag({ content: AXE });
             const r = await page.evaluate(async () =>
-                // eslint-disable-next-line no-undef
                 axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] })
             );
             const v = r.violations.map(

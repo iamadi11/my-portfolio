@@ -307,7 +307,7 @@ The final notes' fixes are an SVG coordinate change and one added unit test. The
    - 6265bis publication status;
    - the Idempotency-Key draft's current status;
    - Fetch's clamp wording.
-5. **`critters`:** an unused dependency flagged by fallow; pre-existing and out of scope.
+5. **`critters`:** flagged as unused by fallow at the time. Correction (2026-10-27, commit `be564fe`): it is used; Next's `optimizeCss` requires it while prerendering `/404`, and removing it breaks the build. fallow now ignores it.
 6. **This report** is committed on the branch, not merged into main. It lives under `docs/`, which deploys never upload (`.vercelignore`), so merging it is optional.
 7. **Next course unit:** mode C, `ip-and-ports` (`course.mjs next`).
 
