@@ -3,20 +3,26 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
+        "predev": "npm run eidos-sw",
         "dev": "next dev --turbopack",
+        "prebuild": "npm run eidos-sw",
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
         "lint:fix": "next lint --fix",
         "lint-staged": "lint-staged",
         "prepare": "husky",
-        "commit": "cz"
+        "commit": "cz",
+        "eidos-sw": "node -e \"require('fs').copyFileSync(require.resolve('@sweidos/eidos/sw'), 'public/eidos-sw.js')\""
     },
     "dependencies": {
+        "@sweidos/eidos": "^2.5.2",
         "critters": "^0.0.23",
         "next": "^15.5.27",
         "react": "19.0.0",
-        "react-dom": "19.0.0"
+        "react-dom": "19.0.0",
+        "redis": "^5.8.2",
+        "server-only": "^0.0.1"
     },
     "devDependencies": {
         "@commitlint/cli": "19.6.0",

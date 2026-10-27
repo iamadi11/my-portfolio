@@ -64,6 +64,22 @@
 - Devices: iPhone mini 375×812, iPhone 16 Pro 402×874, 768×1024, 1280×800, 1440×900, 1920×1080; no horizontal scroll; safe areas respected (`viewport-fit=cover`).
 - WCAG 2.2 AA; Lighthouse ≥ 90 in all four categories.
 
+## Backend (Redis on Vercel)
+
+Three server features need a Redis connected to the Vercel project. Without one, they are simply not rendered (the page stays static and the `mailto:` link remains the way in).
+
+| Env var | What for |
+| --- | --- |
+| `KV_REST_API_URL` + `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`) | Upstash for Redis (REST), set by Vercel when the store is connected |
+| `REDIS_URL` (or `KV_URL`) | Any other Redis (TCP, e.g. Redis Cloud); REST wins when both exist |
+| `INBOX_TOKEN` (≥ 16 chars) | Read the inbox: `curl -H "Authorization: Bearer $INBOX_TOKEN" https://<site>/api/contact` |
+| `RESEND_API_KEY`, `CONTACT_TO`, `CONTACT_FROM` (optional) | Also email each message (Resend), default to `SITE.profile.email` |
+
+- **Contact form (Eidos):** `contact/ContactForm.tsx` + `contact/send.ts` (the owner's library `@sweidos/eidos`, loaded lazily as the form nears). A `neverLose` action keeps the message in IndexedDB until `/api/contact` accepts it, retrying with the same `Idempotency-Key`; the route claims the key and stores the message in one Lua script, so a retry is recognised and stored once. Validation (4xx, not retried), a honeypot, a 10/hour rate limit on a salted IP hash (raw IPs never stored), a capped inbox list (1,000). The drawing beside the form shows the visitor's own message: FORM → QUEUE (IndexedDB) → SERVER.
+- **Live readers:** `Readers.tsx` (nav, ≥ 1280 px) + `/api/presence`: each open, visible tab reports a random per-tab id and the sheet in view every 25 s (first report when idle); present = seen in the last 60 s; one sorted set per sheet. Heartbeats rather than SSE: on serverless, SSE would keep a function running per visitor.
+- **Rule-engine sketch:** `sections/rules/*`, a `<details>` under the revision whose notes mention the rule engine. Schema-driven form, made-up sample transactions, and a caption that says so: not Cashfree's code, rules or data. Loaded only when opened.
+- **Download as PDF:** `PrintButton.tsx` + `src/app/print.css`: the browser's print-to-PDF of the drawing set as A3 landscape sheets (template v1), every drawing finished (the driver sets all scenes to their end on `beforeprint`).
+
 ## PWA
 
-`src/app/manifest.ts` (standalone, maskable icon) and `public/sw.js`: navigations network-first with the last good `/` as the offline fallback, `/_next/static` cache-first, everything else stale-while-revalidate. Bump `VERSION` in `sw.js` when its rules change. Icons (`public/icon*.png`, `icon.svg`, favicons) are the monochrome title-block mark.
+`src/app/manifest.ts` (standalone, maskable icon) and `public/sw.js` (which also `importScripts` Eidos' worker, copied from `node_modules` by `npm run eidos-sw` before `dev`/`build`; `/api/` is never cached): navigations network-first with the last good `/` as the offline fallback, `/_next/static` cache-first, everything else stale-while-revalidate. Bump `VERSION` in `sw.js` when its rules change. Icons (`public/icon*.png`, `icon.svg`, favicons) are the monochrome title-block mark.

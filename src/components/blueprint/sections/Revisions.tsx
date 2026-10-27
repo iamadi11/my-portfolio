@@ -7,6 +7,8 @@ import { detailOf, measuredBy, noteId, resultId, revId } from '@/components/blue
 import { SITE } from '@/content/site';
 import type { Row } from '@/content/types';
 
+import RuleSketchSlot from './rules/RuleSketchSlot';
+
 import './revisions.css';
 
 /**
@@ -15,6 +17,19 @@ import './revisions.css';
  * `period`; "now" is the date the page was rendered. Below, the revision table (newest first) and the
  * education rows as reference documents. Revision letters are presentational: the oldest role is REV A.
  */
+
+/** The role whose notes describe the fraud rule engine gets an interactive sketch of the idea (`rules/`). */
+const RULE_ROW = SITE.practice.experience.findIndex((r) => r.highlights?.some((h) => /rule engine/i.test(h)));
+
+/** Sits after the row's scene, so opening it never changes that row's scroll timing. */
+function SketchDetail({ code }: { code: string }): React.JSX.Element {
+    return (
+        <details className="rev-sketch">
+            <summary>Detail {code} · rule engine, sketched</summary>
+            <RuleSketchSlot />
+        </details>
+    );
+}
 
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
@@ -277,6 +292,7 @@ export default function Revisions(): React.JSX.Element {
                                 current={c.current}
                                 level="h3"
                             />
+                            {exp.indexOf(c.row) === RULE_ROW ? <SketchDetail code={c.rev} /> : null}
                         </li>
                     ))}
                 </ol>

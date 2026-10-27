@@ -6,7 +6,11 @@
  * cache first (their names change with their content), everything else is served from the cache while a fresh
  * copy is fetched.
  */
-const VERSION = 'v1';
+// Eidos' worker (the owner's library: background sync and replay of queued writes, e.g. the contact form) runs in
+// this same worker, so one registration serves both. Copied from node_modules by `npm run eidos-sw` (pre-build).
+importScripts('/eidos-sw.js');
+
+const VERSION = 'v2';
 const PAGES = `pages-${VERSION}`;
 const BUILD = `build-${VERSION}`;
 const OTHER = `other-${VERSION}`;
@@ -25,7 +29,14 @@ self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches
             .keys()
-            .then((keys) => Promise.all(keys.filter((k) => !keep.includes(k)).map((k) => caches.delete(k))))
+            .then((keys) =>
+                Promise.all(
+                    // Eidos manages its own caches (prefix "eidos"); leave them alone.
+                    keys
+                        .filter((k) => !keep.includes(k) && !k.startsWith('eidos'))
+                        .map((k) => caches.delete(k))
+                )
+            )
             .then(() => self.clients.claim())
     );
 });
@@ -34,6 +45,8 @@ self.addEventListener('fetch', (event) => {
     const req = event.request;
     const url = new URL(req.url);
     if (req.method !== 'GET' || url.origin !== self.location.origin) return;
+    // The API is live data (inbox, presence): never cached here.
+    if (url.pathname.startsWith('/api/')) return;
     // React Server Component payloads and dev/HMR traffic are never cached.
     if (req.headers.get('RSC') || url.pathname.startsWith('/_next/webpack-hmr')) return;
 
