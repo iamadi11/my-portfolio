@@ -58,6 +58,22 @@ focus and live-region text; they are **not** a substitute for this. Record each 
 7. **Changing a choice after a run:** the old result disappears and nothing stale is announced.
 8. **Run case A / B / C** (after reveal): each runs the case and announces its summary.
 
+## /learn/ip-and-ports (Figs. 1–3)
+
+1. **Fig. 1** is named by its heading; its drawing is skipped; the list beside it (address, TCP or UDP, port,
+   port 9000) and the caption are read.
+2. **Fig. 2 controls:** five radio groups with their legends ("From (browser on 198.51.100.7)", "To address",
+   "Protocol", "To port", "Packets for unused ports"), the prediction group ("Predict first: where does it go?")
+   and Run. Before Run, nothing heard says where the packet goes; the outcome names are heard only as choices.
+3. **Fig. 2 Run:** the summary ("TCP 198.51.100.7:50002 → 203.0.113.10:443: Web server, connection B. …
+   Sender gets back: …") is announced once, without moving focus. Changing any choice afterwards removes the result
+   and nothing stale is announced.
+4. **Fig. 2 steps:** Next/Previous announce "Step n of m, Address/Protocol/Lookup/Result. …"; at the last step
+   Next keeps focus and is announced as unavailable. The steps are understandable without the drawing.
+5. **Fig. 3:** the groups "On the way", "Transport" and the prediction are read; Run announces "… The application
+   reads 1 2 4 5: one is missing. Last read at tick 6. …" (Lose 3, UDP). "The timeline as a list" opens and reads
+   the events in time order.
+
 ## Repetition and timing
 
 - Note any announcement that is read twice, read late (after the next action), or cut off by another.

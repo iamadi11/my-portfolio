@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import Cite from '@/components/learn/Cite';
 import CourseShell from '@/components/learn/CourseShell';
+import Q from '@/components/learn/kit/Question';
 import JourneyStepper from '@/components/learn/web-request/JourneyStepper';
 import { SOURCE_NUMBER, SOURCES } from '@/content/learn/web-request-sources';
 
@@ -25,28 +26,6 @@ const TITLES: Record<string, string> = Object.fromEntries(SOURCES.map((s) => [s.
 
 function C({ ids, at }: { ids: string[]; at?: string }): React.JSX.Element {
     return <Cite ids={ids} at={at} numbers={SOURCE_NUMBER} titles={TITLES} />;
-}
-
-function Q({
-    n,
-    ask,
-    children,
-}: {
-    n: number;
-    ask: React.ReactNode;
-    children: React.ReactNode;
-}): React.JSX.Element {
-    return (
-        <div className="ln-q">
-            <p>
-                <strong>Q{n}.</strong> {ask}
-            </p>
-            <details>
-                <summary>Show the answer</summary>
-                {children}
-            </details>
-        </div>
-    );
 }
 
 export default function Page(): React.JSX.Element {

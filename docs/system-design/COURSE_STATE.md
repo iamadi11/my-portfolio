@@ -9,7 +9,7 @@ The system design course is built only through the `system-design-educator` skil
 
 ## Current unit
 
-ip-and-ports step 3
+ip-and-ports step 8
 
 ## Next action
 
@@ -127,3 +127,6 @@ in `SYSTEM_DESIGN_COURSE_IMPLEMENTATION_REPORT_2026-10-28.md` §13.
 - 2026-10-27 maintenance: PR #22 merged (f12c089): browser suites in the repo, screen-reader checklist, source
   re-checks, critters kept. Independent review: no blocking; 3 should-fix fixed (af6897f) and re-verified.
 - 2026-10-27 skill: visual-first upgrade (stages A–F, asset plan, visual review, structural checks; 29 course tests).
+- 2026-10-27 C ip-and-ports (visual-first pilot): planned → tested. Storyboard and asset plan first (A1 drawing,
+  A2 demultiplexing simulation, A3 datagram timeline); models and tests, then figures, then text. Route
+  `/learn/ip-and-ports`, 113 kB first-load JS; browser suite 55/55; regression 69/69 and 48/48.

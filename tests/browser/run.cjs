@@ -5,7 +5,7 @@ const path = require('path');
 
 const { BASE } = require('./config.cjs');
 
-const SUITES = ['web-request.cjs', 'client-server.cjs', 'js-budget.cjs'];
+const SUITES = ['web-request.cjs', 'client-server.cjs', 'ip-and-ports.cjs', 'js-budget.cjs'];
 
 (async () => {
     try {

@@ -21,4 +21,12 @@ const SIZES = [
     [1920, 1080],
 ];
 
-module.exports = { BASE, OUT, AXE, SIZES };
+/** Collects a page's console errors and uncaught exceptions; read the array after the page has been used. */
+function pageErrors(page) {
+    const errors = [];
+    page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+    page.on('pageerror', (e) => errors.push(String(e)));
+    return errors;
+}
+
+module.exports = { BASE, OUT, AXE, SIZES, pageErrors };
