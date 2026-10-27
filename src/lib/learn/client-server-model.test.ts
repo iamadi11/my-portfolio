@@ -87,6 +87,40 @@ describe('retrying (question 7 steps 8-9, worked example, figure predictions)', 
     });
 });
 
+describe('event order in the late case (the first request is still in progress when the retry arrives)', () => {
+    it.each(METHODS)(
+        '%s: the first request starts, the client gives up, the retry runs, then the first finishes',
+        (m) => {
+            const ev = exchange({ method: m, fault: 'responseLate', retry: true }).events;
+            const at = (attempt: number, kind: string): number =>
+                ev.findIndex((e) => e.attempt === attempt && e.kind === kind);
+            const started = at(1, 'server');
+            const gaveUp = at(1, 'client');
+            const retried = at(2, 'server');
+            const finished = at(1, 'response-late');
+            expect(ev[started].text).toMatch(/starts/);
+            expect(started).toBeLessThan(gaveUp);
+            expect(gaveUp).toBeLessThan(retried);
+            expect(retried).toBeLessThan(finished);
+            expect(finished).toBe(ev.length - 1);
+        }
+    );
+
+    it('without a retry, the late response is still told after the client gave up', () => {
+        const ev = exchange({ method: 'POST', fault: 'responseLate', retry: false }).events;
+        expect(ev.map((e) => e.kind)).toEqual(['request', 'server', 'client', 'response-late']);
+    });
+
+    it('nothing before the retry says the first request has finished', () => {
+        const ev = exchange({ method: 'POST_KEY', fault: 'responseLate', retry: true }).events;
+        const beforeRetry = ev.slice(
+            0,
+            ev.findIndex((e) => e.attempt === 2)
+        );
+        expect(beforeRetry.some((e) => /creates a new order|201/.test(e.text))).toBe(false);
+    });
+});
+
 describe('invariants over every case (4 methods × 4 faults × 2)', () => {
     const cases: Inputs[] = METHODS.flatMap((method) =>
         FAULTS.flatMap((fault) => [false, true].map((retry) => ({ method, fault, retry })))

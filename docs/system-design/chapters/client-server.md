@@ -173,8 +173,7 @@ Glossary rules for the course (added here):
       `Host` header field. [rfc9112 §3, §3.2]
    4. **A response** has a status code, and can carry header fields and a body. [rfc9110 §3.4] In HTTP/1.1 it
       starts with a status line, `version code reason`, such as `HTTP/1.1 201 Created`. [rfc9112 §4] A server can
-      send one or more interim responses (1xx) before the final one; most exchanges have just the final one.
-      [rfc9110 §3.4, §15.2]
+      send one or more interim responses (1xx) before the final one. [rfc9110 §3.4, §15.2]
    5. **Stateless.** Each request can be understood on its own: the server does not need to know what came before
       on the connection, and must not assume that two requests on one connection come from the same user agent.
       That design lets intermediaries reuse connections and spread requests across many servers. [rfc9110 §3.3]
@@ -195,15 +194,16 @@ Glossary rules for the course (added here):
       original was never applied. [rfc9110 §9.2.2; rfc9112 §9.3.1]
       Two qualifications. First, idempotency is about the *intended effect of identical requests*: a `PUT` that
       sets quantity 2 is safe to repeat, but only if the server really implements `PUT` as "replace the state",
-      and the standard notes that other clients may change the resource in between, so a repeated `PUT` can undo
-      someone else's change. [rfc9110 §9.2.2, §9.3.4] Second, the server is still free to log each copy or have
+      and the standard notes that other clients may change the resource in between [rfc9110 §9.2.2, §9.3.4], so a
+      repeated `PUT` can undo someone else's change (derived). Second, the server is still free to log each copy or have
       other side effects. [rfc9110 §9.2.2]
    9. **Making `POST` recognisable: idempotency keys.** The client puts a unique value, such as a random UUID, in
-      an `Idempotency-Key` header field, and sends the same value again with every retry of that request. A
+      an `Idempotency-Key` header field, and sends the same value again with every retry of that request, so the
+      server can recognise the retries [idempotency-key-draft §2, §2.2]. A
       server that supports it processes the first request with a new key normally. A later request with a key it
       has already seen gets a response consistent with the original (no second order). If the original is still
       being processed when the retry arrives, the server answers `409 Conflict`, and the client tries again
-      later. [idempotency-key-draft §2.2, §2.6, §2.7; rfc9110 §15.5.10] This works only when the server
+      later. [idempotency-key-draft §2.6, §2.7; rfc9110 §15.5.10] This works only when the server
       implements it correctly, and it is still an IETF draft, not a finished standard: a client cannot assume a
       server honours the field unless the server documents it. [idempotency-key-draft §2.5.1] (Details:
       `idempotency`.)
@@ -297,7 +297,8 @@ Content-Length: 27
 - `201 Created`: the request succeeded and created a new resource, named by the `Location` header field. [rfc9110
   §15.3.2, §9.3.3]
 
-**Step 2: the slow day.** The same request reaches the server, which starts placing the order. At 5 s the app gives
+**Step 2: the same order on a slow day.** Suppose instead that step 1's request arrives on a slow day, and the
+server starts placing order 42. At 5 s the app gives
 up and shows "Network error" [rfc9110 §7.5]. At 7 s the server finishes: order 42 exists, but its response reaches
 a client that is no longer waiting (whether the server notices that the client left depends on the server and is
 taught in `timeouts-retries`).
@@ -347,7 +348,8 @@ predict-then-run):
      `POST /orders` creates the next order (43, then 44).
    - First attempt. `request lost`: it never reaches the server. `none`: the server carries it out and the
      response arrives. `response lost`: the server carries it out, the response never arrives. `response late`:
-     the server is still working when the client gives up; it finishes later.
+     the server starts but is still working when the client gives up; it finishes last, after any retry, and its
+     response reaches a client that stopped waiting (events are emitted in that time order; tested).
    - Retry (only when chosen and the first attempt showed no response): sent after the client gives up; it
      arrives and its response arrives in time. In the `response late` case it arrives while the first is still
      being processed.
@@ -373,16 +375,18 @@ predict-then-run):
    - C (predict): with the key, but the response was late, so the retry arrives while the first is still being
      processed → what does the retry get back? (201 Created again, 409 Conflict, no response; answer 409)
 
-   Check gives feedback per question (right, wrong with the reason, or "not answered yet"); Skip reveals without
-   answering; Check with a question unanswered names the open questions and reveals nothing. After that, "Run
+   Check with every question answered gives feedback per question: right with the reason, or wrong with the
+   answer, a reason specific to the option picked, and the general reason. Check with a question unanswered names
+   the open questions and reveals nothing. Skip reveals the answers without feedback. After that, "Run
    case A/B/C" sets the controls to that case and runs it. Leak scope (tested): nothing in the figure states an
    outcome before Check, Skip or Run, and nothing on the page above the figure states the keyed outcomes (replay,
    409). The prose after the figure ("Making a repeated POST safe") explains them, in reading order after the
    prediction. Default controls are `GET` with nothing going wrong, and outcomes appear only after Run.
-9. **Signaling:** the current event's arrow is heavy; a lost message ends in a cross; a late response is drawn
-   ending after the client's timeout mark. The state panel shows before → after.
-10. **States:** delivered = solid arrow; lost = dashed arrow ending in a cross; late = solid arrow past the
-    timeout mark with the text "late: client stopped waiting"; every state also in text. Never colour alone.
+9. **Signaling:** the current event's arrow is heavy; a lost message ends in a cross; in the late case the
+   server's lane shows it still working, the client's lane shows where it gave up, and the late response is drawn
+   last, below any retry ("first request finishes, late"), in the same order as the event list. The state panel shows before → after.
+10. **States:** delivered = solid arrow; lost = dashed arrow ending in a cross; late = solid arrow drawn at
+    the bottom, after any retry, labelled "nobody is waiting for it"; every state also in text. Never colour alone.
 11. **Text alternative:** a polite live summary updated when a case is run (e.g. "POST with key, response lost,
     retried: first attempt no response; retry 201 Created (replayed). Reached the server 2 times; new orders 1;
     total orders 2."), and a second polite region for step changes, emptied when the case changes.
@@ -634,18 +638,20 @@ Spaced review:
 
 ## Evidence
 
+Final evidence, on the code after the implementation review's fixes, 2026-10-27:
+
 - typecheck: pass — npx tsc --noEmit (2026-10-27)
 - lint: pass — npm run lint, no warnings or errors; prettier --check src docs clean (2026-10-27)
-- model tests: pass — npm test, 151 tests (55 client-server model: indistinguishability per method, POST
-  duplicates, keyed replay, keyed 409 while in progress, keyed first-arrival after a lost request, PUT and GET
-  per fault, 32-case invariants, determinism, prediction answers from the model; plus 93 web-request and 3
-  curriculum) (2026-10-27)
-- pre-commit audit: pass — fallow audit (new-only): 0 new issues; the one listed (unused dependency `critters`) is
-  pre-existing, `introduced: false` (2026-10-27)
+- model tests: pass — npm test, 157 tests (61 client-server model: indistinguishability per method, POST
+  duplicates, keyed replay, keyed 409 while in progress, keyed first-arrival after a lost request, PUT and GET per
+  fault, late-case event order per method, 32-case invariants, determinism, prediction answers from the model; 93
+  web-request; 3 curriculum). Mutation check: telling the late reply before the retry fails 5 tests (2026-10-27)
+- pre-commit audit: pass — fallow audit (new-only): verdict pass, 0 complexity findings; the one listed issue
+  (unused dependency `critters`) is pre-existing, `introduced: false` (2026-10-27)
 - course checks: pass — course.mjs check ok; course.test.mjs 23/23 (2026-10-27)
-- build and JS budget: pass — next build: /learn/client-server 111 kB first-load JS (budget 120 kB); /learn 107 kB,
+- build and JS budget: pass — next build: /learn/client-server 112 kB first-load JS (budget 120 kB); /learn 107 kB,
   /learn/web-request 111 kB, / 110 kB (unchanged). Browser, script bodies before the load event (gzip):
-  /learn/client-server 110.7 KB, /learn/web-request 111.0 KB, /learn 106.5 KB, / 112.9 KB (2026-10-27)
+  /learn/client-server 111.2 KB, /learn/web-request 111.0 KB, /learn 106.5 KB, / 112.9 KB (2026-10-27)
 - browser sizes: pass — Playwright at 375×812, 402×874, 768×1024, 1280×800, 1440×900, 1920×1080: no horizontal
   scroll before and after a run, no console errors; figure screenshots read at 375 and 1280 (2026-10-27)
 - keyboard: pass — Playwright keyboard-only: method and fault radios (arrows), retry checkbox (Space), Run and step
@@ -655,14 +661,31 @@ Spaced review:
   listed and results shown after Run (2026-10-27)
 - accessibility scan: pass — axe-core 4.10.3, WCAG 2.0/2.1/2.2 A and AA at 375 and 1280 px, on load with answers
   open and after reveal and a run: 0 violations (2026-10-27)
-- browser suite: pass — 46/46 checks for /learn/client-server (sizes, console, axe, leak checks, incomplete /
-  right / wrong feedback, keyboard, live summary and step announcements, stale-result clearing, cases A–C, late
-  case labelling, citation links and numbering, reduced motion, /learn and chapter 1 link to chapter 2, sitemap,
-  / renders); chapter 1 regression suite 69/69 (2026-10-27)
-- lighthouse: pass — Lighthouse 13.4.1 on the final build. /learn/client-server mobile 84 (first run after a
-  server start, TBT 510 ms), then 100, 99, 99; desktop 100. /learn/web-request 98 / 100, /learn 100 / 100, / 97 /
-  100. Accessibility, best practices and SEO 100 on all four; CLS 0 (2026-10-27)
+- browser suite: pass — 47/47 checks for /learn/client-server (sizes, console, axe, leak checks, incomplete /
+  right / wrong feedback with per-option reasons, keyboard, live summary and step announcements, stale-result
+  clearing, cases A–C, late case drawn and listed in time order, citation links and numbering, reduced motion,
+  /learn and chapter 1 link to chapter 2, sitemap, / renders); chapter 1 regression suite 69/69 (2026-10-27)
+- lighthouse: pass — Lighthouse 13.4.1 on the final build: /learn/client-server 100 and 100 mobile, 100 desktop;
+  /learn/web-request 100 / 100; /learn 99 / 100; / 98 / 100; accessibility, best practices and SEO 100; CLS 0. On
+  the af07b7c build the first mobile run of /learn/client-server scored 84 (TBT 510 ms, first run after a server
+  start), then 100, 99, 99 (2026-10-27)
 
 ## Review findings
 
-None yet: no independent review has run on this chapter.
+Reviewer: fresh subagent (implementation review of dceb551..af07b7c, production build of af07b7c, source copies), 2026-10-27, rubric verification.md
+
+- [blocking] In the response-late case the event list and drawing said the first request had finished ("creates a new order", "its 201 comes too late") before the retry arrived, contradicting the retry's 409 → fixed (model emits "starts …" for the first attempt, the client gives up, any retry runs, then the first finishes last; the drawing puts the late response at the bottom; unit tests on event order for every method)
+- [should-fix] Worked-example order numbers did not line up (step 2 read as a second order, step 3's retry as /orders/43) → fixed (step 2 is the same order 42 on a slow day; page and spec)
+- [should-fix] Fig. 1 labels crossed the lanes and scaled up on wide screens → fixed (labels centred between the lanes and shortened; drawing capped at 26rem)
+- [should-fix] Citations claimed more than their sections: "most exchanges have only the final one" (§15.2), "repeated PUT undoes their change" (§9.3.4), key reuse on retries (§2.2) → fixed (first dropped; second marked derived; third cites §2, §2.2)
+- [note] Exercise lost the spec's "without new technology" hint → fixed (page restores it)
+- [note] Spec Visual step 8 contradicted itself on Check with open questions → fixed (wording matches the code)
+- [note] Wrong-answer feedback was the same for every option → fixed (a reason per wrong option)
+- [note] B's feedback said "sends back the original result", more than the draft's "consistent with the original" → fixed (says consistent; the stored result is labelled a model choice)
+- [note] "Three causes" presented as complete → fixed (assumption "completely or not at all" stated at first mention)
+- [note] "Server never sends unasked" stated without scope; RFC 9110 §3.3 applied to a database connection → fixed (scoped to HTTP/1.1 as described; "the same idea outside HTTP" with the PostgreSQL source)
+- [note] The figcaption's "records each key with its result" hints at B before Check → accepted: an assumption the model needs, it states no outcome; answers stay gated
+- [note] A code block scrolled without keyboard access at 320 px → fixed (code wraps)
+- [note] Program, Exchange, Cookie and Status code missing from the page's parts list → fixed for Exchange and Cookie; accepted for Program (defined inside "Client and server") and Status code (taught in chapter 1)
+- [note] The browser suite in Evidence is not in the repo, so it cannot be re-run from it → accepted: it needs a locally downloaded axe-core and a running build; its results are recorded here and its location in the session report; committing a runnable suite is a follow-up
+- [note] After a reveal, changing a radio shows the plain answer list until Check is pressed again → accepted: harmless

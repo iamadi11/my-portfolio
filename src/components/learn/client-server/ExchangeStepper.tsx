@@ -42,8 +42,26 @@ const PREDICTIONS = predictions();
 /** Why each answer is right, shown only after Check or Skip. */
 const WHY: Record<string, string> = {
     A: 'The server placed the order the first time; only its response was lost. A plain POST carries nothing that marks the copy as a repeat, so the server places a second order.',
-    B: 'The server has already finished a request with this key, so it sends back the original result and creates nothing.',
+    B: 'The server has already finished a request with this key, so it answers consistently with the original (in this model it resends the stored result) and creates nothing.',
     C: 'A server that honours keys refuses a copy while the original with the same key is still being processed, with 409 Conflict. The client waits and asks again.',
+};
+
+/** Why a particular wrong choice is wrong, so feedback answers the learner's own reasoning. */
+const WRONG: Record<string, Record<string, string>> = {
+    A: {
+        '0': 'Zero would mean the first request never took effect, but only its response was lost: the order was placed.',
+        '1': 'One would need the server to recognise the copy, and a plain POST carries nothing that marks it as a repeat.',
+    },
+    B: {
+        '0': 'The first request did reach the server and placed an order; the key only stops the copy.',
+        '2': 'Two is what happens without a key; the key is what lets the server recognise the copy.',
+    },
+    C: {
+        '201 Created':
+            'A replay of the original result comes only once the original has finished; here it is still being processed.',
+        'No response':
+            'In this model the retry arrives and its answer comes back in time; the question is what that answer is.',
+    },
 };
 
 const DEFAULT_INPUTS: Inputs = { method: 'GET', fault: 'none', retry: false };
@@ -56,7 +74,9 @@ function Prediction({ onRunCase }: { onRunCase: (c: Inputs) => void }): React.JS
     const [missing, setMissing] = useState('');
     const name = useId();
     const feedback = (id: string, answer: string): string =>
-        picked[id] === answer ? `${id}: right. ${WHY[id]}` : `${id}: not quite, it is ${answer}. ${WHY[id]}`;
+        picked[id] === answer
+            ? `${id}: right. ${WHY[id]}`
+            : `${id}: not quite, it is ${answer}. ${WRONG[id]?.[picked[id]] ?? ''} ${WHY[id]}`;
     const check = (): void => {
         const open = PREDICTIONS.filter((q) => !picked[q.id]).map((q) => q.id);
         if (open.length) {
@@ -198,7 +218,6 @@ function AttemptBlock({
     const line = (k: Event['kind'], extra = ''): string =>
         ['thin', on(k) && 'ln-active', extra].filter(Boolean).join(' ');
     const late = has('response-late');
-    const clientY = late ? y + 80 : y + 100;
     return (
         <g>
             <text x={160} y={y} textAnchor="middle" className="sl">
@@ -263,26 +282,17 @@ function AttemptBlock({
             ) : null}
             {late ? (
                 <>
-                    <line x1={24} y1={y + 70} x2={76} y2={y + 70} className="thin ln-skip" />
-                    <text x={4} y={y + 64} className="sl">
+                    {/* The server is still working: its response comes at the bottom of the drawing. */}
+                    <line x1={270} y1={y + 64} x2={270} y2={y + 92} className="thin ln-active" />
+                    <line x1={30} y1={y + 100} x2={70} y2={y + 100} className="thin ln-skip" />
+                    <text x={80} y={y + 104} className="sl">
                         gives up
-                    </text>
-                    <line
-                        x1={266}
-                        y1={y + 70}
-                        x2={54}
-                        y2={y + 132}
-                        className={line('response-late')}
-                        markerEnd={`url(#${marker})`}
-                    />
-                    <text x={64} y={y + 146} className="sl">
-                        late: client stopped waiting
                     </text>
                 </>
             ) : null}
             <rect
                 x={38}
-                y={clientY}
+                y={late ? y + 93 : y + 100}
                 width={24}
                 height={14}
                 rx={3}
@@ -292,14 +302,19 @@ function AttemptBlock({
     );
 }
 
-/** Two lanes, one block per attempt; the arrow or mark of the current event is drawn heavy. */
+/**
+ * Two lanes, one block per attempt, in time order. In the late case the first request's response is drawn last,
+ * after the client gave up and after any retry. The arrow or mark of the current event is drawn heavy.
+ */
 function Diagram({ result, current }: { result: Result; current: Event | undefined }): React.JSX.Element {
     const marker = useId().replace(/:/g, '');
-    const BLOCK = 180;
-    const H = 40 + result.attempts.length * BLOCK;
-    const busy = result.events.some((e) => e.kind === 'response-late');
+    const BLOCK = 128;
+    const late = result.events.some((e) => e.kind === 'response-late');
+    const tailY = 44 + result.attempts.length * BLOCK;
+    const H = tailY + (late ? 76 : 0);
+    const lateOn = current?.attempt === 1 && current.kind === 'response-late';
     return (
-        <svg className="bp-svg ln-svg" viewBox={`0 0 320 ${H}`} aria-hidden="true">
+        <svg className="bp-svg ln-svg ln-seq" viewBox={`0 0 320 ${H}`} aria-hidden="true">
             <defs>
                 <marker
                     id={marker}
@@ -325,13 +340,31 @@ function Diagram({ result, current }: { result: Result; current: Event | undefin
                 <AttemptBlock
                     key={a.n}
                     y={44 + i * BLOCK}
-                    label={a.n === 1 ? 'first attempt' : busy ? 'retry (first still in progress)' : 'retry'}
+                    label={a.n === 1 ? 'first attempt' : late ? 'retry, first still running' : 'retry'}
                     ev={result.events.filter((e) => e.attempt === a.n)}
                     reached={a.reached}
                     on={(k) => current?.attempt === a.n && current.kind === k}
                     marker={marker}
                 />
             ))}
+            {late ? (
+                <>
+                    <text x={160} y={tailY} textAnchor="middle" className="sl">
+                        first request finishes, late
+                    </text>
+                    <line
+                        x1={266}
+                        y1={tailY + 14}
+                        x2={54}
+                        y2={tailY + 44}
+                        className={['thin', lateOn && 'ln-active'].filter(Boolean).join(' ')}
+                        markerEnd={`url(#${marker})`}
+                    />
+                    <text x={160} y={tailY + 66} textAnchor="middle" className="sl">
+                        nobody is waiting for it
+                    </text>
+                </>
+            ) : null}
         </svg>
     );
 }

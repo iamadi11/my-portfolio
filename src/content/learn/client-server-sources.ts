@@ -23,6 +23,20 @@ export const CLIENT_SERVER_SOURCES: Source[] = [
         read: 'mdn/content @ bd7387a',
     },
     {
+        id: 'rfc6265',
+        title: 'RFC 6265: HTTP State Management Mechanism (April 2011)',
+        publisher: 'IETF (A. Barth)',
+        url: 'https://www.rfc-editor.org/rfc/rfc6265',
+        read: 'the published text as rendered by the HTTP WG (httpwg/httpwg.github.io @ ce03dd5). Only the basic Set-Cookie and Cookie exchange is used; a revision that may replace RFC 6265 could not be checked',
+    },
+    {
+        id: 'mdn-cookies',
+        title: 'Using HTTP cookies',
+        publisher: 'MDN Web Docs',
+        url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies',
+        read: 'mdn/content @ bd7387a',
+    },
+    {
         id: 'pg-architecture',
         title: 'PostgreSQL documentation: Architectural Fundamentals',
         publisher: 'The PostgreSQL Global Development Group',
@@ -55,20 +69,6 @@ export const CLIENT_SERVER_SOURCES: Source[] = [
         title: 'WebSocket API (WebSockets)',
         publisher: 'MDN Web Docs',
         url: 'https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API',
-        read: 'mdn/content @ bd7387a',
-    },
-    {
-        id: 'rfc6265',
-        title: 'RFC 6265: HTTP State Management Mechanism (April 2011)',
-        publisher: 'IETF (A. Barth)',
-        url: 'https://www.rfc-editor.org/rfc/rfc6265',
-        read: 'the published text as rendered by the HTTP WG (httpwg/httpwg.github.io @ ce03dd5). Only the basic Set-Cookie and Cookie exchange is used; a revision that may replace RFC 6265 could not be checked',
-    },
-    {
-        id: 'mdn-cookies',
-        title: 'Using HTTP cookies',
-        publisher: 'MDN Web Docs',
-        url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies',
         read: 'mdn/content @ bd7387a',
     },
     {

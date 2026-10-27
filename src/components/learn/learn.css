@@ -142,7 +142,9 @@
     padding: 0;
     background: none;
     font-size: inherit;
-    overflow-wrap: normal;
+    /* Long lines wrap rather than scroll, so nothing needs a scrollbar or keyboard scrolling at 320 px. */
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 .ln-prose strong {
     font-weight: 700;
@@ -653,4 +655,10 @@
 }
 .ln-controls > .ln-btn {
     margin-top: 0.25rem;
+}
+/* Chapter 2 sequence drawing: capped so its lettering stays near body size on wide screens. */
+.ln-svg.ln-seq {
+    display: block;
+    max-width: 26rem;
+    margin-inline: auto;
 }

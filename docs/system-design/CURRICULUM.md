@@ -59,7 +59,7 @@ Chapters on all three paths form the shared core.
 | id | order | stage | title | prereqs | paths | status |
 | --- | --- | --- | --- | --- | --- | --- |
 | web-request | 1 | 1 | Map: what happens when you open a website |  | beginner interview production | verified |
-| client-server | 2 | 1 | Clients, servers and request–response | web-request | beginner interview production | tested |
+| client-server | 2 | 1 | Clients, servers and request–response | web-request | beginner interview production | reviewed |
 | ip-and-ports | 3 | 1 | Addresses, packets and ports | client-server | beginner interview production | planned |
 | dns | 4 | 1 | DNS: from names to addresses | ip-and-ports | beginner interview production | planned |
 | tcp | 5 | 1 | TCP: reliable streams over unreliable packets | ip-and-ports | beginner interview production | planned |

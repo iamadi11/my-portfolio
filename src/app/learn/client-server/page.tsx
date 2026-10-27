@@ -116,6 +116,10 @@ export default function Page(): React.JSX.Element {
                             </dd>
                         </div>
                         <div>
+                            <dt>Exchange</dt>
+                            <dd>One request and the response (or responses) it gets.</dd>
+                        </div>
+                        <div>
                             <dt>Method and target</dt>
                             <dd>
                                 The method says what the client wants done, such as <code>GET</code> (fetch)
@@ -139,6 +143,15 @@ export default function Page(): React.JSX.Element {
                             <dd>
                                 Each request can be understood on its own, without knowing which requests came
                                 before it on the connection. <C ids={['rfc9110']} at="§3.3" />
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Cookie</dt>
+                            <dd>
+                                A small name=value item a server asks the browser to store (with{' '}
+                                <code>Set-Cookie</code>) and the browser sends back with later requests (in{' '}
+                                <code>Cookie</code>). <C ids={['rfc6265']} at="§3" />{' '}
+                                <C ids={['mdn-cookies']} />
                             </dd>
                         </div>
                         <div>
@@ -200,7 +213,9 @@ export default function Page(): React.JSX.Element {
                             request was lost (no order); the order was placed but the response was lost; or
                             the shop was slow and the app stopped waiting. In the last two, pressing again
                             places a second order. <C ids={['rfc9110']} at="§7.5, §9.2.2" /> (The three causes
-                            are derived: an exchange is two messages, and either can fail to arrive in time.)
+                            are derived: an exchange is two messages, and either can fail to arrive in time.
+                            They assume the server does a request completely or not at all; a server that
+                            fails halfway is a later chapter.)
                         </li>
                     </ul>
 
@@ -238,16 +253,17 @@ Server: Apache`}</code>
                     <p>
                         A client opens a connection to send requests; a server accepts connections and answers
                         them. The same program can be a client on some connections and a server on others{' '}
-                        <C ids={['rfc9110']} at="§3.3" />. A database server, for example, accepts connections
-                        from client applications, and a web server that reads the database is one of those
-                        clients <C ids={['pg-architecture']} />.
+                        <C ids={['rfc9110']} at="§3.3" />. The same idea holds outside HTTP: a database
+                        server, for example, accepts connections from client applications, and a web server
+                        that reads the database is one of those clients <C ids={['pg-architecture']} />.
                     </p>
                     <p>
                         The client starts every exchange; the server answers requests and does not send
-                        responses nobody asked for <C ids={['rfc9110']} at="§3.4" />{' '}
-                        <C ids={['mdn-http-overview']} />. Ways for a server to send news without being asked
-                        each time exist, as extra mechanisms on top <C ids={['mdn-sse', 'mdn-websockets']} />{' '}
-                        (chapter &ldquo;Pushing to clients&rdquo;, later).
+                        responses nobody asked for (as described for HTTP/1.1; how later versions differ is
+                        taught with them) <C ids={['rfc9110']} at="§3.4" /> <C ids={['mdn-http-overview']} />.
+                        Ways for a server to send news without being asked each time exist, as extra
+                        mechanisms on top <C ids={['mdn-sse', 'mdn-websockets']} /> (chapter &ldquo;Pushing to
+                        clients&rdquo;, later).
                     </p>
                     <Q
                         n={1}
@@ -275,9 +291,8 @@ Server: Apache`}</code>
                         <code>HTTP/1.1 201 Created</code> <C ids={['rfc9112']} at="§4" />. The first digit of
                         the code gives its class: 1xx informational, 2xx success, 3xx redirection, 4xx client
                         error, 5xx server error <C ids={['rfc9110']} at="§15" />. A server may send interim
-                        1xx responses before the final one; most exchanges have only the final one{' '}
-                        <C ids={['rfc9110']} at="§15.2" />. A blank line ends the header fields, and the body
-                        follows <C ids={['mdn-messages']} />.
+                        1xx responses before the final one <C ids={['rfc9110']} at="§15.2" />. A blank line
+                        ends the header fields, and the body follows <C ids={['mdn-messages']} />.
                     </p>
                     <Q
                         n={2}
@@ -364,9 +379,9 @@ Server: Apache`}</code>
                         Two qualifications. &ldquo;Idempotent&rdquo; is about the intended effect of{' '}
                         <em>identical</em> requests, and holds only if the server really implements the method
                         as specified: a <code>PUT</code> that sets quantity 2 is safe to repeat, but another
-                        client may change the order in between, and your repeated <code>PUT</code> then undoes
-                        their change <C ids={['rfc9110']} at="§9.3.4" />. And a server is still free to log
-                        each copy, or have other side effects <C ids={['rfc9110']} at="§9.2.2" />.
+                        client may change the order in between <C ids={['rfc9110']} at="§9.3.4" />, and your
+                        repeated <code>PUT</code> then undoes their change (derived). And a server is still
+                        free to log each copy, or have other side effects <C ids={['rfc9110']} at="§9.2.2" />.
                     </p>
                     <Q
                         n={5}
@@ -379,9 +394,9 @@ Server: Apache`}</code>
                             nothing&rdquo; is wrong: <code>PUT</code> and <code>DELETE</code> change things
                             but are still idempotent (deleting twice leaves the resource deleted, though the
                             second response may differ). Caveat: this describes what the methods mean; it
-                            holds only if the server implements them as specified, and a repeated{' '}
-                            <code>PUT</code> can overwrite another client&rsquo;s change{' '}
-                            <C ids={['rfc9110']} at="§9.3.4" />. Revisit{' '}
+                            holds only if the server implements them as specified, and another client may
+                            change the resource in between <C ids={['rfc9110']} at="§9.3.4" />, so a repeated{' '}
+                            <code>PUT</code> can overwrite their change (derived). Revisit{' '}
                             <a href="#retrying">sending the same request again</a>.
                         </p>
                     </Q>
@@ -402,10 +417,11 @@ Server: Apache`}</code>
                     <p>
                         The client puts a unique value, such as a random UUID, in an{' '}
                         <code>Idempotency-Key</code> header field, and sends the same value again with every
-                        retry of that request <C ids={['idempotency-key-draft']} at="§2.2" />. A server that
-                        supports it processes the first request with a new key normally. A later copy with a
-                        key it has already finished gets a response consistent with the original, and no
-                        second order. A copy that arrives while the original is still being processed gets{' '}
+                        retry of that request, so the server can recognise the retries{' '}
+                        <C ids={['idempotency-key-draft']} at="§2, §2.2" />. A server that supports it
+                        processes the first request with a new key normally. A later copy with a key it has
+                        already finished gets a response consistent with the original, and no second order. A
+                        copy that arrives while the original is still being processed gets{' '}
                         <code>409 Conflict</code>, and the client tries again later{' '}
                         <C ids={['idempotency-key-draft']} at="§2.6, §2.7" />{' '}
                         <C ids={['rfc9110']} at="§15.5.10" />.
@@ -501,9 +517,10 @@ Content-Length: 27
                         <code>Location</code> <C ids={['rfc9110']} at="§15.3.2, §9.3.3" />.
                     </p>
                     <p>
-                        <strong>Step 2: the slow day.</strong> The same request arrives and the server starts
-                        placing the order. At 5 s the app gives up and shows &ldquo;Network error&rdquo;{' '}
-                        <C ids={['rfc9110']} at="§7.5" />. At 7 s the server finishes: the order exists, but
+                        <strong>Step 2: the same order on a slow day.</strong> Suppose instead that step
+                        1&rsquo;s request arrives on a slow day, and the server starts placing order 42. At 5
+                        s the app gives up and shows &ldquo;Network error&rdquo;{' '}
+                        <C ids={['rfc9110']} at="§7.5" />. At 7 s the server finishes: order 42 exists, but
                         its response reaches a client that has stopped waiting. (Whether the server notices
                         that the client left depends on the server; that is the timeouts chapter.)
                     </p>
@@ -545,8 +562,9 @@ Content-Length: 27
                         A payment screen sends <code>POST /payments</code> with the amount. Users on a train
                         often see &ldquo;Network error&rdquo; and press &ldquo;Pay&rdquo; again. List what may
                         have happened on the server each time, and what goes wrong if the app just repeats the
-                        request. Then say what the app could do instead. Try the cases in Fig. 1 with{' '}
-                        <code>POST</code> and with <code>POST</code> plus a key.
+                        request. Then say what the app could do instead: first without new technology (hint:
+                        which method could find out what happened?), then with one new header field. Try the
+                        cases in Fig. 1 with <code>POST</code> and with <code>POST</code> plus a key.
                     </p>
                     <details className="ln-q">
                         <summary>Show the worked answer</summary>

@@ -92,94 +92,102 @@ function serve(method: Method, s: Server, originalBusy: boolean): { outcome: Out
     return { outcome: 'created order', response };
 }
 
+/** In the late case the first request is still being processed when the client gives up; it finishes last. */
+const START_TEXT: Record<Outcome, string> = {
+    read: 'starts reading order 42 (slowly)',
+    'set quantity': 'starts setting order 42 to quantity 2 (slowly)',
+    'created order': 'starts creating a new order (slowly)',
+    replayed: '',
+    conflict: '',
+    'not reached': '',
+};
+
 const SERVER_TEXT: Record<Outcome, string> = {
     read: 'reads order 42 and changes nothing',
     'set quantity': 'sets order 42 to quantity 2',
     'created order': 'creates a new order',
-    replayed: 'has seen this key and its finished result, so it sends that result again and creates nothing',
+    replayed:
+        'has seen this key and finished it, so it answers consistently with the original (here: the stored result) and creates nothing',
     conflict: 'has seen this key and the first request is still being processed, so it refuses the copy',
     'not reached': 'receives nothing',
 };
 
-export function exchange(input: Inputs): Result {
-    const { method, fault, retry } = input;
-    const s: Server = { orders: START.orders, quantity: START.quantity, keySeen: false, keyResult: null };
-    const attempts: Attempt[] = [];
-    const events: Event[] = [];
+/** The first send: what reached the server, what it did, and the events up to the client's view (late reply aside). */
+function firstAttempt(method: Method, fault: Fault, s: Server, events: Event[]): Attempt {
     const line = REQUEST_LINE[method];
-
-    // First attempt.
     if (fault === 'requestLost') {
         events.push({
             attempt: 1,
             kind: 'request-lost',
             text: `Client sends ${line}; the request is lost on the way.`,
         });
-        attempts.push({
-            n: 1,
-            reached: false,
-            outcome: 'not reached',
-            response: null,
-            clientSaw: NO_RESPONSE,
-        });
-    } else {
-        events.push({ attempt: 1, kind: 'request', text: `Client sends ${line}; it reaches the server.` });
-        const r = serve(method, s, false);
-        events.push({ attempt: 1, kind: 'server', text: `Server ${SERVER_TEXT[r.outcome]}.` });
-        const saw = fault === 'none' ? r.response : NO_RESPONSE;
-        events.push(
-            fault === 'none'
-                ? { attempt: 1, kind: 'response', text: `Response ${r.response} reaches the client.` }
-                : fault === 'responseLost'
-                  ? {
-                        attempt: 1,
-                        kind: 'response-lost',
-                        text: `Response ${r.response} is lost on the way back.`,
-                    }
-                  : {
-                        attempt: 1,
-                        kind: 'response-late',
-                        text: `The server is still working when the client stops waiting; its ${r.response} comes too late.`,
-                    }
-        );
-        attempts.push({ n: 1, reached: true, outcome: r.outcome, response: r.response, clientSaw: saw });
+        return { n: 1, reached: false, outcome: 'not reached', response: null, clientSaw: NO_RESPONSE };
     }
-    const first = attempts[0];
+    events.push({ attempt: 1, kind: 'request', text: `Client sends ${line}; it reaches the server.` });
+    const r = serve(method, s, false);
+    // In the late case the server only starts here; its finish is told last, after any retry.
+    const text = fault === 'responseLate' ? START_TEXT[r.outcome] : SERVER_TEXT[r.outcome];
+    events.push({ attempt: 1, kind: 'server', text: `Server ${text}.` });
+    if (fault === 'none')
+        events.push({ attempt: 1, kind: 'response', text: `Response ${r.response} reaches the client.` });
+    if (fault === 'responseLost')
+        events.push({
+            attempt: 1,
+            kind: 'response-lost',
+            text: `Response ${r.response} is lost on the way back.`,
+        });
+    return {
+        n: 1,
+        reached: true,
+        outcome: r.outcome,
+        response: r.response,
+        clientSaw: fault === 'none' ? r.response : NO_RESPONSE,
+    };
+}
+
+/** The retry: it always arrives and its answer arrives in time; in the late case the first is still running. */
+function retryAttempt(method: Method, fault: Fault, s: Server, events: Event[]): Attempt {
+    events.push({
+        attempt: 2,
+        kind: 'request',
+        text: `Client sends the same ${REQUEST_LINE[method]} again; it reaches the server.`,
+    });
+    const r = serve(method, s, fault === 'responseLate');
+    events.push({ attempt: 2, kind: 'server', text: `Server ${SERVER_TEXT[r.outcome]}.` });
+    events.push({ attempt: 2, kind: 'response', text: `Response ${r.response} reaches the client.` });
+    events.push({ attempt: 2, kind: 'client', text: `Client saw ${r.response}.` });
+    return { n: 2, reached: true, outcome: r.outcome, response: r.response, clientSaw: r.response };
+}
+
+export function exchange(input: Inputs): Result {
+    const { method, fault, retry } = input;
+    const s: Server = { orders: START.orders, quantity: START.quantity, keySeen: false, keyResult: null };
+    const events: Event[] = [];
+    const first = firstAttempt(method, fault, s, events);
+    const attempts: Attempt[] = [first];
+    const noResponse = first.clientSaw === NO_RESPONSE;
+    const still = fault === 'responseLate' ? ' (the server is still working)' : '';
     events.push({
         attempt: 1,
         kind: 'client',
-        text:
-            first.clientSaw === NO_RESPONSE
-                ? `Client saw ${NO_RESPONSE}. From its side, a lost request, a lost response and a late response look the same.`
-                : `Client saw ${first.clientSaw}.`,
+        text: noResponse
+            ? `Client saw ${NO_RESPONSE}${still}. From its side, a lost request, a lost response and a late response look the same.`
+            : `Client saw ${first.clientSaw}.`,
     });
-
     // Retry: only when chosen and the first attempt showed nothing.
-    if (retry && first.clientSaw === NO_RESPONSE) {
+    if (retry && noResponse) attempts.push(retryAttempt(method, fault, s, events));
+    // The late case ends with the first request finishing, after the client stopped waiting (and after any retry).
+    if (fault === 'responseLate')
         events.push({
-            attempt: 2,
-            kind: 'request',
-            text: `Client sends the same ${line} again; it reaches the server.`,
+            attempt: 1,
+            kind: 'response-late',
+            text: `The first request finishes: the server ${SERVER_TEXT[first.outcome]}; its ${first.response} reaches a client that has stopped waiting.`,
         });
-        const r = serve(method, s, fault === 'responseLate');
-        events.push({ attempt: 2, kind: 'server', text: `Server ${SERVER_TEXT[r.outcome]}.` });
-        events.push({ attempt: 2, kind: 'response', text: `Response ${r.response} reaches the client.` });
-        attempts.push({
-            n: 2,
-            reached: true,
-            outcome: r.outcome,
-            response: r.response,
-            clientSaw: r.response,
-        });
-        events.push({ attempt: 2, kind: 'client', text: `Client saw ${r.response}.` });
-    }
-
-    const newOrders = s.orders - START.orders;
     return {
         attempts,
         events,
         reached: attempts.filter((a) => a.reached).length,
-        newOrders,
+        newOrders: s.orders - START.orders,
         totalOrders: s.orders,
         quantity: s.quantity,
     };
