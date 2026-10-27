@@ -13,7 +13,9 @@ web-request step 8
 
 ## Next action
 
-Finish `web-request` step 8 (independent review of the implementation), then mode C `client-server`.
+Owner review of /learn/web-request. Then either mark `web-request` verified (no open blocking or should-fix
+finding; the open items below are limits, not findings) or run mode D on what the owner finds; then mode C
+`client-server`.
 
 ## Decisions
 
@@ -54,6 +56,10 @@ Finish `web-request` step 8 (independent review of the implementation), then mod
 
 ## Open issues
 
+- `web-request` stays `reviewed`, not `verified`, by choice: three independent implementation reviews ran and
+  every finding is fixed or accepted with a reason, but the last round's fixes were checked by the browser suite,
+  not by a fourth review; no real screen reader was used (DOM/ARIA inspection only); RFC section numbers are not
+  yet checked against the published RFCs (web-request).
 - The authoring container could not open most primary-source sites (DNS blocked for fetch); sources found only via
   search are recorded `via: search` and cannot support claims from `implemented` on (course).
 - `course.mjs` lives under `.claude/`, which `eslint.config.mjs` ignores; the skill's own tests run with
@@ -73,3 +79,5 @@ Finish `web-request` step 8 (independent review of the implementation), then mod
 - 2026-10-27 skill: `course.mjs check` now enforces path closure and rejects duplicate path/prerequisite entries
   (closes the open issue); curriculum still passes.
 - 2026-10-27 C web-request: planned → authored; spec written, two independent spec reviews, all findings fixed.
+- 2026-10-27 C web-request: authored → reviewed; /learn and /learn/web-request built, 95 unit tests, 56/56 browser
+  checks, three implementation reviews with findings fixed; not marked verified (see Open issues).

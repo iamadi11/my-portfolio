@@ -335,10 +335,13 @@ Visual spec (the 14-step process):
 7. **Readouts:** each step's milliseconds, the total time to first byte, and the network share (percentages to
    one decimal everywhere in the chapter). The network share
    is (DNS + TCP + TLS + the request's round trip) ÷ total; when the total is 0 (fresh cache), it shows "no network
-   used". All readouts are computed from the model.
-8. **Prediction prompt** (first in the figure): "This model has no bandwidth control. Tick every part that is a
-   message travelling there and back." Until the learner checks the answer (or chooses "skip"), the figure shows
-   each step's milliseconds and the total only: no travel/work labels, no network/server split, no bar legend.
+   used"; for a fresh cached copy the time to first byte reads "no request is sent" rather than "0 ms". All readouts
+   are computed from the model.
+8. **Recall prompt** (first in the figure). The figure comes right after section 7, which states how a first visit
+   adds up, so this is retrieval of what was just read, not a cold prediction (retrieval practice;
+   learning-science.md). "Before using the controls, recall it: tick every part that is a message travelling there
+   and back." Until the learner checks the answer (or chooses "skip"), the figure shows each step's milliseconds and
+   the total only: no travel/work labels, no network/server split, no bar legend.
    After that, it labels DNS, TCP, TLS and the request's round trip as travel and the server time as work.
 
    A second panel states the model's assumption plainly: these bars contain no bytes ÷ bandwidth time, and
@@ -683,7 +686,7 @@ websites were unreachable from the authoring container.
 - accessibility scan: pass — axe-core 4.10.3, WCAG 2.0/2.1/2.2 A and AA, both routes at 375 and 1280 px with
   answers open: 0 violations; 6 SVG label nodes left for manual contrast review, checked by hand (ink and ink-2 on
   fill-2, above 4.5:1); live regions for summary and step text; sliders have aria-valuetext (2026-10-27)
-- lighthouse: pass — Lighthouse 13.4.1 on the final build: /learn 99 mobile, 100 desktop; /learn/web-request 99
+- lighthouse: pass — Lighthouse 13.4.1 on the final build: /learn 99 mobile, 100 desktop; /learn/web-request 98
   mobile, 100 desktop; accessibility, best practices and SEO 100; CLS 0. An earlier build's first mobile run of
   /learn scored 91 (TBT 330 ms), then 98 and 99 (2026-10-27)
 - browser suite: pass — 56/56 checks (sizes, console, axe, keyboard, prediction gating incl. the announced summary,
@@ -803,3 +806,19 @@ Reviewer: second fresh subagent (re-review of the implementation fixes), 2026-10
   exchanged parameters")
 - [note] Spec Visual step 9 skipped labels drifted from the code → fixed (spec)
 - [note] Accepted items and the bundle check held (reviewer: ~112 / ~108 KB gzip of module scripts, under 120 kB)
+
+Reviewer: third fresh subagent (re-review of the second-round fixes), 2026-10-27
+
+- [should-fix] The "prediction" could be answered from the page: the paragraph just above the figure states the
+  count, and option and slider names point to the answer → fixed by re-scoping, not hiding: it is a recall prompt
+  placed after the explanation (legend "Recall first"; spec step 8 says so), which is the retrieval practice the
+  course intends; the gating of labels and split stays
+- [should-fix] The hidden step announcer kept stale text after a visit change and could contradict the visible
+  step → fixed (emptied on every input change; browser check)
+- [note] Announced step text lacked step 5's travel/work detail → fixed (one function builds visible and announced
+  text)
+- [note] Fresh cached copy read "Time to first byte: 0 ms" → fixed ("no request is sent")
+- [note] Check updates two polite regions at once (status feedback and the summary's revealed split) → accepted:
+  one explicit action, two short related messages; the status feedback is the one the learner asked for
+- [note] Each slider step re-announces the summary → accepted: allowed by spec step 11 (updates on input change),
+  and slider value text is not repeated in it

@@ -214,15 +214,21 @@ export default function JourneyStepper(): React.JSX.Element {
     const frame = FRAMES[at];
     const step = stepFor(s.steps, frame.id);
     const max = Math.max(1, s.totalMs);
-    const set = (patch: Partial<Inputs>): void => setInputs((p) => ({ ...p, ...patch }));
-    const req = stepFor(s.steps, 'request');
+    const set = (patch: Partial<Inputs>): void => {
+        setInputs((p) => ({ ...p, ...patch }));
+        // The step announcer only ever holds the text of a step the learner just moved to; after an input change
+        // it is emptied so it can never contradict the visible step text.
+        setAnnounce('');
+    };
 
     const frameText = (i: number): string => {
         const f = FRAMES[i];
         const st = stepFor(s.steps, f.id);
-        return st?.skipped
-            ? `Skipped on this visit (${st.skipped}). On a first visit, this step goes: ${f.text}`
-            : f.text;
+        if (st?.skipped)
+            return `Skipped on this visit (${st.skipped}). On a first visit, this step goes: ${f.text}`;
+        if (revealed && f.id === 'request' && st)
+            return `${f.text} Here: ${st.networkMs} ms travelling plus ${st.serverMs} ms of server work.`;
+        return f.text;
     };
     const goTo = (i: number): void => {
         const n = Math.min(FRAMES.length - 1, Math.max(0, i));
@@ -240,7 +246,7 @@ export default function JourneyStepper(): React.JSX.Element {
                     : `${STEP_NAME[x.id]} ${x.networkMs + x.serverMs} ms`
             )
             .join(', ') +
-        `; time to first byte ${s.totalMs} ms` +
+        (inputs.visit === 'cached' ? '; no request is sent' : `; time to first byte ${s.totalMs} ms`) +
         (revealed ? `, ${formatShare(s.networkShare)}${s.networkShare === null ? '' : ' network'}.` : '.');
 
     return (
@@ -252,10 +258,11 @@ export default function JourneyStepper(): React.JSX.Element {
             <div className="ln-fig-grid">
                 <div>
                     <fieldset className="ln-predict">
-                        <legend>Predict first</legend>
+                        <legend>Recall first</legend>
                         <p className="m-0 mb-2">
-                            This model has no bandwidth control. Tick every part that is a message travelling
-                            there and back; leave unticked anything that is not.
+                            You have just read how a first visit adds up. Before using the controls, recall
+                            it: tick every part that is a message travelling there and back, and leave
+                            unticked anything that is not. (This model has no bandwidth control.)
                         </p>
                         {PREDICT.map((p) => (
                             <label key={p.key} className="ln-check">
@@ -376,9 +383,6 @@ export default function JourneyStepper(): React.JSX.Element {
                             Step {at + 1}. {frame.title}.
                         </strong>{' '}
                         {frameText(at)}
-                        {revealed && frame.id === 'request' && req && !req.skipped
-                            ? ` Here: ${req.networkMs} ms travelling plus ${req.serverMs} ms of server work.`
-                            : null}
                     </p>
                     <div className="ln-nav">
                         <button
@@ -433,7 +437,13 @@ export default function JourneyStepper(): React.JSX.Element {
                         })}
                     </ul>
                     <p className="ln-readout">
-                        Time to first byte: <strong>{s.totalMs} ms</strong>.
+                        {inputs.visit === 'cached' ? (
+                            <>Time to first byte: no request is sent (fresh cached copy).</>
+                        ) : (
+                            <>
+                                Time to first byte: <strong>{s.totalMs} ms</strong>.
+                            </>
+                        )}
                         {revealed ? (
                             <>
                                 {' '}
