@@ -518,10 +518,14 @@ Spaced review:
   note: >-
     draft-ietf-httpapi-idempotency-key-header.md in ietf-wg-httpapi/idempotency @ a2cd12a (2026-10-22), the
     working group's editor's copy after draft-07 ("Changes from Draft-07"). An Internet-Draft is work in progress,
-    not an RFC; the chapter says so. Section numbers are computed from the file's heading tree (2 = The
-    Idempotency-Key HTTP Request Header Field; 2.2 Uniqueness; 2.5.1 Client; 2.6 Idempotency Enforcement; 2.7
-    Error Handling) and may differ in a published draft. Datatracker (current draft number and status) is
-    unreachable from this container.
+    not an RFC; the chapter says so. Section numbers were first computed from the file's heading tree and then, on
+    2026-10-27, checked against the WG's own rendering of the same commit (gh-pages @ c9266b1, "Script updating
+    gh-pages from a2cd12a"; docname draft-ietf-httpapi-idempotency-key-header-latest, dated 22 October 2026,
+    intended status Standards Track): 2 The Idempotency-Key HTTP Request Header Field, 2.2 Uniqueness of
+    Idempotency Key, 2.5.1 Client, 2.6 Idempotency Enforcement, 2.7 Error Handling all match. They may differ in a
+    later submitted draft. The latest submitted draft number and its IETF status were not established (Datatracker
+    unreachable; a gh-pages folder named "-08" is a preview built from the same editor's copy, not proof of a
+    submission).
 - id: rfc9112
   title: HTTP/1.1 (RFC 9112, STD 99)
   author: Fielding, Nottingham, Reschke (eds.)
@@ -546,8 +550,10 @@ Spaced review:
   note: >-
     Published text as rendered by the HTTP WG, httpwg/httpwg.github.io @ ce03dd5 specs/rfc6265.html
     (urn:ietf:rfc:6265, issued 2011-04). Used only for the basic Set-Cookie → Cookie mechanism. A revision
-    (draft-ietf-httpbis-rfc6265bis) intends to obsolete RFC 6265; whether it has been published could not be
-    checked (see rfc6265bis below and Open questions).
+    (draft-ietf-httpbis-rfc6265bis) intends to obsolete RFC 6265. Re-checked 2026-10-27: the HTTP WG's
+    published-RFC site (httpwg/httpwg.github.io @ ce03dd5, 2026-10-19), which lists RFCs up to RFC 10036
+    (issued 2026-08), renders no RFC that replaces or obsoletes 6265, and RFC 6265 is the only cookie RFC on it.
+    So no published successor was found as of that snapshot; the RFC Editor's index itself could not be read.
 - id: rfc6265bis
   title: "Cookies: HTTP State Management Mechanism (draft-ietf-httpbis-rfc6265bis)"
   author: IETF HTTP WG
@@ -559,7 +565,10 @@ Spaced review:
   note: >-
     Seen only in search results: datatracker shows draft-22 in the RFC Editor queue (page dated 2025-12-09) and a
     later dated copy exists; the drafts say "Obsoletes: 6265 (if approved)". No published RFC number was found.
-    Lead only; check before `http` or `stateless-services` relies on cookie details.
+    Lead only; check before `http` or `stateless-services` relies on cookie details. 2026-10-27: the WG's source
+    file (httpwg/http-extensions @ 9adda98, 2026-10-27) was opened for its front matter only: still an editor's
+    copy (docname draft-ietf-httpbis-rfc6265bis-latest, "obsoletes: 6265"); its text was not read, so this record
+    stays `via: search` and supports nothing.
 - id: mdn-http-overview
   title: Overview of HTTP
   author: MDN Web Docs
@@ -623,9 +632,10 @@ Spaced review:
 
 ## Open questions / unverified
 
-- RFC 6265 may have been obsoleted by the 6265bis revision; search results show it approved and in the RFC Editor
-  queue but no published number. The chapter uses only the Set-Cookie → Cookie mechanism, which the drafts keep.
-  Check the published status before a chapter teaches cookie attributes.
+- RFC 6265's successor: as of the HTTP WG's published-RFC site snapshot (2026-10-19, RFCs up to 10036) no
+  published RFC replaces 6265, and 6265bis is still an editor's copy in the WG repo (2026-10-27). Not confirmed
+  against the RFC Editor's index or Datatracker (unreachable). The chapter uses only the Set-Cookie → Cookie
+  mechanism. Check the published status before a chapter teaches cookie attributes.
 - The published RFC 9110, 9112 and 6265 texts were read as rendered by the HTTP working group (httpwg.org), not
   from rfc-editor.org, which is unreachable from this container.
 - "Three causes of no response" (request lost, response lost, response late) is derived, not quoted: RFC 9110 §7.5
@@ -633,9 +643,10 @@ Spaced review:
   cases of a two-message exchange. A connection closed mid-response is folded into "response lost".
 - Whether a server notices that a client gave up is deliberately left to `timeouts-retries`; the worked example
   says only that it depends on the server.
-- The Idempotency-Key field is an IETF Internet-Draft (read in the WG's editor's copy @ a2cd12a). Its current
-  published draft number and status could not be checked (datatracker unreachable); the chapter presents it as a
-  draft and only for the behaviour stated in that copy.
+- The Idempotency-Key field is an IETF Internet-Draft (read in the WG's editor's copy @ a2cd12a; cited section
+  numbers checked against the WG's rendering of it on 2026-10-27). Its latest submitted draft number and IETF
+  status could not be checked (Datatracker unreachable); the chapter presents it as a draft and only for the
+  behaviour stated in that copy.
 
 ## Evidence
 
@@ -648,7 +659,8 @@ Final evidence: every line below was run on the final code (6b5f8d5 plus the thi
   fault, late-case event order per method, the late "starts" step naming the order its reply carries, 32-case invariants, determinism, prediction answers from the model; 93
   web-request; 3 curriculum). Mutation check: telling the late reply before the retry fails 5 tests (2026-10-27)
 - pre-commit audit: pass — fallow audit (new-only): verdict pass, 0 complexity findings; the one listed issue
-  (unused dependency `critters`) is pre-existing, `introduced: false` (2026-10-27)
+  (unused dependency `critters`) is pre-existing, `introduced: false` (2026-10-27); that finding was a false
+  positive: Next's `optimizeCss` requires critters (corrected in be564fe)
 - course checks: pass — course.mjs check ok; course.test.mjs 23/23 (2026-10-27)
 - build and JS budget: pass — next build: /learn/client-server 112 kB first-load JS (budget 120 kB); /learn 107 kB,
   /learn/web-request 111 kB, / 110 kB (unchanged). Browser, script bodies before the load event (gzip):

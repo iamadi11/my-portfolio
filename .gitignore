@@ -53,3 +53,6 @@ assets-src/
 
 # Copied from @sweidos/eidos at build (npm run eidos-sw)
 /public/eidos-sw.js
+
+# Screenshots written by the browser suites (tests/browser)
+/test-results/

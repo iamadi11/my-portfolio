@@ -88,6 +88,14 @@ const eslintConfig = [
             'tailwindcss/classnames-order': 'warn',
         },
     },
+    /** Browser suites are plain Node CommonJS scripts run outside Next (tests/browser/README.md). */
+    {
+        files: ['tests/browser/**/*.cjs'],
+        rules: {
+            '@typescript-eslint/no-require-imports': 'off',
+            'no-console': 'off',
+        },
+    },
 ];
 
 export default eslintConfig;

@@ -27,7 +27,7 @@ export const CLIENT_SERVER_SOURCES: Source[] = [
         title: 'RFC 6265: HTTP State Management Mechanism (April 2011)',
         publisher: 'IETF (A. Barth)',
         url: 'https://www.rfc-editor.org/rfc/rfc6265',
-        read: 'the published text as rendered by the HTTP WG (httpwg/httpwg.github.io @ ce03dd5). Only the basic Set-Cookie and Cookie exchange is used; a revision that may replace RFC 6265 could not be checked',
+        read: 'the published text as rendered by the HTTP WG (httpwg/httpwg.github.io @ ce03dd5). Only the basic Set-Cookie and Cookie exchange is used; no published replacement for RFC 6265 was found on the HTTP WG’s published-RFC site (snapshot 2026-10-19); the revision is still an editor’s draft in the WG’s repository (httpwg/http-extensions @ 9adda98)',
     },
     {
         id: 'mdn-cookies',
