@@ -8,6 +8,7 @@ import {
     summarize,
     type Inputs,
     type VisitType,
+    PREDICT_RTT_MS,
 } from './web-request-model';
 
 const at = (visit: VisitType, over: Partial<Inputs> = {}): Inputs => ({ ...DEFAULTS, visit, ...over });
@@ -76,11 +77,20 @@ describe('model rules (spec "Visual" step 5)', () => {
         expect(s.totalMs).toBe(3 * RANGES.rttMs.min);
     });
 
+    it('the predict-then-run answer (repeat visit at 80 ms) is not already shown at the defaults', () => {
+        const asked = summarize({ ...DEFAULTS, visit: 'warm', rttMs: PREDICT_RTT_MS }).totalMs;
+        expect(asked).toBe(130);
+        // Numbers the figure shows before any input: each step, the first-visit total and its parts.
+        const shown = summarize(DEFAULTS);
+        const visible = [...shown.steps.map((x) => x.networkMs + x.serverMs), shown.totalMs, shown.networkMs];
+        expect(visible).not.toContain(asked);
+    });
+
     it('every value the chapter asks the learner to set is reachable on its slider', () => {
         const reachable = (r: { min: number; max: number; step: number }, v: number): boolean =>
             v >= r.min && v <= r.max && (v - r.min) % r.step === 0;
         // Worked example (40/30/50) and exercise (120 and 30 ms round trips; server time halved to 25 ms).
-        for (const v of [40, 120, 30]) expect(reachable(RANGES.rttMs, v)).toBe(true);
+        for (const v of [40, 120, 30, PREDICT_RTT_MS]) expect(reachable(RANGES.rttMs, v)).toBe(true);
         expect(reachable(RANGES.dnsMs, 30)).toBe(true);
         for (const v of [50, 25]) expect(reachable(RANGES.serverMs, v)).toBe(true);
     });

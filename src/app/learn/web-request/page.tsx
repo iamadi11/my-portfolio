@@ -282,8 +282,8 @@ export default function Page(): React.JSX.Element {
                     <p>
                         Comparing a first visit with a repeat visit shows which steps disappear. When a fetch
                         reuses a connection opened earlier, the Fetch standard sets the DNS and connection
-                        timestamps all to the fetch&rsquo;s start, so the entry shows 0 ms for DNS, TCP and
-                        TLS. <C ids={['fetch']} />
+                        timestamps all to the fetch&rsquo;s start (after any redirects), so the entry shows 0
+                        ms for DNS, TCP and TLS. <C ids={['fetch']} />
                     </p>
 
                     <h2 id="journey">The journey, step by step</h2>

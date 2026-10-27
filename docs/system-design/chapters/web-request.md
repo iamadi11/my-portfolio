@@ -347,11 +347,14 @@ Visual spec (the 14-step process):
    the total only: no travel/work labels, no network/server split, no bar legend.
    After that, it labels DNS, TCP, TLS and the request's round trip as travel and the server time as work.
 
-   **Predict, then run** (after the controls): "With the values set above, how long will a repeat visit on a
-   still-open connection take to its first byte? Commit to a number, then run it." The learner types a guess in
-   milliseconds (rounded to whole ms; Enter submits); "Run the repeat visit" refuses an empty guess, switches the figure to the repeat visit and shows
-   the guess next to the model's value (`summarize` at the values used, named in the result) and the difference.
-   The result is a snapshot of those values, so it stays true if the sliders move afterwards.
+   **Predict, then run** (after the controls): "Suppose the round trip were 80 ms, with the server time set
+   above. How long would a repeat visit on a still-open connection take to its first byte? Commit to a number, then
+   run it." The 80 ms (`PREDICT_RTT_MS`) differs from the default 40 ms, so the answer (130 ms at the defaults) is
+   not already on screen, and it differs from the worked example's repeat visit (90 ms); a test checks both. The
+   learner types a guess in milliseconds (negative or empty refused, then rounded to whole ms; Enter submits);
+   "Run the repeat visit" switches the figure to the repeat visit at 80 ms and shows the guess next to the model's
+   value (`summarize` at the values used, named in the result) and the difference. The result is a snapshot, so it
+   stays true if the sliders move afterwards; editing the guess clears it.
 
    A second panel states the model's assumption plainly: these bars contain no bytes ÷ bandwidth time, and
    `latency-throughput` adds it.
@@ -682,6 +685,11 @@ websites were unreachable from the authoring container.
 
 - The DNS and TCP claims rest on MDN (tier 2), not the RFCs. That is acceptable for a map chapter, but `dns` and
   `tcp` must read RFC 1034/1035 and RFC 9293.
+- Fetch's "clamp and coarsen connection timing info" (whatwg/fetch @ 59afe34, step 2), read literally, sets the
+  returned secure connection start time from the connection end time, which would make `secureConnectionStart`
+  equal `connectEnd` and the TLS share 0. This looks like an editorial slip: the "record connection timing info"
+  text the chapter quotes takes secure connection start before the handshake, and MDN's guidance matches. The
+  chapter's TCP/TLS split is labelled derived; upstream issue not checked (GitHub search unavailable here).
 - The round-trip counts assume TCP plus TLS 1.3, without TCP Fast Open, 0-RTT or HTTP/3. Those are deferred,
   without claims, to `tcp`, `tls` and `http-versions`.
 - The worked example's 30, 40 and 50 ms are assumptions, not measurements. The chapter never presents them as
@@ -895,7 +903,8 @@ rubric verification.md. No blocking findings.
 - [note] Q3 had no "Revisit" pointer → fixed (links to the journey, step 2)
 - [note] The numeric prediction can be bypassed by choosing the repeat visit by hand, and at 1280 px the ladder is
   beside the panel → accepted: the default first visit (200 ms) gives nothing away, at 375 px the ladder is below
-  the panel, and the figure is exploratory; the recall prompt and the exercise are the gated parts
+  the panel, and the figure is exploratory; the recall prompt and the exercise are the gated parts. (Corrected by
+  the next review: the "gives nothing away" reason was false, see below.)
 - [note] Run updates two polite regions (status and summary) → accepted: same pattern accepted for Check; one
   explicit action, both messages agree
 - Verified OK by the reviewer: per-origin reuse (fetch.bs obtain a connection; rfc9110 §4.3.1 published text),
@@ -904,4 +913,26 @@ rubric verification.md. No blocking findings.
   tested, stale-safe snapshot, axe 0 violations at 375/1280, 44 px targets, keyboard, reduced motion. Not checked by
   the reviewer: published RFC 9846, a real screen reader, Lighthouse, sizes other than 375 and 1280 (all sizes and
   Lighthouse are in Evidence)
+
+Reviewer: fresh subagent (final review of the merged and deployed tree 75b2b6c, production build of that tree;
+the deployed URL was not reachable), 2026-10-27, rubric verification.md. No blocking findings.
+
+- [should-fix] The recorded reason for accepting the predict-then-run bypass was false: at the defaults the ladder
+  already shows Request 90 ms, which is the repeat-visit answer the panel asked for → fixed (the panel now asks
+  about an 80 ms round trip, answer 130 ms at the defaults, shown nowhere before Run; Run switches the figure to
+  that visit and round trip; model test that the asked value is not among the numbers shown at the defaults; the
+  earlier note is corrected)
+- [note] Fetch's clamp step 2, read literally, sets secure connection start from connection end → recorded under
+  Open questions (looks like a spec slip; the page's split is labelled derived and matches MDN)
+- [note] "-0.4" was accepted as a 0 ms guess while "-3" was refused → fixed (sign checked before rounding)
+- [note] The panel and the worked example's "Your turn" asked the same question (90 ms) → fixed by the 80 ms change
+- [note] Two stacked doc comments in JourneyStepper → fixed
+- [note] "the fetch's start" simplified Fetch's post-redirect start time → fixed ("(after any redirects)")
+- Verified OK by the reviewer: every quoted number model-produced and tested; RFC 9110 §3.3, §3.4, §3.5, §3.8,
+  §4.2.2, §4.3.1, §9.3.1, §15 and RFC 9111 §1 against the published text; RFC 9846 §1, §2, §2.1, §2.3, §4.2.4,
+  §4.3.8 against the WG source; Fetch quotes verbatim; MDN claims; recall gating, Not quite, Skip/Next focus,
+  rounding, Enter, stale-safe result, editing the guess clears it; connection-reused and fresh-cache labels; no
+  horizontal scroll at all six sizes on /learn, /learn/web-request and /; axe 0 violations; reduced motion;
+  `.vercelignore` uploads only CURRICULUM.md from docs. Not checked: published RFC 9846 (all hosts refused),
+  a real screen reader, Lighthouse, the deployed URL
 

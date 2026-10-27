@@ -46,6 +46,12 @@ export const DEFAULTS: Inputs = {
     serverMs: RANGES.serverMs.initial,
 };
 
+/**
+ * The round trip Fig. 1's "Predict, then run" asks about. It differs from the default (40 ms), so the answer is not
+ * already on screen when the learner predicts, and from the worked example's repeat visit.
+ */
+export const PREDICT_RTT_MS = 80;
+
 const clamp = (v: number, r: { min: number; max: number }): number =>
     Number.isFinite(v) ? Math.min(r.max, Math.max(r.min, v)) : r.min;
 
