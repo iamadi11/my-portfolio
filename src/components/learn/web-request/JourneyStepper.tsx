@@ -88,6 +88,14 @@ function stepMs(s: Step | undefined): string {
 }
 
 /** "Not quite" feedback that names exactly which ticks were wrong. */
+/** "a", "a and b", "a, b and c"; labels after the first read mid-sentence (lower-cased unless an acronym: TLS, TCP). */
+function listOf(labels: string[]): string {
+    const xs = labels.map((x, i) =>
+        i === 0 || /^[A-Z]{2}/.test(x) ? x : x.charAt(0).toLowerCase() + x.slice(1)
+    );
+    return xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}` : (xs[0] ?? '');
+}
+
 function predictFeedback(picked: Record<string, boolean>): string {
     const missed = PREDICT.filter((p) => p.travel && !picked[p.key]).map((p) => p.label);
     const extra = PREDICT.filter((p) => !p.travel && picked[p.key]).map((p) => p.label.toLowerCase());
@@ -95,7 +103,7 @@ function predictFeedback(picked: Record<string, boolean>): string {
         return 'Right. DNS, TCP, TLS and the request’s round trip are all travel time; only the server processing is work. None of these bars contains bytes ÷ bandwidth time: the model leaves transmission out (taught in “Latency and throughput”).';
     const parts = [
         missed.length
-            ? `${missed.join(', ')} ${missed.length > 1 ? 'are' : 'is'} travel too, so tick ${missed.length > 1 ? 'them' : 'it'}`
+            ? `${listOf(missed)} ${missed.length > 1 ? 'are' : 'is'} travel too, so tick ${missed.length > 1 ? 'them' : 'it'}`
             : '',
         extra.length ? `${extra.join(', ')} is the server working, not travel, so leave it unticked` : '',
     ].filter(Boolean);
@@ -120,7 +128,8 @@ function PredictRun({
     const [run, setRun] = useState<Run | null>(null);
     const [msg, setMsg] = useState('');
     const go = (): void => {
-        const g = Number(guess);
+        // Whole milliseconds, like every other number in the figure.
+        const g = Math.round(Number(guess));
         if (guess.trim() === '' || !Number.isFinite(g) || g < 0) {
             setRun(null);
             setMsg('Type your guess in milliseconds first.');
@@ -143,16 +152,25 @@ function PredictRun({
         <fieldset className="ln-predict">
             <legend>Predict, then run</legend>
             <p className="m-0 mb-2">
-                With the values set below, how long will a repeat visit on a still-open connection take to its
+                With the values set above, how long will a repeat visit on a still-open connection take to its
                 first byte? Commit to a number, then run it.
             </p>
-            <div className="ln-guess">
+            <form
+                className="ln-guess"
+                // The guess is checked and rounded in go(); native validation would block 94.6 against step 1.
+                noValidate
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    go();
+                }}
+            >
                 <label htmlFor={id}>Your guess (ms)</label>
                 <input
                     id={id}
                     type="number"
                     inputMode="numeric"
                     min={0}
+                    step={1}
                     value={guess}
                     onChange={(e) => {
                         setGuess(e.target.value);
@@ -160,10 +178,10 @@ function PredictRun({
                         setMsg('');
                     }}
                 />
-                <button type="button" className="ln-btn" onClick={go}>
+                <button type="submit" className="ln-btn">
                     Run the repeat visit
                 </button>
-            </div>
+            </form>
             <p role="status" className="mt-2">
                 {result}
             </p>

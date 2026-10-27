@@ -347,9 +347,9 @@ Visual spec (the 14-step process):
    the total only: no travel/work labels, no network/server split, no bar legend.
    After that, it labels DNS, TCP, TLS and the request's round trip as travel and the server time as work.
 
-   **Predict, then run** (after the controls): "With the values set below, how long will a repeat visit on a
+   **Predict, then run** (after the controls): "With the values set above, how long will a repeat visit on a
    still-open connection take to its first byte? Commit to a number, then run it." The learner types a guess in
-   milliseconds; "Run the repeat visit" refuses an empty guess, switches the figure to the repeat visit and shows
+   milliseconds (rounded to whole ms; Enter submits); "Run the repeat visit" refuses an empty guess, switches the figure to the repeat visit and shows
    the guess next to the model's value (`summarize` at the values used, named in the result) and the difference.
    The result is a snapshot of those values, so it stays true if the sliders move afterwards.
 
@@ -697,7 +697,7 @@ websites were unreachable from the authoring container.
   reader); deliberate model mutations each caught (2026-10-27)
 - build and JS budget: pass — next build: /learn 107 kB and /learn/web-request 111 kB first-load JS (budget 120 kB);
   / 110 kB, unchanged from main (no homepage file differs from main). Browser, script bodies fetched before the load
-  event: /learn 106.5 KB, /learn/web-request 110.8 KB, / 112.9 KB gzip; ~10 KB more after idle is `next/link`
+  event: /learn 106.5 KB, /learn/web-request 111.0 KB, / 112.9 KB gzip; ~10 KB more after idle is `next/link`
   prefetch (2026-10-27, after the final-review fixes)
 - browser sizes: pass — Playwright at 375×812, 402×874, 768×1024, 1280×800, 1440×900, 1920×1080 on both routes: no
   horizontal scroll, no console errors; screenshots read at 375 and 1280 (2026-10-27)
@@ -710,10 +710,11 @@ websites were unreachable from the authoring container.
   answers open: 0 violations; 6 SVG label nodes left for manual contrast review, checked by hand (ink and ink-2 on
   fill-2, above 4.5:1); live regions for summary and step text; sliders have aria-valuetext (2026-10-27)
 - lighthouse: pass — Lighthouse 13.4.1 on the build with the final-review fixes: /learn/web-request 99 mobile, 100
-  desktop; /learn 99 mobile, 100 desktop; / 95 mobile, 100 desktop; accessibility, best practices and SEO 100 on
+  desktop (re-run after the last round: same); /learn 99 mobile, 100 desktop; / 95 mobile, 100 desktop; accessibility, best practices and SEO 100 on
   all three; CLS 0. An earlier build's first mobile run of /learn scored 91 (TBT 330 ms), then 98 and 99
   (2026-10-27)
-- browser suite: pass — 63/63 checks on the build with the final-review fixes (sizes, console, axe, keyboard,
+- browser suite: pass — 65/65 checks on the build with the last round's fixes (adds: Enter submits the guess, a
+  fractional guess is rounded, the prompt points above) (sizes, console, axe, keyboard,
   recall gating incl. the announced summary, "Not quite" naming the wrong ticks, focus kept on Skip/Next/Previous,
   step announcer emptied on input change and on reveal, predict-then-run (empty guess refused, guess shown next to
   the model's 90 ms, figure switched to the repeat visit), "connection reused" on DNS/TCP/TLS, reduced motion, /
@@ -874,4 +875,26 @@ rubric verification.md
 - [note] Step announcer could keep step 5's text from before the reveal → fixed (emptied on reveal; check)
 - [note] RFC 9846 "July 2026" read as a verified publication date → fixed (title says it is the date in the WG's
   final source)
+
+Reviewer: fresh subagent (review of the final-review fixes at 209d1db: code, running build, sources), 2026-10-27,
+rubric verification.md. No blocking findings.
+
+- [should-fix] Predict panel said "the values set below" though the sliders are above it → fixed ("above"; spec)
+- [should-fix] A fractional guess printed raw floating point ("Off by 4.876543210999998 ms") → fixed (guess rounded
+  to whole ms; input step 1; check)
+- [note] Enter in the guess box did nothing → fixed (input and button are a form; Enter submits; check)
+- [note] "Not quite" list had no "and" and a capital mid-sentence → fixed (joined with "and", lower-cased after the
+  first; check)
+- [note] Q3 had no "Revisit" pointer → fixed (links to the journey, step 2)
+- [note] The numeric prediction can be bypassed by choosing the repeat visit by hand, and at 1280 px the ladder is
+  beside the panel → accepted: the default first visit (200 ms) gives nothing away, at 375 px the ladder is below
+  the panel, and the figure is exploratory; the recall prompt and the exercise are the gated parts
+- [note] Run updates two polite regions (status and summary) → accepted: same pattern accepted for Check; one
+  explicit action, both messages agree
+- Verified OK by the reviewer: per-origin reuse (fetch.bs obtain a connection; rfc9110 §4.3.1 published text),
+  DNS skipped on a reused connection (Fetch resolves only after the pool check), "fresh" (rfc9111 §1 published
+  text), RFC 9846 §1, §2, §2.1, §4.2.4, §4.3.8 recomputed from the WG source's heading tree, every quoted number
+  tested, stale-safe snapshot, axe 0 violations at 375/1280, 44 px targets, keyboard, reduced motion. Not checked by
+  the reviewer: published RFC 9846, a real screen reader, Lighthouse, sizes other than 375 and 1280 (all sizes and
+  Lighthouse are in Evidence)
 

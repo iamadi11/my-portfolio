@@ -401,7 +401,8 @@ export default function Page(): React.JSX.Element {
                             scheme, host and port <C ids={['fetch']} /> <C ids={['rfc9110']} at="§4.3.1" />.
                             &ldquo;Nothing, the browser is already connected&rdquo; is wrong in general: that
                             connection belongs to the first hostname&rsquo;s origin. Whether connections can
-                            sometimes be shared between hostnames is a later chapter.
+                            sometimes be shared between hostnames is a later chapter. Revisit{' '}
+                            <a href="#journey">the journey</a>, step 2.
                         </p>
                     </Q>
 

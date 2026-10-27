@@ -59,10 +59,13 @@ finding; the open items below are limits, not findings) or run mode D on what th
 
 ## Open issues
 
-- `web-request` stays `reviewed`, not `verified`, by choice: three independent implementation reviews ran and
-  every finding is fixed or accepted with a reason, but the last round's fixes were checked by the browser suite,
-  not by a fourth review; no real screen reader was used (DOM/ARIA inspection only); RFC section numbers are not
-  yet checked against the published RFCs (web-request).
+- `web-request` stays `reviewed`, not `verified`: five independent reviews ran (two spec, three implementation)
+  plus two final reviews, and every blocking and should-fix finding is fixed or accepted with a reason, but the
+  last round's fixes (prompt wording, guess rounding, Enter submits) were checked by the browser suite (65/65), not
+  by another fresh review, and the owner review named in Next action has not happened. Also: no real screen reader
+  was used (DOM/ARIA inspection only); RFC 9846 section numbers are checked against the TLS WG's final source
+  (tlswg/tls13-spec rfc9846.md), not the published RFC, which was unreachable (RFC 9110/9111 are checked against
+  the published text) (web-request).
 - The authoring container could not open most primary-source sites (DNS blocked for fetch); sources found only via
   search are recorded `via: search` and cannot support claims from `implemented` on (course).
 - `course.mjs` lives under `.claude/`, which `eslint.config.mjs` ignores; the skill's own tests run with
@@ -84,3 +87,5 @@ finding; the open items below are limits, not findings) or run mode D on what th
 - 2026-10-27 C web-request: planned → authored; spec written, two independent spec reviews, all findings fixed.
 - 2026-10-27 C web-request: authored → reviewed; /learn and /learn/web-request built, 95 unit tests, 56/56 browser
   checks, three implementation reviews with findings fixed; not marked verified (see Open issues).
+- 2026-10-27 C web-request: final review (fresh reviewer) → 4 should-fix + 6 notes fixed; review of those fixes →
+  2 should-fix + 3 notes fixed, 2 accepted; Vercel build fix (`.vercelignore`); status stays reviewed.
