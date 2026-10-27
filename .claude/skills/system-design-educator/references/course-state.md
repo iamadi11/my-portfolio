@@ -107,6 +107,7 @@ Updated: <YYYY-MM-DD>
 ## Decisions
 
 - <YYYY-MM-DD> <decision> — <why>
+- <YYYY-MM-DD> Proposal (not built): <what> — <why> (mode A placement and budgets; becomes a decision when built)
 
 ## Open issues
 

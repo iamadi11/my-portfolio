@@ -18,7 +18,7 @@ const row = (id, order, prereqs, status) =>
     `| ${id} | ${order} | 1 | Title ${id} | ${prereqs} | beginner | ${status} |`;
 
 /** A course folder: graph rows, optional Product line, COURSE_STATE current unit, chapter specs. */
-function course({ rows = [], product = 'none', unit, specs = {}, raw } = {}) {
+function course({ rows = [], product = 'none', unit = 'none', state = 'initialized', specs = {}, raw } = {}) {
     const root = mkdtempSync(join(tmpdir(), 'sde-'));
     made.push(root);
     const docs = join(root, 'docs/system-design');
@@ -29,10 +29,10 @@ function course({ rows = [], product = 'none', unit, specs = {}, raw } = {}) {
         raw ??
             `# Curriculum\n${productLine}\n<!-- graph:start -->\n${HEAD}\n${rows.join('\n')}\n<!-- graph:end -->\n`
     );
-    if (unit !== undefined)
+    if (state)
         writeFileSync(
             join(docs, 'COURSE_STATE.md'),
-            `# Course state\n\n## Current unit\n\n${unit}\n\n## Next action\n\nx\n`
+            `# Course state\n\nState: ${state}\n\n## Current unit\n\n${unit}\n\n## Next action\n\nx\n`
         );
     for (const [id, text] of Object.entries(specs)) writeFileSync(join(docs, 'chapters', `${id}.md`), text);
     return root;
@@ -53,6 +53,13 @@ test('fresh graph: next is the first chapter', () => {
     const r = run(course({ rows: [row('a', 1, '', 'planned'), row('b', 2, 'a', 'planned')] }), 'next');
     assert.equal(r.code, 0);
     assert.match(r.out, /next: a\b/);
+});
+
+test('not initialized or no COURSE_STATE: next asks for mode A; check warns', () => {
+    const rows = [row('a', 1, '', 'planned')];
+    assert.match(run(course({ rows, state: 'not initialized' }), 'next').out, /next: mode A/);
+    assert.match(run(course({ rows, state: false }), 'next').out, /next: mode A/);
+    assert.match(run(course({ rows, state: 'not initialized' }), 'check').out, /mode A comes first/);
 });
 
 test('empty graph: next asks for mode B', () => {

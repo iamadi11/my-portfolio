@@ -82,6 +82,12 @@ function section(text, heading) {
     return out;
 }
 
+/** COURSE_STATE's `State:` line: true only when it exists and says initialized. */
+function initialized() {
+    const file = join(docs, 'COURSE_STATE.md');
+    return existsSync(file) && /^State:\s*initialized\s*$/m.test(readFileSync(file, 'utf8'));
+}
+
 /** The chapter id named under COURSE_STATE's "Current unit" (first word), or null for none/missing. */
 function currentUnit() {
     const file = join(docs, 'COURSE_STATE.md');
@@ -292,6 +298,10 @@ function report(errs) {
 }
 
 if (cmd === 'next') {
+    if (!initialized()) {
+        console.log('next: mode A\nreason: COURSE_STATE.md is missing or not "State: initialized"');
+        process.exit(0);
+    }
     const { chapters, product } = readGraph();
     const errs = check(chapters);
     if (errs.length) {
@@ -308,6 +318,8 @@ if (cmd === 'next') {
     const { chapters, product } = readGraph();
     console.log(`${chapters.length} chapters · product: ${product ?? 'missing'}`);
     const errs = check(chapters);
+    if (!initialized())
+        console.log('! COURSE_STATE.md is missing or not "State: initialized": mode A comes first');
     const unit = currentUnit();
     const u = chapters.find((c) => c.id === unit);
     if (u && rank(u.status) >= doneRank(product))

@@ -61,7 +61,8 @@ never something to work around.
 | `chapter <id>` | **C** for that chapter (prerequisite rules still apply) |
 | `audit <id>`   | **D. Audit and repair a chapter**                       |
 
-If `COURSE_STATE.md` is missing or says "not initialized", run mode A whatever the argument was, and say so.
+If `COURSE_STATE.md` is missing or says "not initialized", run mode A whatever the argument was, and say so; that
+is the whole invocation (one unit), and the report names the next unit (usually mode B).
 Plain-language requests map the same way ("what's next?" → C; "the CAP chapter is wrong" → D).
 
 ## Ground rules (every mode)
@@ -95,8 +96,11 @@ No lessons in this mode. Checklist (copy it into your reply and tick it):
 - [ ] Find any existing course files, manifests, schemas, chapters, visualizations; list them with status
 - [ ] Record in COURSE_STATE where the course would fit (likely route, which existing components, tokens and checks
       it would reuse) as a proposal; create no routes, components, schemas or dependencies
-- [ ] If CURRICULUM.md is missing, create it with `Product: none` and an empty graph table (header rows only);
-      mode B fills it. If it exists, repair only what `check` reports
+- [ ] Propose budgets and checks by adopting the host project's existing gates (its CLAUDE.md: JS budget, WCAG,
+      device sizes, test/lint commands); invent no new numbers. If a needed tool is missing (e.g. no test runner),
+      record it as an open issue; it is added when the product starts, not now
+- [ ] If CURRICULUM.md is missing, create it with `Product: none` and the graph markers, header row and separator
+      row from course-state.md (no chapter rows); mode B fills it. If it exists, repair only what `check` reports
 - [ ] Run `course.mjs check`; fix graph errors
 - [ ] Write COURSE_STATE.md: `State: initialized`, decisions, next action (`mode B` if the graph is empty), open issues
 - [ ] Report: what exists, what was decided, what the next unit is
@@ -142,8 +146,9 @@ but the status stays **Authored**.
 
 **Starting the product.** Implementation begins only when the owner asks (e.g. `chapter <id>` on an authored
 chapter). Step 6 then builds the least the chapter needs inside the existing app (its routing, components, tokens
-and test setup; reuse before adding), records the location as a decision, and sets `Product:` to that path in the
-same unit. No speculative framework for chapters that don't exist yet.
+and test setup; reuse before adding; a missing test runner or other dependency is added here, smallest standard
+choice, recorded as a decision), records the location as a decision, and sets `Product:` to that path in the same
+unit. No speculative framework for chapters that don't exist yet.
 
 ## Mode D: audit and repair a chapter
 
@@ -157,7 +162,7 @@ no longer holds, raise it only when evidence is re-established. Update state and
 ## Report format
 
 ```
-Mode: <A|B|C|D> · Unit: <chapter id or "course">
+Requested: <what the user asked> · Mode run: <A|B|C|D> (say why if different) · Unit: <chapter id or "course">
 Gate reached: <status> (was <status>)
 Done: <what changed, with file paths>
 Evidence: <checks that ran and their results>
