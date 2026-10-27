@@ -7,6 +7,7 @@ import { SITE } from '@/content/site';
 import { getSiteOrigin, siteDescription } from '@/lib/site';
 
 import './globals.css';
+import './print.css';
 
 /** Plain caps lettering of a technical drawing (Arimo, metric-compatible with Helvetica/Arial). */
 const arimo = Arimo({

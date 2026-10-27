@@ -1,7 +1,9 @@
 import React from 'react';
 
+import Readers from '@/components/blueprint/Readers';
 import { SHEETS } from '@/components/blueprint/sheets';
 import { SITE } from '@/content/site';
+import { redisConfigured } from '@/lib/redis';
 
 import './nav.css';
 
@@ -17,6 +19,8 @@ export default function Nav(): React.JSX.Element {
                 <a href="#title" className="nav-name">
                     {SITE.profile.name}
                 </a>
+                {/* Live readers, only when the deploy has a Redis to count with. */}
+                {redisConfigured() ? <Readers /> : null}
                 <ol className="nav-list">
                     {SHEETS.map((s) => (
                         <li key={s.id}>

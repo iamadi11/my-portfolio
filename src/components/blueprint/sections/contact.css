@@ -287,3 +287,30 @@
         display: none;
     }
 }
+
+/* ---------- download as PDF (A3 print stylesheet, src/app/print.css) ---------- */
+
+/* A quiet callout: hairline box, caps, the way a drawing boxes a note. */
+.contact-print {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 12px;
+    border: 0.8px solid var(--ink-2);
+    border-radius: 2px;
+    background: var(--paper);
+    color: var(--ink-2);
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+.contact-print:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+}
+/* Print-only stamp (shown and placed by print.css). */
+.print-stamp {
+    display: none;
+}

@@ -50,3 +50,6 @@ assets-src/
 
 # Parallel dev servers (NEXT_DIST_DIR)
 .next-*/
+
+# Copied from @sweidos/eidos at build (npm run eidos-sw)
+/public/eidos-sw.js

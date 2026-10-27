@@ -1,0 +1,161 @@
+/*
+ * Print / "Save as PDF": the drawing set as A3 landscape sheets, black on white, every drawing finished.
+ * Template v1 (the version printed in the stamp lives in `components/blueprint/PrintButton.tsx`).
+ * The driver sets every scene to its end on `beforeprint`; the rules below are the safety net.
+ */
+
+@page {
+    size: A3 landscape;
+    margin: 12mm;
+}
+
+@media print {
+    :root {
+        --paper: #fff;
+        --nav-h: 0px;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+    html,
+    body {
+        background: #fff !important;
+        scroll-behavior: auto;
+    }
+    body {
+        position: relative;
+    }
+
+    /* Screen-only chrome. */
+    .nav,
+    .title-cue,
+    .contact-print,
+    a[href='#main-content'] {
+        display: none !important;
+    }
+
+    /* Everything drawn, nothing skipped. */
+    * {
+        content-visibility: visible !important;
+    }
+    [data-k] {
+        opacity: 1 !important;
+        stroke-dashoffset: 0 !important;
+    }
+    [data-k='v'] {
+        --e: 1 !important;
+    }
+
+    /* Pinned stages print static. */
+    .bp-pin {
+        height: auto !important;
+    }
+    .bp-stage {
+        position: static !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    /* One drawing sheet per page; sheet frames repeat their border on every page they run over. */
+    main > section {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        min-height: 0 !important;
+    }
+    main > section + section {
+        break-before: page;
+    }
+    .bp-sheet {
+        box-decoration-break: clone;
+        -webkit-box-decoration-break: clone;
+    }
+    .bp-sheet-head,
+    .bp-sheet-foot {
+        break-inside: avoid;
+    }
+    .bp-sheet-head {
+        break-after: avoid;
+    }
+    .bp-sheet-foot {
+        break-before: avoid;
+    }
+    /* Assemblies: one page per project scene. */
+    .asm-sheet > .bp-pin {
+        break-inside: avoid;
+    }
+    .asm-sheet > .bp-pin + .bp-pin {
+        break-before: page;
+    }
+    /* Long tables (revisions, variables) may run over; never split a row. */
+    tr,
+    li,
+    dl,
+    .rev-row {
+        break-inside: avoid;
+    }
+
+    /* External links carry their URL (not inside drawings or the nav). */
+    a[href^='http']::after {
+        content: ' (' attr(href) ')';
+        font-size: 9px;
+        letter-spacing: 0.02em;
+        text-transform: none;
+        color: var(--ink-3);
+        word-break: break-all;
+    }
+    svg a[href^='http']::after,
+    nav a[href^='http']::after {
+        content: none;
+    }
+
+    /* Assembly buttons already use ::before/::after for their leader; in print they are plain boxed links. */
+    html .asm-btn {
+        background: none;
+        color: var(--ink);
+        flex-wrap: wrap;
+    }
+    html .asm-btn::before {
+        content: none;
+    }
+    html .asm-btn::after {
+        position: static;
+        width: auto;
+        height: auto;
+        border-radius: 0;
+        background: none;
+        word-break: normal;
+    }
+
+    /* Assemblies: a fixed drawing height per page (the stage's 100svh no longer applies). */
+    html .asm-stage {
+        padding: 20px 28px 24px;
+    }
+    html .asm-art {
+        height: 222mm;
+    }
+
+    /* The print stamp: a title-block line above the first sheet. */
+    html .contact-sheet {
+        position: static;
+    }
+    html .print-stamp {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        font-size: 9px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-2);
+    }
+    #title {
+        padding-top: 56px !important;
+    }
+}
+
+/* The contact form is for the screen; on paper the contact cells above it say everything. */
+@media print {
+    .cf,
+    .nav-readers {
+        display: none !important;
+    }
+}

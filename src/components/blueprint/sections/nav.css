@@ -144,3 +144,44 @@
         transform: scaleX(1);
     }
 }
+
+/* Live readers stamp (desktop): a small ruled stamp between the name and the index. */
+.nav-readers {
+    display: none;
+}
+@media (min-width: 1280px) {
+    .nav-readers {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-right: auto;
+        margin-left: 24px;
+        padding: 3px 8px;
+        border: 0.8px solid var(--ink);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-2);
+        white-space: nowrap;
+    }
+}
+.nav-readers-dot {
+    width: 7px;
+    height: 7px;
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    background: var(--ink);
+}
+@media (prefers-reduced-motion: no-preference) {
+    .nav-readers-dot {
+        animation: nav-beat 2.4s ease-in-out infinite;
+    }
+}
+@keyframes nav-beat {
+    50% {
+        background: var(--paper);
+    }
+}
+.nav-readers-sheet {
+    color: var(--ink-3);
+}

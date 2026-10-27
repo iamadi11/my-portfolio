@@ -471,3 +471,88 @@
 .rev-note {
     scroll-margin-top: 24px;
 }
+
+/* Detail under the rule-engine note: a native disclosure holding the interactive sketch (rules/). */
+.rev-sketch {
+    margin-top: -0.5rem;
+    padding-bottom: 1.5rem;
+}
+@media (min-width: 600px) {
+    .rev-sketch {
+        margin-left: 11.25rem;
+    }
+}
+@media (min-width: 960px) {
+    .rev-sketch {
+        position: relative;
+        isolation: isolate;
+        margin: 0 16.5rem 0 18.75rem;
+        padding-top: 0.25rem;
+    }
+    /* Continue the revision block's column rules past the open detail. */
+    .rev-sketch::before {
+        content: '';
+        position: absolute;
+        z-index: -1;
+        top: 0;
+        bottom: 0;
+        left: -18.75rem;
+        right: -16.5rem;
+        border-left: 0;
+        background:
+            linear-gradient(var(--ink), var(--ink)) 6.25rem 0 / 0.6px 100% no-repeat,
+            linear-gradient(var(--ink), var(--ink)) 17.75rem 0 / 0.6px 100% no-repeat,
+            linear-gradient(var(--ink), var(--ink)) calc(100% - 16rem) 0 / 0.6px 100% no-repeat;
+    }
+    .rev-row:has(+ .rev-sketch) {
+        padding-bottom: 0.75rem;
+    }
+}
+.rev-sketch > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 2rem;
+    padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+    border: 0.6px dashed var(--ink);
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    list-style: none;
+}
+.rev-sketch > summary::-webkit-details-marker {
+    display: none;
+}
+.rev-sketch > summary::before {
+    content: '+';
+    content: '+' / '';
+    display: inline-grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 0.9px solid var(--ink);
+    border-radius: 50%;
+    font-size: 1rem;
+    line-height: 1;
+}
+.rev-sketch[open] > summary::before {
+    content: '\2212';
+    content: '\2212' / '';
+}
+.rev-sketch > summary:hover {
+    background: var(--fill-1);
+}
+.rev-sketch-wait {
+    margin-top: 1rem;
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+}
+
+@media (max-width: 399px) {
+    .rev-sketch > summary {
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+    }
+}

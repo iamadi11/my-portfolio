@@ -274,6 +274,10 @@ export function drive(): () => void {
         { rootMargin: '25% 0px' }
     );
     scenes.forEach((s) => io.observe(s.root));
+    // Printing (or "Save as PDF") shows every sheet finished, cameras on their final frame; back to scroll after.
+    const toEnd = (): void => scenes.forEach((s) => apply(s, s.T, false));
+    window.addEventListener('beforeprint', toEnd);
+    window.addEventListener('afterprint', resize);
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', resize);
     smq.addEventListener('change', resize);
@@ -281,6 +285,8 @@ export function drive(): () => void {
 
     return () => {
         io.disconnect();
+        window.removeEventListener('beforeprint', toEnd);
+        window.removeEventListener('afterprint', resize);
         window.removeEventListener('scroll', schedule);
         window.removeEventListener('resize', resize);
         smq.removeEventListener('change', resize);

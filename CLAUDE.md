@@ -116,3 +116,4 @@ Examples:
 5. **Devices:** must work at iPhone mini (375×812), iPhone 16 Pro (402×874), tablet (768×1024), 1280×800, 1440×900 and 1920×1080, with no horizontal scroll. Respect safe areas (`viewport-fit=cover`).
 6. **PWA:** installable (`src/app/manifest.ts`, icons in `public/`) and offline-capable (`public/sw.js`: network-first page, cache-first build files). Bump `VERSION` in `sw.js` when its caching rules change.
 7. **Motion:** reduced motion shows every sheet finished, with no scroll-linked animation.
+8. **Backend:** Redis-backed features (Eidos contact form, live readers) render only when Redis env vars exist (`src/lib/redis.ts`); see `docs/blueprint.md` → Backend. Never store raw IPs or personal data beyond the message a visitor chooses to send.

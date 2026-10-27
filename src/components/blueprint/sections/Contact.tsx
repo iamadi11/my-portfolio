@@ -1,8 +1,12 @@
 import React from 'react';
 
+import ContactForm from '@/components/blueprint/contact/ContactForm';
+import PrintButton from '@/components/blueprint/PrintButton';
 import { Scene, SheetFrame, win } from '@/components/blueprint/scene';
 import { SHEET_COUNT, sheet } from '@/components/blueprint/sheets';
 import { SITE } from '@/content/site';
+import { redisConfigured } from '@/lib/redis';
+import { getSiteOrigin } from '@/lib/site';
 
 import { HDim } from './Title';
 
@@ -95,6 +99,8 @@ export default function Contact(): React.JSX.Element {
                         </Cell>
                     </div>
                     {/* A title block closes with its sign-off cell; signing it is the call to action. */}
+                    {/* Write here instead of opening a mail app: delivered by Eidos, even from offline. */}
+                    {redisConfigured() ? <ContactForm /> : null}
                     <div className="contact-approve">
                         <div {...win(0.5, 0.75)} className="contact-approve-cell">
                             <p className="contact-lbl">Approved by</p>
@@ -121,6 +127,9 @@ export default function Contact(): React.JSX.Element {
                                 enesozturk/dimensional-drawing
                             </a>{' '}
                             (MIT)
+                        </p>
+                        <p>
+                            <PrintButton origin={getSiteOrigin()} />
                         </p>
                     </div>
                 </SheetFrame>

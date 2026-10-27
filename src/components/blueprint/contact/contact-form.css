@@ -1,0 +1,156 @@
+/* Contact form (sheet 6): ruled fields like title-block cells; the sequence drawing tracks the message. */
+
+/* Needs JS (Eidos); without it the email link above is the way in. */
+html:not(.js) .cf {
+    display: none;
+}
+.cf {
+    display: grid;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 0.8px solid var(--ink);
+}
+.cf-fields {
+    display: grid;
+    gap: 14px;
+}
+.cf-f {
+    display: grid;
+    gap: 6px;
+}
+.cf-l {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+}
+.cf-f input,
+.cf-f textarea {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    font-size: 16px;
+}
+.cf-f textarea {
+    resize: vertical;
+    line-height: 1.5;
+}
+.cf-f input:focus-visible,
+.cf-f textarea:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+}
+.cf-trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+.cf-seq {
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+}
+.cf-seq .cf-step rect {
+    fill: var(--paper);
+    stroke: var(--ink);
+    stroke-width: 1px;
+    transition: fill 200ms ease-out;
+}
+.cf-seq .cf-step.is-past rect {
+    fill: var(--fill-1);
+}
+.cf-seq .cf-step.is-at rect {
+    fill: var(--fill-2);
+    stroke-width: 1.6px;
+}
+.cf-seq .cf-held {
+    fill: url(#cf-ha) !important;
+}
+.cf-seq .cf-t {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    fill: var(--ink);
+}
+.cf-seq .cf-s {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    fill: var(--ink-3);
+}
+.cf-seq .cf-arrow {
+    stroke: var(--ink);
+    stroke-width: 0.8px;
+    stroke-dasharray: 4 3;
+}
+.cf-seq .cf-arrow.is-on {
+    stroke-dasharray: none;
+    stroke-width: 1.2px;
+}
+.cf-act {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+}
+.cf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1.2px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+        background-color 200ms ease-out,
+        color 200ms ease-out;
+}
+.cf-btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+}
+.cf-btn:disabled {
+    cursor: progress;
+    opacity: 0.6;
+}
+.cf-note {
+    font-size: 13px;
+    color: var(--ink-3);
+}
+.cf-status {
+    min-height: 1.5em;
+    font-size: 15px;
+    color: var(--ink);
+}
+@media (min-width: 900px) {
+    .cf {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: 32px;
+        align-items: start;
+    }
+    .cf-fields {
+        grid-template-columns: 1fr 1fr;
+        grid-row: span 3;
+    }
+    .cf-msg {
+        grid-column: 1 / -1;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .cf-seq .cf-step rect,
+    .cf-btn {
+        transition: none;
+    }
+}
