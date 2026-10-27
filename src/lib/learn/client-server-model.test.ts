@@ -106,6 +106,19 @@ describe('event order in the late case (the first request is still in progress w
         }
     );
 
+    it.each([true, false])(
+        'POST late (retry %s): the "starts" step names the order the late reply carries',
+        (retry) => {
+            for (const method of ['POST', 'POST_KEY'] as Method[]) {
+                const r = exchange({ method, fault: 'responseLate', retry });
+                const started = r.events.find((e) => e.attempt === 1 && e.kind === 'server')?.text ?? '';
+                const n = /order (\d+)/.exec(started)?.[1];
+                expect(n).toBeDefined();
+                expect(r.attempts[0].response).toContain(`/orders/${n}`);
+            }
+        }
+    );
+
     it('without a retry, the late response is still told after the client gave up', () => {
         const ev = exchange({ method: 'POST', fault: 'responseLate', retry: false }).events;
         expect(ev.map((e) => e.kind)).toEqual(['request', 'server', 'client', 'response-late']);

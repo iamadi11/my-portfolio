@@ -639,13 +639,13 @@ Spaced review:
 
 ## Evidence
 
-Final evidence, on the code after the implementation review's fixes, 2026-10-27:
+Final evidence: every line below was run on the final code (6b5f8d5 plus the third review's note fixes, the commit that marks this chapter verified), 2026-10-27:
 
 - typecheck: pass — npx tsc --noEmit (2026-10-27)
 - lint: pass — npm run lint, no warnings or errors; prettier --check src docs clean (2026-10-27)
-- model tests: pass — npm test, 157 tests (61 client-server model: indistinguishability per method, POST
+- model tests: pass — npm test, 159 tests (63 client-server model: indistinguishability per method, POST
   duplicates, keyed replay, keyed 409 while in progress, keyed first-arrival after a lost request, PUT and GET per
-  fault, late-case event order per method, 32-case invariants, determinism, prediction answers from the model; 93
+  fault, late-case event order per method, the late "starts" step naming the order its reply carries, 32-case invariants, determinism, prediction answers from the model; 93
   web-request; 3 curriculum). Mutation check: telling the late reply before the retry fails 5 tests (2026-10-27)
 - pre-commit audit: pass — fallow audit (new-only): verdict pass, 0 complexity findings; the one listed issue
   (unused dependency `critters`) is pre-existing, `introduced: false` (2026-10-27)
@@ -666,10 +666,10 @@ Final evidence, on the code after the implementation review's fixes, 2026-10-27:
   right / wrong feedback with per-option reasons, keyboard, live summary and step announcements, stale-result
   clearing, cases A–C, late case drawn and listed in time order, citation links and numbering, reduced motion,
   /learn and chapter 1 link to chapter 2, sitemap, / renders); chapter 1 regression suite 69/69 (2026-10-27)
-- lighthouse: pass — Lighthouse 13.4.1 on the final build: /learn/client-server 100 and 100 mobile, 100 desktop;
-  /learn/web-request 100 / 100; /learn 99 / 100; / 98 / 100; accessibility, best practices and SEO 100; CLS 0. On
-  the af07b7c build the first mobile run of /learn/client-server scored 84 (TBT 510 ms, first run after a server
-  start), then 100, 99, 99 (2026-10-27)
+- lighthouse: pass — Lighthouse 13.4.1 on the final build: /learn/client-server 100 and 99 mobile, 100 desktop;
+  /learn/web-request 99 / 100; /learn 99 / 100; / 97 / 100; accessibility, best practices and SEO 100; CLS 0.
+  Earlier builds of this chapter: af07b7c's first mobile run scored 84 (TBT 510 ms, first run after a server
+  start), then 100, 99, 99; 607f1d5 scored 100 / 100 (2026-10-27)
 
 ## Review findings
 
@@ -698,4 +698,10 @@ Reviewer: fresh subagent (check of the fixes af07b7c..607f1d5, production build 
 - [note] The "server still working" bar was always heavy and stopped before the retry → fixed (dashed from the first request's start to its late reply; heavy only on the "starts" step)
 - [note] In POST late + retry the retry got /orders/44 before the first finished as /orders/43 → fixed ("starts creating order 43 (slowly; its number is taken now)")
 - [note] "(as described for HTTP/1.1 …)" cited RFC 9110 §3.4, which neither scopes to HTTP/1.1 nor says "never unsolicited" → fixed (qualifier dropped; "answers requests" cites §3.4, "does not start one of its own" cites MDN's overview)
+
+Reviewer: fresh subagent (final check of 607f1d5..6b5f8d5, production build of 6b5f8d5), 2026-10-27, rubric verification.md. No blocking or should-fix finding; every finding of the previous block confirmed resolved.
+
+- [note] The dashed still-busy line ran through the retry's server box → fixed (moved to x=290, clear of the boxes)
+- [note] "order 43" in the late start text is a literal with no test tying it to the late reply's Location → fixed (unit test for POST and POST with key, with and without retry)
+- [note] Evidence did not say which build each line covers; JS budget and Lighthouse not re-run on 6b5f8d5 → fixed (all re-run on the final code; Evidence names it)
 

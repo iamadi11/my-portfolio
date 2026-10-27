@@ -350,9 +350,9 @@ function Diagram({ result, current }: { result: Result; current: Event | undefin
                 <>
                     {/* The first request is still being processed from its start until its late reply, across any retry. */}
                     <line
-                        x1={276}
+                        x1={290}
                         y1={108}
-                        x2={276}
+                        x2={290}
                         y2={tailY + 14}
                         className={['thin', 'ln-skip', busyOn && 'ln-active'].filter(Boolean).join(' ')}
                     />

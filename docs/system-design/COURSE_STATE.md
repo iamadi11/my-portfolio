@@ -9,13 +9,12 @@ The system design course is built only through the `system-design-educator` skil
 
 ## Current unit
 
-client-server step 8
+none
 
 ## Next action
 
-`client-server` step 8: a fresh check of the last review round's fixes (label geometry, still-busy bar, order-43
-wording, MDN attribution). If it finds no blocking or should-fix finding, mark `client-server` verified, release it
-through a PR, then mode C picks the next chapter (`ip-and-ports`).
+Release `client-server` (verified) to main through a PR and confirm its deployment. Then mode C picks the next
+eligible chapter (`ip-and-ports`, whose prerequisite `client-server` is verified).
 
 ## Decisions
 
@@ -113,3 +112,6 @@ through a PR, then mode C picks the next chapter (`ip-and-ports`).
   WG's editor's copy). Implementation review: 1 blocking (late-case order), 3 should-fix, 11 notes → fixed or
   accepted (607f1d5). Fresh check of the fixes: 2 should-fix (label crossing lanes, this state file), 3 notes →
   fixed. 157 unit tests, 48/48 + 69/69 browser checks, Lighthouse 100.
+- 2026-10-27 C client-server: reviewed → verified. Final fresh check of the last fixes (6b5f8d5): no blocking or
+  should-fix finding; its 3 notes fixed (still-busy line clear of the boxes, order-number test, evidence names its
+  build). 159 unit tests, 48/48 + 69/69 browser checks, Lighthouse 100/99 mobile, first-load JS 112 kB.
