@@ -13,7 +13,8 @@ none
 
 ## Next action
 
-Mode B (`/system-design-educator curriculum`): design the learning graph in `CURRICULUM.md` (it has no chapters).
+Mode C (`/system-design-educator next`): `web-request` (map chapter, stage 1) — the first chapter with no
+prerequisites. Owner review of the curriculum is welcome before chapter authoring begins.
 
 ## Decisions
 
@@ -35,6 +36,11 @@ Mode B (`/system-design-educator curriculum`): design the learning graph in `CUR
   check (§4). No new numbers.
 - 2026-10-28 Proposal (not built): when the product starts, add the route to `src/app/sitemap.ts` (today it lists
   only `/`) and check `public/sw.js` serves it under its network-first navigation rule (bump `VERSION` if rules change).
+- 2026-10-28 Curriculum v1 (mode B): 119 chapters, 12 stages, paths beginner 57 / interview 106 / production 106,
+  every path closed under prerequisites — rationale, coverage and scoping sources in `CURRICULUM.md`.
+- 2026-10-28 Map chapters (`web-request`, `distributed-trouble`, `security-map`) and mixed-review units
+  (`review-foundations`, `review-distributed`, `capstone`) are the only chapters allowed more than one core idea —
+  curriculum.md "map chapters" and late interleaving.
 
 ## Open issues
 
@@ -44,9 +50,15 @@ Mode B (`/system-design-educator curriculum`): design the learning graph in `CUR
   search are recorded `via: search` and cannot support claims from `implemented` on (course).
 - `course.mjs` lives under `.claude/`, which `eslint.config.mjs` ignores; the skill's own tests run with
   `node --test` (course).
+- Path closure (a path never needs a chapter outside it) is checked by the mode B generator, not by `course.mjs
+  check`; a later edit to paths could break it unnoticed (course).
+- Scoping sources were read only as search snippets except the System Design Primer; `time-clocks`,
+  `consistent-hashing`, `cap-pacelc`, `consensus` and `isolation` have no primary source found yet (course).
+- Beginner path has no end-to-end capstone; known gaps listed in `CURRICULUM.md` (course).
 
 ## Session log
 
 - 2026-10-27 setup: skill and state docs created; course not initialized.
 - 2026-10-28 A course: not initialized → initialized; app audited, empty graph created, placement and budgets
   proposed, empty leftover `src/app/learn/` folders (untracked, no files) removed.
+- 2026-10-28 B course: curriculum empty → 119 chapters planned; `check` ok, `next` → web-request.
