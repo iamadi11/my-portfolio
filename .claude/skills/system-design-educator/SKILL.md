@@ -69,7 +69,8 @@ Plain-language requests map the same way ("what's next?" → C; "the CAP chapter
 
 1. **Read state first, write state last.** Start from `COURSE_STATE.md` and `CURRICULUM.md`; check them against the
    actual files (a status that claims files which don't exist is wrong: fix the status, not the files). End by
-   updating both and appending a session-log line.
+   updating both and appending a session-log line. Fix only the unit you are on; a problem found in another
+   chapter (e.g. a prerequisite whose status isn't supported) becomes an open issue and the next unit (mode D).
 2. **Truth.** Never invent sources, quotes, numbers, benchmarks, company stories or results. Example numbers are
    labelled assumptions. A claim you could not check is marked unverified or cut.
 3. **Teach from zero.** Assume a smart reader who knows none of the jargon. Define every term at first use, explain
@@ -84,8 +85,8 @@ Plain-language requests map the same way ("what's next?" → C; "the CAP chapter
    ([course-state.md](references/course-state.md)). A check that failed, or could not run (no browser, a missing
    tool, no network), is recorded as `fail` or `not run` and the gate is not reached. Never substitute a different
    check, never retry until green without fixing a cause, never edit evidence to pass `check`.
-8. **Idempotent.** Re-running a unit that has nothing left to do changes no files and says so. Never rewrite a
-   finished step to "refresh" it; never skip an unfinished one.
+8. **Idempotent.** Re-running a unit that has nothing left to do, or whose blocker still holds, changes no files
+   and says so (naming the blocker). Never rewrite a finished step to "refresh" it; never skip an unfinished one.
 
 ## Mode A: initialize or audit the course
 
@@ -166,8 +167,10 @@ unit. No speculative framework for chapters that don't exist yet.
 
 Run `course.mjs show <id>` (unknown id: stop and report) and `course.mjs check`. Read the chapter spec, its
 implementation and its sources. Check it with [verification.md](references/verification.md)
-(claims against sources, teaching pattern, model numbers, tests, accessibility, reduced motion). List findings by
-severity, then fix them in place with the smallest change; don't redesign a chapter that only needs repairs. Any fix
+(claims against sources, teaching pattern, model numbers, tests, accessibility, reduced motion). Record findings by
+severity in the spec's Review findings section under an `Audit: author (mode D), <date>` line (only an independent
+review gets a `Reviewer:` line), then fix them in place with the smallest change; don't redesign a chapter that only
+needs repairs. Any fix
 to a claim re-checks its source; any fix to a model re-runs its tests. Lower the chapter's status if a gate's evidence
 no longer holds, raise it only when evidence is re-established. Update state and report.
 

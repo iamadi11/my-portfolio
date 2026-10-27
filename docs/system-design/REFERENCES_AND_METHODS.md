@@ -98,8 +98,8 @@ given learner or topic. Upgrade a row only after reading the source, and say whi
    mechanism per chapter". *Fixed:* added "map chapters" (journey as the mechanism, each part deferred with a link).
 3. **Research.** The likely sources are RFC 1034/1035, 9293, 8446 and 9110, and the HTML spec and MDN for
    rendering. In this container they are reachable only via search, so they would be recorded `via: search`. That
-   left a chapter able to reach `verified` on unread sources. *Fixed:* the `verified` gate and the rubric now
-   forbid claims resting only on `via: search`.
+   left a chapter able to reach `verified` on unread sources. *Fixed:* the rubric forbids claims resting only on
+   `via: search`. (Tightened on 2026-10-28: the rule now applies from `implemented`, and `check` enforces it.)
 4. **Teaching and visual.** The 14 questions fit: the naive answer "the browser downloads the page" breaks on
    "why is the first visit slow?". The medium is a stepper, not 3D.
 5. **Implementation.** No product exists, so the chapter caps at `authored`. That made `next` return the same
@@ -108,9 +108,68 @@ given learner or topic. Upgrade a row only after reading the source, and say whi
 6. **State.** The spec goes to `chapters/web-request.md`. `check` enforces that the file exists from `researched`
    onwards, and "Current unit" resumes an interrupted session.
 
+## Hardening and independent tests (2026-10-28)
+
+**Adversarial audit.** It found these defects, all fixed:
+
+- An empty or mistyped "Current unit" was silently ignored, and `next` gave the wrong answer on an empty graph.
+- No gate's evidence was checked by the script. A chapter could be `tested` with a failed check or `verified` with
+  an open finding.
+- Search-only sources could support claims shown to learners.
+- No mode built the product, and mode A invited architecture before any chapter existed.
+- There was no way to check a named chapter id or its prerequisites.
+- Malformed rows passed.
+- The documented test command (`node --test <dir>/`) failed on Node 22.
+
+**Regression suite.** `scripts/course.test.mjs` (`node:test`, no dependencies, temp fixtures) has 21 cases, and all
+pass on Node 22.22. Mutation check: of 8 deliberate breaks to `course.mjs`, 7 were caught. The 8th removed the
+prerequisite filter in rule 3 of `next`. That filter is unreachable in a valid graph, because prerequisites have a
+lower order and are picked first.
+
+**Fresh agents.** Three general-purpose subagents ran with no authoring history, on copies of the skill in a
+disposable worktree and fixture folders. The real `docs/system-design` was checked unchanged afterwards. All three
+ran the same model as the author; no other model was tested.
+
+1. **Mode A cold start** on the real app (`next` on an uninitialized course). It correctly ran mode A, created no
+   app code, and labelled placement and budgets as proposals. Its findings led to these fixes:
+   - `next` now routes an uninitialized course to mode A.
+   - Mode A now adopts the host's existing gates as budgets.
+   - The COURSE_STATE format gained proposal lines and an exact empty-graph header.
+   - The report states the requested mode and the mode actually run.
+2. **A malformed, cyclic graph, and an interrupted chapter with search-only sources (no network).**
+   - The graph failure was reported, but the agent then repaired the cycle and an id inside mode C. *Fixed:* mode C
+     now hands graph errors to mode B and changes nothing.
+   - The interrupted chapter resumed. The agent found earlier steps incomplete and honestly lowered the status.
+     *Fixed:* "complete" and "blocked" are now defined, along with resuming back to an earlier step and lowering a
+     status in mode C. Status was also removed from the spec header (it had two homes).
+3. **A failing model test and a missing browser**, plus an audit of a chapter marked `tested` on a "pass — browser
+   unavailable" line.
+   - The agent ran the real test, saw it fail, fixed the model, and kept the chapter below `tested` because the
+     browser checks could not run.
+   - The audit lowered the dishonest chapter.
+   - *Fixed:* `check` now rejects a "pass" line that admits it was skipped, unavailable or failed.
+   - *Fixed:* `check` now requires the content parts each gate owns (Boundary, Explanation, Visual, Practice; no
+     placeholders). Run on the agent's final fixture, it flagged the unsupported `verified` prerequisite the agent
+     had found by hand.
+   - Also fixed: `n/a` vs `not run`, a format for mode D audit findings, scope when another chapter is wrong,
+     re-runs while blocked, and derived claims.
+
+**Other checks.**
+
+- `course.mjs skill` passes.
+- Prettier passes on the skill and docs.
+- ESLint on the two scripts with `--no-ignore` (the project ignores `.claude/`) reports 0 errors and 20 warnings:
+  19 `no-console` (expected in a CLI) and 1 `no-use-before-define` (a hoisted function). The project lint scope is
+  unchanged.
+
 ## Known limitations
 
-- The skill was not evaluated with fresh agents on multiple models. The best-practices page recommends this.
-- The learning-science papers were not read in full (see above).
-- The "15–30 minutes per chapter" sizing is an assumption.
-- `course.mjs` checks structure, not quality. Quality rests on the rubric and the independent review.
+- The fresh-agent tests used one model. Haiku- and Sonnet-class runs, which the best-practices page recommends, were
+  not done.
+- The agents ran the skill as it stood before the fixes their own findings caused. The final skill was checked by
+  the regression suite and by re-running `check` on their end states, not by new agent runs.
+- The learning-science papers were not read in any form beyond search snippets (see above).
+- The chapter-length target (15–30 minutes) is a hypothesis to test with real readers.
+- `course.mjs` checks structure: that evidence is written down, consistent and non-placeholder. Whether the content
+  is correct and teaches well rests on the rubric and the independent review.
+- No real chapter has been authored with the skill, and modes B and D have not run on a real course.

@@ -61,6 +61,8 @@ read, replaced, or cut (`check` enforces this: such a record must say `supports:
 
 ## Checking claims and numbers
 
+- A claim derived from sourced claims (arithmetic, a formula applied to assumed values) cites the claims it derives
+  from and shows the step; it needs no record of its own.
 - Numbers (latencies, limits, defaults) need a source and a date or version: defaults change between versions.
 - "Latency numbers every programmer should know"-style figures are orders of magnitude from a specific source and
   era; say so and cite the version used.

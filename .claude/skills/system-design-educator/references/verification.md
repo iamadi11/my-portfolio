@@ -66,6 +66,11 @@ Evidence section (`pass`, `fail`, `not run`, `n/a` with reason). A failed check 
 one that could not run (missing browser, tool or network) stays `not run` and the chapter stays below `tested`.
 Never replace a required check with a weaker one and call it a pass.
 
+**Required checks** are the host project's release gates (its CLAUDE.md) plus the chapter's own: model tests for any
+model, browser checks (sizes, keyboard, reduced motion) for any chapter with a page. `n/a` is only for a check that
+does not apply to this chapter (e.g. no model, so no model tests), with that reason; "couldn't run it" is never
+`n/a`. A `pass` line must not also say skipped, unavailable or failed (`check` rejects it).
+
 ## Browser checks
 
 - Load the chapter at each required viewport size; take screenshots and read them (zoom into the visual).

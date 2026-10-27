@@ -2,7 +2,7 @@
 // builds a throwaway course in the OS temp folder, never touching the real docs/system-design.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { after, test } from 'node:test';
@@ -43,8 +43,10 @@ function run(root, ...args) {
     return { code: r.status, out: r.stdout + r.stderr };
 }
 
-const READ = '## Sources\n\n- id: rfc9110\n  title: RFC 9110\n  via: read\n  supports: [c1]\n';
-const SEARCH = '## Sources\n\n- id: rfc9110\n  title: RFC 9110\n  via: search\n  supports: [c1]\n';
+const CONTENT =
+    '## Boundary\n\nObjectives: x\n\n## Explanation (14 questions)\n\n1. Problem: x\n\n## Visual\n\nDecision: text only\n\n## Practice\n\nQ1\n\n';
+const READ = CONTENT + '## Sources\n\n- id: rfc9110\n  title: RFC 9110\n  via: read\n  supports: [c1]\n';
+const SEARCH = CONTENT + '## Sources\n\n- id: rfc9110\n  title: RFC 9110\n  via: search\n  supports: [c1]\n';
 const PASS =
     '\n## Evidence\n\n- typecheck: pass — tsc (2026-01-01)\n- browser: pass — playwright (2026-01-01)\n';
 const REVIEW = '\n## Review findings\n\nReviewer: fresh subagent, 2026-01-02\n';
@@ -188,7 +190,7 @@ test('unavailable/snippet-only sources cannot support claims once implemented', 
         'check'
     );
     assert.match(bad.out, /via: search but supports claims/);
-    const lead = SEARCH.replace('supports: [c1]', 'supports: none');
+    const lead = SEARCH.replace('supports: [c1]', 'supports: none').replace(CONTENT, '');
     assert.equal(
         run(
             course({
@@ -219,6 +221,40 @@ test('unavailable/snippet-only sources cannot support claims once implemented', 
     ).out;
     assert.match(bare, /source x needs a title/);
     assert.match(bare, /source x needs supports/);
+});
+
+test('content gates: placeholders and empty parts do not count', () => {
+    const placeholder = READ.replace('Decision: text only', 'TEST-PLACEHOLDER: visual not authored');
+    const r = run(course({ rows: [row('a', 1, '', 'authored')], specs: { a: placeholder } }), 'check');
+    assert.match(r.out, /needs "## Visual" filled/);
+    const noBoundary = READ.replace('Objectives: x', '...');
+    assert.match(
+        run(course({ rows: [row('a', 1, '', 'researched')], specs: { a: noBoundary } }), 'check').out,
+        /needs "## Boundary" filled/
+    );
+    assert.equal(run(course({ rows: [row('a', 1, '', 'authored')], specs: { a: READ } }), 'check').code, 0);
+    // The untouched chapter template (from chapter-workflow.md) must not pass as authored content.
+    const md = readFileSync(join(dirname(SCRIPT), '../references/chapter-workflow.md'), 'utf8');
+    const template = md.match(/```markdown\n([\s\S]*?)\n```/)[1];
+    const t = run(
+        course({
+            rows: [row('a', 1, '', 'authored')],
+            specs: { a: template + '\n' + READ.slice(READ.indexOf('## Sources')) },
+        }),
+        'check'
+    );
+    for (const h of ['Boundary', 'Explanation \\(14 questions\\)', 'Visual', 'Practice'])
+        assert.match(t.out, new RegExp(`needs "## ${h}" filled`));
+});
+
+test('tested: a pass line that admits it was skipped is rejected', () => {
+    const spec =
+        READ + '\n## Evidence\n\n- browser 375×812: pass — screenshots skipped, browser unavailable\n';
+    const r = run(
+        course({ rows: [row('a', 1, '', 'tested')], product: 'src/app/learn', specs: { a: spec } }),
+        'check'
+    );
+    assert.match(r.out, /says pass but also/);
 });
 
 test('tested: failed test or missing browser is not a pass', () => {

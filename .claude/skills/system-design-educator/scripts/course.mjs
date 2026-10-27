@@ -125,6 +125,21 @@ function specErrors(c) {
                 `${c.id}: source ${id} is via: ${via} but supports claims (read it, replace it, or set supports: none)`
             );
     }
+    // Content parts a gate owns must be filled: a line that isn't template text (ends in `...`, holds a <slot>) or a
+    // test placeholder.
+    const filled = (h) =>
+        (section(text, h) ?? []).some(
+            (l) => !/(\.\.\.|…)$|<[^>]+>|TEST-PLACEHOLDER|^```/.test(l) && /\w/.test(l)
+        );
+    const parts = [['Boundary', 'researched']];
+    if (rank(c.status) >= rank('authored'))
+        parts.push(
+            ['Explanation (14 questions)', 'authored'],
+            ['Visual', 'authored'],
+            ['Practice', 'authored']
+        );
+    for (const [h, gate] of parts)
+        if (!filled(h)) errs.push(`${c.id}: status ${c.status} needs "## ${h}" filled (owned by ${gate})`);
     if (rank(c.status) >= rank('tested')) {
         const ev = (section(text, 'Evidence') ?? []).filter((l) => l.startsWith('- '));
         if (!ev.length) errs.push(`${c.id}: status ${c.status} needs check results under "## Evidence"`);
@@ -133,6 +148,8 @@ function specErrors(c) {
                 errs.push(
                     `${c.id}: evidence line is not a pass: "${l}" (a failed or not-run check means not tested)`
                 );
+            else if (/^- [^:]+: pass\b.*\b(not run|unavailable|skipped|n\/a|fail(ed|s)?)\b/i.test(l))
+                errs.push(`${c.id}: evidence line says pass but also skipped/unavailable/failed/n/a: "${l}"`);
     }
     if (rank(c.status) >= rank('reviewed')) {
         const rv = section(text, 'Review findings') ?? [];
@@ -307,7 +324,7 @@ if (cmd === 'next') {
     const { chapters, product } = readGraph();
     const errs = check(chapters);
     if (errs.length) {
-        console.log('Graph has errors; fix them first (course.mjs check).');
+        console.log('State has errors; fix them first (course.mjs check).');
         report(errs);
     }
     const { chapter, reason } = next(chapters, product);
