@@ -45,7 +45,7 @@ const FRAMES: Frame[] = [
         id: 'tls',
         title: 'Secure it (TLS 1.3)',
         who: 'server',
-        text: 'ClientHello goes out; the server answers with its keys, certificate and Finished; one round trip.',
+        text: 'ClientHello goes out; the server answers with its key-exchange parameters, certificate and Finished; one round trip. Both sides then work out the same keys.',
     },
     {
         id: 'request',
@@ -103,7 +103,10 @@ function Range({
     return (
         <div className="ln-range">
             <label htmlFor={id}>{label}</label>
-            <output htmlFor={id}>{value} ms</output>
+            {/* Shown, not announced: the slider itself says the value with its unit (aria-valuetext). */}
+            <span className="ln-range-v" aria-hidden="true">
+                {value} ms
+            </span>
             <input
                 id={id}
                 type="range"
@@ -111,6 +114,7 @@ function Range({
                 max={r.max}
                 step={r.step}
                 value={value}
+                aria-valuetext={`${value} milliseconds`}
                 onChange={(e) => onChange(Number(e.target.value))}
             />
         </div>
@@ -202,6 +206,8 @@ export default function JourneyStepper(): React.JSX.Element {
     const [at, setAt] = useState(0);
     const [picked, setPicked] = useState<Record<string, boolean>>({});
     const [checked, setChecked] = useState(false);
+    /** Travel/work labels and the network/server split appear once the learner has committed (or skipped). */
+    const [revealed, setRevealed] = useState(false);
     const s = useMemo(() => summarize(inputs), [inputs]);
     const frame = FRAMES[at];
     const step = stepFor(s.steps, frame.id);
@@ -226,7 +232,7 @@ export default function JourneyStepper(): React.JSX.Element {
                         <legend>Predict first</legend>
                         <p className="m-0 mb-2">
                             This model has no bandwidth control. Tick every part that is a message travelling
-                            there and back. Leave the server working unticked.
+                            there and back; leave unticked anything that is not.
                         </p>
                         {PREDICT.map((p) => (
                             <label key={p.key} className="ln-check">
@@ -241,9 +247,23 @@ export default function JourneyStepper(): React.JSX.Element {
                                 {p.label}
                             </label>
                         ))}
-                        <button type="button" className="ln-btn mt-2" onClick={() => setChecked(true)}>
-                            Check
-                        </button>
+                        <div className="ln-nav">
+                            <button
+                                type="button"
+                                className="ln-btn"
+                                onClick={() => {
+                                    setChecked(true);
+                                    setRevealed(true);
+                                }}
+                            >
+                                Check
+                            </button>
+                            {revealed ? null : (
+                                <button type="button" className="ln-btn" onClick={() => setRevealed(true)}>
+                                    Skip, show the labels
+                                </button>
+                            )}
+                        </div>
                         <p role="status" className="mt-2">
                             {checked
                                 ? PREDICT.every((p) => Boolean(picked[p.key]) === p.travel)
@@ -278,19 +298,19 @@ export default function JourneyStepper(): React.JSX.Element {
                         <fieldset>
                             <legend>Assumed values</legend>
                             <Range
-                                label="Round trip to the server"
+                                label="Round-trip time"
                                 name="rttMs"
                                 value={inputs.rttMs}
                                 onChange={(v) => set({ rttMs: v })}
                             />
                             <Range
-                                label="DNS lookup"
+                                label="DNS lookup time"
                                 name="dnsMs"
                                 value={inputs.dnsMs}
                                 onChange={(v) => set({ dnsMs: v })}
                             />
                             <Range
-                                label="Server processing"
+                                label="Server processing time"
                                 name="serverMs"
                                 value={inputs.serverMs}
                                 onChange={(v) => set({ serverMs: v })}
@@ -325,13 +345,16 @@ export default function JourneyStepper(): React.JSX.Element {
                         })}
                     </ol>
                     <p className="ln-frame">
-                        <strong>
-                            Step {at + 1}. {frame.title}.
-                        </strong>{' '}
-                        {step?.skipped
-                            ? `Skipped on this visit (${step.skipped}). On a first visit: ${frame.text.charAt(0).toLowerCase()}${frame.text.slice(1)}`
-                            : frame.text}
-                        {frame.id === 'request' && req && !req.skipped
+                        {/* Announced when the step changes; the numbers below are announced by the summary. */}
+                        <span aria-live="polite">
+                            <strong>
+                                Step {at + 1}. {frame.title}.
+                            </strong>{' '}
+                            {step?.skipped
+                                ? `Skipped on this visit (${step.skipped}). On a first visit: ${frame.text.charAt(0).toLowerCase()}${frame.text.slice(1)}`
+                                : frame.text}
+                        </span>
+                        {revealed && frame.id === 'request' && req && !req.skipped
                             ? ` Here: ${req.networkMs} ms travelling plus ${req.serverMs} ms of server work.`
                             : null}
                     </p>
@@ -339,16 +362,16 @@ export default function JourneyStepper(): React.JSX.Element {
                         <button
                             type="button"
                             className="ln-btn"
-                            disabled={at === 0}
-                            onClick={() => setAt((n) => n - 1)}
+                            aria-disabled={at === 0}
+                            onClick={() => setAt((n) => Math.max(0, n - 1))}
                         >
                             Previous step
                         </button>
                         <button
                             type="button"
                             className="ln-btn"
-                            disabled={at === FRAMES.length - 1}
-                            onClick={() => setAt((n) => n + 1)}
+                            aria-disabled={at === FRAMES.length - 1}
+                            onClick={() => setAt((n) => Math.min(FRAMES.length - 1, n + 1))}
                         >
                             Next step
                         </button>
@@ -360,7 +383,7 @@ export default function JourneyStepper(): React.JSX.Element {
                                 <li key={`${x.id}-n`}>
                                     <span>
                                         {STEP_NAME[x.id]}
-                                        {x.id === 'request' ? ' (travel)' : ''}
+                                        {x.id === 'request' && revealed ? ' (travel)' : ''}
                                     </span>
                                     <span className="ln-bar-track" aria-hidden="true">
                                         <span
@@ -374,7 +397,7 @@ export default function JourneyStepper(): React.JSX.Element {
                             if (x.id === 'request')
                                 rows.push(
                                     <li key="srv">
-                                        <span>Server (work)</span>
+                                        <span>{revealed ? 'Server (work)' : 'Server'}</span>
                                         <span className="ln-bar-track" aria-hidden="true">
                                             <span
                                                 className="ln-bar-fill"
@@ -389,9 +412,14 @@ export default function JourneyStepper(): React.JSX.Element {
                         })}
                     </ul>
                     <p className="ln-readout">
-                        Time to first byte: <strong>{s.totalMs} ms</strong>. Network waiting:{' '}
-                        <strong>{s.networkMs} ms</strong> ({formatShare(s.networkShare)}). Server work:{' '}
-                        <strong>{s.serverMs} ms</strong>.
+                        Time to first byte: <strong>{s.totalMs} ms</strong>.
+                        {revealed ? (
+                            <>
+                                {' '}
+                                Network waiting: <strong>{s.networkMs} ms</strong> (
+                                {formatShare(s.networkShare)}). Server work: <strong>{s.serverMs} ms</strong>.
+                            </>
+                        ) : null}
                     </p>
                     <p className="sr-only" aria-live="polite">
                         {summaryText}
@@ -400,8 +428,8 @@ export default function JourneyStepper(): React.JSX.Element {
             </div>
             <figcaption className="ln-label mt-4">
                 Assumes TLS 1.3 over TCP (not HTTP/3), no TCP Fast Open, no TLS 0-RTT, no redirects, no packet
-                loss, the first byte one round trip after the request, and no transmission time. Black bars:
-                travel. Hatched bar: server work.
+                loss, the first byte one round trip after the request, and no transmission time.
+                {revealed ? ' Black bars: travel. Hatched bar: server work.' : null}
             </figcaption>
         </figure>
     );

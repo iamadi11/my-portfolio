@@ -330,9 +330,9 @@ export default function Page(): React.JSX.Element {
                             parses it into the DOM and requests the files it names. Browsers can also use a
                             &ldquo;preload scanner&rdquo; that reads ahead and starts some downloads early.
                             Then the CSSOM, the render tree, layout and paint. A script without{' '}
-                            <code>async</code> or <code>defer</code> pauses parsing until it has run. Linked
-                            files are requested only once the browser reaches them in the HTML, so they come
-                            after the HTML&rsquo;s first byte.{' '}
+                            <code>async</code> or <code>defer</code> pauses parsing until it has run. Either
+                            way, the browser finds those files by reading the HTML, so they are requested
+                            after the HTML&rsquo;s first byte arrives.{' '}
                             <C ids={['mdn-how-browsers-work', 'mdn-crp']} />
                         </li>
                     </ol>
@@ -578,10 +578,12 @@ export default function Page(): React.JSX.Element {
 
                     <h2 id="sources">Sources</h2>
                     <p>
-                        Every source below was read in full from the project&rsquo;s public source repository
-                        (the websites were unreachable when this chapter was written); section numbers were
-                        checked against that text. MDN content is by Mozilla contributors under CC-BY-SA 2.5
-                        and is paraphrased here, not copied.
+                        The parts of each source cited here were read in the project&rsquo;s public source
+                        repository (the websites were unreachable when this chapter was written); links point
+                        to the published versions. RFC section numbers were worked out from the working
+                        groups&rsquo; source files and have not yet been checked against the published RFCs.
+                        MDN content is by Mozilla contributors under CC-BY-SA 2.5 and is paraphrased here, not
+                        copied.
                     </p>
                     <ol className="ln-sources">
                         {SOURCES.map((s) => (

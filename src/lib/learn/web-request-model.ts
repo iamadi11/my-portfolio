@@ -36,7 +36,7 @@ export type Summary = {
 export const RANGES = {
     rttMs: { min: 5, max: 300, step: 5, initial: 40 },
     dnsMs: { min: 0, max: 200, step: 5, initial: 30 },
-    serverMs: { min: 0, max: 500, step: 10, initial: 50 },
+    serverMs: { min: 0, max: 500, step: 5, initial: 50 },
 } as const;
 
 export const DEFAULTS: Inputs = {

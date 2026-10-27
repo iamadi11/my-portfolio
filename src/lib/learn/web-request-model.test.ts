@@ -71,15 +71,28 @@ describe('model rules (spec "Visual" step 5)', () => {
         expect(d('cached')).toBe(0);
     });
 
-    it('a bandwidth-free model: nothing but round trips, DNS and server time moves the total', () => {
+    it('with every input at its minimum, only three minimum round trips remain (inputs are clamped)', () => {
         const s = summarize(at('first', { rttMs: 0, dnsMs: 0, serverMs: 0 }));
-        // rtt is clamped to its 5 ms minimum: three round trips are all that remain.
         expect(s.totalMs).toBe(3 * RANGES.rttMs.min);
+    });
+
+    it('every value the chapter asks the learner to set is reachable on its slider', () => {
+        const reachable = (r: { min: number; max: number; step: number }, v: number): boolean =>
+            v >= r.min && v <= r.max && (v - r.min) % r.step === 0;
+        // Worked example (40/30/50) and exercise (120 and 30 ms round trips; server time halved to 25 ms).
+        for (const v of [40, 120, 30]) expect(reachable(RANGES.rttMs, v)).toBe(true);
+        expect(reachable(RANGES.dnsMs, 30)).toBe(true);
+        for (const v of [50, 25]) expect(reachable(RANGES.serverMs, v)).toBe(true);
     });
 });
 
 describe('invariants over the whole control range', () => {
-    const grid = (r: { min: number; max: number }): number[] => [r.min, (r.min + r.max) / 2, r.max];
+    /** Minimum, a middle value the slider can reach, and maximum. */
+    const grid = (r: { min: number; max: number; step: number }): number[] => [
+        r.min,
+        r.min + Math.round((r.max - r.min) / 2 / r.step) * r.step,
+        r.max,
+    ];
     const visits: VisitType[] = ['first', 'warm', 'cached'];
 
     const cases: Inputs[] = visits.flatMap((visit) =>
@@ -95,8 +108,14 @@ describe('invariants over the whole control range', () => {
         (input) => {
             const s = summarize(input);
             expect(s.totalMs).toBe(s.steps.reduce((t, x) => t + x.networkMs + x.serverMs, 0));
-            expect(Number.isNaN(s.totalMs)).toBe(false);
-            expect(s.steps.every((x) => x.networkMs >= 0 && x.serverMs >= 0)).toBe(true);
+            const values = [
+                s.totalMs,
+                s.networkMs,
+                s.serverMs,
+                ...s.steps.flatMap((x) => [x.networkMs, x.serverMs]),
+            ];
+            expect(values.every((v) => Number.isFinite(v) && v >= 0)).toBe(true);
+            if (s.networkShare !== null) expect(Number.isFinite(s.networkShare)).toBe(true);
             expect(s.networkShare === null || (s.networkShare >= 0 && s.networkShare <= 1)).toBe(true);
         }
     );

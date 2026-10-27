@@ -40,9 +40,9 @@ export default function Page(): React.JSX.Element {
                 <h1 className="ln-h1">System design, from zero</h1>
                 <p className="ln-lede">
                     How the systems behind websites and apps work, starting from what happens when you open a
-                    page and building up to distributed systems and real design decisions. Every claim cites a
-                    source that was read; every number in a figure comes from a tested model, and figures say
-                    so.
+                    page and building up to distributed systems and real design decisions. Factual claims cite
+                    a source that was read, and design judgements are labelled as such; every number in a
+                    figure comes from a tested model, and figures say so.
                 </p>
                 <p className="ln-lede">
                     {built} of {all.length} chapters can be read so far. Planned chapters are listed so you

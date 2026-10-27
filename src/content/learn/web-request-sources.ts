@@ -4,22 +4,16 @@
  * left out. `read` says where the text was actually read (the websites were unreachable from the authoring
  * container, so each project's public source repository was used).
  */
+/** In order of first citation on the page, so the numbers read [1], [2], … from the top. */
 export type Source = { id: string; title: string; publisher: string; url: string; read: string };
 
 export const SOURCES: Source[] = [
     {
-        id: 'mdn-how-browsers-work',
-        title: 'Populating the page: how browsers work',
-        publisher: 'MDN Web Docs',
-        url: 'https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work',
-        read: 'mdn/content @ bd7387a. Its TLS round-trip counts describe older TLS and are not used here.',
-    },
-    {
-        id: 'mdn-crp',
-        title: 'Critical rendering path',
-        publisher: 'MDN Web Docs',
-        url: 'https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path',
-        read: 'mdn/content @ bd7387a',
+        id: 'rfc9110',
+        title: 'RFC 9110: HTTP Semantics (June 2022)',
+        publisher: 'IETF (Fielding, Nottingham, Reschke, eds.)',
+        url: 'https://www.rfc-editor.org/rfc/rfc9110',
+        read: 'httpwg/http-core rfc9110.xml @ bde37f6',
     },
     {
         id: 'mdn-url',
@@ -33,6 +27,20 @@ export const SOURCES: Source[] = [
         title: 'DNS (glossary)',
         publisher: 'MDN Web Docs',
         url: 'https://developer.mozilla.org/en-US/docs/Glossary/DNS',
+        read: 'mdn/content @ bd7387a',
+    },
+    {
+        id: 'rfc9846',
+        title: 'RFC 9846: The Transport Layer Security (TLS) Protocol Version 1.3 (July 2026; obsoletes RFC 8446)',
+        publisher: 'IETF (E. Rescorla)',
+        url: 'https://www.rfc-editor.org/rfc/rfc9846',
+        read: 'tlswg/tls13-spec rfc9846.md @ c728b4e; section numbers from that file',
+    },
+    {
+        id: 'mdn-http-overview',
+        title: 'Overview of HTTP',
+        publisher: 'MDN Web Docs',
+        url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview',
         read: 'mdn/content @ bd7387a',
     },
     {
@@ -50,18 +58,32 @@ export const SOURCES: Source[] = [
         read: 'mdn/content @ bd7387a',
     },
     {
-        id: 'mdn-http-overview',
-        title: 'Overview of HTTP',
+        id: 'mdn-how-browsers-work',
+        title: 'Populating the page: how browsers work',
         publisher: 'MDN Web Docs',
-        url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview',
+        url: 'https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work',
+        read: 'mdn/content @ bd7387a. Its TLS round-trip counts describe older TLS and are not used here.',
+    },
+    {
+        id: 'rfc9111',
+        title: 'RFC 9111: HTTP Caching (June 2022)',
+        publisher: 'IETF (Fielding, Nottingham, Reschke, eds.)',
+        url: 'https://www.rfc-editor.org/rfc/rfc9111',
+        read: 'httpwg/http-core rfc9111.xml @ bde37f6',
+    },
+    {
+        id: 'mdn-crp',
+        title: 'Critical rendering path',
+        publisher: 'MDN Web Docs',
+        url: 'https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path',
         read: 'mdn/content @ bd7387a',
     },
     {
-        id: 'mdn-caching',
-        title: 'HTTP caching',
-        publisher: 'MDN Web Docs',
-        url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching',
-        read: 'mdn/content @ bd7387a',
+        id: 'navtiming-2',
+        title: 'Navigation Timing Level 2 (Editor’s Draft)',
+        publisher: 'W3C Web Performance Working Group',
+        url: 'https://w3c.github.io/navigation-timing/',
+        read: 'w3c/navigation-timing @ 245fee2',
     },
     {
         id: 'mdn-nav-timing',
@@ -78,13 +100,6 @@ export const SOURCES: Source[] = [
         read: 'mdn/content @ bd7387a. Its "TCP = connectEnd − connectStart" shortcut includes TLS on https pages.',
     },
     {
-        id: 'navtiming-2',
-        title: 'Navigation Timing Level 2 (Editor’s Draft)',
-        publisher: 'W3C Web Performance Working Group',
-        url: 'https://w3c.github.io/navigation-timing/',
-        read: 'w3c/navigation-timing @ 245fee2',
-    },
-    {
         id: 'fetch',
         title: 'Fetch Standard: record connection timing info; clamp and coarsen connection timing info',
         publisher: 'WHATWG',
@@ -92,25 +107,11 @@ export const SOURCES: Source[] = [
         read: 'whatwg/fetch @ 59afe34',
     },
     {
-        id: 'rfc9110',
-        title: 'RFC 9110: HTTP Semantics (June 2022)',
-        publisher: 'IETF (Fielding, Nottingham, Reschke, eds.)',
-        url: 'https://www.rfc-editor.org/rfc/rfc9110',
-        read: 'httpwg/http-core rfc9110.xml @ bde37f6',
-    },
-    {
-        id: 'rfc9111',
-        title: 'RFC 9111: HTTP Caching (June 2022)',
-        publisher: 'IETF (Fielding, Nottingham, Reschke, eds.)',
-        url: 'https://www.rfc-editor.org/rfc/rfc9111',
-        read: 'httpwg/http-core rfc9111.xml @ bde37f6',
-    },
-    {
-        id: 'rfc9846',
-        title: 'RFC 9846: The Transport Layer Security (TLS) Protocol Version 1.3 (July 2026; obsoletes RFC 8446)',
-        publisher: 'IETF (E. Rescorla)',
-        url: 'https://www.rfc-editor.org/rfc/rfc9846',
-        read: 'tlswg/tls13-spec rfc9846.md @ c728b4e; section numbers from that file',
+        id: 'mdn-caching',
+        title: 'HTTP caching',
+        publisher: 'MDN Web Docs',
+        url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching',
+        read: 'mdn/content @ bd7387a',
     },
 ];
 

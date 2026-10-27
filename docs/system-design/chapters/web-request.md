@@ -188,9 +188,7 @@ Glossary rules for the course:
    6. **Parse, fetch more, render.** As the HTML arrives, the browser parses it into the DOM. It requests the
       resources the HTML names (stylesheets, scripts, images). Browsers can also use a "preload scanner" that reads
       ahead and starts some of those downloads early. The browser builds the CSSOM, combines it with the DOM into a render tree,
-      lays out and paints. A script without `async` or `defer` pauses HTML parsing until it has run. Linked
-      resources are requested only once the browser reaches them in the HTML, which is why they come after the
-      HTML's first byte. [mdn-how-browsers-work: response, parsing, preload scanner, render; mdn-crp]
+      lays out and paints. A script without `async` or `defer` pauses HTML parsing until it has run. Either way, the browser finds those files by reading the HTML (the parser or the preload scanner), so they are requested after the HTML's first byte arrives. [mdn-how-browsers-work: response, parsing, preload scanner, render; mdn-crp]
 
    **Counting the network for a first visit.** On a first visit to an HTTPS site over TCP and TLS 1.3, the first
    byte of the HTML arrives after:
@@ -338,19 +336,23 @@ Visual spec (the 14-step process):
    one decimal everywhere in the chapter). The network share
    is (DNS + TCP + TLS + the request's round trip) ÷ total; when the total is 0 (fresh cache), it shows "no network
    used". All readouts are computed from the model.
-8. **Prediction prompt** (before the first change): "This model has no bandwidth control. Which of these steps is
-   a wait for a message to travel, and which is the server working?" After the learner commits, the visual
-   labels DNS, TCP, TLS and the request's round trip as travel, and the server time as work.
+8. **Prediction prompt** (first in the figure): "This model has no bandwidth control. Tick every part that is a
+   message travelling there and back." Until the learner checks the answer (or chooses "skip"), the figure shows
+   each step's milliseconds and the total only: no travel/work labels, no network/server split, no bar legend.
+   After that, it labels DNS, TCP, TLS and the request's round trip as travel and the server time as work.
 
    A second panel states the model's assumption plainly: these bars contain no bytes ÷ bandwidth time, and
    `latency-throughput` adds it.
 9. **Signaling:** the active step's arrow is drawn at 2 px with `--fill-2` behind it, and the others are thin. On a
    repeat visit, skipped steps are drawn dashed and labelled "skipped: cached" or "skipped: connection reused".
-10. **States:** active is a 2 px stroke with fill; done is a solid thin line; skipped is dashed with a text label.
+10. **States:** in the drawing, the active exchange is a 2 px stroke and its node is filled `--fill-2`; other
+    exchanges are thin lines; an active exchange skipped on this visit is dashed with a "skipped: …" label. In the
+    step list, the current step has a 2 px border and fill, and every skipped step is dashed with its reason in text.
     Never colour alone.
 11. **Text alternative:** a live summary, for example "First visit: DNS 30 ms, TCP 40 ms, TLS 40 ms, request
     90 ms; time to first byte 200 ms, 75.0% network." It updates when an input changes; the live region updates on
-    change only, never per frame.
+    change only, never per frame. The current step's title and text are a second polite live region, so moving
+    between steps is announced. Sliders announce their value with its unit (`aria-valuetext`).
 12. **Reduced motion:** all six frames are shown as a static numbered list next to the timeline bar. Nothing
     animates.
 13. **Tests (when implemented):**
@@ -665,14 +667,26 @@ websites were unreachable from the authoring container.
 
 - typecheck: pass — npx tsc --noEmit (2026-10-27)
 - lint: pass — npm run lint, no warnings or errors (2026-10-27)
-- model tests: pass — npm test, 94 tests (91 model incl. 81 grid cases over the control ranges, 3 curriculum reader);
-  4 deliberate model mutations each caught (2026-10-27)
-- build and JS budget: pass — next build; /learn 107 kB and /learn/web-request 110 kB first-load JS (budget 120 kB); / 110 kB, unchanged from main (2026-10-27)
-- browser sizes: pass — Playwright at 375×812, 402×874, 768×1024, 1280×800, 1440×900, 1920×1080 on both routes: no horizontal scroll, no console errors; screenshots read (2026-10-27)
-- keyboard: pass — Playwright keyboard-only: visit radios by arrow keys, sliders by Home/End, step and next/previous buttons by Enter/Space, prediction by Space/Enter, answers by Enter; visible 2 px focus (2026-10-27)
-- reduced motion: pass — Playwright reducedMotion: all six steps listed, bar transition 0s, readout and assumptions shown (2026-10-27)
-- accessibility scan: pass — axe-core 4.10.3, WCAG 2.0/2.1/2.2 A and AA, both routes at 375 and 1280 px with answers open: 0 violations; 6 SVG label nodes left for manual contrast review, checked by hand (ink and ink-2 on fill-2, above 4.5:1) (2026-10-27)
-- lighthouse: pass — Lighthouse 13.4.1 (mobile, desktop): /learn 91/98/99 performance over three mobile runs, 100 desktop; /learn/web-request 99 mobile, 100 desktop; accessibility, best practices and SEO 100 on every run (2026-10-27)
+- model tests: pass — npm test, 95 tests (92 model incl. 81 grid cases over slider-reachable values, 3 curriculum
+  reader); deliberate model mutations each caught (2026-10-27)
+- build and JS budget: pass — next build: /learn 107 kB and /learn/web-request 110 kB first-load JS (budget 120 kB);
+  / 110 kB, unchanged from main. Browser: 106.0 / 109.5 KB gzip of scripts at load; ~10 KB more after idle is
+  `next/link` prefetch (2026-10-27)
+- browser sizes: pass — Playwright at 375×812, 402×874, 768×1024, 1280×800, 1440×900, 1920×1080 on both routes: no
+  horizontal scroll, no console errors; screenshots read at 375 and 1280 (2026-10-27)
+- keyboard: pass — Playwright keyboard-only: visit radios (arrows), sliders (Home/End/arrows; 25 ms reachable),
+  step buttons and Next/Previous (Enter/Space; focus kept at the ends), prediction and Skip, answers (Enter);
+  visible 2 px focus (2026-10-27)
+- reduced motion: pass — Playwright reducedMotion: all six steps listed, bar transition 0s, readout and assumptions
+  shown (2026-10-27)
+- accessibility scan: pass — axe-core 4.10.3, WCAG 2.0/2.1/2.2 A and AA, both routes at 375 and 1280 px with
+  answers open: 0 violations; 6 SVG label nodes left for manual contrast review, checked by hand (ink and ink-2 on
+  fill-2, above 4.5:1); live regions for summary and step text; sliders have aria-valuetext (2026-10-27)
+- lighthouse: pass — Lighthouse 13.4.1 on the final build: /learn 99 mobile, 100 desktop; /learn/web-request 99
+  mobile, 100 desktop; accessibility, best practices and SEO 100; CLS 0. An earlier build's first mobile run of
+  /learn scored 91 (TBT 330 ms), then 98 and 99 (2026-10-27)
+- browser suite: pass — 52/52 checks (sizes, console, axe, keyboard, prediction gating, live regions, reduced
+  motion, / still renders) (2026-10-27)
 - spec review: pass — two fresh-subagent reviews against verification.md (2026-10-27); every finding fixed and
   recorded below; the second round's fixes were checked by the author, not by a third review
 
@@ -737,3 +751,36 @@ Audit: author (owner-requested chapter review), 2026-10-27, against verification
   checked against the XML front matter
 - [note] Added a verified fact: a reused connection shows 0 ms DNS/TCP/TLS in timing entries (Fetch, clamp and
   coarsen connection timing info)
+
+Reviewer: fresh subagent (implementation review: code, browser at 375/1280 px, sources), 2026-10-27, rubric
+verification.md
+
+- [should-fix] The prediction gave its answer away (prompt named the "work" item; travel/work labels and the bar
+  legend were visible before committing) → fixed (neutral prompt; labels, split and legend appear after Check or
+  Skip; spec Visual step 8 updated)
+- [should-fix] Next/Previous became `disabled` while focused, dropping keyboard focus to the page → fixed
+  (`aria-disabled`, focus stays; browser check added)
+- [should-fix] TLS frame said the server sends "its keys" → fixed ("key-exchange parameters … both sides then work
+  out the same keys", as rfc9846 §2)
+- [should-fix] The exercise's 25 ms server time was unreachable (slider step 10) → fixed (step 5; test that every
+  value the chapter asks for is reachable)
+- [should-fix] The page's Sources note claimed more than the spec records (read in full; section numbers checked)
+  → fixed (cited parts read in the source repos; RFC section numbers not yet checked against the published RFCs)
+- [should-fix] Moving between steps was silent for screen readers → fixed (step title and text are a polite live
+  region)
+- [note] `<output>` plus the live summary double-announced slider changes; sliders had no unit → fixed (visible
+  value is aria-hidden; `aria-valuetext` "40 milliseconds")
+- [note] "Linked files are requested only once the browser reaches them" read against the preload scanner → fixed
+  (page and step 6: the browser finds them by reading the HTML, so they come after the first byte)
+- [note] Course index said "every claim cites a source" though design judgements are uncited → fixed ("factual
+  claims cite a source … design judgements are labelled")
+- [note] Test names and coverage (misnamed bandwidth test, NaN only on the total, grid mid values off the slider
+  steps) → fixed
+- [note] Drawing has no separate "done" state as spec step 10 said → accepted: the spec now describes the drawing
+  as built; the step list carries current and skipped states for every step
+- [note] Citation numbers did not follow first appearance → fixed (sources ordered by first citation; checked)
+- [note] `tsconfig.json` rewritten by the build → fixed before commit (reverted; not in any commit)
+- [note] Reviewer measured ~116 kB gzip of scripts per route vs `next build`'s 107/110 kB → checked, no change:
+  measured in the browser, scripts at page load are 106.0 KB gzip (/learn) and 109.5 KB (/learn/web-request); the
+  further ~10 KB after idle is `next/link` prefetching the linked routes (/, /learn, not-found), not first-load JS.
+  The budget (CLAUDE.md §10.4) is first-load JS, under 120 kB on both routes
