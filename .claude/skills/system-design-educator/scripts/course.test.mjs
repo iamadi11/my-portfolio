@@ -384,3 +384,125 @@ test('bad usage exits 2; the skill validates', () => {
     assert.equal(spawnSync(process.execPath, [SCRIPT, 'show']).status, 2);
     assert.equal(spawnSync(process.execPath, [SCRIPT, 'skill']).status, 0);
 });
+
+/** A visual-first spec: two objectives, given assets, optional extra lines (storyboard, review…). */
+const asset = (n, type, extra = {}) =>
+    `### A${n}. Asset\n\n` +
+    Object.entries({
+        objective: String(n),
+        type,
+        'learner sees': 'a host with two ports',
+        'learner does': 'picks a port and runs',
+        model: 'demux table: (proto, port) → process',
+        assumptions: 'one host, no NAT',
+        outcome: 'predicts the receiving process',
+        accessibility: 'text summary in a live region',
+        tests: 'model.test.ts',
+        evidence: 'rfc9293 §3.4.1 (standard-defined)',
+        ...extra,
+    })
+        .map(([k, v]) => `- ${k}: ${v}`)
+        .join('\n') +
+    '\n\n';
+const visual = (assetsText, more = '') =>
+    'Standard: visual-first\n\n' +
+    READ.replace('Objectives: x', 'Objectives:\n\n1. predict\n2. explain') +
+    '\n## Storyboard\n\n1. the learner sees a host\n\n## Asset plan\n\n' +
+    assetsText +
+    more;
+
+test('visual-first: a complete asset plan passes authored', () => {
+    const spec = visual(asset(1, 'precision-2d') + asset(2, 'simulation'));
+    const r = run(course({ rows: [row('a', 1, '', 'authored')], specs: { a: spec } }), 'check');
+    assert.equal(r.code, 0, r.out);
+});
+
+test('visual-first: missing asset plan, fields, coverage and unknown type fail', () => {
+    const rows = [row('a', 1, '', 'authored')];
+    const none = run(course({ rows, specs: { a: visual('') } }), 'check');
+    assert.match(none.out, /needs "## Asset plan"/);
+    assert.match(none.out, /objective 1 has no asset/);
+    const bad = run(course({ rows, specs: { a: visual(asset(1, 'hologram', { model: '...' })) } }), 'check');
+    assert.match(bad.out, /unknown type "hologram"/);
+    assert.match(bad.out, /A1 needs "model:" filled/);
+    assert.match(bad.out, /objective 2 has no asset and no "- text-only: 2/);
+    const textOnly = visual(asset(1, 'precision-2d') + '- text-only: 2 — a definition\n');
+    assert.equal(run(course({ rows, specs: { a: textOnly } }), 'check').code, 0);
+    const noStory = visual(asset(1, 'precision-2d') + asset(2, 'text')).replace(
+        '1. the learner sees a host',
+        '...'
+    );
+    assert.match(run(course({ rows, specs: { a: noStory } }), 'check').out, /"## Storyboard" filled/);
+});
+
+test('visual-first: modelled types need a real model; all-text plans need an exception', () => {
+    const rows = [row('a', 1, '', 'authored')];
+    const conceptual = visual(
+        asset(1, 'simulation', { model: 'conceptual illustration' }) + asset(2, 'text')
+    );
+    assert.match(run(course({ rows, specs: { a: conceptual } }), 'check').out, /executable model/);
+    const allText = visual(asset(1, 'text') + asset(2, 'illustration'));
+    assert.match(run(course({ rows, specs: { a: allText } }), 'check').out, /Visual exception/);
+    assert.equal(
+        run(
+            course({ rows, specs: { a: allText + '\nVisual exception: a pure definition chapter\n' } }),
+            'check'
+        ).code,
+        0
+    );
+});
+
+test('visual-first: implemented needs built paths that exist', () => {
+    const rows = [row('a', 1, '', 'implemented')];
+    const missing = run(
+        course({ rows, product: 'src', specs: { a: visual(asset(1, 'precision-2d') + asset(2, 'text')) } }),
+        'check'
+    );
+    assert.match(missing.out, /A1 needs "built:" paths/);
+    assert.doesNotMatch(missing.out, /A2 needs "built:"/);
+    const ghost = visual(asset(1, 'precision-2d', { built: '`src/nope.tsx`' }) + asset(2, 'text'));
+    assert.match(
+        run(course({ rows, product: 'src', specs: { a: ghost } }), 'check').out,
+        /does not exist: src\/nope\.tsx/
+    );
+    const root = course({
+        rows,
+        product: 'src',
+        specs: { a: ghost.replace('src/nope.tsx', 'docs/system-design/CURRICULUM.md') },
+    });
+    assert.equal(run(root, 'check').code, 0);
+});
+
+test('visual-first: reviewed needs the visual review; verified needs it passing', () => {
+    const ok =
+        'text-heavy=no · mechanism-via-visual=yes · every-visual-teaches=yes · claims-defensible=yes · interaction-helps=yes';
+    const base = (status, line) =>
+        course({
+            rows: [row('a', 1, '', status)],
+            product: 'src',
+            specs: {
+                a:
+                    visual(
+                        asset(1, 'precision-2d', { built: '`docs/system-design/CURRICULUM.md`' }) +
+                            asset(2, 'text')
+                    ) +
+                    PASS +
+                    REVIEW +
+                    (line ? `Visual review: ${line}\n` : ''),
+            },
+        });
+    assert.match(run(base('reviewed', ''), 'check').out, /needs a "Visual review:" line/);
+    assert.match(run(base('reviewed', 'text-heavy=no'), 'check').out, /needs mechanism-via-visual=yes\|no/);
+    assert.equal(run(base('reviewed', ok.replace('text-heavy=no', 'text-heavy=yes')), 'check').code, 0);
+    assert.match(
+        run(base('verified', ok.replace('text-heavy=no', 'text-heavy=yes')), 'check').out,
+        /verified but the visual review says text-heavy=yes/
+    );
+    assert.equal(run(base('verified', ok), 'check').code, 0);
+});
+
+test('legacy spec without the visual-first marker warns but passes', () => {
+    const r = run(course({ rows: [row('a', 1, '', 'authored')], specs: { a: READ } }), 'check');
+    assert.equal(r.code, 0);
+    assert.match(r.out, /! a: spec predates the visual-first standard/);
+});

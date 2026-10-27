@@ -2,16 +2,37 @@
 
 ## Contents
 
+- Stages A–F (visual first)
 - The 14-question explanation pattern
 - Writing rules (teach from zero)
 - Chapter spec template (`docs/system-design/chapters/<id>.md`)
 - Assessment design
 - Independent review hand-off
 
+## Stages A–F (visual first)
+
+A chapter is built in this order. The visual model comes before the prose; the prose names and qualifies what the
+learner has already seen. Detail for each stage is in visual-design.md (look, interaction, asset plan format,
+acceptance criteria) and visual-science.md (models, evidence classes, the adversarial pass).
+
+| Stage | Mode C step  | Output in the spec                                                                        |
+| ----- | ------------ | ----------------------------------------------------------------------------------------- |
+| A     | 2 Boundary   | `## Boundary`: numbered objectives, misconceptions, what prose handles badly here         |
+| B     | 4 Storyboard | `## Storyboard` (the sequence of visual states) and `## Asset plan` (one entry per asset) |
+| C     | 6 Implement  | models + tests, then the visuals, then the page; `built:` paths in the asset plan         |
+| D     | 5 / 6 Text   | `## Explanation` written against the storyboard: short text beside each visual            |
+| E     | 7 Test       | model, interaction and answer-leak tests; adversarial pass recorded per asset             |
+| F     | 8 Review     | a fresh reviewer examines the rendered page; `Visual review:` line (verification.md)      |
+
+The spec carries `Standard: visual-first` under its title; `course.mjs check` then requires the asset plan, its
+fields, objective coverage and, from `reviewed`, the visual review line. Chapters written before this standard lack
+the marker; `check` warns about them and they get a mode D pass to bring them up to it.
+
 ## The 14-question explanation pattern
 
 Every chapter's core explanation answers these, in this order. Not every answer needs a paragraph; every answer
-must exist in the spec. Questions 3–4 and 5–6 are what make it teach rather than tell: the learner meets the naive
+must exist in the spec, and many are best answered by an asset ("see A2: the learner runs it") with one or two
+sentences of text. Questions 3–4 and 5–6 are what make it teach rather than tell: the learner meets the naive
 design, sees it work, then sees it break.
 
 1. **What is the problem?** A concrete situation, in the learner's terms.
@@ -50,17 +71,47 @@ design, sees it work, then sees it break.
 
 Id: <id> · Stage: <n> · Paths: <...> (status lives only in CURRICULUM.md)
 Prerequisites: <ids> · Related: <ids>
+Standard: visual-first
 
 ## Boundary
 
-Objectives (observable): ...
+Objectives (observable, numbered): ...
+
+1. <the learner can predict / explain / calculate ...>
+2. ...
+
 In scope: ...
 Deferred: <topic> → <chapter id>
 Misconceptions targeted: ...
+Hard to say in prose: <change over time, spatial or many-to-many relations, cause under a variable ...>
 
 ## Parts you'll meet
 
 <term>: <plain definition>
+
+## Storyboard
+
+1. <first visual state the learner sees, and the question it raises>
+2. <what they do, what changes, what they should notice>
+   ...
+
+## Asset plan
+
+Objective coverage: 1 → A1 · 2 → A2
+
+### A1. <name>
+
+- objective: 1
+- type: precision-2d | animated-2d | simulation | chart | 3d | illustration | experiment | text
+- learner sees: ...
+- learner does: ...
+- model: ...
+- assumptions: ...
+- outcome: ...
+- accessibility: ...
+- tests: ...
+- evidence: ...
+- built: <paths, from Implemented>
 
 ## Explanation (14 questions)
 
@@ -73,8 +124,7 @@ Misconceptions targeted: ...
 
 ## Visual
 
-Decision: <static drawing | interactive | simulation | text only> because ...
-<visual spec: see visualization-and-simulation.md>
+Decision: <one line: which assets carry the chapter and why this medium>
 
 ## Practice
 
@@ -97,6 +147,7 @@ Spaced review: <which later chapters re-ask which question>
 ## Review findings
 
 Reviewer: <fresh subagent>, <date>
+Visual review: text-heavy=no · mechanism-via-visual=yes · every-visual-teaches=yes · claims-defensible=yes · interaction-helps=yes
 
 - [blocking | should-fix | note] <finding> → fixed (<where>) | accepted: <reason> | open
 ```
@@ -117,5 +168,7 @@ Assessment is for learning (retrieval and feedback), not grading.
 
 ## Independent review hand-off
 
-Give the reviewer (a fresh subagent with no authoring context) only: the spec path, the implementation paths, and
-`references/verification.md`. Ask for findings by severity with file and line. Don't tell it what you think is fine.
+Give the reviewer (a fresh subagent with no authoring context) only: the spec path, the implementation paths, the
+URL of the running page, and `references/verification.md`, `references/visual-design.md` and
+`references/visual-science.md`. Ask it to use the rendered page (screenshots at the required sizes, operating every
+control), not only the source, and for findings by severity with file and line. Don't tell it what you think is fine.

@@ -24,6 +24,18 @@ lowered when their evidence stops holding (a source turned out wrong, a test now
 | `reviewed`    | An independent review (fresh agent, verification.md) ran on the implementation and its evidence: `Reviewer:` line ✓, findings listed                 |
 | `verified`    | No blocking or should-fix finding left open ✓; state updated                                                                                         |
 
+**Visual-first specs** (a `Standard: visual-first` line under the title) also need, checked by `check` (✓):
+
+| From          | Also required                                                                                                                                                                                                                                                                                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `authored`    | `## Storyboard` filled; `## Asset plan` with `### A<n>` assets, each with all ten fields ✓; every numbered objective covered by an asset or a `text-only:` line ✓; a known `type:` ✓; `simulation`, `animated-2d`, `chart` and `3d` have a real `model:` and `assumptions:` ✓; at least one non-`text`, non-`illustration` asset or a `Visual exception:` line ✓ |
+| `implemented` | Every non-`text` asset has `built:` paths that exist ✓                                                                                                                                                                                                                                                                                                           |
+| `reviewed`    | A `Visual review:` line with all five keys ✓                                                                                                                                                                                                                                                                                                                     |
+| `verified`    | All five answers passing (`text-heavy=no`, the other four `yes`) ✓                                                                                                                                                                                                                                                                                               |
+
+Specs without the marker (written before the standard) get a `check` warning, not an error; bring them up to the
+standard with a mode D pass, recorded as an open issue.
+
 Never skip a gate. Never mark `tested` because tests "should" pass. `check` sees only structure: a ✓ means the
 evidence is written down, not that it is good; the rest is the author's and reviewer's job.
 

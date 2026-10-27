@@ -96,6 +96,131 @@ function currentUnit() {
     return id && id !== 'none' ? id : null;
 }
 
+/** Non-fatal findings `check` prints with `!` (e.g. a spec written before the visual-first standard). */
+const warnings = [];
+
+const ASSET_FIELDS = [
+    'objective',
+    'type',
+    'learner sees',
+    'learner does',
+    'model',
+    'assumptions',
+    'outcome',
+    'accessibility',
+    'tests',
+    'evidence',
+];
+const ASSET_TYPES = [
+    'precision-2d',
+    'animated-2d',
+    'simulation',
+    'chart',
+    '3d',
+    'illustration',
+    'experiment',
+    'text',
+];
+/** Types whose picture depends on inputs or time, so they need an executable model (references/visual-science.md). */
+const MODELLED = ['animated-2d', 'simulation', 'chart', '3d'];
+const VISUAL_REVIEW = {
+    'text-heavy': 'no',
+    'mechanism-via-visual': 'yes',
+    'every-visual-teaches': 'yes',
+    'claims-defensible': 'yes',
+    'interaction-helps': 'yes',
+};
+const placeholder = (v) => !v || /(\.\.\.|…)$|<[^>]+>|TEST-PLACEHOLDER/.test(v) || !/\w/.test(v);
+
+/** `### A<n>` entries under "## Asset plan", each as { name, fields: Map(key → value) }. */
+function assets(text) {
+    const out = [];
+    for (const l of section(text, 'Asset plan') ?? []) {
+        const head = l.match(/^###\s+(A\d+)\b/);
+        if (head) out.push({ name: head[1], fields: new Map() });
+        const field = l.match(/^- ([a-z][a-z -]*?):\s*(.*)$/);
+        if (field && out.length) out.at(-1).fields.set(field[1], field[2].trim());
+    }
+    return out;
+}
+
+/** The visual-first standard (references/course-state.md, "Visual-first specs"); structure only. */
+function visualErrors(c, text) {
+    const errs = [];
+    if (!/^Standard:\s*visual-first\s*$/m.test(text)) {
+        if (rank(c.status) >= rank('authored'))
+            warnings.push(
+                `${c.id}: spec predates the visual-first standard (no asset plan): audit it in mode D`
+            );
+        return errs;
+    }
+    if (rank(c.status) < rank('authored')) return errs;
+    const filled = (h) => (section(text, h) ?? []).some((l) => !placeholder(l) && !/^```/.test(l));
+    if (!filled('Storyboard'))
+        errs.push(`${c.id}: status ${c.status} needs "## Storyboard" filled (owned by authored)`);
+    const list = assets(text);
+    if (!list.length) errs.push(`${c.id}: status ${c.status} needs "## Asset plan" with "### A1 …" assets`);
+    const covered = new Set();
+    for (const a of list) {
+        const at = `${c.id}: asset ${a.name}`;
+        for (const f of ASSET_FIELDS)
+            if (placeholder(a.fields.get(f))) errs.push(`${at} needs "${f}:" filled`);
+        const type = a.fields.get('type');
+        if (type && !ASSET_TYPES.includes(type))
+            errs.push(`${at} has unknown type "${type}" (${ASSET_TYPES.join(', ')})`);
+        if (MODELLED.includes(type))
+            for (const f of ['model', 'assumptions'])
+                if (/^(none|n\/a|conceptual\b)/i.test(a.fields.get(f) ?? ''))
+                    errs.push(
+                        `${at} is ${type}, so "${f}:" must describe an executable model, not "${a.fields.get(f)}"`
+                    );
+        for (const n of (a.fields.get('objective') ?? '').match(/\d+/g) ?? []) covered.add(Number(n));
+        if (rank(c.status) >= rank('implemented') && type !== 'text') {
+            const built = a.fields.get('built');
+            const paths = built?.includes('`')
+                ? [...built.matchAll(/`([^`]+)`/g)].map((m) => m[1])
+                : (built ?? '').split(/[,;]\s*/);
+            const real = paths.map((x) => x.trim()).filter(Boolean);
+            if (!real.length || placeholder(built))
+                errs.push(`${at} needs "built:" paths (status ${c.status})`);
+            for (const x of real)
+                if (!existsSync(join(root, x))) errs.push(`${at} built path does not exist: ${x}`);
+        }
+    }
+    for (const l of section(text, 'Asset plan') ?? []) {
+        const t = l.match(/^- text-only:\s*(\d+)\s*[—-]+\s*(\S.*)$/);
+        if (t) covered.add(Number(t[1]));
+    }
+    const objectives = (section(text, 'Boundary') ?? [])
+        .map((l) => l.match(/^(\d+)\.\s/)?.[1])
+        .filter(Boolean);
+    if (!objectives.length) errs.push(`${c.id}: "## Boundary" needs numbered objectives (1. …)`);
+    for (const n of objectives)
+        if (!covered.has(Number(n)))
+            errs.push(`${c.id}: objective ${n} has no asset and no "- text-only: ${n} — <reason>" line`);
+    if (
+        list.length &&
+        list.every((a) => ['text', 'illustration'].includes(a.fields.get('type'))) &&
+        !/^Visual exception:\s*\S/m.test(text)
+    )
+        errs.push(
+            `${c.id}: every asset is text or illustration; add an explanatory asset or a "Visual exception:" line`
+        );
+    if (rank(c.status) >= rank('reviewed')) {
+        const line = (section(text, 'Review findings') ?? []).find((l) => /^Visual review:/.test(l));
+        if (!line)
+            errs.push(`${c.id}: status ${c.status} needs a "Visual review:" line under "## Review findings"`);
+        else
+            for (const [k, pass] of Object.entries(VISUAL_REVIEW)) {
+                const v = line.match(new RegExp(`\\b${k}=(yes|no)\\b`))?.[1];
+                if (!v) errs.push(`${c.id}: "Visual review:" needs ${k}=yes|no`);
+                else if (c.status === 'verified' && v !== pass)
+                    errs.push(`${c.id}: verified but the visual review says ${k}=${v}`);
+            }
+    }
+    return errs;
+}
+
 /**
  * What a chapter spec must contain for its status (formats in references/course-state.md). Structure only: the
  * script can't judge quality, but it stops a status from claiming evidence that isn't written down.
@@ -160,6 +285,7 @@ function specErrors(c) {
                 if (/^- \[(blocking|should-fix)\]/.test(l) && !/→ (fixed|accepted:)/.test(l))
                     errs.push(`${c.id}: verified with an open finding: "${l}"`);
     }
+    errs.push(...visualErrors(c, text));
     return errs;
 }
 
@@ -349,6 +475,7 @@ if (cmd === 'next') {
     const { chapters, product } = readGraph();
     console.log(`${chapters.length} chapters · product: ${product ?? 'missing'}`);
     const errs = check(chapters);
+    for (const w of warnings) console.log(`! ${w}`);
     if (!initialized())
         console.log('! COURSE_STATE.md is missing or not "State: initialized": mode A comes first');
     const unit = currentUnit();
