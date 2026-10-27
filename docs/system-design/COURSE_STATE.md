@@ -13,8 +13,9 @@ none
 
 ## Next action
 
-Release `client-server` (verified) to main through a PR and confirm its deployment. Then mode C picks the next
-eligible chapter (`ip-and-ports`, whose prerequisite `client-server` is verified).
+Mode C for the next eligible chapter, `ip-and-ports` (its prerequisite `client-server` is verified and released:
+PR #20, main 71fd4d8, production deployment recorded as success on GitHub). Follow-ups from the release are listed
+in `SYSTEM_DESIGN_COURSE_IMPLEMENTATION_REPORT_2026-10-28.md` §13.
 
 ## Decisions
 
@@ -115,3 +116,5 @@ eligible chapter (`ip-and-ports`, whose prerequisite `client-server` is verified
 - 2026-10-27 C client-server: reviewed → verified. Final fresh check of the last fixes (6b5f8d5): no blocking or
   should-fix finding; its 3 notes fixed (still-busy line clear of the boxes, order-number test, evidence names its
   build). 159 unit tests, 48/48 + 69/69 browser checks, Lighthouse 100/99 mobile, first-load JS 112 kB.
+- 2026-10-27 release: PR #20 merged (71fd4d8; production deployment recorded as success on GitHub). Report:
+  `SYSTEM_DESIGN_COURSE_IMPLEMENTATION_REPORT_2026-10-28.md`.
