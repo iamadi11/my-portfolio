@@ -9,12 +9,13 @@ The system design course is built only through the `system-design-educator` skil
 
 ## Current unit
 
-none
+web-request step 8
 
 ## Next action
 
-Mode C (`/system-design-educator next`): `client-server`. Owner review of `chapters/web-request.md` is welcome first;
-building the /learn page needs separate owner authorization.
+Owner review of /learn/web-request. Then either mark `web-request` verified (no open blocking or should-fix
+finding; the open items below are limits, not findings) or run mode D on what the owner finds; then mode C
+`client-server`.
 
 ## Decisions
 
@@ -44,11 +45,27 @@ building the /learn page needs separate owner authorization.
 - 2026-10-27 Sources that the authoring container cannot open as websites are read from their public source
   repositories (mdn/content, httpwg/http-core, tlswg/tls13-spec, w3c/*, whatwg/fetch) and recorded `via: read` with
   the repo and commit — the text is the same material, and the record says where it came from.
+- 2026-10-27 Product started at the owner's request: `/learn` (index, reads `CURRICULUM.md` at build time) and
+  `/learn/web-request`; `Product: src/app/learn`. Reused: tokens, Arimo, sheet classes (`bp-sheet`, `bp-nbox`); new:
+  `src/components/learn/*` (shell, citation mark, the chapter's figure), `src/lib/learn/*` (model, curriculum reader),
+  `src/content/learn/*` (built-chapter routes, sources). No scroll driver on /learn: plain HTML headings.
+- 2026-10-27 Test runner: Vitest 4.1.11 (`npm test`, `vitest.config.mts`, `src/**/*.test.ts`). Installed with npm 11
+  because npm 10.9.4 crashes on this tree (`edgesOut` in arborist); a strict `npm ci` with npm 10.9.4 then installs
+  the lockfile cleanly. The lockfile also moves `@types/node` 20.17.10 → 20.19.43 (within `"20"`; Vite 8's peer
+  range) and patch-bumps `nanoid`, `source-map-js`, `@jridgewell/sourcemap-codec`, `undici-types`.
+- 2026-10-27 Deploys: `.vercelignore` keeps `docs/` local except `docs/system-design/CURRICULUM.md`, which `/learn`
+  reads at build time (a Vercel preview failed with ENOENT on it; reproduced and fixed by building from only the
+  files the ignore rules upload). Any other build-time read from `docs/` needs the same exception.
 
 ## Open issues
 
-- No unit-test runner (`package.json` has no `test` script); model tests need one. Added when the product starts,
-  not before (course).
+- `web-request` stays `reviewed`, not `verified`: five independent reviews ran (two spec, three implementation)
+  plus two final reviews, and every blocking and should-fix finding is fixed or accepted with a reason, but the
+  last round's fixes (prompt wording, guess rounding, Enter submits) were checked by the browser suite (65/65), not
+  by another fresh review, and the owner review named in Next action has not happened. Also: no real screen reader
+  was used (DOM/ARIA inspection only); RFC 9846 section numbers are checked against the TLS WG's final source
+  (tlswg/tls13-spec rfc9846.md), not the published RFC, which was unreachable (RFC 9110/9111 are checked against
+  the published text) (web-request).
 - The authoring container could not open most primary-source sites (DNS blocked for fetch); sources found only via
   search are recorded `via: search` and cannot support claims from `implemented` on (course).
 - `course.mjs` lives under `.claude/`, which `eslint.config.mjs` ignores; the skill's own tests run with
@@ -68,3 +85,7 @@ building the /learn page needs separate owner authorization.
 - 2026-10-27 skill: `course.mjs check` now enforces path closure and rejects duplicate path/prerequisite entries
   (closes the open issue); curriculum still passes.
 - 2026-10-27 C web-request: planned → authored; spec written, two independent spec reviews, all findings fixed.
+- 2026-10-27 C web-request: authored → reviewed; /learn and /learn/web-request built, 95 unit tests, 56/56 browser
+  checks, three implementation reviews with findings fixed; not marked verified (see Open issues).
+- 2026-10-27 C web-request: final review (fresh reviewer) → 4 should-fix + 6 notes fixed; review of those fixes →
+  2 should-fix + 3 notes fixed, 2 accepted; Vercel build fix (`.vercelignore`); status stays reviewed.
