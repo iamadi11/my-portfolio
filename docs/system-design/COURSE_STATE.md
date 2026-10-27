@@ -1,7 +1,7 @@
 # Course state
 
-State: not initialized
-Updated: 2026-10-27
+State: initialized
+Updated: 2026-10-28
 
 The system design course is built only through the `system-design-educator` skill
 (`.claude/skills/system-design-educator/`). This file and `CURRICULUM.md` are its memory; see the skill's
@@ -13,21 +13,40 @@ none
 
 ## Next action
 
-Mode A (`/system-design-educator init`): inspect the app, decide where the course lives, create `CURRICULUM.md`
-with mode B, run `course.mjs check`.
+Mode B (`/system-design-educator curriculum`): design the learning graph in `CURRICULUM.md` (it has no chapters).
 
 ## Decisions
 
-- 2026-10-27 The course is authored one unit per skill invocation; chapter status lives only in `CURRICULUM.md`
-  (or a code manifest that replaces it, recorded here) — avoids two status lists drifting apart.
-- 2026-10-27 An earlier `/learn` prototype was removed from the repo before the skill existed; it is not part of
-  the course. Mode A starts from the app as it is.
+- 2026-10-27 The course is authored one unit per skill invocation; chapter status lives only in `CURRICULUM.md` —
+  avoids two status lists drifting apart.
+- 2026-10-27 An earlier `/learn` prototype was removed from the repo before the skill existed (archived outside the
+  repo); it is not part of the course.
+- 2026-10-28 `Product: none` — no course code exists; chapters stop at `authored` until the owner asks to start the
+  product (SKILL.md "Starting the product").
+- 2026-10-28 Proposal (not built): route `/learn` (`src/app/learn/`, App Router sibling of `/`), chapter pages as
+  server components, interactive parts as lazy client components; content beside `src/content/site.ts` (e.g.
+  `src/content/learn/`), models under `src/lib/` — follows the existing `src/app` + `src/content` + `src/lib` split.
+- 2026-10-28 Proposal (not built): reuse the drawing-set look — `globals.css` tokens (`--paper --ink --ink-2 --ink-3
+  --line-3 --rule --fill-1 --fill-2`), Arimo (`--font-arimo`, `layout.tsx`), `src/components/blueprint/pen.tsx`,
+  `scene.tsx` and `lettering.tsx` for drawings — CLAUDE.md §10.2 and §11.4.
+- 2026-10-28 Proposal (not built): budgets and checks adopt the host's existing gates — first-load JS per course
+  route ≤ 120 kB and `/` unchanged (§10.4); WCAG 2.2 AA and Lighthouse ≥ 90 (§3); the six §10.5 device sizes with no
+  horizontal scroll; reduced motion shows finished states (§10.7); `npx tsc --noEmit`, `npm run lint`, real browser
+  check (§4). No new numbers.
+- 2026-10-28 Proposal (not built): when the product starts, add the route to `src/app/sitemap.ts` (today it lists
+  only `/`) and check `public/sw.js` serves it under its network-first navigation rule (bump `VERSION` if rules change).
 
 ## Open issues
 
+- No unit-test runner (`package.json` has no `test` script); model tests need one. Added when the product starts,
+  not before (course).
 - The authoring container could not open most primary-source sites (DNS blocked for fetch); sources found only via
-  search are recorded `via: search` and their claims stay unverified until read (course).
+  search are recorded `via: search` and cannot support claims from `implemented` on (course).
+- `course.mjs` lives under `.claude/`, which `eslint.config.mjs` ignores; the skill's own tests run with
+  `node --test` (course).
 
 ## Session log
 
 - 2026-10-27 setup: skill and state docs created; course not initialized.
+- 2026-10-28 A course: not initialized → initialized; app audited, empty graph created, placement and budgets
+  proposed, empty leftover `src/app/learn/` folders (untracked, no files) removed.
