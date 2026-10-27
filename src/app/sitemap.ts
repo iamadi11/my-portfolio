@@ -1,8 +1,9 @@
 import type { MetadataRoute } from 'next';
 
+import { CHAPTER_ROUTES } from '@/content/learn/chapters';
 import { getSiteOrigin } from '@/lib/site';
 
-/** `/` is the only local page: a single drawing set (the old inner pages redirect to its sheets). */
+/** `/` (the drawing set; old inner pages redirect to its sheets) and the system design course under `/learn`. */
 export default function sitemap(): MetadataRoute.Sitemap {
     const base = getSiteOrigin();
 
@@ -34,5 +35,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
         },
     ];
 
-    return [home, ...eidosUrls];
+    /** The system design course: the index and each built chapter (`CHAPTER_ROUTES`). */
+    const learn = [
+        {
+            url: `${base}/learn`,
+            lastModified: new Date('2026-10-27'),
+            changeFrequency: 'weekly' as const,
+            priority: 0.6,
+        },
+        ...Object.values(CHAPTER_ROUTES).map((path) => ({
+            url: `${base}${path}`,
+            lastModified: new Date('2026-10-27'),
+            changeFrequency: 'monthly' as const,
+            priority: 0.5,
+        })),
+    ];
+
+    return [home, ...learn, ...eidosUrls];
 }

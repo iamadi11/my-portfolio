@@ -4,7 +4,7 @@ The learning graph of the system design course. This is the only place chapter i
 live. The format is in `.claude/skills/system-design-educator/references/course-state.md`; `course.mjs check`
 validates it. Designed in mode B on 2026-10-27.
 
-Product: none
+Product: src/app/learn
 
 ## How it is organised
 
@@ -58,7 +58,7 @@ Chapters on all three paths form the shared core.
 
 | id | order | stage | title | prereqs | paths | status |
 | --- | --- | --- | --- | --- | --- | --- |
-| web-request | 1 | 1 | Map: what happens when you open a website |  | beginner interview production | authored |
+| web-request | 1 | 1 | Map: what happens when you open a website |  | beginner interview production | tested |
 | client-server | 2 | 1 | Clients, servers and request–response | web-request | beginner interview production | planned |
 | ip-and-ports | 3 | 1 | Addresses, packets and ports | client-server | beginner interview production | planned |
 | dns | 4 | 1 | DNS: from names to addresses | ip-and-ports | beginner interview production | planned |

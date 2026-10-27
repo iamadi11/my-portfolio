@@ -1,6 +1,8 @@
 # Map: what happens when you open a website
 
 Id: web-request · Stage: 1 · Paths: beginner interview production (status lives only in CURRICULUM.md)
+Implementation: `src/app/learn/web-request/page.tsx`, `src/components/learn/web-request/JourneyStepper.tsx`,
+`src/lib/learn/web-request-model.ts` (+ `.test.ts`), `src/content/learn/web-request-sources.ts`
 Prerequisites: none · Related: client-server, dns, tcp, tls, http, http-caching, latency-throughput, http-versions
 
 ## Boundary
@@ -357,8 +359,10 @@ Visual spec (the 14-step process):
       network used" (fresh cache).
     - Totals equal the sum of the steps.
     - No negative values and no `NaN` anywhere in the control ranges.
-14. **Smallest width first:** at 375 px, the steps stack vertically and the timeline bar becomes a vertical
-    ladder. From 768 px, the steps run horizontally, with the browser on the left and the server on the right.
+14. **Smallest width first:** at 375 px, the controls, the drawing, the step list and the timeline stack in one
+    column; from 900 px they sit in two columns, controls on the left. The timeline is a vertical ladder (one bar per
+    step) at every width; a horizontal single bar was dropped because the ladder reads at all sizes (changed during
+    implementation, 2026-10-27).
 
 ## Practice
 
@@ -659,9 +663,16 @@ websites were unreachable from the authoring container.
 
 ## Evidence
 
-- implementation: not run — `Product: none`; the owner has not authorized the /learn page
-- model tests: not run — no model code exists yet; the tests are specified under Visual, step 13
-- browser checks: not run — nothing to render yet
+- typecheck: pass — npx tsc --noEmit (2026-10-27)
+- lint: pass — npm run lint, no warnings or errors (2026-10-27)
+- model tests: pass — npm test, 94 tests (91 model incl. 81 grid cases over the control ranges, 3 curriculum reader);
+  4 deliberate model mutations each caught (2026-10-27)
+- build and JS budget: pass — next build; /learn 107 kB and /learn/web-request 110 kB first-load JS (budget 120 kB); / 110 kB, unchanged from main (2026-10-27)
+- browser sizes: pass — Playwright at 375×812, 402×874, 768×1024, 1280×800, 1440×900, 1920×1080 on both routes: no horizontal scroll, no console errors; screenshots read (2026-10-27)
+- keyboard: pass — Playwright keyboard-only: visit radios by arrow keys, sliders by Home/End, step and next/previous buttons by Enter/Space, prediction by Space/Enter, answers by Enter; visible 2 px focus (2026-10-27)
+- reduced motion: pass — Playwright reducedMotion: all six steps listed, bar transition 0s, readout and assumptions shown (2026-10-27)
+- accessibility scan: pass — axe-core 4.10.3, WCAG 2.0/2.1/2.2 A and AA, both routes at 375 and 1280 px with answers open: 0 violations; 6 SVG label nodes left for manual contrast review, checked by hand (ink and ink-2 on fill-2, above 4.5:1) (2026-10-27)
+- lighthouse: pass — Lighthouse 13.4.1 (mobile, desktop): /learn 91/98/99 performance over three mobile runs, 100 desktop; /learn/web-request 99 mobile, 100 desktop; accessibility, best practices and SEO 100 on every run (2026-10-27)
 - spec review: pass — two fresh-subagent reviews against verification.md (2026-10-27); every finding fixed and
   recorded below; the second round's fixes were checked by the author, not by a third review
 

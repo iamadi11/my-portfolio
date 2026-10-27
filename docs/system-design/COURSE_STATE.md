@@ -9,12 +9,11 @@ The system design course is built only through the `system-design-educator` skil
 
 ## Current unit
 
-none
+web-request step 8
 
 ## Next action
 
-Mode C (`/system-design-educator next`): `client-server`. Owner review of `chapters/web-request.md` is welcome first;
-building the /learn page needs separate owner authorization.
+Finish `web-request` step 8 (independent review of the implementation), then mode C `client-server`.
 
 ## Decisions
 
@@ -44,11 +43,17 @@ building the /learn page needs separate owner authorization.
 - 2026-10-27 Sources that the authoring container cannot open as websites are read from their public source
   repositories (mdn/content, httpwg/http-core, tlswg/tls13-spec, w3c/*, whatwg/fetch) and recorded `via: read` with
   the repo and commit — the text is the same material, and the record says where it came from.
+- 2026-10-27 Product started at the owner's request: `/learn` (index, reads `CURRICULUM.md` at build time) and
+  `/learn/web-request`; `Product: src/app/learn`. Reused: tokens, Arimo, sheet classes (`bp-sheet`, `bp-nbox`); new:
+  `src/components/learn/*` (shell, citation mark, the chapter's figure), `src/lib/learn/*` (model, curriculum reader),
+  `src/content/learn/*` (built-chapter routes, sources). No scroll driver on /learn: plain HTML headings.
+- 2026-10-27 Test runner: Vitest 4.1.11 (`npm test`, `vitest.config.mts`, `src/**/*.test.ts`). Installed with npm 11
+  because npm 10.9.4 crashes on this tree (`edgesOut` in arborist); a strict `npm ci` with npm 10.9.4 then installs
+  the lockfile cleanly. The lockfile also moves `@types/node` 20.17.10 → 20.19.43 (within `"20"`; Vite 8's peer
+  range) and patch-bumps `nanoid`, `source-map-js`, `@jridgewell/sourcemap-codec`, `undici-types`.
 
 ## Open issues
 
-- No unit-test runner (`package.json` has no `test` script); model tests need one. Added when the product starts,
-  not before (course).
 - The authoring container could not open most primary-source sites (DNS blocked for fetch); sources found only via
   search are recorded `via: search` and cannot support claims from `implemented` on (course).
 - `course.mjs` lives under `.claude/`, which `eslint.config.mjs` ignores; the skill's own tests run with
