@@ -44,8 +44,7 @@ Applied here:
 **Access levels.** *Original inspected* means the paper was read. *Secondary inspected* means a reliable explanation
 was read in full. *Snippet only* means only search-result titles, abstracts or summaries were seen.
 
-**Every row below is snippet only.** No original or secondary explanation was inspected. On 2026-10-27 and again on
-2026-10-28, direct fetches failed with DNS errors. That covered author PDFs (evullab.org, psychology.ecu.edu,
+**Every row below is snippet only.** No original or secondary explanation was inspected. On 2026-10-27 (in two separate sessions), direct fetches failed with DNS errors. That covered author PDFs (evullab.org, psychology.ecu.edu,
 uky.edu), arXiv, PubMed, Wikipedia and MIT Open Learning.
 
 The "reported strength" column repeats what those snippets claim. It is provisional and is no guarantee for any
@@ -99,7 +98,7 @@ given learner or topic. Upgrade a row only after reading the source, and say whi
 3. **Research.** The likely sources are RFC 1034/1035, 9293, 8446 and 9110, and the HTML spec and MDN for
    rendering. In this container they are reachable only via search, so they would be recorded `via: search`. That
    left a chapter able to reach `verified` on unread sources. *Fixed:* the rubric forbids claims resting only on
-   `via: search`. (Tightened on 2026-10-28: the rule now applies from `implemented`, and `check` enforces it.)
+   `via: search`. (Tightened on 2026-10-27: the rule now applies from `implemented`, and `check` enforces it.)
 4. **Teaching and visual.** The 14 questions fit: the naive answer "the browser downloads the page" breaks on
    "why is the first visit slow?". The medium is a stepper, not 3D.
 5. **Implementation.** No product exists, so the chapter caps at `authored`. That made `next` return the same
@@ -108,7 +107,7 @@ given learner or topic. Upgrade a row only after reading the source, and say whi
 6. **State.** The spec goes to `chapters/web-request.md`. `check` enforces that the file exists from `researched`
    onwards, and "Current unit" resumes an interrupted session.
 
-## Hardening and independent tests (2026-10-28)
+## Hardening and independent tests (2026-10-27)
 
 **Adversarial audit.** It found these defects, all fixed:
 
