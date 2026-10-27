@@ -181,6 +181,12 @@ function check(chapters) {
             errs.push(`${c.id}: unknown status "${c.status}" (use ${STATUSES.join(', ')})`);
         if (!c.paths.length) errs.push(`${c.id}: on no path`);
         for (const p of c.paths) if (!PATHS.includes(p)) errs.push(`${c.id}: unknown path "${p}"`);
+        for (const [what, list] of [
+            ['path', c.paths],
+            ['prerequisite', c.prereqs],
+        ])
+            for (const x of new Set(list.filter((x, i) => list.indexOf(x) !== i)))
+                errs.push(`${c.id}: ${what} "${x}" listed twice`);
         errs.push(...specErrors(c));
     }
     const unit = currentUnit();
@@ -190,6 +196,12 @@ function check(chapters) {
             const q = byId.get(p);
             if (!q) errs.push(`${c.id}: unknown prerequisite "${p}"`);
             else if (q.order >= c.order) errs.push(`${c.id}: prerequisite ${p} must come earlier in order`);
+            // Paths are closed: a learner following a path never needs a chapter outside it. (Order within a
+            // path is the global order, so the check above already covers it.)
+            else
+                for (const path of c.paths)
+                    if (PATHS.includes(path) && !q.paths.includes(path))
+                        errs.push(`${c.id}: on path ${path} but its prerequisite ${p} is not`);
         }
     // Cycles (order check already forbids them, but report them plainly if orders are broken).
     const seen = new Map();

@@ -314,6 +314,64 @@ test('show: unknown id fails; blocked prerequisite is reported', () => {
     assert.match(run(root, 'show', 'a').out, /can start: yes/);
 });
 
+/** The ✗ lines `check` printed, so a fixture can only pass by failing for the intended reason. */
+const failures = (out) =>
+    out
+        .split('\n')
+        .filter((l) => l.startsWith('✗ '))
+        .map((l) => l.slice(2));
+const pathRow = (id, order, prereqs, paths) =>
+    `| ${id} | ${order} | 1 | Title ${id} | ${prereqs} | ${paths} | planned |`;
+
+test('paths are closed: a chapter on a path needs its prerequisites on that path', () => {
+    const ok = [pathRow('a', 1, '', 'beginner interview'), pathRow('b', 2, 'a', 'interview')];
+    assert.equal(run(course({ rows: ok }), 'check').code, 0);
+    const open = [pathRow('a', 1, '', 'beginner'), pathRow('b', 2, 'a', 'beginner interview production')];
+    const r = run(course({ rows: open }), 'check');
+    assert.equal(r.code, 1);
+    assert.deepEqual(failures(r.out), [
+        'b: on path interview but its prerequisite a is not',
+        'b: on path production but its prerequisite a is not',
+    ]);
+    // Transitive: each link is checked, so a gap anywhere in the chain is reported where it occurs.
+    const chain = [
+        pathRow('a', 1, '', 'interview'),
+        pathRow('b', 2, 'a', 'beginner interview'),
+        pathRow('c', 3, 'b', 'beginner'),
+    ];
+    assert.deepEqual(failures(run(course({ rows: chain }), 'check').out), [
+        'b: on path beginner but its prerequisite a is not',
+    ]);
+});
+
+test('malformed path and prerequisite entries fail for their own reason', () => {
+    const cases = [
+        [[pathRow('a', 1, '', 'beginner beginner')], ['a: path "beginner" listed twice']],
+        [
+            [pathRow('a', 1, '', 'beginner'), pathRow('b', 2, 'a a', 'beginner')],
+            ['b: prerequisite "a" listed twice'],
+        ],
+        [[pathRow('a', 1, '', 'beginners')], ['a: unknown path "beginners"']],
+        [
+            [pathRow('a', 1, '', 'beginner'), pathRow('b', 2, 'x', 'beginner')],
+            ['b: unknown prerequisite "x"'],
+        ],
+        [
+            [pathRow('a', 1, 'b', 'beginner'), pathRow('b', 2, '', 'beginner')],
+            ['a: prerequisite b must come earlier in order'],
+        ],
+        [
+            [pathRow('a', 1, 'a', 'beginner')],
+            ['a: prerequisite a must come earlier in order', 'cycle: a → a'],
+        ],
+    ];
+    for (const [rows, want] of cases) {
+        const r = run(course({ rows }), 'check');
+        assert.equal(r.code, 1, rows.join('\n'));
+        assert.deepEqual(failures(r.out), want);
+    }
+});
+
 test('orphan chapter file is reported', () => {
     assert.match(
         run(course({ rows: [row('a', 1, '', 'planned')], specs: { old: '#' } }), 'check').out,

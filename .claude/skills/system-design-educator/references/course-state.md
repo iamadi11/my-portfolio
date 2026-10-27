@@ -82,7 +82,8 @@ Product: none # or the route/manifest path once the course exists in the app, e.
 - `id`: kebab-case, stable forever (it becomes a URL and a file name). Renames are recorded in COURSE_STATE.
 - `order`: the default reading order (integers, unique). Prerequisites must have a smaller order.
 - `prereqs`: space-separated ids, hard prerequisites only (what the chapter's explanation relies on).
-- `paths`: any of `beginner interview production`; every chapter is on at least one.
+- `paths`: any of `beginner interview production`, each once; every chapter is on at least one, and on no path
+  that lacks one of its prerequisites (`check` enforces this: paths are closed).
 - `status`: one gate name from the table above.
 - `Product: none` means the course has no app yet: chapters can reach `authored` at most, and `authored` counts as
   done when choosing the next chapter. Mode A sets it to the real path once the product exists; from then on
