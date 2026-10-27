@@ -7,7 +7,8 @@
         "eslint-plugin-prettier",
         "eslint-plugin-tailwindcss",
         "conventional-changelog-atom",
-        "inquirer"
+        "inquirer",
+        "critters"
     ],
     "duplicates": {
         "minOccurrences": 3
