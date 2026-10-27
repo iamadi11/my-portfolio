@@ -9,13 +9,14 @@ The system design course is built only through the `system-design-educator` skil
 
 ## Current unit
 
-none
+client-server step 6
 
 ## Next action
 
-Mode C `client-server` (next eligible chapter; its prerequisite `web-request` is verified). Separately, the owner
-decides when to merge the web-request fixes made after PR #18 (production still serves 75b2b6c, whose
-predict-then-run panel can be read off the screen).
+Blocked on an owner decision: `client-server` is authored (spec complete through step 5) and step 6 (implement in
+`/learn`) waits for the owner to authorize integrating it. When authorized: implement the visual's model and tests,
+the page, browser checks, then the independent review (steps 6–8). Separately, the owner decides when to merge the
+web-request fixes made after PR #18 (production still serves 75b2b6c).
 
 ## Decisions
 
@@ -59,6 +60,11 @@ predict-then-run panel can be read off the screen).
 
 ## Open issues
 
+- `client-server` step 6 is blocked by choice of the owner: implementation in `/learn` needs their authorization
+  (2026-10-27). No independent review has run on its spec yet; the skill runs it at step 8 (client-server).
+- RFC 6265 (cookies) may have been obsoleted by the 6265bis revision (search only: approved, no published number
+  found); `client-server` uses only the basic Set-Cookie → Cookie mechanism (client-server).
+
 - `web-request` is `verified` against the skill's criteria, with these limits recorded (not findings): no real
   screen reader was used (DOM/ARIA only); RFC 9846 is read in the TLS WG's final source, not the published RFC
   (unreachable; publication date in search snippets disagrees, July vs May 2026); the owner has not reviewed the
@@ -92,3 +98,8 @@ predict-then-run panel can be read off the screen).
   still unreachable (limit recorded).
   Format only: each review finding in web-request.md now sits on one line, so `check` reads its outcome; the
   screen-reader limit moved from Evidence (not a required check) to Open questions. No finding text changed.
+- 2026-10-27 C client-server: planned → authored. Spec `chapters/client-server.md`: 4 objectives, 14 questions,
+  worked example (POST duplicate on a late response; PUT idempotent), visual spec (stepper over a 24-case discrete
+  model), 5 retrieval questions, exercise, 10 sources (9 read: RFC 9110, 9112, 6265 in the HTTP WG's published
+  rendering; MDN; PostgreSQL docs; 1 search-only lead with supports: none). Stopped at step 6: integration not
+  authorized.
