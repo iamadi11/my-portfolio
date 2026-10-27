@@ -17,7 +17,7 @@ Each item is pass / fail / not applicable, with a file and line for every fail.
 - Simplifications are flagged and point to the fuller treatment.
 - Numbers have sources and versions, or are labelled assumed.
 - No invented stories, benchmarks or quotes.
-- No claim rests only on `via: search` sources (required for `verified`; allowed but flagged before that).
+- No claim rests only on `via: search` sources (required from `implemented`; allowed but flagged before that).
 
 **Teaching**
 
@@ -49,17 +49,22 @@ Each item is pass / fail / not applicable, with a file and line for every fail.
 
 ## Independent review procedure
 
-1. Spawn a fresh reviewer (subagent) with only: the chapter spec path, implementation paths, this file.
+1. Spawn a fresh reviewer (subagent) with only: the chapter spec path, implementation paths, this file. If no
+   subagent can be started, the review didn't happen: say so and stay below `reviewed` (a self-review is recorded as
+   a note, never as `Reviewer:`).
 2. The reviewer checks sources it can reach itself and marks what it could not check.
 3. Findings come back by severity: **blocking** (wrong, inaccessible, broken), **should fix**, **note**.
 4. The author fixes blocking and should-fix findings or records a reason for each one not fixed; notes are optional.
-5. Record findings and outcomes in the spec. `reviewed` = review ran; `verified` = no open blocking or should-fix.
+5. Record findings and outcomes in the spec (format in course-state.md). `reviewed` = review ran on the
+   implementation and its evidence; `verified` = no open blocking or should-fix.
 
 ## Checks that must run
 
 Use the host project's own commands (for this repo see `CLAUDE.md` release gates): typecheck, lint, the test
 runner for model tests, and the project's build if routes changed. Record each command and result in the spec's
-Evidence section. A check that could not run is listed as not run, with the reason.
+Evidence section (`pass`, `fail`, `not run`, `n/a` with reason). A failed check is fixed at its cause and re-run;
+one that could not run (missing browser, tool or network) stays `not run` and the chapter stays below `tested`.
+Never replace a required check with a weaker one and call it a pass.
 
 ## Browser checks
 

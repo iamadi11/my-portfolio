@@ -40,9 +40,16 @@ Read references only when the step needs them (each is one level deep from here)
   visual design process, simulation models and their tests, 3D criteria, accessibility.
 - [references/verification.md](references/verification.md): quality rubric, independent review, browser checks.
 
-Scripts (run them, don't read them): `node ${CLAUDE_SKILL_DIR}/scripts/course.mjs next` prints the next chapter from
-`CURRICULUM.md` with its reason; `... check` validates the graph (ids, prerequisites, cycles, statuses, chapter
-files); `... skill` validates this skill's own files.
+Script (run it from the repo root; don't read it): `node ${CLAUDE_SKILL_DIR}/scripts/course.mjs <command>`
+
+- `next`: the next chapter and why (resume, finish started work, or start the next whose prerequisites are ready).
+- `check`: the graph (ids, rows, prerequisites, cycles, paths), COURSE_STATE's current unit, and that each chapter's
+  spec holds the evidence its status claims (sources, passing checks, a reviewer, no open findings).
+- `show <id>`: one chapter's status, prerequisites and whether it can start; fails on an unknown id.
+- `skill`: this skill's own files. Tests: `node --test ${CLAUDE_SKILL_DIR}/scripts/course.test.mjs`.
+
+Exit code 0 = ok, 1 = problems, 2 = missing files or bad usage. A non-zero exit is a finding to report and fix,
+never something to work around.
 
 ## Choose the mode
 
@@ -73,7 +80,11 @@ Plain-language requests map the same way ("what's next?" → C; "the CAP chapter
 6. **Fit the host project.** Follow the repo's `CLAUDE.md` (look, performance budgets, accessibility, release gates)
    and its existing design language. No paid APIs, no secrets in content or code.
 7. **Honest status.** A chapter moves up a gate only when that gate's evidence exists
-   ([course-state.md](references/course-state.md)). Report what ran and what didn't.
+   ([course-state.md](references/course-state.md)). A check that failed, or could not run (no browser, a missing
+   tool, no network), is recorded as `fail` or `not run` and the gate is not reached. Never substitute a different
+   check, never retry until green without fixing a cause, never edit evidence to pass `check`.
+8. **Idempotent.** Re-running a unit that has nothing left to do changes no files and says so. Never rewrite a
+   finished step to "refresh" it; never skip an unfinished one.
 
 ## Mode A: initialize or audit the course
 
@@ -82,11 +93,12 @@ No lessons in this mode. Checklist (copy it into your reply and tick it):
 ```
 - [ ] Read CLAUDE.md, the app structure (routes, layout, design tokens, components), package.json, test setup
 - [ ] Find any existing course files, manifests, schemas, chapters, visualizations; list them with status
-- [ ] Decide where the course lives (route, content folder, manifest format) and record why in COURSE_STATE;
-      set `Product:` in CURRICULUM.md (`none` until the route exists)
-- [ ] Create or repair CURRICULUM.md (learning graph per references/curriculum.md) if missing — mode B owns its design
+- [ ] Record in COURSE_STATE where the course would fit (likely route, which existing components, tokens and checks
+      it would reuse) as a proposal; create no routes, components, schemas or dependencies
+- [ ] If CURRICULUM.md is missing, create it with `Product: none` and an empty graph table (header rows only);
+      mode B fills it. If it exists, repair only what `check` reports
 - [ ] Run `course.mjs check`; fix graph errors
-- [ ] Write COURSE_STATE.md: decisions, current state, next action, open issues
+- [ ] Write COURSE_STATE.md: `State: initialized`, decisions, next action (`mode B` if the graph is empty), open issues
 - [ ] Report: what exists, what was decided, what the next unit is
 ```
 
@@ -99,9 +111,11 @@ what is needed to scope a chapter. Finish with `course.mjs check` and a short ra
 
 ## Mode C: develop the next chapter (default)
 
-Pick the chapter: with `chapter <id>`, use it, but if a prerequisite is below **Authored** stop and report the
-prerequisite instead (or do it first, if the user asked for that). Otherwise run `course.mjs next`. Then work these
-steps, copying the checklist into your reply:
+Run `course.mjs check` first; if it fails, fix the state (or report) before any chapter work. Pick the chapter: with
+`chapter <id>`, run `course.mjs show <id>`: an unknown id or a prerequisite below **Authored** stops the run (report
+it; do the prerequisite first only if the user asked). Otherwise run `course.mjs next`. Before step 1, write the
+chapter id and step into COURSE_STATE "Current unit" so an interruption can resume. Then work these steps, copying
+the checklist into your reply:
 
 ```
 - [ ] 1 Read state       COURSE_STATE, CURRICULUM, the chapter's prerequisites' specs (for vocabulary already taught)
@@ -116,17 +130,25 @@ steps, copying the checklist into your reply:
 - [ ] 10 Report          what was built, gate reached, evidence, what didn't run, next unit
 ```
 
-Stop at the highest gate whose evidence exists. If the session must end early, record the exact step reached in
-`COURSE_STATE.md` so the next run resumes there (an in-progress chapter is always "next").
+Stop at the highest gate whose evidence exists. Keep "Current unit" at the step in progress; set it to `none` only
+when the chapter is done or blocked. **Resuming** (an interrupted run, or "Current unit" names the chapter): re-read
+the spec, confirm each earlier step's output actually exists and is complete, redo only what is missing, and
+continue. Partial output from a crashed step is checked, not trusted.
 
-**Verified** is the last gate: all gates met and every open review finding closed. While `CURRICULUM.md` says
-`Product: none`, steps 6–7 can't run: the chapter stops at **Authored**, which then counts as done for `next`. Step 8
-still runs as a spec review (sources, teaching pattern, visual spec); record its findings and fix them, but the
-status stays **Authored** until the product exists.
+**Verified** is the last gate: implemented, tested, independently reviewed, every blocking and should-fix finding
+closed. While `CURRICULUM.md` says `Product: none`, the chapter stops at **Authored**, which then counts as done for
+`next`. Step 8 still runs as a spec review (sources, teaching pattern, visual spec); record and fix its findings,
+but the status stays **Authored**.
+
+**Starting the product.** Implementation begins only when the owner asks (e.g. `chapter <id>` on an authored
+chapter). Step 6 then builds the least the chapter needs inside the existing app (its routing, components, tokens
+and test setup; reuse before adding), records the location as a decision, and sets `Product:` to that path in the
+same unit. No speculative framework for chapters that don't exist yet.
 
 ## Mode D: audit and repair a chapter
 
-Read the chapter spec, its implementation and its sources. Check it with [verification.md](references/verification.md)
+Run `course.mjs show <id>` (unknown id: stop and report) and `course.mjs check`. Read the chapter spec, its
+implementation and its sources. Check it with [verification.md](references/verification.md)
 (claims against sources, teaching pattern, model numbers, tests, accessibility, reduced motion). List findings by
 severity, then fix them in place with the smallest change; don't redesign a chapter that only needs repairs. Any fix
 to a claim re-checks its source; any fix to a model re-runs its tests. Lower the chapter's status if a gate's evidence

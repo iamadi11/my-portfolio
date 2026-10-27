@@ -2,7 +2,8 @@
 // Course helper for the system-design-educator skill. No dependencies.
 //
 //   node course.mjs next  [--root <dir>]   next chapter from docs/system-design/CURRICULUM.md, with the reason
-//   node course.mjs check [--root <dir>]   validate the learning graph and chapter files
+//   node course.mjs check [--root <dir>]   validate the graph, COURSE_STATE's current unit and each chapter's evidence
+//   node course.mjs show <id> [--root <dir>]  one chapter: status, prerequisites, spec file, whether it can start
 //   node course.mjs skill                  validate this skill's own files (frontmatter, links, sizes)
 //
 // --root defaults to the current directory (the repo root when run by Claude Code).
@@ -19,6 +20,7 @@ const rank = (s) => STATUSES.indexOf(s);
 const args = process.argv.slice(2);
 const cmd = args[0];
 const rootIdx = args.indexOf('--root');
+if (rootIdx >= 0 && !args[rootIdx + 1]) usage();
 const root = resolve(rootIdx >= 0 ? args[rootIdx + 1] : process.cwd());
 const docs = join(root, 'docs/system-design');
 const skillDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -55,6 +57,7 @@ function readGraph() {
     // `authored`, so `authored` counts as done for choosing the next chapter.
     const product = text.match(/^Product:\s*([^#\n]+)/m)?.[1]?.trim();
     const chapters = body.map((c) => ({
+        cells: c.length,
         id: c[0],
         order: Number(c[1]),
         stage: c[2],
@@ -66,12 +69,73 @@ function readGraph() {
     return { chapters, product };
 }
 
+/** Lines of a `## heading` section (up to the next `## `), trimmed, blank lines dropped. */
+function section(text, heading) {
+    const lines = text.split('\n');
+    const at = lines.findIndex((l) => l.trim().toLowerCase() === `## ${heading}`.toLowerCase());
+    if (at < 0) return null;
+    const out = [];
+    for (const l of lines.slice(at + 1)) {
+        if (l.startsWith('## ')) break;
+        if (l.trim()) out.push(l.trim());
+    }
+    return out;
+}
+
+/** The chapter id named under COURSE_STATE's "Current unit" (first word), or null for none/missing. */
 function currentUnit() {
     const file = join(docs, 'COURSE_STATE.md');
     if (!existsSync(file)) return null;
-    const m = readFileSync(file, 'utf8').match(/## Current unit\s*\n+([^\n]+)/);
-    const id = m?.[1]?.trim().split(/\s+/)[0];
+    const id = section(readFileSync(file, 'utf8'), 'Current unit')?.[0]?.split(/\s+/)[0];
     return id && id !== 'none' ? id : null;
+}
+
+/**
+ * What a chapter spec must contain for its status (formats in references/course-state.md). Structure only: the
+ * script can't judge quality, but it stops a status from claiming evidence that isn't written down.
+ */
+function specErrors(c) {
+    const file = join(docs, 'chapters', `${c.id}.md`);
+    if (rank(c.status) < rank('researched')) return [];
+    if (!existsSync(file))
+        return [`${c.id}: status ${c.status} but docs/system-design/chapters/${c.id}.md is missing`];
+    const text = readFileSync(file, 'utf8');
+    const errs = [];
+    const sources = (section(text, 'Sources') ?? [])
+        .join('\n')
+        .split(/^- id:/m)
+        .slice(1);
+    if (!sources.length) errs.push(`${c.id}: status ${c.status} needs source records under "## Sources"`);
+    for (const rec of sources) {
+        const id = rec.split('\n')[0].trim();
+        const via = rec.match(/^via:\s*(\S+)/m)?.[1];
+        const supports = rec.match(/^supports:\s*(.*)$/m)?.[1]?.trim();
+        if (via !== 'read' && via !== 'search') errs.push(`${c.id}: source ${id} needs via: read | search`);
+        // From `implemented` on, the chapter is in front of learners: unread sources may stay only as leads.
+        if (rank(c.status) >= rank('implemented') && via !== 'read' && !/^(none|\[\])$/.test(supports ?? ''))
+            errs.push(
+                `${c.id}: source ${id} is via: ${via} but supports claims (read it, replace it, or set supports: none)`
+            );
+    }
+    if (rank(c.status) >= rank('tested')) {
+        const ev = (section(text, 'Evidence') ?? []).filter((l) => l.startsWith('- '));
+        if (!ev.length) errs.push(`${c.id}: status ${c.status} needs check results under "## Evidence"`);
+        for (const l of ev)
+            if (!/^- [^:]+: (pass|n\/a)\b/.test(l))
+                errs.push(
+                    `${c.id}: evidence line is not a pass: "${l}" (a failed or not-run check means not tested)`
+                );
+    }
+    if (rank(c.status) >= rank('reviewed')) {
+        const rv = section(text, 'Review findings') ?? [];
+        if (!rv.some((l) => /^Reviewer:\s*\S/.test(l)))
+            errs.push(`${c.id}: status ${c.status} needs a "Reviewer:" line under "## Review findings"`);
+        if (c.status === 'verified')
+            for (const l of rv)
+                if (/^- \[(blocking|should-fix)\]/.test(l) && !/→ (fixed|accepted:)/.test(l))
+                    errs.push(`${c.id}: verified with an open finding: "${l}"`);
+    }
+    return errs;
 }
 
 function check(chapters) {
@@ -79,10 +143,12 @@ function check(chapters) {
     const byId = new Map();
     const orders = new Set();
     for (const c of chapters) {
+        if (c.cells !== 7) errs.push(`${c.id || '(blank id)'}: row has ${c.cells} cells, expected 7`);
         if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(c.id)) errs.push(`${c.id}: id must be kebab-case`);
         if (byId.has(c.id)) errs.push(`${c.id}: duplicate id`);
         byId.set(c.id, c);
         if (!Number.isInteger(c.order)) errs.push(`${c.id}: order must be an integer`);
+        if (!/^\d+$/.test(c.stage)) errs.push(`${c.id}: stage must be a number`);
         if (orders.has(c.order)) errs.push(`${c.id}: duplicate order ${c.order}`);
         orders.add(c.order);
         if (!c.title) errs.push(`${c.id}: missing title`);
@@ -90,9 +156,10 @@ function check(chapters) {
             errs.push(`${c.id}: unknown status "${c.status}" (use ${STATUSES.join(', ')})`);
         if (!c.paths.length) errs.push(`${c.id}: on no path`);
         for (const p of c.paths) if (!PATHS.includes(p)) errs.push(`${c.id}: unknown path "${p}"`);
-        if (rank(c.status) >= rank('researched') && !existsSync(join(docs, 'chapters', `${c.id}.md`)))
-            errs.push(`${c.id}: status ${c.status} but docs/system-design/chapters/${c.id}.md is missing`);
+        errs.push(...specErrors(c));
     }
+    const unit = currentUnit();
+    if (unit && !byId.has(unit)) errs.push(`COURSE_STATE current unit "${unit}" is not a chapter id`);
     for (const c of chapters)
         for (const p of c.prereqs) {
             const q = byId.get(p);
@@ -121,10 +188,15 @@ function check(chapters) {
     return errs;
 }
 
+/** The status at which a chapter counts as finished: `authored` while there is no product, else `verified`. */
+const doneRank = (product) => (!product || product === 'none' ? rank('authored') : rank('verified'));
+
 function next(chapters, product) {
+    if (!chapters.length)
+        return { chapter: null, reason: 'the graph has no chapters: run mode B (curriculum)' };
     const byId = new Map(chapters.map((c) => [c.id, c]));
     const sorted = [...chapters].sort((a, b) => a.order - b.order);
-    const done = !product || product === 'none' ? rank('authored') : rank('verified');
+    const done = doneRank(product);
     const resume = byId.get(currentUnit());
     if (resume && rank(resume.status) < done)
         return { chapter: resume, reason: `COURSE_STATE current unit (status ${resume.status}): resume it` };
@@ -144,7 +216,7 @@ function next(chapters, product) {
             reason:
                 done === rank('verified')
                     ? 'every chapter is verified: run mode B to extend the curriculum'
-                    : 'every chapter is authored and there is no product yet: build the course product (mode A decides where)',
+                    : 'every chapter is authored and Product is none: implementation starts when the owner asks (chapter <id> on the first chapter)',
         };
     return { chapter: null, reason: `blocked: ${planned.id} waits on ${planned.prereqs.join(', ')}` };
 }
@@ -186,6 +258,31 @@ function checkSkill() {
     return errs;
 }
 
+function show(chapters, product, id) {
+    const byId = new Map(chapters.map((c) => [c.id, c]));
+    const c = byId.get(id);
+    if (!c) {
+        console.log(`✗ no chapter "${id}". Ids: ${chapters.map((x) => x.id).join(', ') || '(none)'}`);
+        process.exit(1);
+    }
+    const blocking = c.prereqs.filter((p) => rank(byId.get(p)?.status) < rank('authored'));
+    const spec = existsSync(join(docs, 'chapters', `${c.id}.md`));
+    console.log(`${c.id} — ${c.title}\nstatus: ${c.status} · spec: ${spec ? 'present' : 'missing'}`);
+    console.log(`prereqs: ${c.prereqs.map((p) => `${p} (${byId.get(p)?.status})`).join(', ') || 'none'}`);
+    if (blocking.length) console.log(`can start: no — waiting on ${blocking.join(', ')} (must be authored)`);
+    else if (c.status === 'verified') console.log('can start: done — use audit to change it');
+    else if (rank(c.status) >= doneRank(product))
+        console.log(
+            'can start: authored and Product is none — continuing means implementing it (owner asked?)'
+        );
+    else console.log('can start: yes');
+}
+
+function usage() {
+    console.error('usage: course.mjs next | check | show <id> | skill  [--root <dir>]');
+    process.exit(2);
+}
+
 function report(errs) {
     if (errs.length) {
         for (const e of errs) console.log(`✗ ${e}`);
@@ -211,15 +308,19 @@ if (cmd === 'next') {
     const { chapters, product } = readGraph();
     console.log(`${chapters.length} chapters · product: ${product ?? 'missing'}`);
     const errs = check(chapters);
+    const unit = currentUnit();
+    const u = chapters.find((c) => c.id === unit);
+    if (u && rank(u.status) >= doneRank(product))
+        console.log(`! COURSE_STATE current unit ${unit} is already ${u.status}: set it to none`);
     if (!product) errs.push('CURRICULUM.md needs a "Product: <route or manifest path | none>" line');
     if (product === 'none')
         for (const c of chapters)
             if (rank(c.status) > rank('authored'))
                 errs.push(`${c.id}: status ${c.status} but Product is none`);
     report(errs);
+} else if (cmd === 'show' && args[1] && args[1] !== '--root') {
+    const { chapters, product } = readGraph();
+    show(chapters, product, args[1]);
 } else if (cmd === 'skill') {
     report(checkSkill());
-} else {
-    console.error('usage: course.mjs next|check|skill [--root <dir>]');
-    process.exit(2);
-}
+} else usage();

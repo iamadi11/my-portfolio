@@ -58,7 +58,9 @@ Every chapter is on at least one path; core chapters are on all three.
 
 ## Chapter sizing and objectives
 
-- One chapter ≈ one sitting (roughly 15–30 minutes of reading and doing; an assumption to revisit with real use).
+- Size target (a hypothesis, not a finding): one chapter fits one sitting, about 15–30 minutes of reading and doing.
+  Nothing in the research here establishes that length. Record each chapter's estimate in its spec as an
+  assumption; revise the target once real reading times or learner feedback exist.
 - Objectives are observable: "explain why a retry without jitter can synchronise clients", not "understand
   retries". Two to four per chapter.
 - Each chapter names the misconceptions it targets (e.g. "more servers always means faster").

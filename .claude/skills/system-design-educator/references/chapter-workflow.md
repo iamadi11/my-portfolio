@@ -84,7 +84,7 @@ Spaced review: <which later chapters re-ask which question>
 
 ## Sources
 
-<source records: research-and-sources.md>
+- id: <source id> (full record: research-and-sources.md; `via` and `supports` are checked)
 
 ## Open questions / unverified
 
@@ -92,11 +92,13 @@ Spaced review: <which later chapters re-ask which question>
 
 ## Evidence
 
-<gate: command or check → result, date>
+- <check>: pass | fail | not run | n/a — <command or reason> (<date>)
 
 ## Review findings
 
-<finding → fix or accepted reason>
+Reviewer: <fresh subagent>, <date>
+
+- [blocking | should-fix | note] <finding> → fixed (<where>) | accepted: <reason> | open
 ```
 
 ## Assessment design

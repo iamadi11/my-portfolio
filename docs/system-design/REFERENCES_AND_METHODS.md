@@ -41,22 +41,30 @@ Applied here:
 
 ## Learning science
 
-All sources were found via search. Strength reflects these sources as summarised.
+**Access levels.** *Original inspected* means the paper was read. *Secondary inspected* means a reliable explanation
+was read in full. *Snippet only* means only search-result titles, abstracts or summaries were seen.
 
-| Principle | Sources | Strength |
-| --- | --- | --- |
-| Retrieval practice | Roediger & Karpicke 2006, *Psychological Science* 17(3) 249–255. Dunlosky et al. 2013, *PSPI* 14(1) 4–58 | Strong |
-| Spacing | Cepeda, Pashler, Vul, Wixted & Rohrer 2006, *Psychological Bulletin* 132(3) 354–380. Dunlosky 2013 | Strong |
-| Worked examples and fading | Sweller (cognitive load theory). Renkl and colleagues on fading | Moderate–strong, for novices |
-| Expertise reversal | Kalyuga, Ayres, Chandler & Sweller 2003 | Moderate–strong |
-| Self-explanation and elaborative interrogation | Dunlosky 2013 | Moderate |
-| Interleaving | Rohrer & Taylor 2007, *Instructional Science* 35. A later meta-analysis found a small, variable effect | Moderate, mixed |
-| Multimedia (coherence, signaling, segmenting, pre-training) | Mayer's principles (count varies by edition) | Moderate–strong |
-| Feedback | Hattie & Timperley 2007, *RER* 77(1) 81–112. Effects are variable and can be negative | Strong that it matters |
-| Engagement with visualizations | Hundhausen, Douglas & Stasko 2002 (JVLC, meta-study of 24 studies). Naps et al. 2002 engagement taxonomy (ITiCSE WG) | Moderate |
-| Implicit scaffolding in simulations | PhET: Podolefsky, Perkins, Adams; Moore, Herzog & Perkins 2013 | Moderate (physics and chemistry settings) |
-| Desirable difficulties | Bjork 1994 | Moderate (umbrella term) |
-| **Rejected:** learning-styles matching | Pashler, McDaniel, Rohrer & Bjork 2008, *PSPI* 9(3) 105–119 | No adequate evidence |
+**Every row below is snippet only.** No original or secondary explanation was inspected. On 2026-10-27 and again on
+2026-10-28, direct fetches failed with DNS errors. That covered author PDFs (evullab.org, psychology.ecu.edu,
+uky.edu), arXiv, PubMed, Wikipedia and MIT Open Learning.
+
+The "reported strength" column repeats what those snippets claim. It is provisional and is no guarantee for any
+given learner or topic. Upgrade a row only after reading the source, and say which level it reached.
+
+| Principle | Sources | Access | Reported strength (provisional) |
+| --- | --- | --- | --- |
+| Retrieval practice | Roediger & Karpicke 2006, *Psychological Science* 17(3) 249–255. Dunlosky et al. 2013, *PSPI* 14(1) 4–58 | Snippet only | Strong |
+| Spacing | Cepeda, Pashler, Vul, Wixted & Rohrer 2006, *Psychological Bulletin* 132(3) 354–380. Dunlosky 2013 | Snippet only | Strong |
+| Worked examples and fading | Sweller (cognitive load theory). Renkl and colleagues on fading | Snippet only | Moderate–strong, for novices |
+| Expertise reversal | Kalyuga, Ayres, Chandler & Sweller 2003 | Snippet only | Moderate–strong |
+| Self-explanation and elaborative interrogation | Dunlosky 2013 | Snippet only | Moderate |
+| Interleaving | Rohrer & Taylor 2007, *Instructional Science* 35. A later meta-analysis reports a small, variable effect | Snippet only | Moderate, mixed |
+| Multimedia (coherence, signaling, segmenting, pre-training) | Mayer's principles (count varies by edition) | Snippet only | Moderate–strong |
+| Feedback | Hattie & Timperley 2007, *RER* 77(1) 81–112. Effects are variable and can be negative | Snippet only | Strong that it matters |
+| Engagement with visualizations | Hundhausen, Douglas & Stasko 2002 (JVLC, meta-study of 24 studies). Naps et al. 2002 engagement taxonomy (ITiCSE WG) | Snippet only | Moderate |
+| Implicit scaffolding in simulations | PhET: Podolefsky, Perkins, Adams; Moore, Herzog & Perkins 2013 | Snippet only | Moderate (physics and chemistry settings) |
+| Desirable difficulties | Bjork 1994 | Snippet only | Moderate (umbrella term) |
+| **Rejected:** learning-styles matching | Pashler, McDaniel, Rohrer & Bjork 2008, *PSPI* 9(3) 105–119 | Snippet only | No adequate evidence (as reported) |
 
 ## Validation and dry run (2026-10-27)
 

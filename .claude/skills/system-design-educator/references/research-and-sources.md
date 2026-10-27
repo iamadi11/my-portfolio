@@ -39,7 +39,14 @@ One per source, in the chapter spec (and in code if the product has a sources mo
   note: <section numbers, caveats, what it does NOT say>
 ```
 
-`via` must be honest. A claim supported only by `via: search` sources is marked unverified in the spec until read.
+`via` must be honest:
+
+- `read`: you opened and read the text yourself (the original, or for tier 4 a secondary page you read in full).
+- `search`: you saw only a search-result title or snippet, a summary by a tool, or a citation in another source.
+- A source you could not reach at all is not a source: put it under "Open questions", not in Sources.
+
+A claim supported only by `via: search` sources is marked unverified in the spec. Before `implemented` it must be
+read, replaced, or cut (`check` enforces this: such a record must say `supports: none`).
 
 ## Research procedure per chapter
 
@@ -62,7 +69,9 @@ One per source, in the chapter spec (and in code if the product has a sources mo
 
 Some environments block web fetches. Then: use search results to find the canonical location, record
 `via: search`, quote nothing you haven't read, mark dependent claims unverified, and list the source under
-"Open questions" for a later session that can read it. Say this in the report.
+"Open questions" for a later session that can read it. Say this in the report. The chapter can still reach
+`authored`; it cannot reach `implemented` until those claims rest on read sources. Never upgrade `via` because a
+snippet "looked complete".
 
 ## Oversimplification list
 
