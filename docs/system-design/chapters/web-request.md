@@ -66,6 +66,10 @@ Misconceptions targeted:
   [mdn-url]
 - **Hostname:** the name part of the URL's authority, such as `example.com`. People use names. Computers send data
   to numeric IP addresses. [mdn-url, mdn-dns]
+- **IP address:** the number that identifies a machine on the internet, such as `192.0.2.172` (how it works:
+  `ip-and-ports`). [mdn-dns]
+- **Port:** the number that picks which "gate" on the server to use. URLs leave it out when it is the standard one:
+  80 for HTTP, 443 for HTTPS. [mdn-url]
 - **DNS lookup:** turning a hostname into an IP address. [mdn-dns]
 - **Connection:** an agreed channel between browser and server that delivers bytes reliably and in order. HTTP
   needs one underneath it [rfc9110 §3.3]. TLS likewise needs a "reliable, in-order data stream" [rfc9846 §1]. On
@@ -148,15 +152,19 @@ Glossary rules for the course:
      an `https` page; see Sources. Over HTTP/3 the two start times are equal [fetch], because QUIC sets up
      encryption as part of the connection → `udp-quic`.)
 
-   Comparing a first visit with a repeat visit shows which steps disappear.
+   Comparing a first visit with a repeat visit shows which steps disappear. When a fetch reuses a connection that was
+   opened earlier, the Fetch standard sets the DNS and connection timestamps all to the fetch's start, so the entry
+   shows 0 ms for DNS, TCP and TLS. [fetch: clamp and coarsen connection timing info]
 
-7. **The real mechanism.** A page load is a chain of steps. Most early steps are waits for a message to go there
-   and back, so each costs at least one round trip before the next can start.
+7. **The real mechanism.** A page load is a chain of steps. In the simple model this chapter uses, most early steps
+   are waits for a message to go there and back, so each costs at least one round trip before the next can start.
+   Real browsers and networks have optimisations this model leaves out; later chapters add them.
    1. **Read the URL.** The scheme says to use HTTPS. The authority gives the hostname and an optional port (443 by
       default for HTTPS). The path says which resource to ask for. [mdn-url]
    2. **Look up the hostname (DNS).** The browser needs the server's IP address. On a first visit, a DNS lookup
-      asks name servers. Afterwards, the answer is usually cached, so later requests skip it. Each different
-      hostname the page uses needs its own lookup. [mdn-how-browsers-work: DNS lookup; mdn-dns]
+      asks name servers. Afterwards, the answer is likely cached, so later requests skip it. Each different hostname
+      the page uses needs its own lookup. [mdn-how-browsers-work: DNS lookup; mdn-dns] (Simplified: a cache can
+      sometimes answer even your first lookup; where DNS caches live is taught in `dns`.)
    3. **Open a connection (TCP).** The browser and server exchange three messages before the request is sent:
       SYN, SYN-ACK and ACK [mdn-tcp-handshake]. The browser sends the SYN and must wait for the SYN-ACK to come
       back before it can send anything else. So the handshake costs one round trip before the request can follow
@@ -176,8 +184,8 @@ Glossary rules for the course:
       This is one more round trip plus the server's own processing time. [rfc9110 §9.3.1, §15;
       mdn-how-browsers-work: response]
    6. **Parse, fetch more, render.** As the HTML arrives, the browser parses it into the DOM. It requests the
-      resources the HTML names (stylesheets, scripts, images). A separate "preload scanner" reads ahead and starts
-      some of those downloads early. The browser builds the CSSOM, combines it with the DOM into a render tree,
+      resources the HTML names (stylesheets, scripts, images). Browsers can also use a "preload scanner" that reads
+      ahead and starts some of those downloads early. The browser builds the CSSOM, combines it with the DOM into a render tree,
       lays out and paints. A script without `async` or `defer` pauses HTML parsing until it has run. Linked
       resources are requested only once the browser reaches them in the HTML, which is why they come after the
       HTML's first byte. [mdn-how-browsers-work: response, parsing, preload scanner, render; mdn-crp]
@@ -198,7 +206,8 @@ Glossary rules for the course:
 
    **Why the second visit is faster:**
    - The hostname is cached, so there is no DNS wait. [mdn-how-browsers-work: DNS lookup]
-   - An open connection can be reused for further requests, so there is no TCP or TLS handshake. Keeping
+   - If the connection from the first visit is still open, it can be reused, so there is no TCP or TLS handshake.
+     Keeping
      connections open for reuse ("persistent connections") arrived in HTTP/1.1. [mdn-http-overview: HTTP and
      connections]
    - If the browser holds a fresh cached copy of the response, it can reuse it without contacting the server at
@@ -220,7 +229,8 @@ Glossary rules for the course:
    - **Use fewer hostnames**, so there are fewer lookups and connections.
    - **Make the server answer faster** (→ stages 3–5).
 
-10. **Trade-offs.**
+10. **Trade-offs.** Questions 10–12 are design judgement derived from the mechanism above. Their specifics are
+    sourced in the linked chapters, not here.
     - **Caching** can serve something stale (→ `cache-invalidation`).
     - **Keeping connections open** holds memory and connection slots on the server for idle clients
       (→ `load-balancing`, `utilisation-queueing`).
@@ -295,7 +305,9 @@ Visual spec (the 14-step process):
 1. **Mechanism made visible:** a page load is a chain of waits, most of them round trips. Repeat visits remove
    links from the chain.
 2. **Misconception to break:** "page load time = size ÷ bandwidth".
-3. **Medium:** a stepper of six frames, one per step, plus a timeline bar computed from the model.
+3. **Medium:** a stepper of six frames, one per step, plus a timeline bar computed from the model. Frames 1 (read
+   the URL) and 6 (parse and render) carry no milliseconds: the model times only what happens before the HTML's
+   first byte (frames 2–5).
 4. **Parts on screen:** browser, DNS name server and web server, with the connection drawn as a line between
    browser and server. Each is a term from "Parts you'll meet". A message is an arrow; a round trip is an arrow
    there and back.
@@ -572,7 +584,7 @@ websites were unreachable from the authoring container.
   kind: spec
   checked: 2026-10-27
   via: read
-  supports: [connection end time must include the time to complete enough of the TLS handshake to request the resource; secure connection start time is taken immediately before the handshake starts; over HTTP/3 connection start and secure connection start are equal]
+  supports: [connection end time must include the time to complete enough of the TLS handshake to request the resource; secure connection start time is taken immediately before the handshake starts; over HTTP/3 connection start and secure connection start are equal; on a connection opened before the fetch, DNS and connection timestamps are set to the fetch's start]
   note: fetch.bs in whatwg/fetch commit 59afe34 (2026-10-19); living standard.
 - id: rfc9110
   title: HTTP Semantics (RFC 9110, STD 97)
@@ -596,7 +608,7 @@ websites were unreachable from the authoring container.
   note: rfc9111.xml in httpwg/http-core commit bde37f6.
 - id: rfc9846
   title: The Transport Layer Security (TLS) Protocol Version 1.3 (RFC 9846)
-  author: IETF TLS Working Group (ed. E. Rescorla)
+  author: E. Rescorla
   url: https://www.rfc-editor.org/rfc/rfc9846
   kind: spec
   published: 2026-07
@@ -606,8 +618,8 @@ websites were unreachable from the authoring container.
   note: >-
     rfc9846.md in tlswg/tls13-spec commit c728b4e (2026-07-07); its metadata (docname
     draft-ietf-tls-rfc8446bis-14) says it obsoletes RFC 8446 and keeps version 1.3. Section numbers computed from
-    the markdown headings; not checked against the rfc-editor.org copy (unreachable). The author line is from the
-    repo. Curriculum scoping cited RFC 8446; 9846 supersedes it.
+    the markdown headings; not checked against the rfc-editor.org copy (unreachable). Author and date (2026-07) are
+    from the file's metadata block. Curriculum scoping cited RFC 8446; 9846 supersedes it.
 - id: rfc1034
   title: Domain Names - Concepts and Facilities (RFC 1034)
   author: P. Mockapetris
@@ -698,3 +710,19 @@ Reviewer: second fresh subagent (re-review of the fixes above), 2026-10-27
 - [note] Q4 "connection opened to a server address" uncited → fixed (labelled derived from steps 2–3)
 - [note] TCP Fast Open and 0-RTT used before definition → fixed (defined where first used, in step 7's caveat)
 - [note] Inconsistent rounding (89% vs 44.4%) → fixed (one decimal everywhere; 88.6% test added)
+
+Audit: author (owner-requested chapter review), 2026-10-27, against verification.md and the source files
+
+- [should-fix] "IP address" and "port" used without definition → fixed (Parts you'll meet)
+- [should-fix] "most early steps … each costs at least one round trip" read as true of every stack → fixed
+  (scoped to this chapter's model; optimisations deferred)
+- [should-fix] "a first visit asks name servers" stated as universal → fixed (flagged; caches → `dns`)
+- [should-fix] Repeat visit assumed the connection is always still open → fixed ("if … still open")
+- [should-fix] Trade-off claims (server state for open connections, cost of moving closer) were uncited → fixed
+  (Q10–12 marked as derived judgement, sourced in the linked chapters)
+- [note] Preload scanner presented as universal → fixed ("browsers can use")
+- [note] Stepper has 6 frames but the model times 4 → fixed (frames 1 and 6 carry no time)
+- [note] RFC 9846 author line → fixed (E. Rescorla, from the file's metadata); RFC 9110/9111 dates and authors
+  checked against the XML front matter
+- [note] Added a verified fact: a reused connection shows 0 ms DNS/TCP/TLS in timing entries (Fetch, clamp and
+  coarsen connection timing info)
