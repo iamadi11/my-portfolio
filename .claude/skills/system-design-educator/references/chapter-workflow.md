@@ -48,7 +48,7 @@ design, sees it work, then sees it break.
 ```markdown
 # <title>
 
-Id: <id> · Stage: <n> · Paths: <...> · Status: <gate>
+Id: <id> · Stage: <n> · Paths: <...> (status lives only in CURRICULUM.md)
 Prerequisites: <ids> · Related: <ids>
 
 ## Boundary

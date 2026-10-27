@@ -117,6 +117,8 @@ function specErrors(c) {
         const via = rec.match(/^via:\s*(\S+)/m)?.[1];
         const supports = rec.match(/^supports:\s*(.*)$/m)?.[1]?.trim();
         if (via !== 'read' && via !== 'search') errs.push(`${c.id}: source ${id} needs via: read | search`);
+        if (!/^title:\s*\S/m.test(rec)) errs.push(`${c.id}: source ${id} needs a title`);
+        if (supports === undefined) errs.push(`${c.id}: source ${id} needs supports: [...] or none`);
         // From `implemented` on, the chapter is in front of learners: unread sources may stay only as leads.
         if (rank(c.status) >= rank('implemented') && via !== 'read' && !/^(none|\[\])$/.test(supports ?? ''))
             errs.push(

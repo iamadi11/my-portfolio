@@ -39,11 +39,14 @@ One per source, in the chapter spec (and in code if the product has a sources mo
   note: <section numbers, caveats, what it does NOT say>
 ```
 
-`via` must be honest:
+Required (checked by `course.mjs check`): `id`, `title`, `via`, `supports`. The others are expected; a record
+missing them is fixed when found. `via` must be honest:
 
 - `read`: you opened and read the text yourself (the original, or for tier 4 a secondary page you read in full).
 - `search`: you saw only a search-result title or snippet, a summary by a tool, or a citation in another source.
-- A source you could not reach at all is not a source: put it under "Open questions", not in Sources.
+- A source you could not reach at all (no text, no search result) is not a source: put it under "Open questions",
+  not in Sources. With neither fetch nor search available, research is blocked: the chapter stays below
+  `researched`.
 
 A claim supported only by `via: search` sources is marked unverified in the spec. Before `implemented` it must be
 read, replaced, or cut (`check` enforces this: such a record must say `supports: none`).

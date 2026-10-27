@@ -115,7 +115,7 @@ Updated: <YYYY-MM-DD>
 
 ## Session log
 
-- <YYYY-MM-DD> <mode> <unit>: <gate before> → <gate after>; <one-line summary>
+- <YYYY-MM-DD> <A|B|C|D> <chapter id or "course">: <gate before> → <gate after>; <one-line summary>
 ```
 
 Keep it short: decisions and issues are one line each; detail lives in chapter specs.

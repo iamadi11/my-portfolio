@@ -115,7 +115,9 @@ what is needed to scope a chapter. Finish with `course.mjs check` and a short ra
 
 ## Mode C: develop the next chapter (default)
 
-Run `course.mjs check` first; if it fails, fix the state (or report) before any chapter work. Pick the chapter: with
+Run `course.mjs check` first. If it fails, don't redesign the graph here: a graph error (cycle, bad or renamed id,
+missing cell, unknown status) is reported and the next unit is mode B; a chapter-evidence error is reported and the
+next unit is mode D for that chapter. Change no files in that case. Pick the chapter: with
 `chapter <id>`, run `course.mjs show <id>`: an unknown id or a prerequisite below **Authored** stops the run (report
 it; do the prerequisite first only if the user asked). Otherwise run `course.mjs next`. Before step 1, write the
 chapter id and step into COURSE_STATE "Current unit" so an interruption can resume. Then work these steps, copying
@@ -134,15 +136,25 @@ the checklist into your reply:
 - [ ] 10 Report          what was built, gate reached, evidence, what didn't run, next unit
 ```
 
-Stop at the highest gate whose evidence exists. Keep "Current unit" at the step in progress; set it to `none` only
-when the chapter is done or blocked. **Resuming** (an interrupted run, or "Current unit" names the chapter): re-read
-the spec, confirm each earlier step's output actually exists and is complete, redo only what is missing, and
-continue. Partial output from a crashed step is checked, not trusted.
+Work the steps in order. The spec file `chapters/<id>.md` is created in step 2 from the template in
+chapter-workflow.md; a step is **complete** when every template part it owns is filled (not empty, not a
+placeholder). If a step can't be completed, stop there: don't attempt later steps.
+
+- **Stopping.** "Current unit" stays `<id> step <n>` at the first incomplete step; the status is the highest gate
+  whose evidence exists. **Blocked** means the step needs something outside the chapter (an unreadable source with
+  no search access, a missing tool, an owner decision): record what unblocks it under Open issues and in Next
+  action, and keep the Current unit (the chapter is not abandoned). Set Current unit to `none` only when the chapter
+  is done.
+- **Resuming** (an interrupted run, or "Current unit" names the chapter): re-read the spec and check each earlier
+  step against "complete". If an earlier step is incomplete, move Current unit back to it, lower the status in
+  `CURRICULUM.md` to the gate the evidence still supports (mode C may lower, never raise without evidence), and
+  continue from there. Partial output from a crashed step is checked, not trusted.
 
 **Verified** is the last gate: implemented, tested, independently reviewed, every blocking and should-fix finding
 closed. While `CURRICULUM.md` says `Product: none`, the chapter stops at **Authored**, which then counts as done for
 `next`. Step 8 still runs as a spec review (sources, teaching pattern, visual spec); record and fix its findings,
-but the status stays **Authored**.
+but the status stays **Authored**. If no fresh reviewer can be started, record `- spec review: not run — <reason>`
+under Evidence and say so in the report.
 
 **Starting the product.** Implementation begins only when the owner asks (e.g. `chapter <id>` on an authored
 chapter). Step 6 then builds the least the chapter needs inside the existing app (its routing, components, tokens

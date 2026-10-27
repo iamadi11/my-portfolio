@@ -43,8 +43,8 @@ function run(root, ...args) {
     return { code: r.status, out: r.stdout + r.stderr };
 }
 
-const READ = '## Sources\n\n- id: rfc9110\n  via: read\n  supports: [c1]\n';
-const SEARCH = '## Sources\n\n- id: rfc9110\n  via: search\n  supports: [c1]\n';
+const READ = '## Sources\n\n- id: rfc9110\n  title: RFC 9110\n  via: read\n  supports: [c1]\n';
+const SEARCH = '## Sources\n\n- id: rfc9110\n  title: RFC 9110\n  via: search\n  supports: [c1]\n';
 const PASS =
     '\n## Evidence\n\n- typecheck: pass — tsc (2026-01-01)\n- browser: pass — playwright (2026-01-01)\n';
 const REVIEW = '\n## Review findings\n\nReviewer: fresh subagent, 2026-01-02\n';
@@ -210,6 +210,15 @@ test('unavailable/snippet-only sources cannot support claims once implemented', 
         ).out,
         /needs via: read \| search/
     );
+    const bare = run(
+        course({
+            rows: [row('a', 1, '', 'researched')],
+            specs: { a: '## Sources\n\n- id: x\n  via: read\n' },
+        }),
+        'check'
+    ).out;
+    assert.match(bare, /source x needs a title/);
+    assert.match(bare, /source x needs supports/);
 });
 
 test('tested: failed test or missing browser is not a pass', () => {
