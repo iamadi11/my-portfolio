@@ -648,7 +648,14 @@ websites were unreachable from the authoring container.
     rfc9846.md in tlswg/tls13-spec commit c728b4e (2026-07-07); its metadata (docname
     draft-ietf-tls-rfc8446bis-14) says it obsoletes RFC 8446 and keeps version 1.3. Section numbers computed from
     the markdown headings; not checked against the rfc-editor.org copy (unreachable). Author and date (2026-07) are
-    from the file's metadata block. Curriculum scoping cited RFC 8446; 9846 supersedes it.
+    from the file's metadata block (full list, re-read 2026-10-27: category std, obsoletes 5077, 5246, 6961, 7627,
+    8422 and 8446, updates 5705 and 6066). Section tree re-checked 2026-10-27: §4 opens with §4.1 The Transcript
+    Hash, so §4.2 is Key Exchange Messages (RFC 8446's §4.1); §4.2.4 Hello Retry Request and §4.3.8 Key Share follow
+    from that tree. Curriculum scoping cited RFC 8446; 9846 supersedes it (CURRICULUM.md, Scoping sources). Published
+    text still unreachable on 2026-10-27 (rfc-editor.org, datatracker, ietf.org, mailarchive, RIPE and other mirrors
+    all refused, also via WebFetch). Search snippets alone (via: search, not verified) give July 2026 on the IETF
+    pages but May 2026 on tlswg.org and an authors' copy, so the publication date and the section numbers remain
+    unverified against the published RFC.
 - id: rfc1034
   title: Domain Names - Concepts and Facilities (RFC 1034)
   author: P. Mockapetris
