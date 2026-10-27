@@ -9,13 +9,14 @@ The system design course is built only through the `system-design-educator` skil
 
 ## Current unit
 
-web-request step 8
+client-server step 6
 
 ## Next action
 
-Owner review of /learn/web-request. Then either mark `web-request` verified (no open blocking or should-fix
-finding; the open items below are limits, not findings) or run mode D on what the owner finds; then mode C
-`client-server`.
+Blocked on an owner decision: `client-server` is authored (spec complete through step 5) and step 6 (implement in
+`/learn`) waits for the owner to authorize integrating it. When authorized: implement the visual's model and tests,
+the page, browser checks, then the independent review (steps 6–8). Separately, the owner decides when to merge the
+web-request fixes made after PR #18 (production still serves 75b2b6c).
 
 ## Decisions
 
@@ -59,13 +60,15 @@ finding; the open items below are limits, not findings) or run mode D on what th
 
 ## Open issues
 
-- `web-request` stays `reviewed`, not `verified`: five independent reviews ran (two spec, three implementation)
-  plus two final reviews, and every blocking and should-fix finding is fixed or accepted with a reason, but the
-  last round's fixes (prompt wording, guess rounding, Enter submits) were checked by the browser suite (65/65), not
-  by another fresh review, and the owner review named in Next action has not happened. Also: no real screen reader
-  was used (DOM/ARIA inspection only); RFC 9846 section numbers are checked against the TLS WG's final source
-  (tlswg/tls13-spec rfc9846.md), not the published RFC, which was unreachable (RFC 9110/9111 are checked against
-  the published text) (web-request).
+- `client-server` step 6 is blocked by choice of the owner: implementation in `/learn` needs their authorization
+  (2026-10-27). No independent review has run on its spec yet; the skill runs it at step 8 (client-server).
+- RFC 6265 (cookies) may have been obsoleted by the 6265bis revision (search only: approved, no published number
+  found); `client-server` uses only the basic Set-Cookie → Cookie mechanism (client-server).
+
+- `web-request` is `verified` against the skill's criteria, with these limits recorded (not findings): no real
+  screen reader was used (DOM/ARIA only); RFC 9846 is read in the TLS WG's final source, not the published RFC
+  (unreachable; publication date in search snippets disagrees, July vs May 2026); the owner has not reviewed the
+  page (not a skill criterion); fixes after PR #18 are on the branch, not yet deployed (web-request).
 - The authoring container could not open most primary-source sites (DNS blocked for fetch); sources found only via
   search are recorded `via: search` and cannot support claims from `implemented` on (course).
 - `course.mjs` lives under `.claude/`, which `eslint.config.mjs` ignores; the skill's own tests run with
@@ -73,7 +76,7 @@ finding; the open items below are limits, not findings) or run mode D on what th
 - Scoping sources were read only as search snippets except the System Design Primer; `time-clocks`,
   `consistent-hashing`, `cap-pacelc`, `consensus` and `isolation` have no primary source found yet (course).
 - Beginner path has no end-to-end capstone; known gaps listed in `CURRICULUM.md` (course).
-- `CURRICULUM.md` scoping sources cite RFC 8446 for TLS 1.3; RFC 9846 (2026-07) obsoletes it (found in
+- Closed 2026-10-27: `CURRICULUM.md` scoping sources cited RFC 8446 for TLS 1.3; RFC 9846 obsoletes it (found in
   web-request research). Update the scoping table in the next mode B pass (course).
 
 ## Session log
@@ -89,3 +92,14 @@ finding; the open items below are limits, not findings) or run mode D on what th
   checks, three implementation reviews with findings fixed; not marked verified (see Open issues).
 - 2026-10-27 C web-request: final review (fresh reviewer) → 4 should-fix + 6 notes fixed; review of those fixes →
   2 should-fix + 3 notes fixed, 2 accepted; Vercel build fix (`.vercelignore`); status stays reviewed.
+- 2026-10-27 C web-request: reviewed → verified. Fresh review of the merged tree (1 should-fix: the predict panel's
+  answer was on screen; 5 notes) and a fresh review of that fix (4 notes) → all fixed or accepted; 96 unit tests,
+  69/69 browser checks, Lighthouse 99/100; RFC 8446 → 9846 in the curriculum scoping table; RFC 9846 published text
+  still unreachable (limit recorded).
+  Format only: each review finding in web-request.md now sits on one line, so `check` reads its outcome; the
+  screen-reader limit moved from Evidence (not a required check) to Open questions. No finding text changed.
+- 2026-10-27 C client-server: planned → authored. Spec `chapters/client-server.md`: 4 objectives, 14 questions,
+  worked example (POST duplicate on a late response; PUT idempotent), visual spec (stepper over a 24-case discrete
+  model), 5 retrieval questions, exercise, 10 sources (9 read: RFC 9110, 9112, 6265 in the HTTP WG's published
+  rendering; MDN; PostgreSQL docs; 1 search-only lead with supports: none). Stopped at step 6: integration not
+  authorized.

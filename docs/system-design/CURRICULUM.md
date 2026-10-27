@@ -58,8 +58,8 @@ Chapters on all three paths form the shared core.
 
 | id | order | stage | title | prereqs | paths | status |
 | --- | --- | --- | --- | --- | --- | --- |
-| web-request | 1 | 1 | Map: what happens when you open a website |  | beginner interview production | reviewed |
-| client-server | 2 | 1 | Clients, servers and request–response | web-request | beginner interview production | planned |
+| web-request | 1 | 1 | Map: what happens when you open a website |  | beginner interview production | verified |
+| client-server | 2 | 1 | Clients, servers and request–response | web-request | beginner interview production | authored |
 | ip-and-ports | 3 | 1 | Addresses, packets and ports | client-server | beginner interview production | planned |
 | dns | 4 | 1 | DNS: from names to addresses | ip-and-ports | beginner interview production | planned |
 | tcp | 5 | 1 | TCP: reliable streams over unreliable packets | ip-and-ports | beginner interview production | planned |
@@ -398,11 +398,20 @@ sre.google and owasp.org failed with DNS errors on 2026-10-27.
 | Google, *Site Reliability Engineering*, table of contents (ch. 3, 4, 6, 21, 22) | SLOs and error budgets, monitoring, overload, cascading failures | Snippet only |
 | OWASP Top 10 (2021) | Web vulnerabilities chapter scope (A01 Broken Access Control, A02 Cryptographic Failures, …) | Snippet only |
 | AWS Well-Architected Framework (six pillars) | Production lens: operations, security, reliability, performance, cost, sustainability | Snippet only |
-| RFC 9110, 9111, 9000, 8446, 9293 | Networking stage boundaries (HTTP semantics and caching, QUIC, TLS 1.3, TCP) | Snippet only |
+| RFC 9110, 9111, 9000, 9846, 9293 | Networking stage boundaries (HTTP semantics and caching, QUIC, TLS 1.3, TCP) | Snippet only at scoping; since read for `web-request`: 9110 and 9111 (published text), 9846 (TLS WG final source only, see below) |
 | Ongaro & Ousterhout 2014 (Raft); DeCandia et al. 2007 (Dynamo); Shapiro et al. 2011 (CRDTs) | Consensus, leaderless replication/quorums/consistent hashing, conflict resolution | Snippet only |
 | Dean & Barroso 2013 (*The Tail at Scale*); Little 1961 (L = λW) | Percentiles/tail latency and queueing chapters | Snippet only |
 | Jepsen consistency models | Consistency-models chapter scope (linearizable, serializable, strict serializable) | Snippet only |
 | OpenTelemetry specification status (signals) | Observability scope (traces, metrics, logs) | Snippet only |
+
+**TLS 1.3 source changed from RFC 8446 to RFC 9846** (2026-10-27, found during `web-request` research). The TLS
+working group's final source for RFC 9846 (tlswg/tls13-spec `rfc9846.md`, read; metadata: number 9846, category
+std, date 2026-07, obsoletes 5077, 5246, 6961, 7627, 8422 and 8446, updates 5705 and 6066) shows that RFC 9846
+replaces RFC 8446 as the TLS 1.3 specification, so chapters cite RFC 9846. Its section numbers differ from RFC
+8446's (e.g. a new §4.1 Transcript Hash shifts later §4 sections), so an RFC 8446 section number must not be reused
+as an RFC 9846 one. The published RFC (rfc-editor.org, datatracker, ietf.org and mirrors) could not be reached from
+this container; its publication details are known only from search snippets, which disagree (July vs May 2026),
+so they are not treated as verified. Check them against the published text when it is reachable.
 
 **Searched but not found in results:**
 

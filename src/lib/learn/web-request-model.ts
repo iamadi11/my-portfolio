@@ -46,6 +46,12 @@ export const DEFAULTS: Inputs = {
     serverMs: RANGES.serverMs.initial,
 };
 
+/**
+ * The round trip Fig. 1's "Predict, then run" asks about. It differs from the default (40 ms), so the answer is not
+ * already on screen when the learner predicts, and from the worked example's repeat visit.
+ */
+export const PREDICT_RTT_MS = 80;
+
 const clamp = (v: number, r: { min: number; max: number }): number =>
     Number.isFinite(v) ? Math.min(r.max, Math.max(r.min, v)) : r.min;
 
@@ -79,6 +85,11 @@ export function summarize(input: Inputs): Summary {
     const serverMs = s.reduce((t, x) => t + x.serverMs, 0);
     const totalMs = networkMs + serverMs;
     return { steps: s, totalMs, networkMs, serverMs, networkShare: totalMs > 0 ? networkMs / totalMs : null };
+}
+
+/** What "Predict, then run" asks about: a repeat visit at PREDICT_RTT_MS, with the learner's other values. */
+export function predictAt(input: Inputs): Summary {
+    return summarize({ ...input, visit: 'warm', rttMs: PREDICT_RTT_MS });
 }
 
 /** Percentages to one decimal everywhere in the chapter. */

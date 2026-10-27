@@ -5,6 +5,8 @@ import React, { useId, useMemo, useState } from 'react';
 import {
     DEFAULTS,
     formatShare,
+    predictAt,
+    PREDICT_RTT_MS,
     RANGES,
     summarize,
     type Inputs,
@@ -87,7 +89,6 @@ function stepMs(s: Step | undefined): string {
     return `${s.networkMs + s.serverMs} ms`;
 }
 
-/** "Not quite" feedback that names exactly which ticks were wrong. */
 /** "a", "a and b", "a, b and c"; labels after the first read mid-sentence (lower-cased unless an acronym: TLS, TCP). */
 function listOf(labels: string[]): string {
     const xs = labels.map((x, i) =>
@@ -96,6 +97,7 @@ function listOf(labels: string[]): string {
     return xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}` : (xs[0] ?? '');
 }
 
+/** "Not quite" feedback that names exactly which ticks were wrong. */
 function predictFeedback(picked: Record<string, boolean>): string {
     const missed = PREDICT.filter((p) => p.travel && !picked[p.key]).map((p) => p.label);
     const extra = PREDICT.filter((p) => !p.travel && picked[p.key]).map((p) => p.label.toLowerCase());
@@ -121,30 +123,31 @@ function PredictRun({
 }: {
     inputs: Inputs;
     revealed: boolean;
-    onRun: () => void;
+    onRun: (patch: Partial<Inputs>) => void;
 }): React.JSX.Element {
     const id = useId();
     const [guess, setGuess] = useState('');
     const [run, setRun] = useState<Run | null>(null);
     const [msg, setMsg] = useState('');
     const go = (): void => {
-        // Whole milliseconds, like every other number in the figure.
-        const g = Math.round(Number(guess));
-        if (guess.trim() === '' || !Number.isFinite(g) || g < 0) {
+        // Checked before rounding (so -0.4 is refused), then whole milliseconds like every other number in the figure.
+        const n = Number(guess);
+        if (guess.trim() === '' || !Number.isFinite(n) || n < 0) {
             setRun(null);
             setMsg('Type your guess in milliseconds first.');
             return;
         }
-        const r = summarize({ ...inputs, visit: 'warm' });
-        setRun({ guess: g, totalMs: r.totalMs, rttMs: inputs.rttMs, serverMs: r.serverMs });
+        const g = Math.round(n);
+        const r = predictAt(inputs);
+        setRun({ guess: g, totalMs: r.totalMs, rttMs: PREDICT_RTT_MS, serverMs: r.serverMs });
         setMsg('');
-        onRun();
+        onRun({ visit: 'warm', rttMs: PREDICT_RTT_MS });
     };
     let result = msg;
     if (run) {
         const off = Math.abs(run.guess - run.totalMs);
         result =
-            `You guessed ${run.guess} ms. With a ${run.rttMs} ms round trip and ${run.serverMs} ms server time, the model gives ${run.totalMs} ms` +
+            `You guessed ${run.guess} ms. With a round trip of ${run.rttMs} ms and ${run.serverMs} ms server time, the model gives ${run.totalMs} ms` +
             (revealed ? `: one round trip plus the server's work` : '') +
             `; DNS, TCP and TLS are skipped. ${off === 0 ? 'Exactly right.' : `Off by ${off} ms.`}`;
     }
@@ -152,8 +155,9 @@ function PredictRun({
         <fieldset className="ln-predict">
             <legend>Predict, then run</legend>
             <p className="m-0 mb-2">
-                With the values set above, how long will a repeat visit on a still-open connection take to its
-                first byte? Commit to a number, then run it.
+                Suppose the round trip were {PREDICT_RTT_MS} ms, with the server time set above. How long
+                would a repeat visit on a still-open connection take to its first byte? Commit to a number,
+                then run it: the figure switches to that visit and round trip.
             </p>
             <form
                 className="ln-guess"
@@ -450,7 +454,7 @@ export default function JourneyStepper(): React.JSX.Element {
                             />
                         </fieldset>
                     </div>
-                    <PredictRun inputs={inputs} revealed={revealed} onRun={() => set({ visit: 'warm' })} />
+                    <PredictRun inputs={inputs} revealed={revealed} onRun={set} />
                 </div>
 
                 <div>
