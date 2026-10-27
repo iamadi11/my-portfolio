@@ -5,6 +5,7 @@ import React, { useId, useMemo, useState } from 'react';
 import {
     DEFAULTS,
     formatShare,
+    predictAt,
     PREDICT_RTT_MS,
     RANGES,
     summarize,
@@ -137,11 +138,10 @@ function PredictRun({
             return;
         }
         const g = Math.round(n);
-        const patch = { visit: 'warm', rttMs: PREDICT_RTT_MS } as const;
-        const r = summarize({ ...inputs, ...patch });
+        const r = predictAt(inputs);
         setRun({ guess: g, totalMs: r.totalMs, rttMs: PREDICT_RTT_MS, serverMs: r.serverMs });
         setMsg('');
-        onRun(patch);
+        onRun({ visit: 'warm', rttMs: PREDICT_RTT_MS });
     };
     let result = msg;
     if (run) {

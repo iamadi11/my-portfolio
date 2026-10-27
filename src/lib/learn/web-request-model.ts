@@ -87,6 +87,11 @@ export function summarize(input: Inputs): Summary {
     return { steps: s, totalMs, networkMs, serverMs, networkShare: totalMs > 0 ? networkMs / totalMs : null };
 }
 
+/** What "Predict, then run" asks about: a repeat visit at PREDICT_RTT_MS, with the learner's other values. */
+export function predictAt(input: Inputs): Summary {
+    return summarize({ ...input, visit: 'warm', rttMs: PREDICT_RTT_MS });
+}
+
 /** Percentages to one decimal everywhere in the chapter. */
 export function formatShare(share: number | null): string {
     return share === null ? 'no network used' : `${(share * 100).toFixed(1)}%`;

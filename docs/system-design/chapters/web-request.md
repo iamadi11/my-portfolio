@@ -349,8 +349,9 @@ Visual spec (the 14-step process):
 
    **Predict, then run** (after the controls): "Suppose the round trip were 80 ms, with the server time set
    above. How long would a repeat visit on a still-open connection take to its first byte? Commit to a number, then
-   run it." The 80 ms (`PREDICT_RTT_MS`) differs from the default 40 ms, so the answer (130 ms at the defaults) is
-   not already on screen, and it differs from the worked example's repeat visit (90 ms); a test checks both. The
+   run it: the figure switches to that visit and round trip." The 80 ms (`PREDICT_RTT_MS`) differs from the default 40 ms, so the answer (130 ms at the defaults) is
+   not already on screen, and it differs from the worked example's repeat visit (90 ms); a test checks the answer (`predictAt`, which the component also calls) is
+   not among the numbers the figure can show at the defaults. The
    learner types a guess in milliseconds (negative or empty refused, then rounded to whole ms; Enter submits);
    "Run the repeat visit" switches the figure to the repeat visit at 80 ms and shows the guess next to the model's
    value (`summarize` at the values used, named in the result) and the difference. The result is a snapshot, so it
@@ -703,59 +704,58 @@ websites were unreachable from the authoring container.
   changed 2026-07-07, unchanged at the repo's head; metadata: number 9846, submissiontype IETF, obsoletes 8446). Search
   results say RFC 9846 was announced on 2026-07-11, but the published RFC (rfc-editor.org, datatracker, ietf.org,
   ftp.nic.ad.jp mirror) could not be reached to compare. Check against it when reachable.
+- No real screen reader was used (none is available in this container). Announcements were checked only as
+  DOM/ARIA (live regions, `role="status"`) by the browser suite and the reviewers. This is not a required check in
+  verification.md; it is recorded here so it is not mistaken for one that ran.
 
 ## Evidence
 
+Final evidence, on the code at the end of the closing review (commit after f441d44), 2026-10-27:
+
 - typecheck: pass — npx tsc --noEmit (2026-10-27)
-- lint: pass — npm run lint, no warnings or errors (2026-10-27)
-- model tests: pass — npm test, 95 tests, re-run after the final-review fixes (92 model incl. 81 grid cases over slider-reachable values, 3 curriculum
-  reader); deliberate model mutations each caught (2026-10-27)
+- lint: pass — npm run lint, no warnings or errors; prettier --check clean (2026-10-27)
+- model tests: pass — npm test, 96 tests (93 model incl. 81 grid cases over slider-reachable values and the
+  predict-then-run leak test, 3 curriculum reader); deliberate mutations caught, incl. PREDICT_RTT_MS set back to
+  40 ms failing the leak test (2026-10-27)
 - build and JS budget: pass — next build: /learn 107 kB and /learn/web-request 111 kB first-load JS (budget 120 kB);
   / 110 kB, unchanged from main (no homepage file differs from main). Browser, script bodies fetched before the load
   event: /learn 106.5 KB, /learn/web-request 111.0 KB, / 112.9 KB gzip; ~10 KB more after idle is `next/link`
-  prefetch (2026-10-27, after the final-review fixes)
-- browser sizes: pass — Playwright at 375×812, 402×874, 768×1024, 1280×800, 1440×900, 1920×1080 on both routes: no
-  horizontal scroll, no console errors; screenshots read at 375 and 1280 (2026-10-27)
+  prefetch (2026-10-27)
+- browser sizes: pass — Playwright at 375×812, 402×874, 768×1024, 1280×800, 1440×900, 1920×1080 on /learn and
+  /learn/web-request: no horizontal scroll, no console errors; screenshots read at 375 and 1280 (2026-10-27)
 - keyboard: pass — Playwright keyboard-only: visit radios (arrows), sliders (Home/End/arrows; 25 ms reachable),
-  step buttons and Next/Previous (Enter/Space; focus kept at the ends), prediction and Skip, answers (Enter);
-  visible 2 px focus (2026-10-27)
+  step buttons and Next/Previous (Enter/Space; focus kept at the ends), recall Check and Skip, guess box (Enter
+  submits; focus stays on Run), answers (Enter); visible 2 px focus (2026-10-27)
 - reduced motion: pass — Playwright reducedMotion: all six steps listed, bar transition 0s, readout and assumptions
   shown (2026-10-27)
 - accessibility scan: pass — axe-core 4.10.3, WCAG 2.0/2.1/2.2 A and AA, both routes at 375 and 1280 px with
   answers open: 0 violations; 6 SVG label nodes left for manual contrast review, checked by hand (ink and ink-2 on
   fill-2, above 4.5:1); live regions for summary and step text; sliders have aria-valuetext (2026-10-27)
-- lighthouse: pass — Lighthouse 13.4.1 on the build with the final-review fixes: /learn/web-request 99 mobile, 100
-  desktop (re-run after the last round: same); /learn 99 mobile, 100 desktop; / 95 mobile, 100 desktop; accessibility, best practices and SEO 100 on
-  all three; CLS 0. An earlier build's first mobile run of /learn scored 91 (TBT 330 ms), then 98 and 99
-  (2026-10-27)
-- browser suite: pass — 65/65 checks on the build with the last round's fixes (adds: Enter submits the guess, a
-  fractional guess is rounded, the prompt points above) (sizes, console, axe, keyboard,
-  recall gating incl. the announced summary, "Not quite" naming the wrong ticks, focus kept on Skip/Next/Previous,
-  step announcer emptied on input change and on reveal, predict-then-run (empty guess refused, guess shown next to
-  the model's 90 ms, figure switched to the repeat visit), "connection reused" on DNS/TCP/TLS, reduced motion, /
-  still renders) (2026-10-27)
+- lighthouse: pass — Lighthouse 13.4.1, /learn/web-request on the final build: 99 and 99 mobile, 100 desktop;
+  accessibility, best practices and SEO 100; CLS 0. On the f441d44 build, three mobile runs scored 90, 100 and 97
+  (TBT 410, 50, 180 ms; same JS), recorded as run-to-run variance. /learn 99 / 100 and / 95 / 100 on the earlier
+  final-review build (those routes' code unchanged since) (2026-10-27)
+- browser suite: pass — 69/69 checks on the final build: sizes, console, axe, keyboard, recall gating incl. the
+  announced summary, "Not quite" naming the wrong ticks, focus kept on Skip/Next/Previous, step announcer emptied
+  on input change and on reveal, predict-then-run (130 ms absent before Run; empty and -0.4 refused; guess shown
+  next to the model's 130 ms at 80 ms; figure switched to the repeat visit at 80 ms; 134.6 rounded; snapshot kept
+  when a slider moves; editing the guess clears it), "connection reused" on DNS/TCP/TLS, reduced motion, / still
+  renders (2026-10-27)
 - spec review: pass — two fresh-subagent reviews against verification.md (2026-10-27); every finding fixed and
-  recorded below; the second round's fixes were checked by the author, not by a third review
+  recorded below
 
 ## Review findings
 
 Reviewer: fresh subagent (spec review, Product: none), 2026-10-27, rubric verification.md + chapter-workflow.md
 
-- [blocking] Q6 taught TCP = `connectEnd − connectStart`, which includes TLS on https (navtiming-2 connectEnd text)
-  → fixed (Q6 split via `secureConnectionStart`; conflict recorded on mdn-prt; Q5 tests it)
-- [blocking] Visual `extraHosts` was added to the HTML's first byte, though subresources start after parsing, and
-  contradicted the fresh-cache test → fixed (removed from the model; per-hostname cost taught in Q4; step 6 says
-  why)
+- [blocking] Q6 taught TCP = `connectEnd − connectStart`, which includes TLS on https (navtiming-2 connectEnd text) → fixed (Q6 split via `secureConnectionStart`; conflict recorded on mdn-prt; Q5 tests it)
+- [blocking] Visual `extraHosts` was added to the HTML's first byte, though subresources start after parsing, and contradicted the fresh-cache test → fixed (removed from the model; per-hostname cost taught in Q4; step 6 says why)
 - [should-fix] rfc9846 "§4.2.8" did not exist in RFC 9846 → fixed (§2.1, §4.2.4, §4.3.8)
 - [should-fix] Status code cited to rfc9110 §3.3 → fixed (§3.4, §15)
-- [should-fix] "Bandwidth does not shorten a round trip" was uncited and unflagged → fixed (marked derived from
-  mdn-rtt; transmission-time simplification flagged → latency-throughput)
-- [should-fix] Visual prediction asked about bandwidth, which the model lacks → fixed (prompt now asks travel vs
-  server work; the no-transmission-time assumption is stated)
-- [should-fix] TCP "one round trip" rested on MDN while mdn-http-overview says "several" → fixed (labelled derived;
-  conflict recorded)
-- [should-fix] Q4 "connections are per server" uncited and conflated hostname with server → fixed (reworded;
-  sharing deferred to http-versions)
+- [should-fix] "Bandwidth does not shorten a round trip" was uncited and unflagged → fixed (marked derived from mdn-rtt; transmission-time simplification flagged → latency-throughput)
+- [should-fix] Visual prediction asked about bandwidth, which the model lacks → fixed (prompt now asks travel vs server work; the no-transmission-time assumption is stated)
+- [should-fix] TCP "one round trip" rested on MDN while mdn-http-overview says "several" → fixed (labelled derived; conflict recorded)
+- [should-fix] Q4 "connections are per server" uncited and conflated hostname with server → fixed (reworded; sharing deferred to http-versions)
 - [should-fix] Objective 4 not assessed → fixed (new Q5 reads a timing entry)
 - [note] Q6 named document-event timestamps nothing used → fixed (dropped)
 - [note] "Round trips made up three quarters" counted DNS as a round trip → fixed ("network waiting")
@@ -763,8 +763,7 @@ Reviewer: fresh subagent (spec review, Product: none), 2026-10-27, rubric verifi
 - [note] User agent cited to §3.3 → fixed (§3.5)
 - [note] "In order" uncited → fixed (rfc9846 §1)
 - [note] "HTTPS is HTTP over TLS" cite → fixed (rfc9110 §4.2.2, rfc9846 §1)
-- [note] Undefined jargon (hostname, time to first byte, render tree, preload scanner, ClientHello, persistent
-  connections, 0-RTT) → fixed (defined at first use; glossary rule for hostname)
+- [note] Undefined jargon (hostname, time to first byte, render tree, preload scanner, ClientHello, persistent connections, 0-RTT) → fixed (defined at first use; glossary rule for hostname)
 - [note] Q8 omitted the DNS control → fixed
 - [note] Q10 lacked trade-offs for connection reuse and a faster server → fixed
 - [note] Distractor feedback didn't say wrong/right or point back → fixed (every question)
@@ -773,11 +772,8 @@ Reviewer: fresh subagent (spec review, Product: none), 2026-10-27, rubric verifi
 
 Reviewer: second fresh subagent (re-review of the fixes above), 2026-10-27
 
-- [should-fix] Q6 quoted Navigation Timing's obsolete Level 1 `connectEnd` text as if it defined the current
-  attribute → fixed (now cites the Fetch standard's current definition, read; Resource Timing record added;
-  navtiming-2 note says the old text is not relied on)
-- [note] "a reused connection pays it once" cited rfc9846 §2, which says nothing about reuse → fixed (mdn-http-overview
-  plus derived)
+- [should-fix] Q6 quoted Navigation Timing's obsolete Level 1 `connectEnd` text as if it defined the current attribute → fixed (now cites the Fetch standard's current definition, read; Resource Timing record added; navtiming-2 note says the old text is not relied on)
+- [note] "a reused connection pays it once" cited rfc9846 §2, which says nothing about reuse → fixed (mdn-http-overview plus derived)
 - [note] Response-wait breakdown attributed to mdn-prt → fixed (labelled derived from step 5)
 - [note] Q4 "connection opened to a server address" uncited → fixed (labelled derived from steps 2–3)
 - [note] TCP Fast Open and 0-RTT used before definition → fixed (defined where first used, in step 7's caveat)
@@ -786,127 +782,78 @@ Reviewer: second fresh subagent (re-review of the fixes above), 2026-10-27
 Audit: author (owner-requested chapter review), 2026-10-27, against verification.md and the source files
 
 - [should-fix] "IP address" and "port" used without definition → fixed (Parts you'll meet)
-- [should-fix] "most early steps … each costs at least one round trip" read as true of every stack → fixed
-  (scoped to this chapter's model; optimisations deferred)
+- [should-fix] "most early steps … each costs at least one round trip" read as true of every stack → fixed (scoped to this chapter's model; optimisations deferred)
 - [should-fix] "a first visit asks name servers" stated as universal → fixed (flagged; caches → `dns`)
 - [should-fix] Repeat visit assumed the connection is always still open → fixed ("if … still open")
-- [should-fix] Trade-off claims (server state for open connections, cost of moving closer) were uncited → fixed
-  (Q10–12 marked as derived judgement, sourced in the linked chapters)
+- [should-fix] Trade-off claims (server state for open connections, cost of moving closer) were uncited → fixed (Q10–12 marked as derived judgement, sourced in the linked chapters)
 - [note] Preload scanner presented as universal → fixed ("browsers can use")
 - [note] Stepper has 6 frames but the model times 4 → fixed (frames 1 and 6 carry no time)
-- [note] RFC 9846 author line → fixed (E. Rescorla, from the file's metadata); RFC 9110/9111 dates and authors
-  checked against the XML front matter
-- [note] Added a verified fact: a reused connection shows 0 ms DNS/TCP/TLS in timing entries (Fetch, clamp and
-  coarsen connection timing info)
+- [note] RFC 9846 author line → fixed (E. Rescorla, from the file's metadata); RFC 9110/9111 dates and authors checked against the XML front matter
+- [note] Added a verified fact: a reused connection shows 0 ms DNS/TCP/TLS in timing entries (Fetch, clamp and coarsen connection timing info) → fixed (added to the chapter)
 
 Reviewer: fresh subagent (implementation review: code, browser at 375/1280 px, sources), 2026-10-27, rubric
 verification.md
 
-- [should-fix] The prediction gave its answer away (prompt named the "work" item; travel/work labels and the bar
-  legend were visible before committing) → fixed (neutral prompt; labels, split and legend appear after Check or
-  Skip; spec Visual step 8 updated)
-- [should-fix] Next/Previous became `disabled` while focused, dropping keyboard focus to the page → fixed
-  (`aria-disabled`, focus stays; browser check added)
-- [should-fix] TLS frame said the server sends "its keys" → fixed ("key-exchange parameters … both sides then work
-  out the same keys", as rfc9846 §2)
-- [should-fix] The exercise's 25 ms server time was unreachable (slider step 10) → fixed (step 5; test that every
-  value the chapter asks for is reachable)
-- [should-fix] The page's Sources note claimed more than the spec records (read in full; section numbers checked)
-  → fixed (cited parts read in the source repos; RFC section numbers not yet checked against the published RFCs)
-- [should-fix] Moving between steps was silent for screen readers → fixed (step title and text are a polite live
-  region)
-- [note] `<output>` plus the live summary double-announced slider changes; sliders had no unit → fixed (visible
-  value is aria-hidden; `aria-valuetext` "40 milliseconds")
-- [note] "Linked files are requested only once the browser reaches them" read against the preload scanner → fixed
-  (page and step 6: the browser finds them by reading the HTML, so they come after the first byte)
-- [note] Course index said "every claim cites a source" though design judgements are uncited → fixed ("factual
-  claims cite a source … design judgements are labelled")
-- [note] Test names and coverage (misnamed bandwidth test, NaN only on the total, grid mid values off the slider
-  steps) → fixed
-- [note] Drawing has no separate "done" state as spec step 10 said → accepted: the spec now describes the drawing
-  as built; the step list carries current and skipped states for every step
+- [should-fix] The prediction gave its answer away (prompt named the "work" item; travel/work labels and the bar legend were visible before committing) → fixed (neutral prompt; labels, split and legend appear after Check or Skip; spec Visual step 8 updated)
+- [should-fix] Next/Previous became `disabled` while focused, dropping keyboard focus to the page → fixed (`aria-disabled`, focus stays; browser check added)
+- [should-fix] TLS frame said the server sends "its keys" → fixed ("key-exchange parameters … both sides then work out the same keys", as rfc9846 §2)
+- [should-fix] The exercise's 25 ms server time was unreachable (slider step 10) → fixed (step 5; test that every value the chapter asks for is reachable)
+- [should-fix] The page's Sources note claimed more than the spec records (read in full; section numbers checked) → fixed (cited parts read in the source repos; RFC section numbers not yet checked against the published RFCs)
+- [should-fix] Moving between steps was silent for screen readers → fixed (step title and text are a polite live region)
+- [note] `<output>` plus the live summary double-announced slider changes; sliders had no unit → fixed (visible value is aria-hidden; `aria-valuetext` "40 milliseconds")
+- [note] "Linked files are requested only once the browser reaches them" read against the preload scanner → fixed (page and step 6: the browser finds them by reading the HTML, so they come after the first byte)
+- [note] Course index said "every claim cites a source" though design judgements are uncited → fixed ("factual claims cite a source … design judgements are labelled")
+- [note] Test names and coverage (misnamed bandwidth test, NaN only on the total, grid mid values off the slider steps) → fixed
+- [note] Drawing has no separate "done" state as spec step 10 said → accepted: the spec now describes the drawing as built; the step list carries current and skipped states for every step
 - [note] Citation numbers did not follow first appearance → fixed (sources ordered by first citation; checked)
 - [note] `tsconfig.json` rewritten by the build → fixed before commit (reverted; not in any commit)
-- [note] Reviewer measured ~116 kB gzip of scripts per route vs `next build`'s 107/110 kB → checked, no change:
-  measured in the browser, scripts at page load are 106.0 KB gzip (/learn) and 109.5 KB (/learn/web-request); the
-  further ~10 KB after idle is `next/link` prefetching the linked routes (/, /learn, not-found), not first-load JS.
-  The budget (CLAUDE.md §10.4) is first-load JS, under 120 kB on both routes
+- [note] Reviewer measured ~116 kB gzip of scripts per route vs `next build`'s 107/110 kB → accepted: checked, no change: measured in the browser, scripts at page load are 106.0 KB gzip (/learn) and 109.5 KB (/learn/web-request); the further ~10 KB after idle is `next/link` prefetching the linked routes (/, /learn, not-found), not first-load JS. The budget (CLAUDE.md §10.4) is first-load JS, under 120 kB on both routes
 
 Reviewer: second fresh subagent (re-review of the implementation fixes), 2026-10-27
 
-- [should-fix] Prediction still leaked the split: the ladder always showed separate Request/Server rows and the
-  screen-reader summary announced "75.0% network" on load → fixed (one Request row and no share, visible or
-  announced, until Check or Skip; browser check added)
-- [should-fix] "Skip, show the labels" removed itself, dropping keyboard focus → fixed (stays, aria-disabled; check
-  added)
+- [should-fix] Prediction still leaked the split: the ladder always showed separate Request/Server rows and the screen-reader summary announced "75.0% network" on load → fixed (one Request row and no share, visible or announced, until Check or Skip; browser check added)
+- [should-fix] "Skip, show the labels" removed itself, dropping keyboard focus → fixed (stays, aria-disabled; check added)
 - [should-fix] Skipped-step text lower-cased "GET" ("gET / goes out") → fixed (text no longer re-cased; check added)
 - [note] /learn meta description and a code comment still said "every claim sourced" → fixed
-- [note] Screen-reader summary's "Request" (90 ms) differed from the ladder's "Request (travel)" (40 ms) → fixed
-  (summary uses the ladder's names and numbers)
-- [note] A visit change fired both live regions at once → fixed (the step announcer speaks only on step changes;
-  check added)
-- [note] TLS frame said both sides work out keys "then" → fixed ("each side works out the same keys from the
-  exchanged parameters")
+- [note] Screen-reader summary's "Request" (90 ms) differed from the ladder's "Request (travel)" (40 ms) → fixed (summary uses the ladder's names and numbers)
+- [note] A visit change fired both live regions at once → fixed (the step announcer speaks only on step changes; check added)
+- [note] TLS frame said both sides work out keys "then" → fixed ("each side works out the same keys from the exchanged parameters")
 - [note] Spec Visual step 9 skipped labels drifted from the code → fixed (spec)
-- [note] Accepted items and the bundle check held (reviewer: ~112 / ~108 KB gzip of module scripts, under 120 kB)
+- [note] Accepted items and the bundle check held (reviewer: ~112 / ~108 KB gzip of module scripts, under 120 kB) → accepted: nothing to change
 
 Reviewer: third fresh subagent (re-review of the second-round fixes), 2026-10-27
 
-- [should-fix] The "prediction" could be answered from the page: the paragraph just above the figure states the
-  count, and option and slider names point to the answer → fixed by re-scoping, not hiding: it is a recall prompt
-  placed after the explanation (legend "Recall first"; spec step 8 says so), which is the retrieval practice the
-  course intends; the gating of labels and split stays
-- [should-fix] The hidden step announcer kept stale text after a visit change and could contradict the visible
-  step → fixed (emptied on every input change; browser check)
-- [note] Announced step text lacked step 5's travel/work detail → fixed (one function builds visible and announced
-  text)
+- [should-fix] The "prediction" could be answered from the page: the paragraph just above the figure states the count, and option and slider names point to the answer → fixed by re-scoping, not hiding: it is a recall prompt placed after the explanation (legend "Recall first"; spec step 8 says so), which is the retrieval practice the course intends; the gating of labels and split stays
+- [should-fix] The hidden step announcer kept stale text after a visit change and could contradict the visible step → fixed (emptied on every input change; browser check)
+- [note] Announced step text lacked step 5's travel/work detail → fixed (one function builds visible and announced text)
 - [note] Fresh cached copy read "Time to first byte: 0 ms" → fixed ("no request is sent")
-- [note] Check updates two polite regions at once (status feedback and the summary's revealed split) → accepted:
-  one explicit action, two short related messages; the status feedback is the one the learner asked for
-- [note] Each slider step re-announces the summary → accepted: allowed by spec step 11 (updates on input change),
-  and slider value text is not repeated in it
+- [note] Check updates two polite regions at once (status feedback and the summary's revealed split) → accepted: one explicit action, two short related messages; the status feedback is the one the learner asked for
+- [note] Each slider step re-announces the summary → accepted: allowed by spec step 11 (updates on input change), and slider value text is not repeated in it
 
 Reviewer: fresh subagent (final review of the implementation at e39603b: code, running build, sources), 2026-10-27,
 rubric verification.md
 
-- [should-fix] Q4 said a connection is "opened to an address"; Fetch reuses connections per origin → fixed (Q3 now:
-  reused only for the same origin [fetch: obtain a connection], origin = scheme, host, port [rfc9110 §4.3.1, checked
-  in the published text])
-- [should-fix] Q2's feedback said the timing entry "separates server time inside `responseStart − requestStart`",
-  but that interval mixes one round trip with server work → fixed (Q4 now compares it with a handshake's round
-  trip; spec and page)
-- [should-fix] No real predict-then-run: the figure never asked for a number before showing the model's → fixed
-  ("Predict, then run" panel: a typed guess for the repeat visit, shown next to the model's value and the
-  difference; spec Visual step 8; browser checks); the exercise now says exactly what to set in Fig. 1
+- [should-fix] Q4 said a connection is "opened to an address"; Fetch reuses connections per origin → fixed (Q3 now: reused only for the same origin [fetch: obtain a connection], origin = scheme, host, port [rfc9110 §4.3.1, checked in the published text])
+- [should-fix] Q2's feedback said the timing entry "separates server time inside `responseStart − requestStart`", but that interval mixes one round trip with server work → fixed (Q4 now compares it with a handshake's round trip; spec and page)
+- [should-fix] No real predict-then-run: the figure never asked for a number before showing the model's → fixed ("Predict, then run" panel: a typed guess for the repeat visit, shown next to the model's value and the difference; spec Visual step 8; browser checks); the exercise now says exactly what to set in Fig. 1
 - [should-fix] "Fresh" used but never defined → fixed (defined under Cache, rfc9111 §1)
-- [note] Repeat-visit DNS skip reason "hostname cached" was wrong for a reused connection, which needs no lookup →
-  fixed (model, tests and figure say "connection reused"; Fetch resolves only for a new connection)
+- [note] Repeat-visit DNS skip reason "hostname cached" was wrong for a reused connection, which needs no lookup → fixed (model, tests and figure say "connection reused"; Fetch resolves only for a new connection)
 - [note] "On the web, TCP provides it" ignored HTTP/3 → fixed (scoped to this chapter; HTTP/3 over QUIC deferred)
-- [note] Retrieval questions sat together at the end, though the spec places each after its section → fixed (Q1–3
-  after the journey and Fig. 1, Q4–5 after the worked example; renumbered in page order; spaced-review references
-  updated)
-- [note] "Not quite" feedback did not say which ticks were wrong, and put "The request's round trip" mid-sentence →
-  fixed (names missed and wrong items; label "Request round trip")
+- [note] Retrieval questions sat together at the end, though the spec places each after its section → fixed (Q1–3 after the journey and Fig. 1, Q4–5 after the worked example; renumbered in page order; spaced-review references updated)
+- [note] "Not quite" feedback did not say which ticks were wrong, and put "The request's round trip" mid-sentence → fixed (names missed and wrong items; label "Request round trip")
 - [note] Step announcer could keep step 5's text from before the reveal → fixed (emptied on reveal; check)
-- [note] RFC 9846 "July 2026" read as a verified publication date → fixed (title says it is the date in the WG's
-  final source)
+- [note] RFC 9846 "July 2026" read as a verified publication date → fixed (title says it is the date in the WG's final source)
 
 Reviewer: fresh subagent (review of the final-review fixes at 209d1db: code, running build, sources), 2026-10-27,
 rubric verification.md. No blocking findings.
 
 - [should-fix] Predict panel said "the values set below" though the sliders are above it → fixed ("above"; spec)
-- [should-fix] A fractional guess printed raw floating point ("Off by 4.876543210999998 ms") → fixed (guess rounded
-  to whole ms; input step 1; check)
+- [should-fix] A fractional guess printed raw floating point ("Off by 4.876543210999998 ms") → fixed (guess rounded to whole ms; input step 1; check)
 - [note] Enter in the guess box did nothing → fixed (input and button are a form; Enter submits; check)
-- [note] "Not quite" list had no "and" and a capital mid-sentence → fixed (joined with "and", lower-cased after the
-  first; check)
+- [note] "Not quite" list had no "and" and a capital mid-sentence → fixed (joined with "and", lower-cased after the first; check)
 - [note] Q3 had no "Revisit" pointer → fixed (links to the journey, step 2)
-- [note] The numeric prediction can be bypassed by choosing the repeat visit by hand, and at 1280 px the ladder is
-  beside the panel → accepted: the default first visit (200 ms) gives nothing away, at 375 px the ladder is below
-  the panel, and the figure is exploratory; the recall prompt and the exercise are the gated parts. (Corrected by
-  the next review: the "gives nothing away" reason was false, see below.)
-- [note] Run updates two polite regions (status and summary) → accepted: same pattern accepted for Check; one
-  explicit action, both messages agree
+- [note] The numeric prediction can be bypassed by choosing the repeat visit by hand, and at 1280 px the ladder is beside the panel → accepted: the default first visit (200 ms) gives nothing away, at 375 px the ladder is below the panel, and the figure is exploratory; the recall prompt and the exercise are the gated parts. (Corrected by the next review: the "gives nothing away" reason was false, see below.)
+- [note] Run updates two polite regions (status and summary) → accepted: same pattern accepted for Check; one explicit action, both messages agree
 - Verified OK by the reviewer: per-origin reuse (fetch.bs obtain a connection; rfc9110 §4.3.1 published text),
   DNS skipped on a reused connection (Fetch resolves only after the pool check), "fresh" (rfc9111 §1 published
   text), RFC 9846 §1, §2, §2.1, §4.2.4, §4.3.8 recomputed from the WG source's heading tree, every quoted number
@@ -917,13 +864,8 @@ rubric verification.md. No blocking findings.
 Reviewer: fresh subagent (final review of the merged and deployed tree 75b2b6c, production build of that tree;
 the deployed URL was not reachable), 2026-10-27, rubric verification.md. No blocking findings.
 
-- [should-fix] The recorded reason for accepting the predict-then-run bypass was false: at the defaults the ladder
-  already shows Request 90 ms, which is the repeat-visit answer the panel asked for → fixed (the panel now asks
-  about an 80 ms round trip, answer 130 ms at the defaults, shown nowhere before Run; Run switches the figure to
-  that visit and round trip; model test that the asked value is not among the numbers shown at the defaults; the
-  earlier note is corrected)
-- [note] Fetch's clamp step 2, read literally, sets secure connection start from connection end → recorded under
-  Open questions (looks like a spec slip; the page's split is labelled derived and matches MDN)
+- [should-fix] The recorded reason for accepting the predict-then-run bypass was false: at the defaults the ladder already shows Request 90 ms, which is the repeat-visit answer the panel asked for → fixed (the panel now asks about an 80 ms round trip, answer 130 ms at the defaults, shown nowhere before Run; Run switches the figure to that visit and round trip; model test that the asked value is not among the numbers shown at the defaults; the earlier note is corrected)
+- [note] Fetch's clamp step 2, read literally, sets secure connection start from connection end → fixed (recorded under Open questions; looks like a spec slip; the page's split is labelled derived and matches MDN)
 - [note] "-0.4" was accepted as a 0 ms guess while "-3" was refused → fixed (sign checked before rounding)
 - [note] The panel and the worked example's "Your turn" asked the same question (90 ms) → fixed by the 80 ms change
 - [note] Two stacked doc comments in JourneyStepper → fixed
@@ -935,4 +877,16 @@ the deployed URL was not reachable), 2026-10-27, rubric verification.md. No bloc
   horizontal scroll at all six sizes on /learn, /learn/web-request and /; axe 0 violations; reduced motion;
   `.vercelignore` uploads only CURRICULUM.md from docs. Not checked: published RFC 9846 (all hosts refused),
   a real screen reader, Lighthouse, the deployed URL
+
+Reviewer: fresh subagent (review of the predict-then-run fix, 7ebbf34..f441d44, on a build of that code),
+2026-10-27, rubric verification.md. No blocking or should-fix findings.
+
+- [note] The leak test guarded the constant, not the component's call, and its list of shown numbers was loose → fixed (`predictAt` in the model, called by the component and tested; the list now holds the slider values, each step, the total and the revealed split; mutation to 40 ms fails it)
+- [note] A learner who moves the sliders first (e.g. round trip 80 on a first visit) can make the answer visible → accepted: it needs deliberate exploration first; at the defaults nothing on screen gives it away (tested)
+- [note] The spec quoted the prompt without its last clause → fixed
+- [note] Evidence still described the previous round (65/65, 90 ms) → fixed (Evidence rewritten for the final code)
+- Verified OK by the reviewer: 130 absent before Run at 375 and 1280; Run, snapshot, clearing, rounding, refusals;
+  every panel number from the model; keyboard, status announcement, no horizontal scroll, axe 0 violations;
+  "(after any redirects)" and the clamp open question faithful to fetch.bs; npm test, tsc. Not checked: a real
+  screen reader, Lighthouse, other sizes, the deployed URL
 

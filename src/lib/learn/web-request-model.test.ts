@@ -3,12 +3,13 @@ import { describe, expect, it } from 'vitest';
 import {
     DEFAULTS,
     formatShare,
+    predictAt,
+    PREDICT_RTT_MS,
     RANGES,
     steps,
     summarize,
     type Inputs,
     type VisitType,
-    PREDICT_RTT_MS,
 } from './web-request-model';
 
 const at = (visit: VisitType, over: Partial<Inputs> = {}): Inputs => ({ ...DEFAULTS, visit, ...over });
@@ -78,12 +79,30 @@ describe('model rules (spec "Visual" step 5)', () => {
     });
 
     it('the predict-then-run answer (repeat visit at 80 ms) is not already shown at the defaults', () => {
-        const asked = summarize({ ...DEFAULTS, visit: 'warm', rttMs: PREDICT_RTT_MS }).totalMs;
-        expect(asked).toBe(130);
-        // Numbers the figure shows before any input: each step, the first-visit total and its parts.
+        const asked = predictAt(DEFAULTS);
+        expect(asked.totalMs).toBe(130);
+        expect(asked.steps.map((x) => x.skipped)).toEqual([
+            'connection reused',
+            'connection reused',
+            'connection reused',
+            null,
+        ]);
+        // Every number the figure can show at the defaults before Run: slider values, each step, the total, and
+        // after a reveal the request's travel/work split, network waiting and server work.
         const shown = summarize(DEFAULTS);
-        const visible = [...shown.steps.map((x) => x.networkMs + x.serverMs), shown.totalMs, shown.networkMs];
-        expect(visible).not.toContain(asked);
+        const req = shown.steps[3];
+        const visible = [
+            DEFAULTS.rttMs,
+            DEFAULTS.dnsMs,
+            DEFAULTS.serverMs,
+            ...shown.steps.map((x) => x.networkMs + x.serverMs),
+            shown.totalMs,
+            req.networkMs,
+            req.serverMs,
+            shown.networkMs,
+            shown.serverMs,
+        ];
+        expect(visible).not.toContain(asked.totalMs);
     });
 
     it('every value the chapter asks the learner to set is reachable on its slider', () => {
