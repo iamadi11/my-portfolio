@@ -258,12 +258,11 @@ Server: Apache`}</code>
                         that reads the database is one of those clients <C ids={['pg-architecture']} />.
                     </p>
                     <p>
-                        The client starts every exchange; the server answers requests and does not send
-                        responses nobody asked for (as described for HTTP/1.1; how later versions differ is
-                        taught with them) <C ids={['rfc9110']} at="§3.4" /> <C ids={['mdn-http-overview']} />.
-                        Ways for a server to send news without being asked each time exist, as extra
-                        mechanisms on top <C ids={['mdn-sse', 'mdn-websockets']} /> (chapter &ldquo;Pushing to
-                        clients&rdquo;, later).
+                        The client starts every exchange, and the server answers requests{' '}
+                        <C ids={['rfc9110']} at="§3.4" />; the server does not start one of its own{' '}
+                        <C ids={['mdn-http-overview']} />. Ways for a server to send news without being asked
+                        each time exist, as extra mechanisms on top <C ids={['mdn-sse', 'mdn-websockets']} />{' '}
+                        (chapter &ldquo;Pushing to clients&rdquo;, later).
                     </p>
                     <Q
                         n={1}

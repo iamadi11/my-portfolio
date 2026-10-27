@@ -383,8 +383,9 @@ predict-then-run):
    409). The prose after the figure ("Making a repeated POST safe") explains them, in reading order after the
    prediction. Default controls are `GET` with nothing going wrong, and outcomes appear only after Run.
 9. **Signaling:** the current event's arrow is heavy; a lost message ends in a cross; in the late case the
-   server's lane shows it still working, the client's lane shows where it gave up, and the late response is drawn
-   last, below any retry ("first request finishes, late"), in the same order as the event list. The state panel shows before → after.
+   server side shows a dashed "still busy" line from the first request's start to its late reply (heavy on the
+   "starts" step), the client's lane shows where it gave up, and the late response is drawn last, below any retry
+   ("first finishes, late"), in the same order as the event list. Centred labels stay between the lanes (tested). The state panel shows before → after.
 10. **States:** delivered = solid arrow; lost = dashed arrow ending in a cross; late = solid arrow drawn at
     the bottom, after any retry, labelled "nobody is waiting for it"; every state also in text. Never colour alone.
 11. **Text alternative:** a polite live summary updated when a case is run (e.g. "POST with key, response lost,
@@ -661,7 +662,7 @@ Final evidence, on the code after the implementation review's fixes, 2026-10-27:
   listed and results shown after Run (2026-10-27)
 - accessibility scan: pass — axe-core 4.10.3, WCAG 2.0/2.1/2.2 A and AA at 375 and 1280 px, on load with answers
   open and after reveal and a run: 0 violations (2026-10-27)
-- browser suite: pass — 47/47 checks for /learn/client-server (sizes, console, axe, leak checks, incomplete /
+- browser suite: pass — 48/48 checks for /learn/client-server (incl. a label-geometry check in every late case) (sizes, console, axe, leak checks, incomplete /
   right / wrong feedback with per-option reasons, keyboard, live summary and step announcements, stale-result
   clearing, cases A–C, late case drawn and listed in time order, citation links and numbering, reduced motion,
   /learn and chapter 1 link to chapter 2, sitemap, / renders); chapter 1 regression suite 69/69 (2026-10-27)
@@ -689,3 +690,12 @@ Reviewer: fresh subagent (implementation review of dceb551..af07b7c, production 
 - [note] Program, Exchange, Cookie and Status code missing from the page's parts list → fixed for Exchange and Cookie; accepted for Program (defined inside "Client and server") and Status code (taught in chapter 1)
 - [note] The browser suite in Evidence is not in the repo, so it cannot be re-run from it → accepted: it needs a locally downloaded axe-core and a running build; its results are recorded here and its location in the session report; committing a runnable suite is a follow-up
 - [note] After a reveal, changing a radio shows the plain answer list until Check is pressed again → accepted: harmless
+
+Reviewer: fresh subagent (check of the fixes af07b7c..607f1d5, production build of 607f1d5), 2026-10-27, rubric verification.md. The blocking finding is confirmed fixed; no new blocking finding.
+
+- [should-fix] The tail label "first request finishes, late" crossed both lanes (bbox 43–277 vs lanes 50/270) → fixed (shortened to "first finishes, late"; "retry, first still busy"; browser check that every centred label stays within x 52–268 in all late cases)
+- [should-fix] COURSE_STATE was not updated for the unit (Next action, Open issues, log) → fixed
+- [note] The "server still working" bar was always heavy and stopped before the retry → fixed (dashed from the first request's start to its late reply; heavy only on the "starts" step)
+- [note] In POST late + retry the retry got /orders/44 before the first finished as /orders/43 → fixed ("starts creating order 43 (slowly; its number is taken now)")
+- [note] "(as described for HTTP/1.1 …)" cited RFC 9110 §3.4, which neither scopes to HTTP/1.1 nor says "never unsolicited" → fixed (qualifier dropped; "answers requests" cites §3.4, "does not start one of its own" cites MDN's overview)
+

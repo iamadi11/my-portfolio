@@ -96,7 +96,7 @@ function serve(method: Method, s: Server, originalBusy: boolean): { outcome: Out
 const START_TEXT: Record<Outcome, string> = {
     read: 'starts reading order 42 (slowly)',
     'set quantity': 'starts setting order 42 to quantity 2 (slowly)',
-    'created order': 'starts creating a new order (slowly)',
+    'created order': 'starts creating order 43 (slowly; its number is taken now)',
     replayed: '',
     conflict: '',
     'not reached': '',

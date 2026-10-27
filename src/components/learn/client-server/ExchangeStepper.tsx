@@ -282,8 +282,6 @@ function AttemptBlock({
             ) : null}
             {late ? (
                 <>
-                    {/* The server is still working: its response comes at the bottom of the drawing. */}
-                    <line x1={270} y1={y + 64} x2={270} y2={y + 92} className="thin ln-active" />
                     <line x1={30} y1={y + 100} x2={70} y2={y + 100} className="thin ln-skip" />
                     <text x={80} y={y + 104} className="sl">
                         gives up
@@ -313,6 +311,7 @@ function Diagram({ result, current }: { result: Result; current: Event | undefin
     const tailY = 44 + result.attempts.length * BLOCK;
     const H = tailY + (late ? 76 : 0);
     const lateOn = current?.attempt === 1 && current.kind === 'response-late';
+    const busyOn = current?.attempt === 1 && current.kind === 'server';
     return (
         <svg className="bp-svg ln-svg ln-seq" viewBox={`0 0 320 ${H}`} aria-hidden="true">
             <defs>
@@ -340,7 +339,7 @@ function Diagram({ result, current }: { result: Result; current: Event | undefin
                 <AttemptBlock
                     key={a.n}
                     y={44 + i * BLOCK}
-                    label={a.n === 1 ? 'first attempt' : late ? 'retry, first still running' : 'retry'}
+                    label={a.n === 1 ? 'first attempt' : late ? 'retry, first still busy' : 'retry'}
                     ev={result.events.filter((e) => e.attempt === a.n)}
                     reached={a.reached}
                     on={(k) => current?.attempt === a.n && current.kind === k}
@@ -349,8 +348,16 @@ function Diagram({ result, current }: { result: Result; current: Event | undefin
             ))}
             {late ? (
                 <>
+                    {/* The first request is still being processed from its start until its late reply, across any retry. */}
+                    <line
+                        x1={276}
+                        y1={108}
+                        x2={276}
+                        y2={tailY + 14}
+                        className={['thin', 'ln-skip', busyOn && 'ln-active'].filter(Boolean).join(' ')}
+                    />
                     <text x={160} y={tailY} textAnchor="middle" className="sl">
-                        first request finishes, late
+                        first finishes, late
                     </text>
                     <line
                         x1={266}

@@ -13,10 +13,9 @@ client-server step 8
 
 ## Next action
 
-Blocked on an owner decision: `client-server` is authored (spec complete through step 5) and step 6 (implement in
-`/learn`) waits for the owner to authorize integrating it. When authorized: implement the visual's model and tests,
-the page, browser checks, then the independent review (steps 6–8). Separately, the owner decides when to merge the
-web-request fixes made after PR #18 (production still serves 75b2b6c).
+`client-server` step 8: a fresh check of the last review round's fixes (label geometry, still-busy bar, order-43
+wording, MDN attribution). If it finds no blocking or should-fix finding, mark `client-server` verified, release it
+through a PR, then mode C picks the next chapter (`ip-and-ports`).
 
 ## Decisions
 
@@ -60,8 +59,12 @@ web-request fixes made after PR #18 (production still serves 75b2b6c).
 
 ## Open issues
 
-- `client-server` step 6 is blocked by choice of the owner: implementation in `/learn` needs their authorization
-  (2026-10-27). No independent review has run on its spec yet; the skill runs it at step 8 (client-server).
+- `client-server`: implemented in `/learn` on the owner's authorization (2026-10-27); two independent reviews ran
+  (implementation, then a check of its fixes). No real screen reader was used (DOM/ARIA only). The browser suites
+  used as evidence live outside the repo (they need a locally downloaded axe-core and a running build); committing
+  a runnable suite is a follow-up (client-server).
+- The Idempotency-Key field is an IETF Internet-Draft read in the WG's editor's copy (@ a2cd12a); its published
+  draft number and status are unchecked (datatracker unreachable) (client-server).
 - RFC 6265 (cookies) may have been obsoleted by the 6265bis revision (search only: approved, no published number
   found); `client-server` uses only the basic Set-Cookie → Cookie mechanism (client-server).
 
@@ -103,3 +106,10 @@ web-request fixes made after PR #18 (production still serves 75b2b6c).
   model), 5 retrieval questions, exercise, 10 sources (9 read: RFC 9110, 9112, 6265 in the HTTP WG's published
   rendering; MDN; PostgreSQL docs; 1 search-only lead with supports: none). Stopped at step 6: integration not
   authorized.
+- 2026-10-27 owner: authorized merging the web-request fixes and implementing client-server. PR #19 merged
+  (dceb551; production deployment recorded as success on GitHub).
+- 2026-10-27 C client-server: authored → implemented → tested → reviewed. /learn/client-server built (af07b7c):
+  page, Fig. 1 ExchangeStepper, client-server-model with an Idempotency-Key case (spec revised; draft read in the
+  WG's editor's copy). Implementation review: 1 blocking (late-case order), 3 should-fix, 11 notes → fixed or
+  accepted (607f1d5). Fresh check of the fixes: 2 should-fix (label crossing lanes, this state file), 3 notes →
+  fixed. 157 unit tests, 48/48 + 69/69 browser checks, Lighthouse 100.
