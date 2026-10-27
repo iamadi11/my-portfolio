@@ -10,8 +10,8 @@ import { SOURCE_NUMBER, SOURCES } from '@/content/learn/web-request-sources';
 
 /**
  * Chapter 1, web-request: a map of what happens when you open a website. Learner-facing text for the reviewed spec in
- * `docs/system-design/chapters/web-request.md`; every claim cites a source that was read (Sources below), and derived
- * statements and simplifications are labelled as such.
+ * `docs/system-design/chapters/web-request.md`; factual claims cite a source that was read (Sources below); derived statements,
+ * design judgements and simplifications are labelled as such.
  */
 
 export const metadata: Metadata = {

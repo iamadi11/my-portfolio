@@ -15,7 +15,7 @@ import { readCurriculum } from '@/lib/learn/curriculum';
 export const metadata: Metadata = {
     title: 'System design, from zero',
     description:
-        'An interactive system design course in progress: from what happens when you open a website to distributed systems, with every claim sourced.',
+        'An interactive system design course in progress: from what happens when you open a website to distributed systems, with factual claims sourced.',
     alternates: { canonical: '/learn' },
 };
 

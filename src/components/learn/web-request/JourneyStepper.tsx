@@ -45,7 +45,7 @@ const FRAMES: Frame[] = [
         id: 'tls',
         title: 'Secure it (TLS 1.3)',
         who: 'server',
-        text: 'ClientHello goes out; the server answers with its key-exchange parameters, certificate and Finished; one round trip. Both sides then work out the same keys.',
+        text: 'ClientHello goes out; the server answers with its key-exchange parameters, certificate and Finished; one round trip. Each side works out the same keys from the exchanged parameters.',
     },
     {
         id: 'request',
@@ -204,6 +204,8 @@ function Drawing({ frame, step }: { frame: Frame; step: Step | undefined }): Rea
 export default function JourneyStepper(): React.JSX.Element {
     const [inputs, setInputs] = useState<Inputs>(DEFAULTS);
     const [at, setAt] = useState(0);
+    /** What the step announcer says; set only when the learner moves between steps, never on input changes. */
+    const [announce, setAnnounce] = useState('');
     const [picked, setPicked] = useState<Record<string, boolean>>({});
     const [checked, setChecked] = useState(false);
     /** Travel/work labels and the network/server split appear once the learner has committed (or skipped). */
@@ -215,10 +217,31 @@ export default function JourneyStepper(): React.JSX.Element {
     const set = (patch: Partial<Inputs>): void => setInputs((p) => ({ ...p, ...patch }));
     const req = stepFor(s.steps, 'request');
 
+    const frameText = (i: number): string => {
+        const f = FRAMES[i];
+        const st = stepFor(s.steps, f.id);
+        return st?.skipped
+            ? `Skipped on this visit (${st.skipped}). On a first visit, this step goes: ${f.text}`
+            : f.text;
+    };
+    const goTo = (i: number): void => {
+        const n = Math.min(FRAMES.length - 1, Math.max(0, i));
+        setAt(n);
+        setAnnounce(`Step ${n + 1}. ${FRAMES[n].title}. ${frameText(n)}`);
+    };
+
+    // Same names and numbers as the visible ladder: one "Request" row until the split is revealed.
     const summaryText =
         `${VISITS.find((x) => x.v === inputs.visit)?.label}: ` +
-        s.steps.map((x) => `${STEP_NAME[x.id]} ${x.networkMs + x.serverMs} ms`).join(', ') +
-        `; time to first byte ${s.totalMs} ms, ${formatShare(s.networkShare)}${s.networkShare === null ? '' : ' network'}.`;
+        s.steps
+            .map((x) =>
+                x.id === 'request' && revealed
+                    ? `Request (travel) ${x.networkMs} ms, Server (work) ${x.serverMs} ms`
+                    : `${STEP_NAME[x.id]} ${x.networkMs + x.serverMs} ms`
+            )
+            .join(', ') +
+        `; time to first byte ${s.totalMs} ms` +
+        (revealed ? `, ${formatShare(s.networkShare)}${s.networkShare === null ? '' : ' network'}.` : '.');
 
     return (
         <figure className="bp-sheet ln-fig" aria-labelledby="fig1-h">
@@ -258,11 +281,15 @@ export default function JourneyStepper(): React.JSX.Element {
                             >
                                 Check
                             </button>
-                            {revealed ? null : (
-                                <button type="button" className="ln-btn" onClick={() => setRevealed(true)}>
-                                    Skip, show the labels
-                                </button>
-                            )}
+                            {/* Stays in place once used (aria-disabled), so keyboard focus is never dropped. */}
+                            <button
+                                type="button"
+                                className="ln-btn"
+                                aria-disabled={revealed}
+                                onClick={() => setRevealed(true)}
+                            >
+                                Skip, show the labels
+                            </button>
                         </div>
                         <p role="status" className="mt-2">
                             {checked
@@ -331,7 +358,7 @@ export default function JourneyStepper(): React.JSX.Element {
                                         className="ln-step"
                                         aria-current={i === at ? 'step' : undefined}
                                         data-skipped={st?.skipped ? '' : undefined}
-                                        onClick={() => setAt(i)}
+                                        onClick={() => goTo(i)}
                                     >
                                         <span className="ln-step-n">{i + 1}</span>
                                         <span>{f.title}</span>
@@ -345,15 +372,10 @@ export default function JourneyStepper(): React.JSX.Element {
                         })}
                     </ol>
                     <p className="ln-frame">
-                        {/* Announced when the step changes; the numbers below are announced by the summary. */}
-                        <span aria-live="polite">
-                            <strong>
-                                Step {at + 1}. {frame.title}.
-                            </strong>{' '}
-                            {step?.skipped
-                                ? `Skipped on this visit (${step.skipped}). On a first visit: ${frame.text.charAt(0).toLowerCase()}${frame.text.slice(1)}`
-                                : frame.text}
-                        </span>
+                        <strong>
+                            Step {at + 1}. {frame.title}.
+                        </strong>{' '}
+                        {frameText(at)}
                         {revealed && frame.id === 'request' && req && !req.skipped
                             ? ` Here: ${req.networkMs} ms travelling plus ${req.serverMs} ms of server work.`
                             : null}
@@ -363,7 +385,7 @@ export default function JourneyStepper(): React.JSX.Element {
                             type="button"
                             className="ln-btn"
                             aria-disabled={at === 0}
-                            onClick={() => setAt((n) => Math.max(0, n - 1))}
+                            onClick={() => goTo(at - 1)}
                         >
                             Previous step
                         </button>
@@ -371,7 +393,7 @@ export default function JourneyStepper(): React.JSX.Element {
                             type="button"
                             className="ln-btn"
                             aria-disabled={at === FRAMES.length - 1}
-                            onClick={() => setAt((n) => Math.min(FRAMES.length - 1, n + 1))}
+                            onClick={() => goTo(at + 1)}
                         >
                             Next step
                         </button>
@@ -379,36 +401,35 @@ export default function JourneyStepper(): React.JSX.Element {
 
                     <ul className="ln-ladder" aria-label="Time to first byte, step by step">
                         {s.steps.flatMap((x) => {
-                            const rows = [
-                                <li key={`${x.id}-n`}>
-                                    <span>
-                                        {STEP_NAME[x.id]}
-                                        {x.id === 'request' && revealed ? ' (travel)' : ''}
-                                    </span>
-                                    <span className="ln-bar-track" aria-hidden="true">
-                                        <span
-                                            className="ln-bar-fill"
-                                            style={{ transform: `scaleX(${x.networkMs / max})` }}
-                                        />
-                                    </span>
+                            const bar = (ms: number, kind?: 'server'): React.JSX.Element => (
+                                <span className="ln-bar-track" aria-hidden="true">
+                                    <span
+                                        className="ln-bar-fill"
+                                        data-kind={kind}
+                                        style={{ transform: `scaleX(${ms / max})` }}
+                                    />
+                                </span>
+                            );
+                            if (x.id !== 'request' || !revealed)
+                                return [
+                                    <li key={x.id}>
+                                        <span>{STEP_NAME[x.id]}</span>
+                                        {bar(x.networkMs + x.serverMs)}
+                                        <span className="ln-num">{x.networkMs + x.serverMs} ms</span>
+                                    </li>,
+                                ];
+                            return [
+                                <li key="req">
+                                    <span>Request (travel)</span>
+                                    {bar(x.networkMs)}
                                     <span className="ln-num">{x.networkMs} ms</span>
                                 </li>,
+                                <li key="srv">
+                                    <span>Server (work)</span>
+                                    {bar(x.serverMs, 'server')}
+                                    <span className="ln-num">{x.serverMs} ms</span>
+                                </li>,
                             ];
-                            if (x.id === 'request')
-                                rows.push(
-                                    <li key="srv">
-                                        <span>{revealed ? 'Server (work)' : 'Server'}</span>
-                                        <span className="ln-bar-track" aria-hidden="true">
-                                            <span
-                                                className="ln-bar-fill"
-                                                data-kind="server"
-                                                style={{ transform: `scaleX(${x.serverMs / max})` }}
-                                            />
-                                        </span>
-                                        <span className="ln-num">{x.serverMs} ms</span>
-                                    </li>
-                                );
-                            return rows;
                         })}
                     </ul>
                     <p className="ln-readout">
@@ -423,6 +444,10 @@ export default function JourneyStepper(): React.JSX.Element {
                     </p>
                     <p className="sr-only" aria-live="polite">
                         {summaryText}
+                    </p>
+                    {/* Announces step changes only; input changes are announced by the summary above. */}
+                    <p className="sr-only" aria-live="polite">
+                        {announce}
                     </p>
                 </div>
             </div>

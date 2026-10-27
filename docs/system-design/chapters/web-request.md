@@ -344,7 +344,8 @@ Visual spec (the 14-step process):
    A second panel states the model's assumption plainly: these bars contain no bytes ÷ bandwidth time, and
    `latency-throughput` adds it.
 9. **Signaling:** the active step's arrow is drawn at 2 px with `--fill-2` behind it, and the others are thin. On a
-   repeat visit, skipped steps are drawn dashed and labelled "skipped: cached" or "skipped: connection reused".
+   repeat visit, skipped steps are drawn dashed and labelled with the reason: "hostname cached", "connection reused"
+   or "fresh cached copy".
 10. **States:** in the drawing, the active exchange is a 2 px stroke and its node is filled `--fill-2`; other
     exchanges are thin lines; an active exchange skipped on this visit is dashed with a "skipped: …" label. In the
     step list, the current step has a 2 px border and fill, and every skipped step is dashed with its reason in text.
@@ -669,7 +670,7 @@ websites were unreachable from the authoring container.
 - lint: pass — npm run lint, no warnings or errors (2026-10-27)
 - model tests: pass — npm test, 95 tests (92 model incl. 81 grid cases over slider-reachable values, 3 curriculum
   reader); deliberate model mutations each caught (2026-10-27)
-- build and JS budget: pass — next build: /learn 107 kB and /learn/web-request 110 kB first-load JS (budget 120 kB);
+- build and JS budget: pass — next build: /learn 107 kB and /learn/web-request 111 kB first-load JS (budget 120 kB);
   / 110 kB, unchanged from main. Browser: 106.0 / 109.5 KB gzip of scripts at load; ~10 KB more after idle is
   `next/link` prefetch (2026-10-27)
 - browser sizes: pass — Playwright at 375×812, 402×874, 768×1024, 1280×800, 1440×900, 1920×1080 on both routes: no
@@ -685,8 +686,8 @@ websites were unreachable from the authoring container.
 - lighthouse: pass — Lighthouse 13.4.1 on the final build: /learn 99 mobile, 100 desktop; /learn/web-request 99
   mobile, 100 desktop; accessibility, best practices and SEO 100; CLS 0. An earlier build's first mobile run of
   /learn scored 91 (TBT 330 ms), then 98 and 99 (2026-10-27)
-- browser suite: pass — 52/52 checks (sizes, console, axe, keyboard, prediction gating, live regions, reduced
-  motion, / still renders) (2026-10-27)
+- browser suite: pass — 56/56 checks (sizes, console, axe, keyboard, prediction gating incl. the announced summary,
+  focus kept on Skip/Next/Previous, step announcer, reduced motion, / still renders) (2026-10-27)
 - spec review: pass — two fresh-subagent reviews against verification.md (2026-10-27); every finding fixed and
   recorded below; the second round's fixes were checked by the author, not by a third review
 
@@ -784,3 +785,21 @@ verification.md
   measured in the browser, scripts at page load are 106.0 KB gzip (/learn) and 109.5 KB (/learn/web-request); the
   further ~10 KB after idle is `next/link` prefetching the linked routes (/, /learn, not-found), not first-load JS.
   The budget (CLAUDE.md §10.4) is first-load JS, under 120 kB on both routes
+
+Reviewer: second fresh subagent (re-review of the implementation fixes), 2026-10-27
+
+- [should-fix] Prediction still leaked the split: the ladder always showed separate Request/Server rows and the
+  screen-reader summary announced "75.0% network" on load → fixed (one Request row and no share, visible or
+  announced, until Check or Skip; browser check added)
+- [should-fix] "Skip, show the labels" removed itself, dropping keyboard focus → fixed (stays, aria-disabled; check
+  added)
+- [should-fix] Skipped-step text lower-cased "GET" ("gET / goes out") → fixed (text no longer re-cased; check added)
+- [note] /learn meta description and a code comment still said "every claim sourced" → fixed
+- [note] Screen-reader summary's "Request" (90 ms) differed from the ladder's "Request (travel)" (40 ms) → fixed
+  (summary uses the ladder's names and numbers)
+- [note] A visit change fired both live regions at once → fixed (the step announcer speaks only on step changes;
+  check added)
+- [note] TLS frame said both sides work out keys "then" → fixed ("each side works out the same keys from the
+  exchanged parameters")
+- [note] Spec Visual step 9 skipped labels drifted from the code → fixed (spec)
+- [note] Accepted items and the bundle check held (reviewer: ~112 / ~108 KB gzip of module scripts, under 120 kB)
