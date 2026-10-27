@@ -56,7 +56,7 @@ describe('model rules (spec "Visual" step 5)', () => {
 
     it('warm visit skips DNS, TCP and TLS with the reason, and keeps the request', () => {
         expect(steps(at('warm')).map((s) => s.skipped)).toEqual([
-            'hostname cached',
+            'connection reused',
             'connection reused',
             'connection reused',
             null,

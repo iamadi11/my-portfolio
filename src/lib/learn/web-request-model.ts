@@ -10,7 +10,7 @@ export type VisitType = 'first' | 'warm' | 'cached';
 export type StepId = 'dns' | 'tcp' | 'tls' | 'request';
 
 /** Why a step costs nothing on this visit. */
-export type Skip = 'hostname cached' | 'connection reused' | 'fresh cached copy';
+export type Skip = 'connection reused' | 'fresh cached copy';
 
 export type Inputs = { visit: VisitType; rttMs: number; dnsMs: number; serverMs: number };
 
@@ -65,7 +65,8 @@ export function steps(input: Inputs): Step[] {
     }
     const warm = input.visit === 'warm';
     return [
-        { id: 'dns', networkMs: warm ? 0 : dns, serverMs: 0, skipped: warm ? 'hostname cached' : null },
+        // A reused connection needs no lookup at all: Fetch resolves the host only when it makes a new connection.
+        { id: 'dns', networkMs: warm ? 0 : dns, serverMs: 0, skipped: warm ? 'connection reused' : null },
         { id: 'tcp', networkMs: warm ? 0 : rtt, serverMs: 0, skipped: warm ? 'connection reused' : null },
         { id: 'tls', networkMs: warm ? 0 : rtt, serverMs: 0, skipped: warm ? 'connection reused' : null },
         { id: 'request', networkMs: rtt, serverMs: server, skipped: null },

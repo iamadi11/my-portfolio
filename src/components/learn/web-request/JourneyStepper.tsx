@@ -74,7 +74,7 @@ const PREDICT: { key: string; label: string; travel: boolean }[] = [
     { key: 'dns', label: 'DNS lookup', travel: true },
     { key: 'tcp', label: 'TCP handshake', travel: true },
     { key: 'tls', label: 'TLS handshake', travel: true },
-    { key: 'rt', label: "The request's round trip", travel: true },
+    { key: 'rt', label: 'Request round trip', travel: true },
     { key: 'srv', label: 'Server processing', travel: false },
 ];
 
@@ -85,6 +85,90 @@ function stepFor(steps: Step[], id: Frame['id']): Step | undefined {
 function stepMs(s: Step | undefined): string {
     if (!s) return '—';
     return `${s.networkMs + s.serverMs} ms`;
+}
+
+/** "Not quite" feedback that names exactly which ticks were wrong. */
+function predictFeedback(picked: Record<string, boolean>): string {
+    const missed = PREDICT.filter((p) => p.travel && !picked[p.key]).map((p) => p.label);
+    const extra = PREDICT.filter((p) => !p.travel && picked[p.key]).map((p) => p.label.toLowerCase());
+    if (missed.length === 0 && extra.length === 0)
+        return 'Right. DNS, TCP, TLS and the request’s round trip are all travel time; only the server processing is work. None of these bars contains bytes ÷ bandwidth time: the model leaves transmission out (taught in “Latency and throughput”).';
+    const parts = [
+        missed.length
+            ? `${missed.join(', ')} ${missed.length > 1 ? 'are' : 'is'} travel too, so tick ${missed.length > 1 ? 'them' : 'it'}`
+            : '',
+        extra.length ? `${extra.join(', ')} is the server working, not travel, so leave it unticked` : '',
+    ].filter(Boolean);
+    return `Not quite. ${parts.join('; ')}. None of these is bytes ÷ bandwidth time; the model leaves transmission out.`;
+}
+
+/** A snapshot, so the result keeps naming the values it was computed from even if the sliders move later. */
+type Run = { guess: number; totalMs: number; rttMs: number; serverMs: number };
+
+/** Predict, then run: the learner commits to a number for the repeat visit before the model shows its own. */
+function PredictRun({
+    inputs,
+    revealed,
+    onRun,
+}: {
+    inputs: Inputs;
+    revealed: boolean;
+    onRun: () => void;
+}): React.JSX.Element {
+    const id = useId();
+    const [guess, setGuess] = useState('');
+    const [run, setRun] = useState<Run | null>(null);
+    const [msg, setMsg] = useState('');
+    const go = (): void => {
+        const g = Number(guess);
+        if (guess.trim() === '' || !Number.isFinite(g) || g < 0) {
+            setRun(null);
+            setMsg('Type your guess in milliseconds first.');
+            return;
+        }
+        const r = summarize({ ...inputs, visit: 'warm' });
+        setRun({ guess: g, totalMs: r.totalMs, rttMs: inputs.rttMs, serverMs: r.serverMs });
+        setMsg('');
+        onRun();
+    };
+    let result = msg;
+    if (run) {
+        const off = Math.abs(run.guess - run.totalMs);
+        result =
+            `You guessed ${run.guess} ms. With a ${run.rttMs} ms round trip and ${run.serverMs} ms server time, the model gives ${run.totalMs} ms` +
+            (revealed ? `: one round trip plus the server's work` : '') +
+            `; DNS, TCP and TLS are skipped. ${off === 0 ? 'Exactly right.' : `Off by ${off} ms.`}`;
+    }
+    return (
+        <fieldset className="ln-predict">
+            <legend>Predict, then run</legend>
+            <p className="m-0 mb-2">
+                With the values set below, how long will a repeat visit on a still-open connection take to its
+                first byte? Commit to a number, then run it.
+            </p>
+            <div className="ln-guess">
+                <label htmlFor={id}>Your guess (ms)</label>
+                <input
+                    id={id}
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    value={guess}
+                    onChange={(e) => {
+                        setGuess(e.target.value);
+                        setRun(null);
+                        setMsg('');
+                    }}
+                />
+                <button type="button" className="ln-btn" onClick={go}>
+                    Run the repeat visit
+                </button>
+            </div>
+            <p role="status" className="mt-2">
+                {result}
+            </p>
+        </fieldset>
+    );
 }
 
 function Range({
@@ -220,6 +304,11 @@ export default function JourneyStepper(): React.JSX.Element {
         // it is emptied so it can never contradict the visible step text.
         setAnnounce('');
     };
+    // Revealing changes the current step's text (step 5 gains its split), so the step announcer is emptied too.
+    const reveal = (): void => {
+        setRevealed(true);
+        setAnnounce('');
+    };
 
     const frameText = (i: number): string => {
         const f = FRAMES[i];
@@ -283,7 +372,7 @@ export default function JourneyStepper(): React.JSX.Element {
                                 className="ln-btn"
                                 onClick={() => {
                                     setChecked(true);
-                                    setRevealed(true);
+                                    reveal();
                                 }}
                             >
                                 Check
@@ -293,21 +382,13 @@ export default function JourneyStepper(): React.JSX.Element {
                                 type="button"
                                 className="ln-btn"
                                 aria-disabled={revealed}
-                                onClick={() => setRevealed(true)}
+                                onClick={reveal}
                             >
                                 Skip, show the labels
                             </button>
                         </div>
                         <p role="status" className="mt-2">
-                            {checked
-                                ? PREDICT.every((p) => Boolean(picked[p.key]) === p.travel)
-                                    ? 'Right. DNS, TCP, TLS and the request’s round trip are all travel time; only the server processing is work. None of these bars contains bytes ÷ bandwidth time: the model leaves transmission out (taught in “Latency and throughput”).'
-                                    : `Not quite. Travel: ${PREDICT.filter((p) => p.travel)
-                                          .map((p) => p.label)
-                                          .join(
-                                              ', '
-                                          )}. Work: server processing. None of these is bytes ÷ bandwidth time; the model leaves transmission out.`
-                                : null}
+                            {checked ? predictFeedback(picked) : null}
                         </p>
                     </fieldset>
 
@@ -351,6 +432,7 @@ export default function JourneyStepper(): React.JSX.Element {
                             />
                         </fieldset>
                     </div>
+                    <PredictRun inputs={inputs} revealed={revealed} onRun={() => set({ visit: 'warm' })} />
                 </div>
 
                 <div>

@@ -137,8 +137,9 @@ export default function Page(): React.JSX.Element {
                             <dt>Connection</dt>
                             <dd>
                                 An agreed channel between browser and server that delivers bytes reliably and
-                                in order. HTTP needs one underneath it, and so does TLS; on the web, TCP
-                                provides it. <C ids={['rfc9110']} at="§3.3" /> <C ids={['rfc9846']} at="§1" />{' '}
+                                in order. HTTP needs one underneath it, and so does TLS; in this chapter TCP
+                                provides it (HTTP/3 runs over QUIC instead, a later chapter).{' '}
+                                <C ids={['rfc9110']} at="§3.3" /> <C ids={['rfc9846']} at="§1" />{' '}
                                 <C ids={['mdn-http-overview']} />
                             </dd>
                         </div>
@@ -184,7 +185,9 @@ export default function Page(): React.JSX.Element {
                             <dt>Cache</dt>
                             <dd>
                                 A local store of earlier responses, used to answer later, equivalent requests
-                                without going all the way to the server. <C ids={['rfc9110']} at="§3.8" />{' '}
+                                without going all the way to the server. <C ids={['rfc9110']} at="§3.8" /> A
+                                stored response is <dfn>fresh</dfn> while it can be reused without first
+                                checking with the server that it is still valid.{' '}
                                 <C ids={['rfc9111']} at="§1" />
                             </dd>
                         </div>
@@ -348,10 +351,12 @@ export default function Page(): React.JSX.Element {
                     </p>
                     <p>
                         <strong>Why the second visit is faster:</strong> the hostname is cached, so there is
-                        no DNS wait <C ids={['mdn-how-browsers-work']} />; if the connection from the first
-                        visit is still open, it can be reused, with no TCP or TLS handshake (keeping
-                        connections open for reuse, &ldquo;persistent connections&rdquo;, arrived in HTTP/1.1){' '}
-                        <C ids={['mdn-http-overview']} />
+                        no DNS wait <C ids={['mdn-how-browsers-work']} /> (and a reused connection needs no
+                        lookup at all: the lookup happens only when a new connection is made{' '}
+                        <C ids={['fetch']} />
+                        ); if the connection from the first visit is still open, it can be reused, with no TCP
+                        or TLS handshake (keeping connections open for reuse, &ldquo;persistent
+                        connections&rdquo;, arrived in HTTP/1.1) <C ids={['mdn-http-overview']} />
                         ; and if the browser holds a fresh cached copy of the response, it can use it without
                         contacting the server at all. <C ids={['rfc9111']} at="§1" />{' '}
                         <C ids={['mdn-caching']} />
@@ -361,6 +366,45 @@ export default function Page(): React.JSX.Element {
                 <JourneyStepper />
 
                 <div className="ln-prose">
+                    <h3>Check yourself</h3>
+                    <Q
+                        n={1}
+                        ask="Put these in order for a first HTTPS visit: TLS handshake, DNS lookup, HTTP request, TCP handshake."
+                    >
+                        <p>
+                            DNS lookup, TCP handshake, TLS handshake, HTTP request. TLS runs on top of a
+                            reliable connection <C ids={['rfc9846']} at="§1" />, so the connection must exist
+                            first; on HTTPS the request travels inside the secured connection; and nothing can
+                            connect before DNS gives an address. Revisit <a href="#journey">the journey</a>,
+                            steps 2–5.
+                        </p>
+                    </Q>
+                    <Q
+                        n={2}
+                        ask="Which can a repeat visit skip? (a) DNS lookup (b) TCP handshake (c) parsing the HTML (d) the request itself"
+                    >
+                        <p>
+                            (a) if the hostname is cached, or if the connection is reused; (b) if the
+                            connection is still open and reused; (d) only if the browser holds a fresh cached
+                            response. Not (c): the browser parses whatever HTML it shows, even a cached copy.
+                            Revisit <a href="#journey">why the second visit is faster</a>.
+                        </p>
+                    </Q>
+                    <Q
+                        n={3}
+                        ask="The page loads its fonts from a second hostname. Which extra steps can that cost on a first visit?"
+                    >
+                        <p>
+                            Its own DNS lookup, because each hostname needs one{' '}
+                            <C ids={['mdn-how-browsers-work']} />, and usually its own TCP and TLS handshakes,
+                            because the Fetch standard reuses a connection only for the same origin: the same
+                            scheme, host and port <C ids={['fetch']} /> <C ids={['rfc9110']} at="§4.3.1" />.
+                            &ldquo;Nothing, the browser is already connected&rdquo; is wrong in general: that
+                            connection belongs to the first hostname&rsquo;s origin. Whether connections can
+                            sometimes be shared between hostnames is a later chapter.
+                        </p>
+                    </Q>
+
                     <h2 id="worked">Worked example</h2>
                     <div className="ln-assume">
                         <p className="ln-label">Assumed values for this example only, not measurements</p>
@@ -412,8 +456,8 @@ export default function Page(): React.JSX.Element {
                         server.
                     </p>
                     <p>
-                        <strong>Your turn: a repeat visit</strong> on a connection that is still open, with
-                        the hostname cached. DNS, TCP and TLS are skipped. What is the time to first byte?
+                        <strong>Your turn: a repeat visit</strong> on a connection that is still open, so no
+                        lookup is needed. DNS, TCP and TLS are skipped. What is the time to first byte?
                     </p>
                     <details className="ln-q">
                         <summary>Check your answer</summary>
@@ -437,6 +481,44 @@ export default function Page(): React.JSX.Element {
                         </li>
                         <li>No time is modelled for pushing bytes onto the link.</li>
                     </ul>
+
+                    <h3>Check yourself</h3>
+                    <Q
+                        n={4}
+                        ask="You double your bandwidth, and a small page’s first-visit time to first byte barely changes. Why?"
+                    >
+                        <p>
+                            Most of that time is messages travelling there and back (the lookup, two
+                            handshakes, the request), and bandwidth does not shorten travel. &ldquo;The server
+                            is slow&rdquo; is wrong as the explanation: a slow server is slow at any
+                            bandwidth, so it cannot explain why doubling bandwidth changed nothing. To see how
+                            much is server, compare <code>responseStart − requestStart</code> (one round trip
+                            plus the server&rsquo;s work) with a handshake&rsquo;s round trip, such as{' '}
+                            <code>secureConnectionStart − connectStart</code>; what is left over is roughly
+                            the server. Revisit <a href="#first-guess">the first guess</a> and the{' '}
+                            <a href="#worked">worked example</a>.
+                        </p>
+                    </Q>
+                    <Q
+                        n={5}
+                        ask={
+                            <>
+                                A page&rsquo;s timing entry shows these times in ms from the start (assumed
+                                values): lookup 2–32, connect start 32, secure connection start 72, connect
+                                end 112, request start 113, response start 263. Which step took longest, and
+                                what would you look at next?
+                            </>
+                        }
+                    >
+                        <p>
+                            Waiting for the response: 263 − 113 = 150 ms. DNS took 30 ms, TCP 72 − 32 = 40 ms
+                            and TLS 112 − 72 = 40 ms. The handshakes each show one round trip of about 40 ms,
+                            so roughly 110 ms of the 150 is the server&rsquo;s own work: look at the server,
+                            not the network. Reading TCP as <code>connectEnd − connectStart</code> = 80 ms is
+                            wrong on HTTPS, because that interval includes TLS. Revisit{' '}
+                            <a href="#measure">measure instead of guessing</a>.
+                        </p>
+                    </Q>
 
                     <h2 id="faster">Making it faster, and what that costs</h2>
                     <p>
@@ -475,84 +557,15 @@ export default function Page(): React.JSX.Element {
                         query, and don&rsquo;t buy bandwidth for a page made of many small requests.
                     </p>
 
-                    <h2 id="check">Check yourself</h2>
-                    <Q
-                        n={1}
-                        ask="Put these in order for a first HTTPS visit: TLS handshake, DNS lookup, HTTP request, TCP handshake."
-                    >
-                        <p>
-                            DNS lookup, TCP handshake, TLS handshake, HTTP request. TLS runs on top of a
-                            reliable connection <C ids={['rfc9846']} at="§1" />, so the connection must exist
-                            first; on HTTPS the request travels inside the secured connection; and nothing can
-                            connect before DNS gives an address. Revisit <a href="#journey">the journey</a>,
-                            steps 2–5.
-                        </p>
-                    </Q>
-                    <Q
-                        n={2}
-                        ask="You double your bandwidth, and a small page’s first-visit time to first byte barely changes. Why?"
-                    >
-                        <p>
-                            Most of that time is messages travelling there and back (the lookup, two
-                            handshakes, the request), and bandwidth does not shorten travel. &ldquo;The server
-                            is slow&rdquo; is wrong as the explanation: a slow server is slow at any
-                            bandwidth, and the timing entry separates server time inside{' '}
-                            <code>responseStart − requestStart</code>. Revisit{' '}
-                            <a href="#first-guess">the first guess</a> and the{' '}
-                            <a href="#worked">worked example</a>.
-                        </p>
-                    </Q>
-                    <Q
-                        n={3}
-                        ask="Which can a repeat visit skip? (a) DNS lookup (b) TCP handshake (c) parsing the HTML (d) the request itself"
-                    >
-                        <p>
-                            (a) if the hostname is cached; (b) if the connection is still open and reused; (d)
-                            only if the browser holds a fresh cached response. Not (c): the browser parses
-                            whatever HTML it shows, even a cached copy. Revisit{' '}
-                            <a href="#journey">why the second visit is faster</a>.
-                        </p>
-                    </Q>
-                    <Q
-                        n={4}
-                        ask="The page loads its fonts from a second hostname. Which extra steps can that cost on a first visit?"
-                    >
-                        <p>
-                            Its own DNS lookup, because each hostname needs one{' '}
-                            <C ids={['mdn-how-browsers-work']} />, and usually its own TCP and TLS handshakes,
-                            because a connection is opened to an address (derived from steps 2–3).
-                            &ldquo;Nothing, the browser is already connected&rdquo; is wrong in general: that
-                            connection was opened for the first hostname. Whether connections can sometimes be
-                            shared between hostnames is a later chapter.
-                        </p>
-                    </Q>
-                    <Q
-                        n={5}
-                        ask={
-                            <>
-                                A page&rsquo;s timing entry shows these times in ms from the start (assumed
-                                values): lookup 2–32, connect start 32, secure connection start 72, connect
-                                end 112, request start 113, response start 263. Which step took longest, and
-                                what would you look at next?
-                            </>
-                        }
-                    >
-                        <p>
-                            Waiting for the response: 263 − 113 = 150 ms. DNS took 30 ms, TCP 72 − 32 = 40 ms
-                            and TLS 112 − 72 = 40 ms. The handshakes each show one round trip of about 40 ms,
-                            so roughly 110 ms of the 150 is the server&rsquo;s own work: look at the server,
-                            not the network. Reading TCP as <code>connectEnd − connectStart</code> = 80 ms is
-                            wrong on HTTPS, because that interval includes TLS. Revisit{' '}
-                            <a href="#measure">measure instead of guessing</a>.
-                        </p>
-                    </Q>
-
                     <h2 id="exercise">Exercise</h2>
                     <p>
                         Use the worked example&rsquo;s assumed values, but with a 120 ms round trip, as for a
                         user far from the server. Compute the first-visit time to first byte and its network
                         share. Then decide which helps more: halving the server processing time, or serving
-                        from a place with a 30 ms round trip. Try it in Fig. 1 too.
+                        from a place with a 30 ms round trip. Then check in Fig. 1: choose First visit, set
+                        the round trip to 120 ms and read the total and network share. Set the server time to
+                        25 ms (the halved case) and read the total; put it back to 50 ms, set the round trip
+                        to 30 ms, and compare.
                     </p>
                     <details className="ln-q">
                         <summary>Show the worked answer</summary>

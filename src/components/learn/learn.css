@@ -528,6 +528,27 @@
     height: 1.1rem;
     accent-color: var(--ink);
 }
+.ln-guess {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+}
+.ln-guess input {
+    width: 6.5rem;
+    min-height: 44px;
+    padding: 0 0.5rem;
+    border: 1px solid var(--ink-2);
+    border-radius: 6px;
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+}
+.ln-guess input:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+}
 
 .ln-svg {
     width: 100%;
@@ -560,4 +581,7 @@
     .ln-bar-fill {
         transition: transform 180ms ease-in-out;
     }
+}
+.ln-controls + .ln-predict {
+    margin-top: 1rem;
 }

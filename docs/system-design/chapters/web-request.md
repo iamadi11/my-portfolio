@@ -74,8 +74,8 @@ Misconceptions targeted:
   80 for HTTP, 443 for HTTPS. [mdn-url]
 - **DNS lookup:** turning a hostname into an IP address. [mdn-dns]
 - **Connection:** an agreed channel between browser and server that delivers bytes reliably and in order. HTTP
-  needs one underneath it [rfc9110 §3.3]. TLS likewise needs a "reliable, in-order data stream" [rfc9846 §1]. On
-  the web, TCP provides it [mdn-http-overview].
+  needs one underneath it [rfc9110 §3.3]. TLS likewise needs a "reliable, in-order data stream" [rfc9846 §1]. In
+  this chapter TCP provides it [mdn-http-overview]; HTTP/3 runs over QUIC instead (→ `http-versions`).
 - **Handshake:** messages exchanged to set something up before the real data flows. [mdn-tcp-handshake]
 - **Round trip:** the time for a message to reach the other side plus the time for the answer to come back.
   [mdn-rtt]
@@ -87,7 +87,8 @@ Misconceptions targeted:
 - **Time to first byte:** the time from asking for the page until the first byte of the response arrives.
   [mdn-how-browsers-work]
 - **Cache:** a local store of earlier responses, used to answer later, equivalent requests without going all the
-  way to the server. [rfc9110 §3.8, rfc9111 §1]
+  way to the server [rfc9110 §3.8]. A stored response is **fresh** while it can be reused without first checking
+  with the server that it is still valid [rfc9111 §1].
 - **Parse and render:** the browser turns the HTML into the DOM (a tree of the page's elements) and the CSS into
   the CSSOM (a tree of styles). It combines them into a render tree, works out where each box goes (layout), and
   paints pixels. [mdn-how-browsers-work, mdn-crp]
@@ -205,7 +206,9 @@ Glossary rules for the course:
    - HTTP/3, which runs over QUIC instead of TCP (→ `http-versions`).
 
    **Why the second visit is faster:**
-   - The hostname is cached, so there is no DNS wait. [mdn-how-browsers-work: DNS lookup]
+   - The hostname is cached, so there is no DNS wait [mdn-how-browsers-work: DNS lookup]; and a reused connection
+     needs no lookup at all, because the lookup happens only when a new connection is made [fetch: obtain a
+     connection].
    - If the connection from the first visit is still open, it can be reused, so there is no TCP or TLS handshake.
      Keeping
      connections open for reuse ("persistent connections") arrived in HTTP/1.1. [mdn-http-overview: HTTP and
@@ -273,9 +276,9 @@ Assumed values, for this example only (not measurements of any real site):
 Total: 30 + 40 + 40 + 40 + 50 = **200 ms**. Of that, 150 ms is network waiting (DNS plus three round trips) and
 50 ms is the server.
 
-**Repeat visit on a reused connection, with the hostname cached** (the learner completes this; fading):
+**Repeat visit on a reused connection** (the learner completes this; fading):
 
-1. DNS lookup: skipped, because the hostname is cached. 0 ms.
+1. DNS lookup: skipped, because a reused connection needs no lookup. 0 ms.
 2. TCP handshake: skipped, because the connection is reused. 0 ms.
 3. TLS handshake: skipped, on the same connection. 0 ms.
 4. Request and first byte: 40 + 50 = **90 ms** ← the learner fills this in.
@@ -314,7 +317,7 @@ Visual spec (the 14-step process):
 5. **Model:** `steps(visitType, rttMs, dnsMs, serverMs) → [{step, ms}]`, with the time to the HTML's first byte
    equal to the sum of the steps.
    - **First visit:** `dns = dnsMs`, `tcp = rttMs`, `tls = rttMs`, `request = rttMs + serverMs`.
-   - **Warm connection, cached hostname:** `dns = 0`, `tcp = 0`, `tls = 0`, `request = rttMs + serverMs`.
+   - **Repeat visit, connection still open:** `dns = 0`, `tcp = 0`, `tls = 0`, `request = rttMs + serverMs`.
    - **Fresh cache:** all four are `0`.
 
    Assumptions, shown beside the visual:
@@ -326,7 +329,7 @@ Visual spec (the 14-step process):
    - "teaching model, not a benchmark"
 
    Subresources and other hostnames are not in this model: they start after the HTML's first byte (step 6) and are
-   taught in Q4 and in later chapters.
+   taught in Q3 and in later chapters.
 6. **Controls:**
    - visit type (3 options)
    - round trip: 5–300 ms, default 40
@@ -344,11 +347,17 @@ Visual spec (the 14-step process):
    the total only: no travel/work labels, no network/server split, no bar legend.
    After that, it labels DNS, TCP, TLS and the request's round trip as travel and the server time as work.
 
+   **Predict, then run** (after the controls): "With the values set below, how long will a repeat visit on a
+   still-open connection take to its first byte? Commit to a number, then run it." The learner types a guess in
+   milliseconds; "Run the repeat visit" refuses an empty guess, switches the figure to the repeat visit and shows
+   the guess next to the model's value (`summarize` at the values used, named in the result) and the difference.
+   The result is a snapshot of those values, so it stays true if the sliders move afterwards.
+
    A second panel states the model's assumption plainly: these bars contain no bytes ÷ bandwidth time, and
    `latency-throughput` adds it.
 9. **Signaling:** the active step's arrow is drawn at 2 px with `--fill-2` behind it, and the others are thin. On a
-   repeat visit, skipped steps are drawn dashed and labelled with the reason: "hostname cached", "connection reused"
-   or "fresh cached copy".
+   repeat visit, skipped steps are drawn dashed and labelled with the reason: "connection reused" (DNS, TCP and TLS on a
+   repeat visit) or "fresh cached copy".
 10. **States:** in the drawing, the active exchange is a 2 px stroke and its node is filled `--fill-2`; other
     exchanges are thin lines; an active exchange skipped on this visit is dashed with a "skipped: …" label. In the
     step list, the current step has a 2 px border and fill, and every skipped step is dashed with its reason in text.
@@ -381,32 +390,33 @@ Retrieval questions (each asked after the section it names):
    - **Wrong: request before TLS.** On HTTPS, the request travels inside the secured connection.
    - **Wrong: anything before DNS.** The connection needs the address that DNS provides.
    - Revisit section 7, steps 2–5.
-2. _(after section 7)_ You double your bandwidth, and a small page's first-visit time to first byte barely
-   changes. Why?
-   - **Answer:** most of that time is waiting for messages to travel there and back (the lookup, two handshakes,
-     the request), and bandwidth does not shorten travel time.
-   - **Distractor "the server is slow" — wrong as the explanation.** A slow server would make the page slow at any
-     bandwidth, but it doesn't explain why doubling bandwidth did nothing. The timing entry tells them apart: server
-     time sits inside `responseStart − requestStart`.
-   - Revisit section 5 and the worked example.
-3. _(after section 7)_ Which steps can a repeat visit skip? (a) DNS lookup (b) TCP handshake (c) parsing the HTML
+2. _(after section 7)_ Which steps can a repeat visit skip? (a) DNS lookup (b) TCP handshake (c) parsing the HTML
    (d) the request itself
    - **Answer:**
-     - (a) if the hostname is cached;
+     - (a) if the hostname is cached, or if the connection is reused (no lookup is needed);
      - (b) if the connection is reused;
      - (d) only if the browser holds a fresh cached response.
    - **Wrong: (c).** The browser still parses whatever HTML it shows, even a cached copy.
    - Revisit "Why the second visit is faster".
-4. _(after section 7)_ Predict: the page loads its fonts from a second hostname. Which extra steps can that cost on
+3. _(after section 7)_ Predict: the page loads its fonts from a second hostname. Which extra steps can that cost on
    a first visit?
    - **Answer:** its own DNS lookup, because each hostname needs one [mdn-how-browsers-work]. Usually also its own
-     TCP and TLS handshakes: the lookup gives an address, and a connection is opened to an address (derived from
-     steps 2–3).
-   - **Distractor "nothing, the browser is already connected" — wrong in general.** The existing connection was
-     opened for the first hostname. Whether a connection can sometimes be shared between hostnames is taught in
+     TCP and TLS handshakes, because a connection is reused only for the same origin [fetch: obtain a connection],
+     and an origin is the scheme, host and port [rfc9110 §4.3.1]; a second hostname is a different origin.
+   - **Distractor "nothing, the browser is already connected" — wrong in general.** The existing connection
+     belongs to the first hostname's origin. Whether a connection can sometimes be shared between hostnames is taught in
      `http-versions`.
    - Revisit section 7, step 2.
-5. _(after section 6; assesses objective 4)_ A page's timing entry shows, in milliseconds from the start (assumed
+4. _(after the worked example)_ You double your bandwidth, and a small page's first-visit time to first byte barely
+   changes. Why?
+   - **Answer:** most of that time is waiting for messages to travel there and back (the lookup, two handshakes,
+     the request), and bandwidth does not shorten travel time.
+   - **Distractor "the server is slow" — wrong as the explanation.** A slow server would make the page slow at any
+     bandwidth, but it doesn't explain why doubling bandwidth did nothing. To see how much is server, compare
+     `responseStart − requestStart` (one round trip plus the server's work) with a handshake's round trip, such as
+     `secureConnectionStart − connectStart`; what is left over is roughly the server (derived; section 6).
+   - Revisit section 5 and the worked example.
+5. _(after the worked example, which it needs for the round-trip reading; assesses objective 4)_ A page's timing entry shows, in milliseconds from the start (assumed
    values):
 
    | Timestamp               | ms  |
@@ -439,13 +449,15 @@ Exercise (transfer; the worked answer is revealed after an attempt):
   - Halving server time saves 25 ms.
   - Moving closer gives 30 + 30 + 30 + 30 + 50 = 170 ms, saving 270 ms. Moving closer wins.
   - The lesson: measure which part dominates before choosing a fix.
+- **In Fig. 1:** the page asks the learner to set First visit and a 120 ms round trip and read the total and share,
+  then set the server time to 25 ms (415 ms), then put it back and set a 30 ms round trip (170 ms).
 
 Spaced review:
 
-- `dns` re-asks Q4 (one lookup per hostname).
+- `dns` re-asks Q3 (one lookup per hostname).
 - `tcp` and `tls` re-ask Q1 (order and round trips).
-- `http-caching` re-asks Q3 (what a fresh cache skips).
-- `latency-throughput` re-asks Q2 (bandwidth versus travel time).
+- `http-caching` re-asks Q2 (what a fresh cache skips).
+- `latency-throughput` re-asks Q4 (bandwidth versus travel time).
 - `review-foundations` uses Q5's timing-entry pattern with new numbers.
 
 ## Sources
@@ -594,7 +606,7 @@ websites were unreachable from the authoring container.
   kind: spec
   checked: 2026-10-27
   via: read
-  supports: [connection end time must include the time to complete enough of the TLS handshake to request the resource; secure connection start time is taken immediately before the handshake starts; over HTTP/3 connection start and secure connection start are equal; on a connection opened before the fetch, DNS and connection timestamps are set to the fetch's start]
+  supports: [a connection is reused only for the same origin (and network partition key and credentials), and the host is resolved only when a new connection is made (obtain a connection); connection end time must include the time to complete enough of the TLS handshake to request the resource; secure connection start time is taken immediately before the handshake starts; over HTTP/3 connection start and secure connection start are equal; on a connection opened before the fetch, DNS and connection timestamps are set to the fetch's start]
   note: fetch.bs in whatwg/fetch commit 59afe34 (2026-10-19); living standard.
 - id: rfc9110
   title: HTTP Semantics (RFC 9110, STD 97)
@@ -604,12 +616,13 @@ websites were unreachable from the authoring container.
   published: 2022-06
   checked: 2026-10-27
   via: read
-  supports: [client and server are roles in a connection; HTTP needs a reliable connection (§3.3); requests and responses, responses carry a status code (§3.4); user agent = client program that initiates a request (§3.5); a cache stores responses to cut response time on later equivalent requests (§3.8); https means HTTP over a TLS-secured connection to an authenticated server (§4.2.2); GET requests a representation of the target (§9.3.1); three-digit status codes, first digit is the class (§15)]
+  supports: [client and server are roles in a connection; HTTP needs a reliable connection (§3.3); requests and responses, responses carry a status code (§3.4); user agent = client program that initiates a request (§3.5); a cache stores responses to cut response time on later equivalent requests (§3.8); https means HTTP over a TLS-secured connection to an authenticated server (§4.2.2); GET requests a representation of the target (§9.3.1); three-digit status codes, first digit is the class (§15); a URI's origin is the triple of scheme, host and port (§4.3.1)]
   note: >-
     rfc9110.xml in httpwg/http-core commit bde37f6. Section numbers verified 2026-10-27 against the published RFC
     as rendered by the HTTP WG (httpwg.org/specs/rfc9110.html, read from httpwg/httpwg.github.io @ ce03dd5;
     dcterms.identifier urn:ietf:rfc:9110, issued 2022-06, creators Fielding, Nottingham, Reschke): §3.3, §3.4, §3.5,
-    §3.8, §4.2.2, §9.3.1 and §15 headings and opening paragraphs match. rfc-editor.org itself was unreachable.
+    §3.8, §4.2.2, §9.3.1 and §15 headings and opening paragraphs match; §4.3.1 "URI Origin" ("the triple of scheme,
+    host, and port") checked the same way. rfc-editor.org itself was unreachable.
 - id: rfc9111
   title: HTTP Caching (RFC 9111, STD 98)
   author: Fielding, Nottingham, Reschke (eds.)
@@ -680,11 +693,12 @@ websites were unreachable from the authoring container.
 
 - typecheck: pass — npx tsc --noEmit (2026-10-27)
 - lint: pass — npm run lint, no warnings or errors (2026-10-27)
-- model tests: pass — npm test, 95 tests (92 model incl. 81 grid cases over slider-reachable values, 3 curriculum
+- model tests: pass — npm test, 95 tests, re-run after the final-review fixes (92 model incl. 81 grid cases over slider-reachable values, 3 curriculum
   reader); deliberate model mutations each caught (2026-10-27)
 - build and JS budget: pass — next build: /learn 107 kB and /learn/web-request 111 kB first-load JS (budget 120 kB);
-  / 110 kB, unchanged from main. Browser: 106.0 / 109.5 KB gzip of scripts at load; ~10 KB more after idle is
-  `next/link` prefetch (2026-10-27)
+  / 110 kB, unchanged from main (no homepage file differs from main). Browser, script bodies fetched before the load
+  event: /learn 106.5 KB, /learn/web-request 110.8 KB, / 112.9 KB gzip; ~10 KB more after idle is `next/link`
+  prefetch (2026-10-27, after the final-review fixes)
 - browser sizes: pass — Playwright at 375×812, 402×874, 768×1024, 1280×800, 1440×900, 1920×1080 on both routes: no
   horizontal scroll, no console errors; screenshots read at 375 and 1280 (2026-10-27)
 - keyboard: pass — Playwright keyboard-only: visit radios (arrows), sliders (Home/End/arrows; 25 ms reachable),
@@ -695,11 +709,15 @@ websites were unreachable from the authoring container.
 - accessibility scan: pass — axe-core 4.10.3, WCAG 2.0/2.1/2.2 A and AA, both routes at 375 and 1280 px with
   answers open: 0 violations; 6 SVG label nodes left for manual contrast review, checked by hand (ink and ink-2 on
   fill-2, above 4.5:1); live regions for summary and step text; sliders have aria-valuetext (2026-10-27)
-- lighthouse: pass — Lighthouse 13.4.1 on the final build: /learn 99 mobile, 100 desktop; /learn/web-request 98
-  mobile, 100 desktop; accessibility, best practices and SEO 100; CLS 0. An earlier build's first mobile run of
-  /learn scored 91 (TBT 330 ms), then 98 and 99 (2026-10-27)
-- browser suite: pass — 56/56 checks (sizes, console, axe, keyboard, prediction gating incl. the announced summary,
-  focus kept on Skip/Next/Previous, step announcer, reduced motion, / still renders) (2026-10-27)
+- lighthouse: pass — Lighthouse 13.4.1 on the build with the final-review fixes: /learn/web-request 99 mobile, 100
+  desktop; /learn 99 mobile, 100 desktop; / 95 mobile, 100 desktop; accessibility, best practices and SEO 100 on
+  all three; CLS 0. An earlier build's first mobile run of /learn scored 91 (TBT 330 ms), then 98 and 99
+  (2026-10-27)
+- browser suite: pass — 63/63 checks on the build with the final-review fixes (sizes, console, axe, keyboard,
+  recall gating incl. the announced summary, "Not quite" naming the wrong ticks, focus kept on Skip/Next/Previous,
+  step announcer emptied on input change and on reveal, predict-then-run (empty guess refused, guess shown next to
+  the model's 90 ms, figure switched to the repeat visit), "connection reused" on DNS/TCP/TLS, reduced motion, /
+  still renders) (2026-10-27)
 - spec review: pass — two fresh-subagent reviews against verification.md (2026-10-27); every finding fixed and
   recorded below; the second round's fixes were checked by the author, not by a third review
 
@@ -831,3 +849,29 @@ Reviewer: third fresh subagent (re-review of the second-round fixes), 2026-10-27
   one explicit action, two short related messages; the status feedback is the one the learner asked for
 - [note] Each slider step re-announces the summary → accepted: allowed by spec step 11 (updates on input change),
   and slider value text is not repeated in it
+
+Reviewer: fresh subagent (final review of the implementation at e39603b: code, running build, sources), 2026-10-27,
+rubric verification.md
+
+- [should-fix] Q4 said a connection is "opened to an address"; Fetch reuses connections per origin → fixed (Q3 now:
+  reused only for the same origin [fetch: obtain a connection], origin = scheme, host, port [rfc9110 §4.3.1, checked
+  in the published text])
+- [should-fix] Q2's feedback said the timing entry "separates server time inside `responseStart − requestStart`",
+  but that interval mixes one round trip with server work → fixed (Q4 now compares it with a handshake's round
+  trip; spec and page)
+- [should-fix] No real predict-then-run: the figure never asked for a number before showing the model's → fixed
+  ("Predict, then run" panel: a typed guess for the repeat visit, shown next to the model's value and the
+  difference; spec Visual step 8; browser checks); the exercise now says exactly what to set in Fig. 1
+- [should-fix] "Fresh" used but never defined → fixed (defined under Cache, rfc9111 §1)
+- [note] Repeat-visit DNS skip reason "hostname cached" was wrong for a reused connection, which needs no lookup →
+  fixed (model, tests and figure say "connection reused"; Fetch resolves only for a new connection)
+- [note] "On the web, TCP provides it" ignored HTTP/3 → fixed (scoped to this chapter; HTTP/3 over QUIC deferred)
+- [note] Retrieval questions sat together at the end, though the spec places each after its section → fixed (Q1–3
+  after the journey and Fig. 1, Q4–5 after the worked example; renumbered in page order; spaced-review references
+  updated)
+- [note] "Not quite" feedback did not say which ticks were wrong, and put "The request's round trip" mid-sentence →
+  fixed (names missed and wrong items; label "Request round trip")
+- [note] Step announcer could keep step 5's text from before the reveal → fixed (emptied on reveal; check)
+- [note] RFC 9846 "July 2026" read as a verified publication date → fixed (title says it is the date in the WG's
+  final source)
+

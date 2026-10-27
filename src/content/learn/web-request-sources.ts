@@ -31,7 +31,7 @@ export const SOURCES: Source[] = [
     },
     {
         id: 'rfc9846',
-        title: 'RFC 9846: The Transport Layer Security (TLS) Protocol Version 1.3 (July 2026; obsoletes RFC 8446)',
+        title: 'RFC 9846: The Transport Layer Security (TLS) Protocol Version 1.3 (obsoletes RFC 8446; dated July 2026 in the working group’s final source)',
         publisher: 'IETF (E. Rescorla)',
         url: 'https://www.rfc-editor.org/rfc/rfc9846',
         read: 'tlswg/tls13-spec rfc9846.md @ c728b4e (the working group’s final source; the published RFC could not be reached); section numbers from that file',
