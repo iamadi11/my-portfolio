@@ -5,4 +5,5 @@
  */
 export const CHAPTER_ROUTES: Readonly<Record<string, string>> = {
     'web-request': '/learn/web-request',
+    'client-server': '/learn/client-server',
 };
