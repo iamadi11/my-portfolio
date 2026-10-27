@@ -1,8 +1,9 @@
 # Clients, servers and request–response
 
 Id: client-server · Stage: 1 · Paths: beginner interview production (status lives only in CURRICULUM.md)
-Implementation: none yet. The owner has not authorized adding this chapter to `/learn` (2026-10-27); the spec stops
-at step 5 (Authored).
+Implementation: `src/app/learn/client-server/page.tsx`, `src/components/learn/client-server/ExchangeStepper.tsx`,
+`src/lib/learn/client-server-model.ts` (+ `.test.ts`), `src/content/learn/client-server-sources.ts` (owner
+authorized integration on 2026-10-27).
 Prerequisites: web-request · Related: http, idempotency, timeouts-retries, stateless-services, realtime,
 message-queues, ip-and-ports
 
@@ -14,8 +15,9 @@ Objectives (observable):
    server on one connection and a client on another.
 2. Name the parts of one HTTP request (method, target, header fields, optional body) and of one response (status
    code, header fields, optional body), given the raw text of an HTTP/1.1 exchange.
-3. Explain what a client can and cannot know when no response arrives, and use that to say which requests are safe
-   to send again automatically.
+3. Explain what a client can and cannot know when no response arrives, use that to say which requests are safe
+   to send again automatically (and under which assumptions), and describe how an idempotency key lets a server
+   recognise a repeated `POST`.
 4. Explain what "HTTP is stateless" means and how a site still remembers a visitor between requests.
 
 In scope: the two roles, who starts an exchange, what one request and one response contain, statelessness and
@@ -28,7 +30,7 @@ Deferred:
   `cloud-networking`
 - Every method, status code and header in detail; how HTTP/1.1 frames a message → `http`
 - HTTP/2 and HTTP/3, where messages are not plain text → `http-versions`
-- Making a non-idempotent operation safe to retry (idempotency keys) → `idempotency`
+- Idempotency keys in depth (key expiry, payload fingerprints, storage, keys across a server fleet) → `idempotency`
 - Choosing timeouts, retry limits and backoff → `timeouts-retries`
 - Where session state lives in a server fleet → `stateless-services`, `load-balancing`
 - Server push (polling, server-sent events, WebSockets) → `realtime`
@@ -191,15 +193,37 @@ Glossary rules for the course (added here):
       intended effect even if the first one succeeded. A client should not automatically repeat a non-idempotent
       request such as `POST` unless it knows that repeating is safe for that resource or can tell that the
       original was never applied. [rfc9110 §9.2.2; rfc9112 §9.3.1]
+      Two qualifications. First, idempotency is about the *intended effect of identical requests*: a `PUT` that
+      sets quantity 2 is safe to repeat, but only if the server really implements `PUT` as "replace the state",
+      and the standard notes that other clients may change the resource in between, so a repeated `PUT` can undo
+      someone else's change. [rfc9110 §9.2.2, §9.3.4] Second, the server is still free to log each copy or have
+      other side effects. [rfc9110 §9.2.2]
+   9. **Making `POST` recognisable: idempotency keys.** The client puts a unique value, such as a random UUID, in
+      an `Idempotency-Key` header field, and sends the same value again with every retry of that request. A
+      server that supports it processes the first request with a new key normally. A later request with a key it
+      has already seen gets a response consistent with the original (no second order). If the original is still
+      being processed when the retry arrives, the server answers `409 Conflict`, and the client tries again
+      later. [idempotency-key-draft §2.2, §2.6, §2.7; rfc9110 §15.5.10] This works only when the server
+      implements it correctly, and it is still an IETF draft, not a finished standard: a client cannot assume a
+      server honours the field unless the server documents it. [idempotency-key-draft §2.5.1] (Details:
+      `idempotency`.)
+   10. **Three layers, kept apart.** *HTTP semantics* say what a method means (`PUT` is idempotent, `POST` is
+       not). *Application behaviour* is what a particular server actually does (whether its `PUT` handler really
+       replaces state, whether it honours idempotency keys). *Infrastructure* is what happens on the way
+       (lost messages, timeouts, closed connections, proxies). A retry is safe only when all three line up: the
+       method allows it, the server implements it, and the client knows how its request may have failed.
+       (Derived from steps 7–9.)
 
 8. **What the learner can change and watch.** In the visual (Visual, below), the learner picks:
-   - the method: `GET /orders/42`, `PUT /orders/42` (set the quantity to 2) or `POST /orders` (place an order);
+   - the method: `GET /orders/42`, `PUT /orders/42` (set the quantity to 2), `POST /orders` (place an order), or
+     `POST /orders` with an idempotency key the server honours;
    - what happens on the way: nothing goes wrong, the request is lost, the response is lost, or the response is
      late (the server answers after the client's timeout);
    - whether the client sends the request again once.
 
-   They watch what the client sees, how many times the server carried out the request, and the resulting state on
-   the server (number of orders placed, the order's quantity).
+   They predict first, then run the exchange step by step, and watch what the client sees, how many times the
+   request reached the server, and the resulting state on the server (new orders, total orders, the order's
+   quantity).
 
 9. **Alternatives.** Four ways for two programs to work together:
    - **Request–response** (this chapter): the client asks and waits for the answer.
@@ -295,74 +319,86 @@ What this example simplifies:
   standard's rule in step 3 is written for clients, not people. [rfc9110 §9.2.2] (Retry policies: `timeouts-retries`.)
 - The server here does each request completely or not at all. A request that half-completes is taught in
   `failure-modes` and `transactions`.
-- `PUT` with a whole new representation of the order is the idempotent way to change it; how to make `POST`
-  safe to repeat is `idempotency`.
+- `PUT` with a whole new representation of the order is the idempotent way to change it; how an idempotency key
+  makes a repeated `POST` safe is question 7, step 9, and in depth `idempotency`.
 
 ## Visual
 
 Decision: **stepper with a small discrete model** because the mechanism is a short sequence of discrete events
-(request sent, maybe lost, server acts, response sent, maybe lost or late, client decides), and the point is to
-compare a few cases side by side. No simulation is needed: there is no load, randomness or time series. No 3D.
+(request sent, maybe lost, server acts, response sent, maybe lost or late, client decides, maybe retries), and the
+point is to compare a few cases side by side. No simulation is needed: there is no load, randomness or time
+series. No 3D.
 
-Visual spec (the 14-step process):
+Visual spec (the 14-step process; revised at implementation, 2026-10-27, to add the idempotency-key case and
+predict-then-run):
 
 1. **Mechanism made visible:** the client sees only what arrives. Three different failures look identical from the
-   client's side, and only the method decides whether sending again is safe.
+   client's side; whether sending again is safe depends on the method and on what the server implements.
 2. **Misconception to break:** "no response means nothing happened, so try again".
-3. **Medium:** a stepper of frames on a two-column sequence diagram (client on the left, server on the right, time
-   downwards), plus a state panel for the server. Frames: request sent; request arrives (or is lost); server acts;
-   response sent; response arrives (or is lost or late); client decides; retry (if chosen).
-4. **Parts on screen:** client, server, the request arrow and the response arrow, the client's timeout line, and
-   the server's state ("orders placed", "order 42 quantity"). Each is a term from "Parts you'll meet".
-5. **Model:** `exchange(method, fault, retry) → { clientSees, applied, orders, quantity }`.
-   - Inputs: `method` ∈ {GET, PUT, POST}; `fault` ∈ {none, request lost, response lost, response late}; `retry`
-     ∈ {no, once}.
-   - Server state before the exchange: 1 order (order 42, quantity 1). `GET` reads it, `PUT` sets the quantity to
-     2, `POST` creates a new order.
-   - The first attempt: with `request lost`, the server does nothing; with `none`, `response lost` or
-     `response late`, the server carries out the request once. The client sees the response only with `none`;
-     with the other three it sees "no response before the timeout".
-   - The retry (only if chosen and the first attempt showed no response): it arrives, the server carries it out,
-     and its response arrives in time.
-   - Outputs: what the client saw on each attempt; `applied` = how many times the server carried out the request
-     (0, 1 or 2); `orders` = number of orders; `quantity` = order 42's quantity.
+3. **Medium:** a stepper over a two-lane sequence diagram (client on the left, server on the right, time
+   downwards), plus a state panel for the server. The learner chooses a case, presses Run, and steps through the
+   events the model produces.
+4. **Parts on screen:** client, server, request and response arrows, the client's timeout mark, and the server's
+   state (orders, order 42's quantity). Each is a term from "Parts you'll meet".
+5. **Model:** `exchange({ method, fault, retry }) → { attempts, events, reached, newOrders, totalOrders, quantity }`.
+   - Inputs: `method` ∈ {GET, PUT, POST, POST with key}; `fault` ∈ {none, request lost, response lost, response
+     late}; `retry` ∈ {off, once}.
+   - State before: 1 order (order 42, quantity 1). `GET /orders/42` reads it; `PUT /orders/42` sets quantity 2;
+     `POST /orders` creates the next order (43, then 44).
+   - First attempt. `request lost`: it never reaches the server. `none`: the server carries it out and the
+     response arrives. `response lost`: the server carries it out, the response never arrives. `response late`:
+     the server is still working when the client gives up; it finishes later.
+   - Retry (only when chosen and the first attempt showed no response): sent after the client gives up; it
+     arrives and its response arrives in time. In the `response late` case it arrives while the first is still
+     being processed.
+   - Server behaviour per method: `GET` changes nothing (200 OK); `PUT` sets quantity 2 (200 OK); `POST` creates
+     an order (201 Created) every time it arrives; `POST` with key creates an order the first time a key is seen,
+     replays the original response if the original has finished, and answers 409 Conflict if the original is
+     still being processed. [rfc9110 §9.3.1, §9.3.3, §9.3.4, §15.5.10; idempotency-key-draft §2.6, §2.7]
+   - Outputs: per attempt, whether it reached the server, what the server did, and what the client saw;
+     `reached` (0–2), `newOrders` (0–2), `totalOrders` (1–3), `quantity` (1–2); and the ordered list of events
+     the stepper shows.
 
-   Assumptions, shown beside the visual: one retry at most; the retry always succeeds; the server carries out a
-   request completely or not at all; nothing else changes the orders meanwhile; no proxies; "teaching model, not
-   a benchmark".
-6. **Controls:** method (3 options, default `POST`), what goes wrong (4 options, default `none`), retry (on/off,
-   default off). No numeric controls: the timeout and server time are labelled assumptions in the worked example,
+   Assumptions, shown beside the visual: at most one retry, which always arrives and gets its response in time;
+   the server carries out a request completely or not at all; nobody else changes order 42 meanwhile; the keyed
+   server records each key together with its result; no proxies; "teaching model, not a benchmark".
+6. **Controls:** method (4 options, default `GET`), what goes wrong (4 options, default `none`), retry (checkbox,
+   default off), Run, then Previous/Next step. No numeric controls: timings are assumptions in the worked example,
    not inputs.
-7. **Readouts:** what the client saw (per attempt), how many times the server carried out the request, orders
-   placed, order 42's quantity. All computed from the model.
-8. **Prediction prompt (predict, then run):** before the learner turns retry on, with `POST` and "response lost"
-   chosen: "The app saw no response and sends the request again. How many new orders will the server have placed?"
-   (choices 0, 1, 2). Show the model's answer (2) next to theirs, then ask the same with `PUT`: "What will order
-   42's quantity be?" (model: 2, the same as without the retry). The prompt names the fault so the answer is
-   determined; the readout then shows that the client's view was the same for all three faults.
-9. **Signaling:** the current frame's arrow is heavy; a lost message ends in a cross mark at the point it stopped;
-   a late response crosses below the client's timeout line. The state panel's changed value is outlined when it
-   changes.
-10. **States:** delivered = solid arrow; lost = dashed arrow ending in a cross; late = solid arrow ending below the
-    dashed timeout line, labelled "late: client stopped waiting"; each state also in text. Never colour alone
-    (monochrome drawing set).
-11. **Text alternative:** a live summary that updates when an input changes, e.g. "POST, response lost, retried
-    once: client saw no response, then 201 Created. The server placed 2 orders; 3 orders exist." Step changes are
-    announced in a second polite region, as in `web-request`.
-12. **Reduced motion:** all frames are listed as a numbered sequence; arrows are drawn finished; nothing animates.
-13. **Tests (when implemented):**
-    - Without retry, the client sees the same thing for `request lost`, `response lost` and `response late`
-      (indistinguishability), for every method.
-    - `applied` is 0 for `request lost` without retry, 1 for the other faults without retry, and 1 or 2 with a
-      retry (2 exactly when the first attempt reached the server but its response did not reach the client in
-      time: response lost or late; with `none` no retry is sent).
-    - `POST` with `response lost` or `response late` and a retry gives 3 orders (the worked example's duplicate);
-      `PUT` gives quantity 2 once the server has carried it out, whether once or twice (quantity stays 1 only for
-      `request lost` without a retry); `GET` never changes the state.
-    - Every combination (3 × 4 × 2 = 24) gives `applied` in [0, 2] and `orders` in [1, 3].
-14. **Smallest width first:** at 375 px, the controls, the sequence diagram and the state panel stack in one
-    column; the diagram keeps two narrow lanes (client, server) so arrows stay readable. From 900 px the controls sit
-    on the left and the diagram and state panel on the right.
+7. **Readouts** (after Run only): what the client saw on each attempt, how many times the request reached the
+   server, new orders, total orders, order 42's quantity. All computed from the model.
+8. **Prediction (predict, then run):** before any outcome is shown, three questions with choices:
+   - A (recall): `POST`, response lost, sent again → how many new orders? (0, 1, 2; answer 2)
+   - B (predict): the same with an idempotency key the server honours → how many new orders? (0, 1, 2; answer 1)
+   - C (predict): with the key, but the response was late, so the retry arrives while the first is still being
+     processed → what does the retry get back? (201 Created again, 409 Conflict, no response; answer 409)
+
+   Check gives feedback per question (right, wrong with the reason, or "not answered yet"); Skip reveals without
+   answering; Check with a question unanswered names the open questions and reveals nothing. After that, "Run
+   case A/B/C" sets the controls to that case and runs it. Leak scope (tested): nothing in the figure states an
+   outcome before Check, Skip or Run, and nothing on the page above the figure states the keyed outcomes (replay,
+   409). The prose after the figure ("Making a repeated POST safe") explains them, in reading order after the
+   prediction. Default controls are `GET` with nothing going wrong, and outcomes appear only after Run.
+9. **Signaling:** the current event's arrow is heavy; a lost message ends in a cross; a late response is drawn
+   ending after the client's timeout mark. The state panel shows before → after.
+10. **States:** delivered = solid arrow; lost = dashed arrow ending in a cross; late = solid arrow past the
+    timeout mark with the text "late: client stopped waiting"; every state also in text. Never colour alone.
+11. **Text alternative:** a polite live summary updated when a case is run (e.g. "POST with key, response lost,
+    retried: first attempt no response; retry 201 Created (replayed). Reached the server 2 times; new orders 1;
+    total orders 2."), and a second polite region for step changes, emptied when the case changes.
+12. **Reduced motion:** nothing animates in any mode; all events of a run are listed as a numbered sequence.
+13. **Tests:**
+    - Without retry, the client sees the same thing for `request lost`, `response lost` and `response late`,
+      for every method.
+    - `POST` with `response lost` or `response late` and a retry gives 2 new orders (the worked example).
+    - `POST` with key: `response lost` + retry gives 1 new order and a replayed 201; `response late` + retry
+      gives 1 new order and 409 Conflict; `request lost` + retry gives 1 new order.
+    - `PUT` gives quantity 2 whenever it reached the server, once or twice; `GET` never changes state.
+    - Every combination (4 × 4 × 2 = 32): `reached` in [0, 2], `newOrders` in [0, 2], `totalOrders` = 1 +
+      `newOrders`, `quantity` in [1, 2]; events are deterministic.
+    - The prediction answers come from the model, and no outcome text is present before Run or Check.
+14. **Smallest width first:** at 375 px the prediction, controls, diagram and state panel stack in one column with
+    two narrow lanes; from 900 px the prediction and controls sit on the left, the diagram and state on the right.
 
 ## Practice
 
@@ -383,24 +419,7 @@ Retrieval questions (each asked after the section it names):
      rfc9110 §3.4]
    - **Wrong: "the response starts with the body".** The status line and header fields come first.
    - Revisit question 7, steps 3–4, and the worked example, step 1.
-3. _(after question 7, step 7)_ The app sent `POST /orders` and saw no response before its timeout. What does it
-   know about the order?
-   - **Answer:** nothing. The request may have been lost (no order), or the order may have been placed and the
-     response lost or late. [rfc9110 §7.5]
-   - **Wrong: "no order was placed".** That is only one of the three cases.
-   - **Wrong: "the order was placed, because the request was sent".** Sending is not arriving.
-   - Revisit question 5 and the worked example, step 2.
-4. _(after question 7, step 8)_ A connection fails before the client could read any response. Which of these
-   requests can the client send again automatically: `GET`, `PUT`, `DELETE`, `POST`?
-   - **Answer:** `GET`, `PUT` and `DELETE`: they are idempotent, so repeating has the same intended effect as
-     sending once. Not `POST`, unless the client knows that repeating is safe for that resource. [rfc9110 §9.2.2]
-   - **Wrong: "only GET, because it doesn't change anything".** `PUT` and `DELETE` change things but are still
-     idempotent: deleting twice leaves the resource deleted (the second response may differ, for example "not
-     found", but the effect is the same). [rfc9110 §9.2.2]
-   - **Wrong: "all of them, the server will sort it out".** Nothing in a plain `POST` marks it as a repeat, so
-     the server carries it out again (derived; how to add such a mark is `idempotency`).
-   - Revisit question 7, step 8.
-5. _(after question 7, steps 5–6)_ You add a lamp to your basket, and the next page shows it still there. HTTP is
+3. _(after question 7, steps 5–6)_ You add a lamp to your basket, and the next page shows it still there. HTTP is
    stateless. How does the server know it is your basket?
    - **Answer:** the browser sends something with each request that identifies you, typically a cookie the server
      set earlier with `Set-Cookie` and the browser returns in `Cookie`. [rfc6265 §3; mdn-cookies]
@@ -408,6 +427,30 @@ Retrieval questions (each asked after the section it names):
      connection come from the same user agent, and connections can be closed and reopened at any time.
      [rfc9110 §3.3; rfc9112 §9.5]
    - Revisit question 7, steps 5–6.
+
+
+4. _(after question 7, step 7)_ The app sent `POST /orders` and saw no response before its timeout. What does it
+   know about the order?
+   - **Answer:** nothing. The request may have been lost (no order), or the order may have been placed and the
+     response lost or late. [rfc9110 §7.5]
+   - **Wrong: "no order was placed".** That is only one of the three cases.
+   - **Wrong: "the order was placed, because the request was sent".** Sending is not arriving.
+   - **Note the difference:** "the client got no response" is what the client observes; "the server did not
+     process the request" is only one of the things that may have happened.
+   - Revisit question 5 and the worked example, step 2.
+5. _(after question 7, step 8)_ A connection fails before the client could read any response. Which of these
+   requests can the client send again automatically: `GET`, `PUT`, `DELETE`, `POST`?
+   - **Answer:** `GET`, `PUT` and `DELETE`: they are idempotent, so repeating has the same intended effect as
+     sending once. Not `POST`, unless the client knows that repeating is safe for that resource. [rfc9110 §9.2.2]
+   - **Wrong: "only GET, because it doesn't change anything".** `PUT` and `DELETE` change things but are still
+     idempotent: deleting twice leaves the resource deleted (the second response may differ, for example "not
+     found", but the effect is the same). [rfc9110 §9.2.2]
+   - **Caveat:** "idempotent" describes what the method means. It holds only if the server implements `PUT` and
+     `DELETE` as specified, and a repeated `PUT` can still overwrite a change another client made in between.
+     [rfc9110 §9.2.2, §9.3.4]
+   - **Wrong: "all of them, the server will sort it out".** Nothing in a plain `POST` marks it as a repeat, so
+     the server carries it out again (derived; how to add such a mark is `idempotency`).
+   - Revisit question 7, step 8.
 
 Exercise (transfer; the worked answer is revealed after an attempt):
 
@@ -425,14 +468,21 @@ Exercise (transfer; the worked answer is revealed after an attempt):
     again if the first payment is not there. (Derived from question 7, step 8.)
   - That check is not enough on its own: in the "response late" case the server may still be working on the first
     payment, so the `GET` does not show it yet and the app pays twice anyway. The client alone cannot close this
-    gap; the general fix, letting the server recognise a repeated `POST`, is `idempotency`.
+    gap on its own.
+  - The fix that works: the app creates one idempotency key when the user first presses "Pay" and sends it with
+    every retry of that payment. If the server honours keys, a retry after a lost response gets the original
+    result instead of a second payment, and a retry while the first is still running gets `409 Conflict`, so the
+    app waits and asks again. [idempotency-key-draft §2.6, §2.7] It relies on the server implementing the key
+    correctly; the details are `idempotency`.
 
 Spaced review:
 
 - `http` re-asks Q2 (parts of a request and a response).
-- `idempotency` re-asks Q4 and the exercise (which requests are safe to repeat).
-- `timeouts-retries` re-asks Q3 (what a timeout tells the client).
-- `stateless-services` re-asks Q5 (where state lives).
+- `idempotency` re-asks Q5 and the exercise (which requests are safe to repeat; keys).
+- `timeouts-retries` re-asks Q4 (what a timeout tells the client).
+- `stateless-services` re-asks Q3 (where state lives).
+
+(Questions are numbered in page order; renumbered at implementation, 2026-10-27.)
 
 ## Sources
 
@@ -445,13 +495,28 @@ Spaced review:
   published: 2022-06
   checked: 2026-10-27
   via: read
-  supports: [header fields are sent before the content and add metadata (§6.3); content is the data after the header section (§6.4); client and server are roles per connection; the same program can be both (§3.3); HTTP is stateless, each request understood in isolation, a server must not assume two requests on one connection come from the same user agent (§3.3); request = method + target + optional header fields, content, trailers; response = status code + optional header fields, content (§3.4); one or more responses per request (§3.4); user agent (§3.5); origin server (§3.6); intermediaries (§3.7); example exchange (§3.9); determining the target (§7.1); clients may abandon a request without a response; no set wait (§7.5); method semantics (§9.1); safe methods (§9.2.1); idempotent methods and retry rule (§9.2.2); GET (§9.3.1); POST and 201 with Location (§9.3.3); status classes (§15); 1xx interim (§15.2); 201 Created (§15.3.2); Content-Type gives the media type (§8.3); Content-Length gives the data length in octets (§8.6)]
+  supports: [header fields are sent before the content and add metadata (§6.3); content is the data after the header section (§6.4); client and server are roles per connection; the same program can be both (§3.3); HTTP is stateless, each request understood in isolation, a server must not assume two requests on one connection come from the same user agent (§3.3); request = method + target + optional header fields, content, trailers; response = status code + optional header fields, content (§3.4); one or more responses per request (§3.4); user agent (§3.5); origin server (§3.6); intermediaries (§3.7); example exchange (§3.9); determining the target (§7.1); PUT replaces state, success is 200/204 (or 201 if created), and other user agents may change the resource in parallel (§9.3.4); 409 Conflict (§15.5.10); clients may abandon a request without a response; no set wait (§7.5); method semantics (§9.1); safe methods (§9.2.1); idempotent methods and retry rule (§9.2.2); GET (§9.3.1); POST and 201 with Location (§9.3.3); status classes (§15); 1xx interim (§15.2); 201 Created (§15.3.2); Content-Type gives the media type (§8.3); Content-Length gives the data length in octets (§8.6)]
   note: >-
     Read in the published text as rendered by the HTTP WG (httpwg.org/specs/rfc9110.html, httpwg/httpwg.github.io
     @ ce03dd5; urn:ietf:rfc:9110, issued 2022-06), the copy section-checked for `web-request`. Sections were
     extracted by their heading ids and read in full for §3.3–§3.7, §3.9, §7.5, §9.1, §9.2.1, §9.2.2, §9.3.3, §15,
-    §15.2, §15.3.2, and the opening paragraphs of §6.3 (header fields), §6.4 (content; HTTP/1.1 message body vs
+    §15.2, §15.3.2, §9.3.4, §15.5.10, and the opening paragraphs of §6.3 (header fields), §6.4 (content; HTTP/1.1 message body vs
     content), §7.1 (target resource), §8.3 (Content-Type) and §8.6 (Content-Length). rfc-editor.org itself is unreachable from this container.
+- id: idempotency-key-draft
+  title: The Idempotency-Key HTTP Header Field (IETF HTTPAPI WG Internet-Draft, editor's copy)
+  author: J. Jena, S. Dalal, D. Tishkin
+  url: https://github.com/ietf-wg-httpapi/idempotency
+  kind: spec
+  checked: 2026-10-27
+  via: read
+  supports: [the client sends a unique key (a UUID or similar random value) in the Idempotency-Key request header (§2.2); a general client cannot assume a server respects the field without knowing it does (§2.5.1); a first request with a new key is processed normally; a duplicate after the original completed gets a response consistent with the original; a duplicate while the original is still being processed gets a conflict error (§2.6); that error is 409 Conflict (§2.7)]
+  note: >-
+    draft-ietf-httpapi-idempotency-key-header.md in ietf-wg-httpapi/idempotency @ a2cd12a (2026-10-22), the
+    working group's editor's copy after draft-07 ("Changes from Draft-07"). An Internet-Draft is work in progress,
+    not an RFC; the chapter says so. Section numbers are computed from the file's heading tree (2 = The
+    Idempotency-Key HTTP Request Header Field; 2.2 Uniqueness; 2.5.1 Client; 2.6 Idempotency Enforcement; 2.7
+    Error Handling) and may differ in a published draft. Datatracker (current draft number and status) is
+    unreachable from this container.
 - id: rfc9112
   title: HTTP/1.1 (RFC 9112, STD 99)
   author: Fielding, Nottingham, Reschke (eds.)
@@ -563,15 +628,40 @@ Spaced review:
   cases of a two-message exchange. A connection closed mid-response is folded into "response lost".
 - Whether a server notices that a client gave up is deliberately left to `timeouts-retries`; the worked example
   says only that it depends on the server.
-- Implementation, tests and an independent review are pending the owner's authorization to add this chapter to
-  `/learn`.
+- The Idempotency-Key field is an IETF Internet-Draft (read in the WG's editor's copy @ a2cd12a). Its current
+  published draft number and status could not be checked (datatracker unreachable); the chapter presents it as a
+  draft and only for the behaviour stated in that copy.
 
 ## Evidence
 
-- spec format: pass — `npx prettier --check docs/system-design/chapters/client-server.md` and `course.mjs check`
-  (2026-10-27)
-- independent review: not run — mode C stops at step 6 (implementation awaits the owner's authorization); the
-  skill runs the independent review at step 8, after implementation and tests (2026-10-27)
+- typecheck: pass — npx tsc --noEmit (2026-10-27)
+- lint: pass — npm run lint, no warnings or errors; prettier --check src docs clean (2026-10-27)
+- model tests: pass — npm test, 151 tests (55 client-server model: indistinguishability per method, POST
+  duplicates, keyed replay, keyed 409 while in progress, keyed first-arrival after a lost request, PUT and GET
+  per fault, 32-case invariants, determinism, prediction answers from the model; plus 93 web-request and 3
+  curriculum) (2026-10-27)
+- pre-commit audit: pass — fallow audit (new-only): 0 new issues; the one listed (unused dependency `critters`) is
+  pre-existing, `introduced: false` (2026-10-27)
+- course checks: pass — course.mjs check ok; course.test.mjs 23/23 (2026-10-27)
+- build and JS budget: pass — next build: /learn/client-server 111 kB first-load JS (budget 120 kB); /learn 107 kB,
+  /learn/web-request 111 kB, / 110 kB (unchanged). Browser, script bodies before the load event (gzip):
+  /learn/client-server 110.7 KB, /learn/web-request 111.0 KB, /learn 106.5 KB, / 112.9 KB (2026-10-27)
+- browser sizes: pass — Playwright at 375×812, 402×874, 768×1024, 1280×800, 1440×900, 1920×1080: no horizontal
+  scroll before and after a run, no console errors; figure screenshots read at 375 and 1280 (2026-10-27)
+- keyboard: pass — Playwright keyboard-only: method and fault radios (arrows), retry checkbox (Space), Run and step
+  buttons (Enter), Skip and Next keep focus when they become aria-disabled, answers open with Enter; visible 2 px
+  focus (2026-10-27)
+- reduced motion: pass — Playwright reducedMotion: no element in the figure transitions or animates; all events
+  listed and results shown after Run (2026-10-27)
+- accessibility scan: pass — axe-core 4.10.3, WCAG 2.0/2.1/2.2 A and AA at 375 and 1280 px, on load with answers
+  open and after reveal and a run: 0 violations (2026-10-27)
+- browser suite: pass — 46/46 checks for /learn/client-server (sizes, console, axe, leak checks, incomplete /
+  right / wrong feedback, keyboard, live summary and step announcements, stale-result clearing, cases A–C, late
+  case labelling, citation links and numbering, reduced motion, /learn and chapter 1 link to chapter 2, sitemap,
+  / renders); chapter 1 regression suite 69/69 (2026-10-27)
+- lighthouse: pass — Lighthouse 13.4.1 on the final build. /learn/client-server mobile 84 (first run after a
+  server start, TBT 510 ms), then 100, 99, 99; desktop 100. /learn/web-request 98 / 100, /learn 100 / 100, / 97 /
+  100. Accessibility, best practices and SEO 100 on all four; CLS 0 (2026-10-27)
 
 ## Review findings
 

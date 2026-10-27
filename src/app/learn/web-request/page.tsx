@@ -615,8 +615,12 @@ export default function Page(): React.JSX.Element {
                 <aside className="bp-sheet ln-next" aria-label="Next chapter">
                     <p className="ln-kicker">Next in the course</p>
                     <p>
-                        Chapter 2, <strong>Clients, servers and request–response</strong>, is planned and not
-                        written yet. <Link href="/learn">See the whole course</Link>.
+                        Chapter 2,{' '}
+                        <Link href="/learn/client-server">
+                            <strong>Clients, servers and request–response</strong>
+                        </Link>
+                        : who plays which role, what one exchange contains, and what a client can know when no
+                        response comes. <Link href="/learn">See the whole course</Link>.
                     </p>
                 </aside>
             </article>
