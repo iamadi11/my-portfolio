@@ -53,6 +53,9 @@ finding; the open items below are limits, not findings) or run mode D on what th
   because npm 10.9.4 crashes on this tree (`edgesOut` in arborist); a strict `npm ci` with npm 10.9.4 then installs
   the lockfile cleanly. The lockfile also moves `@types/node` 20.17.10 → 20.19.43 (within `"20"`; Vite 8's peer
   range) and patch-bumps `nanoid`, `source-map-js`, `@jridgewell/sourcemap-codec`, `undici-types`.
+- 2026-10-27 Deploys: `.vercelignore` keeps `docs/` local except `docs/system-design/CURRICULUM.md`, which `/learn`
+  reads at build time (a Vercel preview failed with ENOENT on it; reproduced and fixed by building from only the
+  files the ignore rules upload). Any other build-time read from `docs/` needs the same exception.
 
 ## Open issues
 
