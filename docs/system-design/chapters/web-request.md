@@ -300,7 +300,8 @@ Simplifications flagged (each corrected in its chapter):
 
 Decision: **stepper with a computed comparison** (static frames, learner-paced, plus a closed-form model).
 
-- The journey is a sequence of discrete steps, which is the stepper case in visualization-and-simulation.md.
+- The journey is a sequence of discrete steps, which is the stepper case in visualization-and-simulation.md (now `step` in
+  interaction-patterns.md).
 - The "where time goes" claim depends on a few inputs, so a tiny closed-form model computes it.
 - No discrete-event simulation is needed. There is no 3D: depth carries no meaning here.
 

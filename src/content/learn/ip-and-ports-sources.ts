@@ -17,6 +17,13 @@ export const IP_PORTS_SOURCES: Source[] = [
         read: PKG,
     },
     {
+        id: 'rfc2606',
+        title: 'RFC 2606: Reserved Top Level DNS Names (June 1999)',
+        publisher: 'IETF (D. Eastlake, A. Panitz)',
+        url: 'https://www.rfc-editor.org/rfc/rfc2606',
+        read: PKG,
+    },
+    {
         id: 'rfc4291',
         title: 'RFC 4291: IP Version 6 Addressing Architecture (February 2006)',
         publisher: 'IETF (R. Hinden, S. Deering)',
@@ -28,13 +35,6 @@ export const IP_PORTS_SOURCES: Source[] = [
         title: 'RFC 5737: IPv4 Address Blocks Reserved for Documentation (January 2010)',
         publisher: 'IETF (J. Arkko, M. Cotton, L. Vegoda)',
         url: 'https://www.rfc-editor.org/rfc/rfc5737',
-        read: PKG,
-    },
-    {
-        id: 'rfc2606',
-        title: 'RFC 2606: Reserved Top Level DNS Names (June 1999)',
-        publisher: 'IETF (D. Eastlake, A. Panitz)',
-        url: 'https://www.rfc-editor.org/rfc/rfc2606',
         read: PKG,
     },
     {
@@ -80,17 +80,17 @@ export const IP_PORTS_SOURCES: Source[] = [
         read: PKG,
     },
     {
-        id: 'rfc768',
-        title: 'RFC 768: User Datagram Protocol (August 1980)',
-        publisher: 'IETF (J. Postel)',
-        url: 'https://www.rfc-editor.org/rfc/rfc768',
-        read: PKG,
-    },
-    {
         id: 'rfc8085',
         title: 'RFC 8085: UDP Usage Guidelines (March 2017)',
         publisher: 'IETF (L. Eggert, G. Fairhurst, G. Shepherd)',
         url: 'https://www.rfc-editor.org/rfc/rfc8085',
+        read: PKG,
+    },
+    {
+        id: 'rfc768',
+        title: 'RFC 768: User Datagram Protocol (August 1980)',
+        publisher: 'IETF (J. Postel)',
+        url: 'https://www.rfc-editor.org/rfc/rfc768',
         read: PKG,
     },
 ];

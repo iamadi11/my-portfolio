@@ -137,9 +137,13 @@ const REQUIRED_EVIDENCE = [
 const ASSET_FIELDS = [
     'objective',
     'type',
+    'pattern',
     'learner sees',
+    'animated',
     'learner does',
+    'notice',
     'model',
+    'feedback',
     'assumptions',
     'outcome',
     'accessibility',
@@ -156,8 +160,34 @@ const ASSET_TYPES = [
     'experiment',
     'text',
 ];
-/** Types whose picture depends on inputs or time, so they need an executable model (references/visual-science.md). */
+/** Types whose picture depends on inputs or time, so they need an executable model (references/scientific-modeling.md). */
 const MODELLED = ['animated-2d', 'simulation', 'chart', '3d'];
+/** Interaction patterns (references/interaction-patterns.md); `read` is for figures the learner only reads. */
+const PATTERNS = [
+    'manipulate',
+    'predict',
+    'step',
+    'explore',
+    'break',
+    'compare',
+    'construct',
+    'quantitative',
+    'debug',
+    'read',
+];
+/** The ten dimensions of the visual rubric (references/visual-review.md). */
+const RUBRIC = [
+    'education',
+    'clarity',
+    'interaction',
+    'correctness',
+    'animation',
+    'hierarchy',
+    'accessibility',
+    'mobile',
+    'performance',
+    'consistency',
+];
 const VISUAL_REVIEW = {
     'text-heavy': 'no',
     'mechanism-via-visual': 'yes',
@@ -199,6 +229,13 @@ function visualErrors(c, text) {
     const filled = (h) => (section(text, h) ?? []).some((l) => !placeholder(l) && !/^```/.test(l));
     if (!filled('Storyboard'))
         errs.push(`${c.id}: status ${c.status} needs "## Storyboard" filled (owned by authored)`);
+    if (!filled('Concept decomposition'))
+        errs.push(`${c.id}: status ${c.status} needs "## Concept decomposition" filled (owned by authored)`);
+    const hardest = (section(text, 'Concept decomposition') ?? []).filter(
+        (l) => /^Hardest:\s*\S/.test(l) && !placeholder(l)
+    );
+    if (hardest.length < 2 || hardest.length > 3)
+        errs.push(`${c.id}: "## Concept decomposition" needs 2–3 "Hardest:" lines (has ${hardest.length})`);
     const list = assets(text);
     if (!list.length) errs.push(`${c.id}: status ${c.status} needs "## Asset plan" with "### A1 …" assets`);
     const covered = new Set();
@@ -254,19 +291,44 @@ function visualErrors(c, text) {
     for (const n of objectives)
         if (!covered.has(Number(n)))
             errs.push(`${c.id}: objective ${n} has no asset and no "- text-only: ${n} — <reason>" line`);
+    for (const a of list) {
+        const pat = a.fields.get('pattern');
+        for (const p of (pat ?? '').split(/[,+]\s*|\s+/).filter(Boolean))
+            if (!PATTERNS.includes(p) && !placeholder(pat))
+                errs.push(`${c.id}: asset ${a.name} has unknown pattern "${p}" (${PATTERNS.join(', ')})`);
+    }
+    const patterns = list.flatMap((a) => (a.fields.get('pattern') ?? '').split(/[,+]\s*|\s+/));
+    if (list.length && !patterns.some((p) => PATTERNS.includes(p) && !['predict', 'read'].includes(p)))
+        errs.push(
+            `${c.id}: no asset uses a pattern beyond predict/read (interaction must be more than quizzes)`
+        );
+    // Exception lines count only outside code fences (a template or example in a fence is not a decision).
+    const prose = text.replace(/^```[\s\S]*?^```/gm, '');
+    if (
+        list.length &&
+        !list.some((a) => !/^(none|n\/a)\b/i.test(a.fields.get('animated') ?? 'none')) &&
+        !/^Motion exception:\s*\S/m.test(prose)
+    )
+        errs.push(
+            `${c.id}: no asset animates anything; animate a mechanism or add a "Motion exception:" line`
+        );
     if (
         list.length &&
         list.every((a) => ['text', 'illustration'].includes(a.fields.get('type'))) &&
-        !/^Visual exception:\s*\S/m.test(text)
+        !/^Visual exception:\s*\S/m.test(prose)
     )
         errs.push(
             `${c.id}: every asset is text or illustration; add an explanatory asset or a "Visual exception:" line`
         );
     if (rank(c.status) >= rank('reviewed')) {
-        // The latest review's answers count: reviews are appended in order.
-        const line = (section(text, 'Review findings') ?? []).filter((l) => /^Visual review:/.test(l)).at(-1);
+        // The latest review counts: reviews are appended in order, each opening with a "Reviewer:" line, and all
+        // three lines must sit in that latest block (a block missing one never inherits an older review's line).
+        const all = section(text, 'Review findings') ?? [];
+        const from = all.findLastIndex((l) => /^Reviewer:/.test(l));
+        const lines = from >= 0 ? all.slice(from) : all;
+        const line = lines.filter((l) => /^Visual review:/.test(l)).at(-1);
         if (!line)
-            errs.push(`${c.id}: status ${c.status} needs a "Visual review:" line under "## Review findings"`);
+            errs.push(`${c.id}: status ${c.status} needs a "Visual review:" line in the latest review block`);
         else
             for (const [k, pass] of Object.entries(VISUAL_REVIEW)) {
                 const v = line.match(new RegExp(`\\b${k}=(yes|no)\\b`))?.[1];
@@ -274,6 +336,21 @@ function visualErrors(c, text) {
                 else if (c.status === 'verified' && v !== pass)
                     errs.push(`${c.id}: verified but the visual review says ${k}=${v}`);
             }
+        const rubric = lines.filter((l) => /^Visual rubric:/.test(l)).at(-1);
+        if (!rubric)
+            errs.push(`${c.id}: status ${c.status} needs a "Visual rubric:" line in the latest review block`);
+        else
+            for (const k of RUBRIC) {
+                const v = rubric.match(new RegExp(`\\b${k}=(pass|fail)\\b`))?.[1];
+                if (!v) errs.push(`${c.id}: "Visual rubric:" needs ${k}=pass|fail`);
+                else if (c.status === 'verified' && v !== 'pass')
+                    errs.push(`${c.id}: verified but the visual rubric says ${k}=fail`);
+            }
+        const rejects = lines.filter((l) => /^Rejects:/.test(l)).at(-1);
+        if (!rejects)
+            errs.push(`${c.id}: status ${c.status} needs a "Rejects:" line in the latest review block`);
+        else if (c.status === 'verified' && !/^Rejects:\s*none\s*$/i.test(rejects))
+            errs.push(`${c.id}: verified with rejects: "${rejects}"`);
     }
     return errs;
 }

@@ -2,31 +2,34 @@
 
 ## Contents
 
-- Stages A–F (visual first)
+- Six stages, experience first
 - The 14-question explanation pattern
 - Writing rules (teach from zero)
 - Chapter spec template (`docs/system-design/chapters/<id>.md`)
 - Assessment design
 - Independent review hand-off
 
-## Stages A–F (visual first)
+## Six stages, experience first
 
-A chapter is built in this order. The visual model comes before the prose; the prose names and qualifies what the
-learner has already seen. Detail for each stage is in visual-design.md (look, interaction, asset plan format,
-acceptance criteria) and visual-science.md (models, evidence classes, the adversarial pass).
+A chapter is conceived as an experience before it is written as text. Each stage has an output in the spec; mode C
+steps in SKILL.md map onto them. Details: interaction-patterns.md, motion.md, rendering.md, scientific-modeling.md,
+visual-design.md, visual-review.md.
 
-| Stage | Mode C step  | Output in the spec                                                                                                                   |
-| ----- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| A     | 2 Boundary   | `## Boundary`: numbered objectives, misconceptions, what prose handles badly here                                                    |
-| B     | 4 Storyboard | `## Storyboard` (the sequence of visual states) and `## Asset plan` (one entry per asset)                                            |
-| D     | 5 Text draft | `## Explanation` drafted against the storyboard: short text planned beside each visual                                               |
-| C     | 6 Implement  | models + tests, then the visuals, then the page; the draft revised against the rendered visuals (cut what they show); `built:` paths |
-| E     | 7 Test       | model, interaction and answer-leak tests; adversarial pass recorded per asset                                                        |
-| F     | 8 Review     | a fresh reviewer examines the rendered page; `Visual review:` line (verification.md)                                                 |
+| Stage                               | Mode C step          | Output in the spec                                                                                                                                                                                                            |
+| ----------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 Concept decomposition             | 2                    | `## Concept decomposition`: mental models, mechanisms, misconceptions, temporal behaviour, quantitative relations, failure scenarios, trade-offs, what needs space or experiment; the 2–3 hardest concepts (`Hardest:` lines) |
+| 2 Interaction and visual storyboard | 4                    | `## Storyboard` (the learner's path through the figures) and `## Asset plan` (one entry per figure, all fields)                                                                                                               |
+| 3 Build the explanatory experience  | 6                    | Models and their tests first, then the figures and their interactions, then the page; `built:` paths                                                                                                                          |
+| 4 Add the scientific explanation    | 5 (draft), 6 (final) | `## Explanation`: rules, equations, assumptions and limits, placed beside the figure they qualify; drafted against the storyboard, rewritten against the rendered figures, cutting what they already show                     |
+| 5 Test the model and interaction    | 7                    | `## Evidence`: normal, boundary, invalid input, transitions, reset/replay, alternative scenarios, wrong predictions, leaks, accessibility, reduced motion, mobile, correctness                                                |
+| 6 Independent review                | 8                    | `## Review findings` with the `Visual review:`, `Visual rubric:` and `Rejects:` lines (visual-review.md)                                                                                                                      |
 
-The spec carries `Standard: visual-first` under its title; `course.mjs check` then requires the asset plan, its
-fields, objective coverage and, from `reviewed`, the visual review line. Chapters written before this standard lack
-the marker; `check` warns about them and they get a mode D pass to bring them up to it.
+For every hard concept, design around six questions before any prose: what should the learner understand; what
+can they see that makes it easier; what can they manipulate to discover the rule; what can they predict before
+observing; what feedback connects the outcome to the mechanism; what should they be able to explain or transfer.
+
+The spec carries `Standard: visual-first` under its title; `course.mjs check` enforces the structure. Specs written
+before this standard say `Standard: legacy — <why>` and get a mode D pass.
 
 ## The 14-question explanation pattern
 
@@ -78,12 +81,22 @@ Standard: visual-first
 Objectives (observable, numbered): ...
 
 1. <the learner can predict / explain / calculate ...>
-2. ...
 
 In scope: ...
 Deferred: <topic> → <chapter id>
 Misconceptions targeted: ...
-Hard to say in prose: <change over time, spatial or many-to-many relations, cause under a variable ...>
+
+## Concept decomposition
+
+Mental models: ...
+Mechanisms: ...
+Temporal behaviour: ...
+Quantitative relations: ...
+Failure scenarios: ...
+Trade-offs: ...
+Needs space or experiment: ...
+Hardest: <concept> — <why it is hard, and which figure teaches it>
+Hardest: <concept> — ...
 
 ## Parts you'll meet
 
@@ -91,8 +104,8 @@ Hard to say in prose: <change over time, spatial or many-to-many relations, caus
 
 ## Storyboard
 
-1. <first visual state the learner sees, and the question it raises>
-2. <what they do, what changes, what they should notice>
+1. <the learner's first view and the question it raises>
+2. <what they do, what moves, what they should notice>
    ...
 
 ## Asset plan
@@ -103,15 +116,19 @@ Objective coverage: 1 → A1 · 2 → A2
 
 - objective: 1
 - type: precision-2d | animated-2d | simulation | chart | 3d | illustration | experiment | text
-- learner sees: ...
-- learner does: ...
-- model: ...
-- assumptions: ...
-- outcome: ...
-- accessibility: ...
-- tests: ...
-- evidence: ...
-- built: <paths, from Implemented>
+- pattern: manipulate | predict | step | explore | break | compare | construct | quantitative | debug | read
+- learner sees: <initial view>
+- animated: <what moves and what the motion means, or "none — <reason>">
+- learner does: <what can be manipulated>
+- notice: <what the learner is expected to notice>
+- model: <state, inputs with units and ranges, rules; what the model does when inputs change>
+- feedback: <what is shown after an action, and how it ties the outcome to the rule>
+- assumptions: <simplifications, limits, misconceptions guarded>
+- outcome: <what the learner can predict, explain or calculate afterwards>
+- accessibility: <text alternative, keyboard, reduced-motion form, mobile layout>
+- tests: <model, interaction and leak tests>
+- evidence: <source ids with sections, and the evidence class of each claim>
+- built: <file paths, from Implemented>
 
 ## Explanation (14 questions)
 
@@ -120,11 +137,11 @@ Objective coverage: 1 → A1 · 2 → A2
 
 ## Worked example
 
-<steps, with fading plan: which steps the learner completes in the exercise>
+<steps, with fading plan>
 
 ## Visual
 
-Decision: <one line: which assets carry the chapter and why this medium>
+Decision: <which figures carry the chapter, and why 2D or 3D>
 
 ## Practice
 
@@ -148,6 +165,8 @@ Spaced review: <which later chapters re-ask which question>
 
 Reviewer: <fresh subagent>, <date>
 Visual review: text-heavy=no · mechanism-via-visual=yes · every-visual-teaches=yes · claims-defensible=yes · interaction-helps=yes
+Visual rubric: education=pass · clarity=pass · interaction=pass · correctness=pass · animation=pass · hierarchy=pass · accessibility=pass · mobile=pass · performance=pass · consistency=pass
+Rejects: none
 
 - [blocking | should-fix | note] <finding> → fixed (<where>) | accepted: <reason> | open
 ```
@@ -169,6 +188,6 @@ Assessment is for learning (retrieval and feedback), not grading.
 ## Independent review hand-off
 
 Give the reviewer (a fresh subagent with no authoring context) only: the spec path, the implementation paths, the
-URL of the running page, and `references/verification.md`, `references/visual-design.md` and
-`references/visual-science.md`. Ask it to use the rendered page (screenshots at the required sizes, operating every
+URL of the running page, and `references/verification.md`, `references/visual-review.md`,
+`references/scientific-modeling.md`, `references/interaction-patterns.md` and `references/motion.md`. Ask it to use the rendered page (screenshots at the required sizes, operating every
 control), not only the source, and for findings by severity with file and line. Don't tell it what you think is fine.

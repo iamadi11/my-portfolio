@@ -401,15 +401,22 @@ test('bad usage exits 2; the skill validates', () => {
     assert.equal(spawnSync(process.execPath, [SCRIPT, 'skill']).status, 0);
 });
 
+const RUBRIC_OK =
+    'Visual rubric: education=pass · clarity=pass · interaction=pass · correctness=pass · animation=pass · hierarchy=pass · accessibility=pass · mobile=pass · performance=pass · consistency=pass\nRejects: none\n';
+
 /** A visual-first spec: two objectives, given assets, optional extra lines (storyboard, review…). */
 const asset = (n, type, extra = {}) =>
     `### A${n}. Asset\n\n` +
     Object.entries({
         objective: String(n),
         type,
+        pattern: 'manipulate',
         'learner sees': 'a host with two ports',
+        animated: 'the packet travels to the chosen socket at the model event times',
         'learner does': 'picks a port and runs',
+        notice: 'the port, not the address, picks the program',
         model: 'demux table: (proto, port) → process',
+        feedback: 'the receiving socket is drawn heavy and named with its rule',
         assumptions: 'one host, no NAT',
         outcome: 'predicts the receiving process',
         accessibility: 'text summary in a live region',
@@ -423,6 +430,7 @@ const asset = (n, type, extra = {}) =>
 const visual = (assetsText, more = '') =>
     'Standard: visual-first\n\n' +
     READ.replace(LEGACY, '').replace('Objectives: x', 'Objectives:\n\n1. predict\n2. explain') +
+    '\n## Concept decomposition\n\nMechanisms: demultiplexing\nHardest: ports vs addresses — Fig. 1\nHardest: socket pairs — Fig. 2\n' +
     '\n## Storyboard\n\n1. the learner sees a host\n\n## Asset plan\n\n' +
     assetsText +
     more;
@@ -515,7 +523,7 @@ test('visual-first: reviewed needs the visual review; verified needs it passing'
                     visual(asset(1, 'precision-2d', { built: '`src/fig.tsx`' }) + asset(2, 'text')) +
                     PASS +
                     REVIEW +
-                    (line ? `Visual review: ${line}\n` : ''),
+                    (line ? `Visual review: ${line}\n${RUBRIC_OK}` : ''),
             },
         });
     assert.match(run(base('reviewed', ''), 'check').out, /needs a "Visual review:" line/);
@@ -671,7 +679,8 @@ test('visual review: the latest line counts; built paths cannot be symlinks', ()
         visual(asset(1, 'precision-2d', { built: '`src/fig.tsx`' }) + asset(2, 'text')) +
         PASS +
         REVIEW +
-        lines.map((l) => `Visual review: ${l}\n`).join('');
+        lines.map((l) => `Visual review: ${l}\n`).join('') +
+        RUBRIC_OK;
     const at = (lines) =>
         run(
             course({
@@ -692,4 +701,62 @@ test('visual review: the latest line counts; built paths cannot be symlinks', ()
     });
     symlinkSync(join(root, 'docs/notes.md'), join(root, 'src/link.tsx'));
     assert.match(run(root, 'check').out, /not an existing file: src\/link\.tsx/);
+});
+
+test('visual-first standard: decomposition, patterns beyond quizzes, motion, rubric and rejects', () => {
+    const rows = [row('a', 1, '', 'authored')];
+    const out = (spec) => run(course({ rows, specs: { a: spec } }), 'check');
+    const ok = visual(asset(1, 'precision-2d') + asset(2, 'simulation'));
+    assert.equal(out(ok).code, 0, out(ok).out);
+    assert.match(
+        out(ok.replace(/Hardest: socket pairs — Fig. 2\n/, '')).out,
+        /needs 2–3 "Hardest:" lines \(has 1\)/
+    );
+    assert.match(out(ok.replaceAll('pattern: manipulate', 'pattern: predict')).out, /beyond predict\/read/);
+    assert.match(out(ok.replace('pattern: manipulate', 'pattern: dazzle')).out, /unknown pattern "dazzle"/);
+    const still = ok.replaceAll(/animated: .*/g, 'animated: none — static');
+    assert.match(out(still).out, /no asset animates anything/);
+    assert.equal(out(still + '\nMotion exception: a definition chapter\n').code, 0);
+    // An exception inside a code fence (an example, a template) is not a decision.
+    assert.match(out(still + '\n```\nMotion exception: example\n```\n').out, /no asset animates anything/);
+    // Review lines: the rubric and rejects are required from reviewed; verified needs all pass and no rejects.
+    const at = (status, tail) =>
+        run(
+            course({
+                rows: [row('a', 1, '', status)],
+                product: 'src',
+                files: { 'src/fig.tsx': 'x' },
+                specs: {
+                    a:
+                        visual(
+                            asset(1, 'precision-2d', { pattern: 'explore', built: '`src/fig.tsx`' }) +
+                                asset(2, 'text')
+                        ) +
+                        PASS +
+                        REVIEW +
+                        'Visual review: text-heavy=no · mechanism-via-visual=yes · every-visual-teaches=yes · claims-defensible=yes · interaction-helps=yes\n' +
+                        tail,
+                },
+            }),
+            'check'
+        );
+    assert.match(at('reviewed', '').out, /needs a "Visual rubric:" line/);
+    assert.equal(at('reviewed', RUBRIC_OK.replace('mobile=pass', 'mobile=fail')).code, 0);
+    assert.match(
+        at('verified', RUBRIC_OK.replace('mobile=pass', 'mobile=fail')).out,
+        /visual rubric says mobile=fail/
+    );
+    assert.match(
+        at('verified', RUBRIC_OK.replace('Rejects: none', 'Rejects: decorative 3D')).out,
+        /verified with rejects/
+    );
+    assert.equal(at('verified', RUBRIC_OK).code, 0);
+    // A newer review block missing its rubric and rejects lines does not inherit the older block's.
+    assert.match(
+        at(
+            'reviewed',
+            RUBRIC_OK + '\nReviewer: second fresh subagent, 2026-01-03\nVisual review: text-heavy=no\n'
+        ).out,
+        /needs a "Visual rubric:" line in the latest review block/
+    );
 });

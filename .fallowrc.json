@@ -8,7 +8,8 @@
         "eslint-plugin-tailwindcss",
         "conventional-changelog-atom",
         "inquirer",
-        "critters"
+        "critters",
+        "esbuild"
     ],
     "duplicates": {
         "minOccurrences": 3
@@ -17,5 +18,5 @@
     "health": {
         "maxCrap": 420
     },
-    "ignorePatterns": ["docs/**"]
+    "ignorePatterns": ["docs/**", ".claude/skills/anatomy/**"]
 }

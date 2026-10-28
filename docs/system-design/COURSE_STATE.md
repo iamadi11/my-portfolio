@@ -9,13 +9,14 @@ The system design course is built only through the `system-design-educator` skil
 
 ## Current unit
 
-none
+ip-and-ports step 8 (re-check of the fourth review's fixes)
 
 ## Next action
 
-Mode D for `web-request` and `client-server` (legacy specs: add the storyboard and asset plan, build missing
-assets, cut prose the visuals carry), or mode C for the next eligible chapter, `dns` (`course.mjs next`). The owner
-decides the order. Chapter 3 is on branch `claude/trusting-wright-s27b5f`, not merged.
+A fresh reviewer re-checks the fixes for the fourth review's nine should-fix findings on the rendered page; if its
+three lines all pass with no rejects and no new blocking or should-fix finding, ip-and-ports moves to verified. After that: mode D for
+`web-request` and `client-server`, or mode C for `dns` (`course.mjs next`); the owner decides the order. The
+overhaul is on branch `claude/visual-first-learning-skill`, not merged.
 
 ## Decisions
 
@@ -35,6 +36,12 @@ decides the order. Chapter 3 is on branch `claude/trusting-wright-s27b5f`, not m
   route ≤ 120 kB and `/` unchanged (§10.4); WCAG 2.2 AA and Lighthouse ≥ 90 (§3); the six §10.5 device sizes with no
   horizontal scroll; reduced motion shows finished states (§10.7); `npx tsc --noEmit`, `npm run lint`, real browser
   check (§4). No new numbers.
+- 2026-10-28 Owner: the 120 kB first-load budget is the portfolio's (`/`, CLAUDE.md §10.4), not the course's.
+  Course budget: `/learn` routes ≤ 150 kB first-load and ≤ 400 kB more fetched on demand while the page is
+  scrolled (figures and their libraries in their own lazy chunks); Lighthouse ≥ 90 still binds
+  (`tests/browser/js-budget.cjs`). Supersedes the 2026-10-27 "≤ 120 kB per course route" proposal.
+- 2026-10-28 Owner: install what anatomy needs. Vendored `wheresryan22/anatomy` @ 1482e84 (MIT) as the `anatomy`
+  skill (`.claude/skills/anatomy/VENDORED.md`); added `esbuild` (dev) for its scripts; its tests 290/290.
 - 2026-10-27 Proposal (not built): when the product starts, add the route to `src/app/sitemap.ts` (today it lists
   only `/`) and check `public/sw.js` serves it under its network-first navigation rule (bump `VERSION` if rules change).
 - 2026-10-27 Curriculum v1 (mode B): 119 chapters, 12 stages, paths beginner 57 / interview 106 / production 106,
@@ -60,7 +67,12 @@ decides the order. Chapter 3 is on branch `claude/trusting-wright-s27b5f`, not m
 - 2026-10-27 Visual-first standard (owner request): chapters are planned as a storyboard and asset plan before the
   explanation; models before prose; a rendered-page review answers five visual questions. Specs declare
   `Standard: visual-first`; `course.mjs check` enforces the asset plan structure (references `visual-design.md`,
-  `visual-science.md`). Older specs warn until audited.
+  `visual-science.md`, renamed `scientific-modeling.md` on 2026-10-28). Older specs warn until audited.
+- 2026-10-28 Experience-first standard (owner request): six stages (concept decomposition → storyboard → build
+  the experience → scientific explanation → tests → independent review), nine interaction patterns, motion that
+  explains causality from model events, 2D by default with written reasons for 3D, a ten-item model document, and
+  a visual review rubric (five questions, ten dimensions, reject list). `check` enforces it; `ip-and-ports` was
+  lowered to `researched` (no decomposition, no animation) and is being rebuilt as the pilot.
 ## Open issues
 
 - `client-server`: implemented in `/learn` on the owner's authorization (2026-10-27); two independent reviews ran
@@ -133,4 +145,15 @@ decides the order. Chapter 3 is on branch `claude/trusting-wright-s27b5f`, not m
 - 2026-10-28 C ip-and-ports: tested → reviewed → verified. Three independent reviews (pilot; fixes; final fixes):
   1 + 1 blocking and 10 + 2 + 2 should-fix findings fixed; adversarial `check` wordings accepted (structure-only
   tool). 194 unit tests, browser 64/64 + 69/69 + 48/48, 116.3 kB first-load JS, course tests 35/35.
-
+- 2026-10-28 Phase 1: PR #23 merged (main a0a6fd8 = af288aa's tree). Skill overhaul on
+  `claude/visual-first-learning-skill`; ip-and-ports verified → researched under the new standard.
+- 2026-10-28 ip-and-ports rebuilt visual-first (steps 2–7): concept decomposition and storyboard; Fig. 1 explore
+  (no script), Fig. 2 packet travels through the host's checks, Fig. 3 a network of four routers (route change,
+  link failure, congestion; `network-model.ts`, 37 tests); kit `useClock`, `Transport`, `NearViewport`,
+  `verdict`. 213 unit tests, browser 72/72 + 69/69 + 48/48 + 5/5, 109.5 kB first-load JS (was 116.3), Lighthouse
+  mobile 99 / desktop 100. Status researched → tested.
+- 2026-10-28 Fourth review (fresh subagent) of faa5b85: 9 should-fix, 9 notes, no rejects; all fixed or accepted
+  with reasons (Fig. 2 stage list after the run ends, rules in "Ran it?" disclosures, Fig. 3 key, numbered drops,
+  "Why:" line, Previous announcement, clock holds offscreen, `check` reads one review block). Owner: course JS
+  budget split from `/`; anatomy vendored. Browser 77/77 + 69/69 + 48/48 + 9/9, Lighthouse 99/100. Status
+  tested → reviewed.

@@ -1,6 +1,6 @@
 ---
 name: system-design-educator
-description: Researches, plans, builds and verifies an interactive system design course (zero to advanced) one unit at a time, with a persistent learning graph, sourced claims, evidence-based teaching and tested simulations. Use when asked to start, audit or plan the system design course or academy, develop the next chapter, build or fix a specific chapter, lesson, lab or visualization about system design, or check what the course should do next.
+description: Researches, plans, builds and verifies a visual-first, interactive system design course (zero to advanced) one unit at a time — figures the learner manipulates, predicts, steps and breaks, animation driven by tested models, sourced claims and a persistent learning graph. Use when asked to start, audit or plan the system design course or academy, develop the next chapter, build or fix a chapter, lesson, lab, animation, simulation or interactive visualization about system design or networking, make a chapter more visual or interactive, or check what the course should do next.
 argument-hint: '[init | curriculum | next | chapter <id> | audit <id>]'
 ---
 
@@ -10,9 +10,11 @@ You build a system design course the way a careful author and engineer would: on
 traced to a source, every number a learner sees computed by a tested model, and the course state written down so the
 next session continues instead of starting over.
 
-**Visual first.** A chapter teaches its mechanisms mainly through precise diagrams, step-throughs and small
-simulations the learner acts on; prose names and qualifies what they have just seen. The asset plan comes before
-the explanation, and the review judges the rendered page, not the text.
+**Experience first.** Learners understand a system by observing, manipulating, predicting and experimenting with
+it. A chapter is conceived as two or three figures the learner acts on, each driven by a tested model, with motion
+that shows cause and effect; text introduces the problem, labels the figure, explains the surprise, states the
+assumptions and summarises. Interaction is central (nine patterns, quizzes only one of them), every motion means
+something, and every claim is defensible: spectacle never hides a wrong explanation.
 
 **One unit per invocation.** A unit is one mode A run, one mode B run, one chapter (mode C) or one repair (mode D).
 Never author several chapters in one go, even when asked to "build the course": do the next unit, record state, and
@@ -34,20 +36,26 @@ Read references only when the step needs them (each is one level deep from here)
 
 - [references/course-state.md](references/course-state.md): state formats, status gates, how "next" is chosen.
 - [references/curriculum.md](references/curriculum.md): learning graph, paths, minimum coverage, chapter sizing.
-- [references/chapter-workflow.md](references/chapter-workflow.md): stages A–F, the 14-question explanation
-  pattern, chapter spec template (storyboard and asset plan), assessment design.
+- [references/chapter-workflow.md](references/chapter-workflow.md): the six stages, the 14-question explanation
+  pattern, chapter spec template (concept decomposition, storyboard, asset plan), assessment design.
 - [references/research-and-sources.md](references/research-and-sources.md): source hierarchy, source records,
   claim checks, the oversimplification list.
 - [references/learning-science.md](references/learning-science.md): which teaching techniques to use and how strong
   the evidence is.
-- [references/visual-design.md](references/visual-design.md): asset types, the monochrome visual grammar,
-  interaction patterns, motion, accessibility, performance, asset plan format, the 15 visual acceptance criteria.
-- [references/visual-science.md](references/visual-science.md): model fidelity, the adversarial misconception
-  pass, evidence classes, units and invariants, uncertainty.
-- [references/visualization-and-simulation.md](references/visualization-and-simulation.md): choosing a medium per
-  objective, the visual design process, simulation models and their tests, 3D criteria.
-- [references/verification.md](references/verification.md): quality rubric, the rendered visual review (five
-  questions), independent review, browser checks.
+- [references/interaction-patterns.md](references/interaction-patterns.md): the nine interaction patterns, their
+  rules, and the kit components that implement them.
+- [references/motion.md](references/motion.md): animation that explains causality: the clock, events, controls,
+  easing, reduced motion, performance.
+- [references/rendering.md](references/rendering.md): asset types, 2D by default, when 3D is justified, external
+  assets, lazy loading and budgets.
+- [references/scientific-modeling.md](references/scientific-modeling.md): the ten-item model document, model kinds,
+  evidence classes, the adversarial pass, invariants, model tests.
+- [references/visual-design.md](references/visual-design.md): page layout, the figure card, the monochrome visual
+  grammar, typography, controls, accessibility of the visual layer.
+- [references/visual-review.md](references/visual-review.md): the release rubric: five questions, ten dimensions,
+  reject list, acceptance criteria, what to record.
+- [references/verification.md](references/verification.md): quality rubric, independent review procedure, checks
+  that must run, browser checks.
 
 Script (run it from the repo root; don't read it): `node ${CLAUDE_SKILL_DIR}/scripts/course.mjs <command>`
 
@@ -55,7 +63,8 @@ Script (run it from the repo root; don't read it): `node ${CLAUDE_SKILL_DIR}/scr
 - `check`: the graph (ids, rows, prerequisites, cycles, paths, and that every path holds its chapters'
   prerequisites), COURSE_STATE's current unit, and that each chapter's
   spec holds the evidence its status claims (sources, passing checks, a reviewer, no open findings; for
-  `Standard: visual-first` specs also the asset plan, objective coverage, built paths and the visual review).
+  `Standard: visual-first` specs also the concept decomposition, asset plan, patterns, motion, objective coverage,
+  built paths and the visual review rubric).
 - `show <id>`: one chapter's status, prerequisites and whether it can start; fails on an unknown id.
 - `skill`: this skill's own files. Tests: `node --test ${CLAUDE_SKILL_DIR}/scripts/course.test.mjs`.
 
@@ -137,16 +146,19 @@ the checklist into your reply:
 
 ```
 - [ ] 1 Read state       COURSE_STATE, CURRICULUM, the chapter's prerequisites' specs (for vocabulary already taught)
-- [ ] 2 Boundary (A)     numbered objectives, in/deferred, misconceptions, what prose handles badly here
+- [ ] 2 Decompose (1)    numbered objectives, in/deferred, misconceptions; concept decomposition with the 2–3
+                         hardest concepts, each with the six design questions answered (chapter-workflow.md)
 - [ ] 3 Research         sources for every claim → chapter spec "Sources" (research-and-sources.md)   → Researched
-- [ ] 4 Storyboard (B)   per objective: asset type or text-only reason; storyboard; asset plan with model,
-                         assumptions, evidence class, adversarial pass (visual-design.md, visual-science.md)
-- [ ] 5 Text draft (D)   14 questions, worked example, retrieval, exercise: a draft written against the
-                         storyboard, as short text beside each asset (chapter-workflow.md)            → Authored
-- [ ] 6 Implement (C)    models + tests first, then the visuals, then the page; then revise the draft
-                         against the rendered visuals, cutting what they already show; `built:` paths → Implemented
-- [ ] 7 Test (E)         model, interaction and answer-leak tests, typecheck, lint, browser checks     → Tested
-- [ ] 8 Review (F)       fresh reviewer on the rendered page: rubric + five visual questions; fix      → Reviewed
+- [ ] 4 Storyboard (2)   the learner's path through 2–3 figures; asset plan per figure: pattern, what moves
+                         and why, what is manipulated and noticed, model, feedback, tests, fallback
+                         (interaction-patterns.md, motion.md, rendering.md, scientific-modeling.md)
+- [ ] 5 Text draft (4)   14 questions, worked example, retrieval, exercise, drafted against the storyboard
+                         as short text beside each figure (chapter-workflow.md)                      → Authored
+- [ ] 6 Build (3, 4)     models + tests first, then the figures and their motion, then the page; then
+                         rewrite the text against the rendered figures, cutting what they show       → Implemented
+- [ ] 7 Test (5)         model, interaction, transition, reset/replay, leak, reduced-motion and mobile
+                         tests, typecheck, lint, budgets, browser checks (verification.md)           → Tested
+- [ ] 8 Review (6)       fresh reviewer on the rendered page: visual-review.md rubric; fix findings  → Reviewed
 - [ ] 9 Update state     CURRICULUM status, COURSE_STATE (log, decisions, next action, open issues)
 - [ ] 10 Report          what was built, gate reached, evidence, what didn't run, next unit
 ```
