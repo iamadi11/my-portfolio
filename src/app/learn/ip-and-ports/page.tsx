@@ -92,6 +92,13 @@ export default function Page(): React.JSX.Element {
                 />
 
                 <div className="ln-prose">
+                    <h2 id="machine">One machine, several programs</h2>
+                    <p>Select each part to see where it sits and what it answers.</p>
+                </div>
+
+                <HostExplorer roles={ROLES} />
+
+                <div className="ln-prose">
                     <h2 id="goals">By the end you can</h2>
                     <ol>
                         <li>Predict which program receives a packet, or what comes back when none does.</li>
@@ -103,13 +110,6 @@ export default function Page(): React.JSX.Element {
                         </li>
                         <li>Tell a name from an address from a port.</li>
                     </ol>
-                    <h2 id="machine">One machine, several programs</h2>
-                    <p>Select each part to see where it sits and what it answers.</p>
-                </div>
-
-                <HostExplorer roles={ROLES} />
-
-                <div className="ln-prose">
                     <h2 id="demux">Which program gets the packet?</h2>
                     <p>
                         Send a packet into the server. Predict, press Run, then step: the host checks the
@@ -130,28 +130,31 @@ export default function Page(): React.JSX.Element {
                 />
 
                 <div className="ln-prose">
-                    <ul>
-                        <li>
-                            <strong>Two connections, one difference.</strong> A connection is named by its
-                            pair of sockets <C ids={['rfc9293']} at="§3.4.1" />: 50001 and 50002 (from the
-                            range kept for such ports <C ids={['rfc6335']} at="§6" />) share every other
-                            number, and that is enough to keep them apart. A packet that opens a connection
-                            goes to the listening socket <C ids={['rfc9293']} at="§3.9.1.1" />.
-                        </li>
-                        <li>
-                            <strong>Nobody there.</strong> TCP answers with a reset{' '}
-                            <C ids={['rfc9293']} at="§3.5.2" />; for UDP the host <em>should</em> send ICMP
-                            Port Unreachable <C ids={['rfc1122']} at="§4.1.3.1" />. A firewall drops whatever
-                            its rule says, used port or not, so silence proves nothing.
-                        </li>
-                        <li>
-                            <strong>Not a user, not a tab.</strong> One connection can carry many requests{' '}
-                            <C ids={['rfc9112']} at="§9.3" />, and an HTTP/3 client should avoid duplicate
-                            connections to one server <C ids={['rfc9114']} at="§3.3" />, so browser tabs may
-                            share one; telling their requests apart is HTTP&rsquo;s job (chapter
-                            http-versions).
-                        </li>
-                    </ul>
+                    <details className="ln-q">
+                        <summary>Ran it? The rules behind what you saw</summary>
+                        <ul>
+                            <li>
+                                <strong>Two connections, one difference.</strong> A connection is named by its
+                                pair of sockets <C ids={['rfc9293']} at="§3.4.1" />: 50001 and 50002 (from the
+                                range kept for such ports <C ids={['rfc6335']} at="§6" />) share every other
+                                number, and that is enough to keep them apart. A packet that opens a
+                                connection goes to the listening socket <C ids={['rfc9293']} at="§3.9.1.1" />.
+                            </li>
+                            <li>
+                                <strong>Nobody there.</strong> TCP answers with a reset{' '}
+                                <C ids={['rfc9293']} at="§3.5.2" />; for UDP the host <em>should</em> send
+                                ICMP Port Unreachable <C ids={['rfc1122']} at="§4.1.3.1" />. A firewall drops
+                                whatever its rule says, used port or not, so silence proves nothing.
+                            </li>
+                            <li>
+                                <strong>Not a user, not a tab.</strong> One connection can carry many requests{' '}
+                                <C ids={['rfc9112']} at="§9.3" />, and an HTTP/3 client should avoid duplicate
+                                connections to one server <C ids={['rfc9114']} at="§3.3" />, so browser tabs
+                                may share one; telling their requests apart is HTTP&rsquo;s job (chapter
+                                http-versions).
+                            </li>
+                        </ul>
+                    </details>
 
                     <h2 id="packets">What happens on the way</h2>
                     <p>
@@ -173,29 +176,32 @@ export default function Page(): React.JSX.Element {
                 />
 
                 <div className="ln-prose">
-                    <ul>
-                        <li>
-                            <strong>Order changes when paths do.</strong> After the route change, packet 2
-                            takes the short path while 1 is still on the long one, and arrives first. Routing
-                            changes are one way this happens <C ids={['rfc8085']} at="§3.3" />.
-                        </li>
-                        <li>
-                            <strong>Loss happens where a packet cannot be forwarded.</strong> UDP hands the
-                            gap to the application <C ids={['rfc768']} at="Introduction" />. TCP resends and
-                            delivers bytes in order <C ids={['rfc9293']} at="§2.2, §3.4" />, so 4 and 5 wait
-                            for 2 and 3: the last read moves from tick 15 to tick 23.
-                        </li>
-                        <li>
-                            <strong>Congestion delays but keeps order</strong> on one first-in-first-out link
-                            (a model choice). When packets arrive every 2 ticks and the link needs 3, each
-                            waits longer than the last: arrivals outpace service, and the queue grows.
-                        </li>
-                        <li>
-                            <strong>Choosing (judgement).</strong> TCP for data that must arrive whole and in
-                            order and can wait; UDP for data that is useless when late, or with the
-                            application&rsquo;s own recovery <C ids={['rfc8085']} at="§3.3" />.
-                        </li>
-                    </ul>
+                    <details className="ln-q">
+                        <summary>Ran it? The rules behind what you saw</summary>
+                        <ul>
+                            <li>
+                                <strong>Order changes when paths do.</strong> Packets on different paths can
+                                overtake each other; routing changes are one way this happens{' '}
+                                <C ids={['rfc8085']} at="§3.3" />.
+                            </li>
+                            <li>
+                                <strong>Loss happens where a packet cannot be forwarded.</strong> UDP hands
+                                the gap to the application <C ids={['rfc768']} at="Introduction" />. TCP
+                                resends and delivers bytes in order <C ids={['rfc9293']} at="§2.2, §3.4" />,
+                                so data behind a gap waits for it: complete, but later.
+                            </li>
+                            <li>
+                                <strong>Congestion delays but keeps order</strong> on one first-in-first-out
+                                link (a model choice). A queue grows only while packets arrive faster than the
+                                link can send them.
+                            </li>
+                            <li>
+                                <strong>Choosing (judgement).</strong> TCP for data that must arrive whole and
+                                in order and can wait; UDP for data that is useless when late, or with the
+                                application&rsquo;s own recovery <C ids={['rfc8085']} at="§3.3" />.
+                            </li>
+                        </ul>
+                    </details>
 
                     <h2 id="practice">Check yourself</h2>
                     <Question

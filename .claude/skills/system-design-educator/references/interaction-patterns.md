@@ -93,7 +93,8 @@ lacks):
 
 - `Choice`: labelled radio group drawn as segmented buttons (manipulate, predict, compare).
 - `Transport`: Play/Pause, Previous/Next step, Reset, Replay, with the current step announced (step, break).
-- `useClock`: the figure's time, play/pause/seek/step, stops offscreen, reduced motion → stepped (motion.md).
+- `useClock`: the figure's time, play/pause/seek/step, holds while offscreen (pass `target`), reduced motion →
+  stepped (motion.md).
 - `Question`: a recall question with its answer behind a disclosure.
 - `NearViewport`: renders a server-rendered fallback card (same figure id and height), loads the interactive
   figure with `React.lazy` when it nears the viewport (rendering.md).

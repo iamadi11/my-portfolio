@@ -104,15 +104,15 @@ function focus(p: Packet, d: Delivery, stage: Stage | undefined): Set<string> {
 
 /** Where the packet tag sits when a stage has acted on it (drawing coordinates): beside each part's text, never on it. */
 const SPOT: Record<string, [number, number]> = {
-    origin: [300, 18],
+    origin: [292, 18],
     addr: [246, 74],
     other: [298, 389],
     fw: [294, 105],
     'lane-TCP': [56, 140],
     'lane-UDP': [212, 140],
-    'conn-1': [159, 188],
-    'conn-2': [159, 216],
-    'listen-443': [162, 271],
+    'conn-1': [174, 188],
+    'conn-2': [174, 216],
+    'listen-443': [180, 271],
     'tcp-none': [150, 307],
     'udp-8125': [282, 201],
     'udp-none': [288, 312],
@@ -161,10 +161,7 @@ function Moving({ p, d, t }: { p: Packet; d: Delivery; t: number }): React.JSX.E
     return (
         <g>
             <g transform={`translate(${x} ${y})`}>
-                <rect x={-13} y={-9} width={26} height={18} rx={3} className="nb ln-active" />
-                <text x={0} y={5} textAnchor="middle" className="dts">
-                    pkt
-                </text>
+                <rect x={-6} y={-6} width={12} height={12} rx={2} className="ln-pkt" />
             </g>
             {reply && t > n ? (
                 <g transform={`translate(${rx} ${ry})`}>
@@ -292,6 +289,9 @@ function Drawing({
     );
 }
 
+/** "The web server's answer" → "the web server's answer"; acronyms ("ICMP …") stay as they are. */
+const lowerFirst = (s: string): string => (/^[A-Z][a-z]/.test(s) ? s[0].toLowerCase() + s.slice(1) : s);
+
 /** The clock's marks: the moment the tag arrives at each stage, and the reply reaching the sender, if any. */
 const marksOf = (n: number, reply: boolean): number[] => [
     ...Array.from({ length: n }, (_, k) => k + TRAVEL),
@@ -309,12 +309,12 @@ function CurrentStep({
     step,
     n,
     of,
-    reply,
+    replied,
 }: {
     step: Step | undefined;
     n: number;
     of: number;
-    reply: string | null;
+    replied: boolean;
 }): React.JSX.Element {
     if (!step)
         return (
@@ -328,7 +328,7 @@ function CurrentStep({
                 Step {n} of {of}, {STAGE_LABEL[step.stage]}.
             </strong>{' '}
             {step.text} <span className="ln-step-why">({step.source})</span>
-            {reply ? ` Then the reply reaches the sender: ${reply}.` : null}
+            {replied ? ' Then the reply reaches the sender.' : null}
         </p>
     );
 }
@@ -375,7 +375,8 @@ export default function DemuxLab(): React.JSX.Element {
     // One mark per stage (the moment the tag arrives there), and one for the reply reaching the sender, if any.
     const hasReply = run ? REPLY[run.d.outcome] !== undefined : false;
     const marks = useMemo(() => marksOf(steps.length, hasReply), [steps.length, hasReply]);
-    const clock = useClock({ marks, end: marks.at(-1) ?? 1 });
+    const figure = useRef<HTMLElement>(null);
+    const clock = useClock({ marks, end: marks.at(-1) ?? 1, target: figure });
     const at = Math.min(steps.length - 1, Math.max(0, clock.at));
     const clear = (): void => {
         setRun(null);
@@ -406,7 +407,7 @@ export default function DemuxLab(): React.JSX.Element {
     const verdict = done ? judge(done.guess, done.d.outcome, OUTCOME_LABEL) : '';
     const replied = hasReply && clock.at >= steps.length;
     return (
-        <figure className="bp-sheet ln-fig" aria-labelledby="fig2-h">
+        <figure ref={figure} className="bp-sheet ln-fig" aria-labelledby="fig2-h">
             <div className="ln-fig-head">
                 <span id="fig2-h">Fig. 2 · Which program gets this packet?</span>
                 <span>Teaching model, not a benchmark</span>
@@ -470,17 +471,12 @@ export default function DemuxLab(): React.JSX.Element {
                         {done ? (
                             <p className="m-0 mt-2" data-result>
                                 <strong>{OUTCOME_LABEL[done.d.outcome]}.</strong> {verdict} Sender gets back:{' '}
-                                {done.d.reply}.
+                                {lowerFirst(done.d.reply)}.
                             </p>
                         ) : null}
                         {run ? (
                             <>
-                                <CurrentStep
-                                    step={current}
-                                    n={at + 1}
-                                    of={steps.length}
-                                    reply={replied ? run.d.reply : null}
-                                />
+                                <CurrentStep step={current} n={at + 1} of={steps.length} replied={replied} />
                                 <Transport
                                     label="Run controls"
                                     playing={clock.playing}
@@ -497,10 +493,10 @@ export default function DemuxLab(): React.JSX.Element {
                             <p className="ln-frame">Build a packet, predict, then press Run.</p>
                         )}
                     </div>
-                    {run ? <StepList steps={steps} current={currentIndex} goTo={goTo} /> : null}
+                    {done ? <StepList steps={steps} current={currentIndex} goTo={goTo} /> : null}
                     <p className="sr-only" aria-live="polite">
                         {done
-                            ? `${label(done.p)}: ${OUTCOME_LABEL[done.d.outcome]}. ${verdict} Sender gets back: ${done.d.reply}.`
+                            ? `${label(done.p)}: ${OUTCOME_LABEL[done.d.outcome]}. ${verdict} Sender gets back: ${lowerFirst(done.d.reply)}.`
                             : ''}
                     </p>
                     <p className="sr-only" aria-live="polite">
@@ -509,10 +505,11 @@ export default function DemuxLab(): React.JSX.Element {
                 </div>
             </div>
             <figcaption className="ln-label mt-4">
-                Assumes this server runs exactly these programs and has one address, with no NAT, proxy or
-                load balancer in between; source ports 50001 and 50002 each already have a TCP connection open
-                to port 443. A firewall applies whatever rule it is given, so a reply proves little and
-                silence proves nothing.
+                Key: the black square is the packet; a dashed tag is what comes back to the sender; the part
+                the current stage reads is drawn heavy. Assumes this server runs exactly these programs and
+                has one address, with no NAT, proxy or load balancer in between; source ports 50001 and 50002
+                each already have a TCP connection open to port 443. A firewall applies whatever rule it is
+                given, so a reply proves little and silence proves nothing.
             </figcaption>
         </figure>
     );

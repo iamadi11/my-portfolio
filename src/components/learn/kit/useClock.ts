@@ -1,14 +1,25 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * A figure's clock (references/motion.md in the course skill): time `t` in model units, Play/Pause, Previous/Next
  * between event marks, Reset. Each frame advances `t` by real time × `rate`, with `dt` clamped to 1/30 s, and stops
  * at `end`. Under reduced motion there is no continuous time: Play jumps from mark to mark, holding each. The loop
- * runs only while playing.
+ * runs only while playing and while `target` (the figure) is on screen: scrolled away, time holds and resumes when
+ * it returns.
  */
-export function useClock({ marks, end, rate = 1.2 }: { marks: number[]; end: number; rate?: number }): {
+export function useClock({
+    marks,
+    end,
+    rate = 1.2,
+    target,
+}: {
+    marks: number[];
+    end: number;
+    rate?: number;
+    target?: RefObject<Element | null>;
+}): {
     t: number;
     playing: boolean;
     reduced: boolean;
@@ -25,6 +36,7 @@ export function useClock({ marks, end, rate = 1.2 }: { marks: number[]; end: num
     const [t, setT] = useState(0);
     const [playing, setPlaying] = useState(false);
     const [reduced, setReduced] = useState(false);
+    const [onScreen, setOnScreen] = useState(true);
     const tRef = useRef(0);
     tRef.current = t;
     useEffect(() => {
@@ -35,7 +47,14 @@ export function useClock({ marks, end, rate = 1.2 }: { marks: number[]; end: num
         return (): void => m.removeEventListener('change', on);
     }, []);
     useEffect(() => {
-        if (!playing) return undefined;
+        const el = target?.current;
+        if (!el || typeof IntersectionObserver === 'undefined') return undefined;
+        const io = new IntersectionObserver((entries) => setOnScreen(entries.at(-1)?.isIntersecting ?? true));
+        io.observe(el);
+        return (): void => io.disconnect();
+    }, [target]);
+    useEffect(() => {
+        if (!playing || !onScreen) return undefined;
         if (reduced) {
             // Stepped play: hold each mark, then jump to the next.
             const id = window.setInterval(() => {
@@ -63,7 +82,7 @@ export function useClock({ marks, end, rate = 1.2 }: { marks: number[]; end: num
         };
         frame = requestAnimationFrame(tick);
         return (): void => cancelAnimationFrame(frame);
-    }, [playing, reduced, marks, end, rate]);
+    }, [playing, onScreen, reduced, marks, end, rate]);
     const at = marks.reduce((k, m, i) => (m <= t + 1e-6 ? i : k), -1);
     const play = useCallback(() => {
         if (tRef.current >= end - 1e-6) setT(0);

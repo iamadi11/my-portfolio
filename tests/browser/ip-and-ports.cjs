@@ -204,11 +204,33 @@ async function section4(browser) {
         'Fig. 3 at the end: the outcome appears',
         /Some missing\./.test(await fig(page, 3).locator('[data-result]').innerText())
     );
+    const xs = await fig(page, 3)
+        .locator('svg g[transform] text')
+        .evaluateAll((els) =>
+            els
+                .filter((e) => /^×\d$/.test(e.textContent))
+                .map((e) => e.textContent)
+                .join(' ')
+        );
+    log('Fig. 3: both dropped packets stay visible, numbered, until the end of the run', xs === '×2 ×3', xs);
+    log(
+        'Fig. 3: the failed link is labelled in text',
+        (await fig(page, 3).locator('svg text', { hasText: '× failed' }).count()) === 1
+    );
     await pick(page, 3, 'Transport', 'TCP');
     log(
         'Fig. 3: changing an input after a run clears the result and the live text',
         (await fig(page, 3).locator('[data-result]').count()) === 0 &&
             (await live(page, 3)).every((t) => t === '')
+    );
+    await pick(page, 2, 'Protocol', 'UDP');
+    await fig(page, 2).getByRole('button', { name: 'Run', exact: true }).click();
+    await fig(page, 2).getByRole('button', { name: 'Pause' }).click();
+    log(
+        'Fig. 2 mid-run: no stage list, no outcome and no live summary before the run ends',
+        (await fig(page, 2).locator('.ln-steps').count()) === 0 &&
+            (await fig(page, 2).locator('[data-result]').count()) === 0 &&
+            (await live(page, 2))[0] === ''
     );
     await demux(page, { from: /^50001/, proto: 'TCP', port: '443' });
     await pick(page, 2, 'Protocol', 'UDP');
@@ -292,11 +314,16 @@ async function section5(browser) {
         'Fig. 3: the service control appears only for congestion',
         (await fig(page, 3).locator('legend', { hasText: 'R2–R4 needs' }).count()) === 0
     );
-    const text = await page.locator('article').innerText();
+    const why = await fig(page, 3).locator('[data-rule]').innerText();
     log(
-        'the text quotes the model: the last read moves from tick 15 to tick 23',
-        /from tick 15 to tick 23/.test(text)
+        'Fig. 3: the outcome states the rule from the run (drops, resends, waits)',
+        /R2 dropped 2 and 3/.test(why) && /TCP resent 2 and 3/.test(why) && /4 and 5 waited/.test(why),
+        why
     );
+    const after = await page
+        .locator('article details.ln-q:not([open]) summary', { hasText: 'Ran it?' })
+        .count();
+    log('the rules behind each lab sit in a closed "Ran it?" disclosure', after === 2, `${after}`);
     const nums = await page.locator('article .ln-cite a').allTextContents();
     let max = 0;
     let ordered = true;
@@ -331,6 +358,14 @@ async function section6(browser) {
     const c = await tags();
     await page.waitForTimeout(500);
     log('Fig. 3: Pause stops every packet', c === (await tags()));
+    await fig(page, 3).getByRole('button', { name: 'Previous', exact: true }).click();
+    const shown = (await fig(page, 3).locator('[data-current-step]').innerText()).match(/^Tick (\d+)/)?.[1];
+    const spoken = (await live(page, 3))[1].match(/^Tick (\d+)/)?.[1];
+    log(
+        'Fig. 3: Previous from mid-tick announces the tick it shows',
+        shown !== undefined && shown === spoken,
+        `${shown} / ${spoken}`
+    );
     await fig(page, 3).getByRole('button', { name: 'Reset' }).click();
     log(
         'Fig. 3: Reset returns to tick 0',

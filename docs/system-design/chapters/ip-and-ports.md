@@ -17,7 +17,7 @@ Objectives (observable):
 2. Explain why two TCP connections from the same machine to the same server address and port stay separate (the
    source port; a connection is identified by a pair of sockets), and why that does not mean one connection per
    browser tab.
-3. Explain why IP packets can be lost, duplicated or arrive in a different order, and predict what an application
+3. Explain why IP packets can be lost, delayed or arrive in a different order, and predict what an application
    reads in each case over UDP and over TCP, including the cost TCP's ordering adds.
 4. Tell a name (what we seek) from an address (where it is: a machine's interface) from a port (which program on
    that machine), and say how long IPv4 and IPv6 addresses are.
@@ -25,13 +25,14 @@ Objectives (observable):
 In scope: IPv4/IPv6 addresses as interface identifiers (sizes only), the IP header fields the lookup uses
 (destination address, protocol), ports and port ranges, sockets and the TCP connection pair, demultiplexing to a
 process, what a host answers for an unused port, IP's lack of delivery guarantees, what UDP and TCP give an
-application under loss, delay and duplication. One mechanism: how a packet finds its program, and what can
+application under loss, delay and reordering. One mechanism: how a packet finds its program, and what can
 happen to packets on the way.
 
 Deferred:
 
 - How a name becomes an address → `dns`
-- How TCP opens connections, acknowledges, times out and retransmits → `tcp`
+- How TCP opens connections, acknowledges, times out and retransmits; duplicated packets and how TCP discards
+  them → `tcp`
 - Why QUIC builds reliability on UDP; head-of-line blocking → `udp-quic`
 - Subnets, routing tables, NAT, private address ranges, firewalls in depth → `cloud-networking`
 - Several servers behind one address → `load-balancing`
@@ -100,11 +101,12 @@ Demultiplexing: the host's job of handing each arriving packet to the right prog
    "name → address (dns, chapter 4)", an address tab (203.0.113.10; "32 bits (IPv6: 128)"), TCP and UDP lanes,
    port tabs (443, 8125) and programs (web server, metrics collector). The learner selects Name, Address,
    Protocol, Port or Program: that part is drawn heavy and its role (what we seek, which machine, which
-   transport, which program, who receives it) appears under the drawing. It works before any script loads.
+   transport, which program, who receives it) appears beside the drawing (above it on phones). It works before
+   any script loads.
 2. **Fig. 2, build a packet and predict.** From client 198.51.100.7: source port 50001 or 50002 (each with a
    connection open to 443) or 50003 (nothing open), destination address, protocol, port, firewall on or off
    (rule: allow TCP 443 and UDP 8125). The learner predicts where it goes.
-3. **Fig. 2, run.** A "pkt" tag travels from the sender's packet box to the address tab, through the firewall
+3. **Fig. 2, run.** The packet, a small black square, travels from the sender's packet box to the address tab, through the firewall
    band when on, into the protocol lane, to the connection row, the listening socket or "nobody"; anything that
    comes back (answer, set-up, RST, ICMP) travels back to the sender. Each stage draws the part it reads heavy
    and names its rule and source under the drawing. Play, pause, step, reset, replay. The outcome and the
@@ -138,7 +140,7 @@ Objective coverage: 1 → A2 · 2 → A2 · 3 → A3 · 4 → A1
 - learner does: selects each part (native radio buttons; CSS `:has()`, no script)
 - notice: each number answers a different question, and they nest: the address finds the machine, the protocol picks a lane, the port picks a program within that lane
 - model: conceptual illustration of the structure every host shares (an address names an interface; a protocol field picks the transport; a port within a protocol names a program's endpoint); the only quantities are the standard bit lengths
-- feedback: the selected part is drawn heavy (2.4 px stroke and gray fill) and its role appears under the drawing, with its sources
+- feedback: the selected part is drawn heavy (2.4 px stroke and gray fill) and its role appears beside the drawing (above it on phones), with its sources
 - assumptions: one interface and one address per host (real hosts may have several); port 8125 and the program names are assumed examples; 443 is the default for https (RFC 9110 §4.2.2); this server offers nothing on UDP 443 (an HTTP/3 server would, RFC 9114 §3.1); guards "an address identifies a user" and "a port is hardware"
 - outcome: the learner says which part answers what, where, which transport and which program, and the address sizes
 - accessibility: radio group with a legend, each radio described by its role (aria-describedby); drawing aria-hidden; the roles are text; works without JavaScript; text 12 px+ at 375 px; state by line weight and fill plus text, never colour
@@ -152,11 +154,11 @@ Objective coverage: 1 → A2 · 2 → A2 · 3 → A3 · 4 → A1
 - type: simulation
 - pattern: predict, step, break, compare
 - learner sees: the packet box (protocol, 198.51.100.7:source port → destination address:port) with an arrow to the server or to another machine (192.0.2.20); the server with a firewall band when on, TCP and UDP lanes, its connection table (rows for 50001 and 50002), the listening socket on 443, the UDP socket on 8125, and "nobody" boxes for unused ports
-- animated: a "pkt" tag travels from stage to stage (600 ms of travel, then it rests at the part that stage reads, which is drawn heavy); any reply (answer, set-up, RST, ICMP) travels back to the sender as a dashed tag. The motion is the order the host checks the packet in, and where it stops
+- animated: the packet (a black square, named in the caption's key) travels from stage to stage (600 ms of travel, then it rests at the part that stage reads, which is drawn heavy); any reply (answer, set-up, RST, ICMP) travels back to the sender as a dashed tag. The motion is the order the host checks the packet in, and where it stops
 - learner does: picks source port, destination address, protocol, port and firewall; predicts the outcome; runs; plays, pauses, steps forward and back, resets and replays
 - notice: the source port alone separates connections 1 and 2; a new connection goes to the listening socket; the protocol is checked before the port; a firewall stops a packet before any lookup, so no reply proves nothing
 - model: pure function `demux(packet) → { outcome, receiver, reply, steps }` over a fixed host: a TCP listening socket on 443 (web server), a UDP socket on 8125 (metrics collector), TCP connections 203.0.113.10:443 ↔ 198.51.100.7:50001 and :50002, a firewall rule (when on) allowing only TCP 443 and UDP 8125. Rules in order: address ≠ this host → never arrives here; firewall on and not allowed → dropped, nothing back; protocol field selects the transport; TCP: matching socket pair → that connection, else a listener and a packet that opens a connection → TCP sets it up, else reset (RST); UDP: a socket on the port → that program, whatever the source port (unconnected socket, a modelling choice), else ICMP Port Unreachable (a SHOULD). The drawing's tag positions are a function of the clock and the step list only
-- feedback: the current stage's rule and source under the drawing, the part it reads drawn heavy; at the end, the receiver, what the sender gets back and the verdict on the prediction; the full stage list as buttons
+- feedback: the current stage's rule and source under the drawing, the part it reads drawn heavy; when the run ends, the receiver, what the sender gets back and the verdict on the prediction, and the full stage list as buttons (nothing about the outcome before then)
 - assumptions: the server runs exactly these programs and has one address; no NAT, proxies or load balancers; packets arrive intact; packets from 50001/50002 belong to their open connections, packets from 50003 open one; the firewall rule is one typical configuration, not a standard; guards "IP and port identify a user or a tab", "two connections from one machine get mixed up", "each tab has its own connection" (page text, RFC 9112 §9.3, RFC 9114 §3.3), "no reply means nothing there", "the program receives the opening packet"
 - outcome: the learner predicts the receiver for any packet, and explains why two connections from one machine never mix (a different source port, so a different socket pair) and why that is not one connection per tab
 - accessibility: radio groups with legends; Run; a transport group (Play/Pause/Replay, Previous, Next, Reset) with aria-disabled ends; Next keeps focus; one polite live region for the outcome (filled when the run ends), one for step announcements; drawing aria-hidden with the stage list as its text alternative; reduced motion: the tag jumps from stage to stage every 900 ms while playing, no gliding; after Run the drawing and its current step come into view at 375 px
@@ -168,13 +170,13 @@ Objective coverage: 1 → A2 · 2 → A2 · 3 → A3 · 4 → A1
 
 - objective: 3
 - type: simulation
-- pattern: predict, break, compare, quantitative, step
+- pattern: predict, break, compare, step
 - learner sees: sender, routers R1–R4 and host; upper path S–R1–R2–R4–H (link delays 1, 1, 1, 1: 4 ticks) and lower path R1–R3–R4 (3 and 2: 7 ticks in all), each link labelled with its delay; the heavy line is R1's current route; controls for the event, the service time when congested, the transport and the prediction
-- animated: numbered tags move along the links at the model's times (2.2 ticks per second, ease-in-out per hop); R1's heavy route moves at the route change or reconvergence; the failed link turns dashed with ×; dropped tags show × at R2; waiting tags line up beside R2 with "queue n"; resends are dashed tags. Every frame is `positionAt(copy, t)` of the model's run
+- animated: numbered tags move along the links at the model's times (2.2 ticks per second, ease-in-out per hop); R1's heavy route moves at the route change or reconvergence; the failed link turns dashed and is labelled "× failed"; dropped tags become × and line up beside R2 for the rest of the run; a key in the caption names every mark; waiting tags line up beside R2 with "queue n"; resends are dashed tags. Every frame is `positionAt(copy, t)` of the model's run
 - learner does: picks the event (nothing, route change, link R2–R4 fails, R2–R4 congested with 1, 2 or 3 ticks per packet), the transport (UDP or TCP), predicts (all five in order, all five out of order, some missing), runs, plays, pauses, steps tick by tick, resets and replays
 - notice: a later packet on the short path overtakes an earlier one on the long path; a failed link drops what reaches it until R1 reroutes; a queue builds only when the link needs longer than the gap between packets; TCP reads every packet in order but holds those behind a gap
 - model: `simulate({ event, transport, service })` in `network-model.ts`, deterministic, ticks (an assumed unit). The sender sends packet n at 2(n−1). Each link adds its delay. R1 forwards on `routeAt(event, t)`: route change, lower until tick 3 then upper; link failure, upper until reconvergence at tick 7 then lower. R2 forwards one packet at a time on R2–R4, first in first out (departure_k = max(arrival_k, departure_k−1) + service); from tick 4 a failed R2–R4 makes R2 drop what reaches it. UDP hands each copy to the application on arrival. TCP keeps the first copy of each packet, reads in order, and resends a lost packet 12 ticks after sending it (a fixed timer, longer than any delay here). Quoted results: none → arrivals 4, 6, 8, 10, 12; route change, UDP → reads 2 1 3 4 5; link failure, UDP → 1 4 5 by tick 15, TCP → 1 2 3 4 5 by tick 23 with 2 and 3 resent at 14 and 16; congestion at 3 ticks → largest queue 2, reads at 6, 9, 12, 15, 18; at 1 or 2 ticks → no queue
-- feedback: under the drawing, the tick and what happened at it, what has arrived and what has been read so far; when the run ends, the category, the verdict, a table of the same network under UDP and TCP (reads, last read, resent), and the run as a list
+- feedback: under the drawing, the tick and what happened at it, what has arrived and what has been read so far; when the run ends, the category, the verdict, a "Why:" line built from the run (which packet overtook which and on which path, what R2 dropped, how the queue grew, what the transport resent or held), a table of the same network under UDP and TCP (reads, last read, resent), and the run as a list
 - assumptions: one event per run; links never corrupt or duplicate; no other traffic; routing reconverges in a fixed 3 ticks; TCP's timer is fixed (real TCP adapts it); acknowledgements, windows and connection set-up are left to the tcp chapter; first-in-first-out at R2 is a model choice; guards "packets travel in a line and arrive in order", "TCP makes the network reliable" (the loss still happens under TCP; TCP recovers in the end hosts, later), "the animation's speed is the network's" (ticks, not to scale)
 - outcome: the learner predicts what UDP and TCP read for each event, explains reordering by different paths and loss by a link that cannot forward, and states when a queue grows (arrivals faster than service)
 - accessibility: radio groups with legends; the service group appears only for congestion; Run and the transport group; Previous/Next announce the tick's events; one polite live region for the outcome when the run ends; drawing aria-hidden with the run as a list (text alternative) and the comparison as a table with caption and headers; reduced motion: tags jump tick by tick every 900 ms, no gliding; after Run the network comes into view at 375 px; the lab's code loads as it nears the viewport, with a fixed-height waiting card
@@ -383,24 +385,28 @@ gets this flow".
 
 ## Evidence
 
-All on the production build of the working tree after 3d94ca8 (the visual-first pilot, committed with this
-evidence), 2026-10-28. Earlier rounds' evidence is in git history (857aeeb).
+All on the production build of the working tree after 589aa6d (the pilot with the fourth review's fixes,
+committed with this evidence), 2026-10-28. Earlier rounds' evidence is in git history (857aeeb, faa5b85).
 
-- model tests: pass — npx vitest run: 213/213 (demux-model 16: 72 packets one outcome each, stage order, two connections by source port, new connection set up by TCP, UDP rule labelled a model choice, reset/ICMP, firewall before the protocol stage, sources or "model:" on every step, no users/requests/tabs; network-model 37: arrivals with no event, route-change reorder and TCP's hold, link-failure drops, UDP 1 4 5 by 15, TCP resends at 14 and 16 and reads all by 23, congestion queue 2 and reads 6–18 at 3 ticks, no queue at 1 and 2, conservation, determinism, positions in the queue, on a link and when lost) (2026-10-28)
+- model tests: pass — npx vitest run: 213/213 (demux-model 17: 72 packets one outcome each, stage order, two connections by source port, new connection set up by TCP, UDP rule labelled a model choice, reset/ICMP, firewall before the protocol stage, sources or "model:" on every step, no users/requests/tabs; network-model 37: arrivals with no event, route-change reorder and TCP's hold, link-failure drops, UDP 1 4 5 by 15, TCP resends at 14 and 16 and reads all by 23, congestion queue 2 and reads 6–18 at 3 ticks, no queue at 1 and 2, conservation, determinism, positions in the queue, on a link, and a lost copy staying where it was dropped) (2026-10-28)
 - typecheck: pass — npx tsc --noEmit (2026-10-28)
-- lint and format: pass — npm run lint (no warnings); npx eslint tests/browser (0 errors; 2 no-shadow warnings in web-request.cjs and client-server.cjs, the same on main); prettier --check src docs tests .claude/skills (2026-10-28)
-- browser suite: pass — tests/browser/ip-and-ports.cjs 72/72: six sizes without horizontal scroll or console errors, before and after runs; axe WCAG 2.2 A/AA at 375 and 1280 on load and after both labs ran; Fig. 3 loads as it is reached; each Fig. 1 part shows its role and draws heavy; nothing about an outcome before Run or before a run ends; a change after a run clears it; ten Fig. 2 packets and six Fig. 3 runs against the models; the comparison table and the text's quoted ticks; tags move while playing, stop on Pause, Reset returns to tick 0, Replay plays again; citations numbered top-down; links from /learn and chapter 2; sitemap; / renders (2026-10-28)
-- keyboard: pass — ip-and-ports.cjs: arrow keys move within radio groups; Enter on Run; a visible focus outline on Run; Next announces "Step 2 of 4, Protocol", keeps focus and is aria-disabled at the end, where the reply has reached the sender (2026-10-28)
+- lint and format: pass — npm run lint (no warnings); npx eslint tests/browser (0 errors; 2 no-shadow warnings in web-request.cjs and client-server.cjs, the same on main); prettier --check src docs tests .claude/skills/system-design-educator (2026-10-28)
+- browser suite: pass — tests/browser/ip-and-ports.cjs 77/77: six sizes without horizontal scroll or console errors, before and after runs; axe WCAG 2.2 A/AA at 375 and 1280 on load and after both labs ran; Fig. 3 loads as it is reached; each Fig. 1 part shows its role and draws heavy; nothing about an outcome before Run or before a run ends in either lab (Fig. 2: no stage list, result or live summary mid-run); a change after a run clears it; ten Fig. 2 packets and six Fig. 3 runs against the models; the comparison table; the "Why:" line from the run; both dropped packets stay visible as ×2 ×3; the broken link labelled in text; the rules behind each lab in closed "Ran it?" disclosures; tags move while playing, stop on Pause, Reset returns to tick 0, Replay plays again; citations numbered top-down; links from /learn and chapter 2; sitemap; / renders (2026-10-28)
+- keyboard: pass — ip-and-ports.cjs: arrow keys move within radio groups; Enter on Run; a visible focus outline on Run; Next announces "Step 2 of 4, Protocol", keeps focus and is aria-disabled at the end, where the reply has reached the sender; Fig. 3 Previous from mid-tick announces the tick it shows (2026-10-28)
 - reduced motion: pass — ip-and-ports.cjs with reducedMotion reduce at 375 px: nothing in the figures transitions or animates; Run waits at whole ticks (no gliding); stepping reaches the outcome and the full list (2026-10-28)
-- mobile: pass — ip-and-ports.cjs at 375 px: after Run the Fig. 2 drawing and its current step, and the Fig. 3 network, are fully in view (2026-10-28)
+- mobile: pass — ip-and-ports.cjs at 375 px: after Run the Fig. 2 drawing and its current step, and the Fig. 3 network, are fully in view; drawing lettering 13.5 units on phones (about 12.3 px at 375) (2026-10-28)
 - regression suites: pass — web-request 69/69, client-server 48/48 (2026-10-28)
-- JS budget: pass — tests/browser/js-budget.cjs 5/5: /learn/ip-and-ports 109.5 kB (was 116.3 kB), / 115.6 kB, all routes ≤ 120 kB; next build: the chapter 107 kB first-load (was 114 kB), / unchanged at 110 kB; Figs. 2 and 3 load as they near the viewport (2026-10-28)
-- lighthouse: pass — Lighthouse 12.2.1, /learn/ip-and-ports, two runs each: mobile performance 99 and 99, desktop 100 and 100; accessibility, best practices and SEO 100; CLS 0 (2026-10-28)
-- screenshots read: pass — every figure at 375, 402, 768, 1280, 1440 and 1920 after runs, and Fig. 2 at every stage of five packets and Fig. 3's queue, read by eye; found and fixed this round: the outcome shown before the animation ended, tags over router names, labels and link delays, the "pkt" tag over socket text, the reply tag over the packet header, a second queued tag outside the drawing (2026-10-28)
-- static analysis: pass — npx fallow: the same four dead-code findings and one clone group as main (none in this chapter's files); this chapter's complexity findings (NetworkLab, DemuxLab, simulate, eventsAt) split into smaller functions until none remained (2026-10-28)
-- course checks: pass — course.mjs check ok (two legacy warnings: web-request, client-server); course.mjs skill ok; course.test.mjs 36/36 (2026-10-28)
+- JS budget: pass — tests/browser/js-budget.cjs 9/9 under the course budget (owner, 2026-10-28; COURSE_STATE): /learn/ip-and-ports 109.5 kB first-load (≤ 150) and 25.2 kB on demand (≤ 400); / 115.6 kB (≤ 120, unchanged); next build: the chapter 107 kB, / 110 kB (2026-10-28)
+- lighthouse: pass — Lighthouse 12.2.1, /learn/ip-and-ports: mobile performance 99, desktop 100; accessibility, best practices and SEO 100; CLS 0 (2026-10-28)
+- screenshots read: pass — every figure at 375, 402, 768, 1280, 1440 and 1920 after runs; every course drawing at 375 after the phone lettering change; Fig. 2 at the end of three packets at 375 and 1280; Fig. 3 after the link failure at 375 and 1280. Found and fixed this round: socket text crowded by the packet tag at phone lettering (now a 12-unit square at the row's edge), the broken link's label on its own line, unnumbered drop marks, reply tags at the box edge (2026-10-28)
+- static analysis: pass — npx fallow audit: no issues in the changed files (the cite helper the three chapter pages repeated is now one `citeFor`) (2026-10-28)
+- course checks: pass — course.mjs check ok (two legacy warnings: web-request, client-server); course.mjs skill ok; course.test.mjs 36/36, with new cases for review lines read per block and exception lines inside code fences (2026-10-28)
 
 ## Review findings
+
+The first three reviews below examined the design that faa5b85 replaced (Fig. 3 as a timeline with "lose 3",
+"delay 2" and "duplicate 4"; `DatagramLab`, `datagram-model.ts`): superseded, kept as history. The fourth reviews
+the current build.
 
 Reviewer: fresh subagent (independent review of the upgraded skill and of the rendered pilot at 91bea9c: six viewport sizes, every control, keyboard, reduced motion, sources in the doc-rfc texts), 2026-10-28, rubric verification.md, visual-design.md, visual-science.md
 Visual review: text-heavy=no · mechanism-via-visual=yes · every-visual-teaches=no · claims-defensible=no · interaction-helps=yes
@@ -450,3 +456,26 @@ Visual review: text-heavy=no · mechanism-via-visual=yes · every-visual-teaches
 - [note] An own-words "→ open-ended" read as open → fixed (open must end the word)
 - [note] The browser suite checks visibility, not drawing collisions → accepted: collisions are checked by reading the screenshots at every size (Evidence, "screenshots read")
 
+Reviewer: fourth fresh subagent (independent review of the skill and of the rendered pilot at faa5b85: six viewport sizes before, during and after runs, every Fig. 3 event under UDP and TCP, seven Fig. 2 packets, keyboard, reduced motion, model numbers recomputed by hand, RFC 8085 §3.3, 9293 §3.5.2, 1122 §4.1.3.1 and 791 checked in the doc-rfc texts; RFC 9110, 9112, 9114, 4291, 6335, 5737, 2606 not re-checked; no Lighthouse, no screen reader), 2026-10-28, rubric visual-review.md
+Visual review: text-heavy=no · mechanism-via-visual=yes · every-visual-teaches=yes · claims-defensible=yes · interaction-helps=yes
+Visual rubric: education=pass · clarity=fail · interaction=fail · correctness=pass · animation=pass · hierarchy=pass · accessibility=fail · mobile=pass · performance=pass · consistency=pass
+Rejects: none
+
+- [should-fix] Fig. 2 showed every stage's text (the outcome) as soon as Run was pressed → fixed (the stage list appears when the run ends; browser check mid-run)
+- [should-fix] Prose under Figs. 2 and 3 stated the outcomes to predict → fixed (the rules sit in closed "Ran it? The rules behind what you saw" disclosures; the quoted ticks are gone, the table gives them; browser check)
+- [should-fix] Fig. 3 Previous announced a different tick from the one shown → fixed (the target tick is computed, sought and announced together; browser check from mid-tick)
+- [should-fix] Fig. 3 had no key for the failed link and ×, and a drop showed for one tick → fixed (a key in the caption names every mark; the link reads "× failed"; dropped packets stay as ×2 ×3 beside R2 for the rest of the run; model and browser tests)
+- [should-fix] Fig. 3's outcome did not state the rule that produced it → fixed (a "Why:" line built from the run: which packet overtook which and on which path, what R2 dropped, how the queue grew or why it did not, what TCP resent and held)
+- [should-fix] Objective 3 promised duplication, which nothing builds → fixed (objective 3 and the scope say lost, delayed or reordered; duplication and TCP's discarding of duplicates deferred to `tcp`)
+- [should-fix] The skill said `useClock` stops offscreen and owns speed; it did neither → fixed (the clock holds while its `target` figure is offscreen and resumes when it returns; both labs pass their figure; motion.md says speed is the figure's `rate`)
+- [should-fix] `check` combined review lines from different blocks → fixed (the three lines must sit in the latest "Reviewer:" block; test)
+- [should-fix] A3 claimed `quantitative` without a chart → fixed (dropped from A3's pattern)
+- [note] Drawing lettering about 11.8 px at 375 px → fixed (13.5 units on phones, about 12.3 px; every course drawing re-read at 375)
+- [note] Fig. 3 tags overlap router circles at hop moments → accepted: transient while a tag passes a router, the name stays legible, and at rest no tag covers a router
+- [note] The reply travels to the packet box, not a drawn sender; reply tag at the box edge; "Sender gets back: The …" and the reply repeated → fixed (the key says a dashed tag is what comes back to the sender, the packet box being the sender's packet; the tag rests inside the box; lower-case reply text; the current step says only that the reply reached the sender)
+- [note] "Arrived at the host, in order"; step text in lower case → fixed ("in arrival order"; first letter capitalised)
+- [note] Fig. 1 below the first screen on desktop → fixed (the goals list moved below Fig. 1; its drawing starts at y 489 at 1280×800, was about 750)
+- [note] Spec drift (role text position, demux test count, old reviews of a removed design) → fixed (storyboard and A1 say beside the drawing, above on phones; 17; the first three reviews marked superseded)
+- [note] Stale references to `visual-science.md`, `visualization-and-simulation.md`, "Nine reference files" → fixed (renamed or annotated; twelve)
+- [note] `check` found exception lines inside code fences → fixed (fences stripped first; test)
+- [note] The skill's description did not mention visual-first or interactive work → fixed (description names manipulable figures, animation from tested models, and making a chapter more visual or interactive)

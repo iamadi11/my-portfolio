@@ -39,8 +39,10 @@ loops forever except while the learner has pressed Play.
 - Events come from the model with times (`sent at 2`, `arrives at 4`). The drawing interpolates between event
   times; the event list, readouts and step text read the same events.
 - Display time is scaled and labelled ("1 tick shown ≈ 0.6 s; not to scale").
-- `useClock` (kit) owns `t`, play/pause, speed, seek and step-to-next-event, clamps `dt` to 1/30 s, and stops
-  when the figure is offscreen (IntersectionObserver) or the run ends.
+- `useClock` (kit) owns `t`, play/pause, seek and step-to-next-event, clamps `dt` to 1/30 s, plays at the
+  figure's `rate` (model units per second), holds while its `target` (the figure) is offscreen
+  (IntersectionObserver) and resumes when it returns, and stops when the run ends. A learner speed control
+  (below) is the figure's, passed in as `rate`.
 
 ## Controls and pacing
 

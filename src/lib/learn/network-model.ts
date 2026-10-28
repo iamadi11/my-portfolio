@@ -33,7 +33,7 @@ export const SERVICES = [1, 2, 3] as const;
 export type Service = (typeof SERVICES)[number];
 
 export const COUNT = 5;
-const SEND_GAP = 2;
+export const SEND_GAP = 2;
 /** Upper path S–R1–R2–R4–H and lower path S–R1–R3–R4–H. */
 const UPPER: Node[] = ['S', 'R1', 'R2', 'R4', 'H'];
 const LOWER: Node[] = ['S', 'R1', 'R3', 'R4', 'H'];
@@ -190,7 +190,8 @@ export function simulate({ event, transport, service }: Inputs): Run {
     };
 }
 
-/** Where a copy is at time t: between two hops (with progress 0–1), waiting at a node, gone, or lost. */
+/** Where a copy is at time t: between two hops (with progress 0–1), waiting at a node, gone, or lost (a lost copy
+ * stays where it was dropped, so the loss stays visible for the rest of the run). */
 export function positionAt(
     c: Copy,
     t: number
@@ -205,7 +206,7 @@ export function positionAt(
         if (t < b.at) return { from: a.node, to: b.node, p: (t - depart) / (b.at - depart) };
     }
     const last = c.hops.at(-1)!;
-    if (c.lost && t < c.lost.at + 1) return { at: c.lost.node, waiting: false };
+    if (c.lost) return { at: c.lost.node, waiting: false };
     if (!c.lost && last.node === 'H' && t < last.at + 0.6) return { at: 'H', waiting: false };
     return null;
 }

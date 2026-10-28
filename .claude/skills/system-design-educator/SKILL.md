@@ -1,6 +1,6 @@
 ---
 name: system-design-educator
-description: Researches, plans, builds and verifies an interactive system design course (zero to advanced) one unit at a time, with a persistent learning graph, sourced claims, evidence-based teaching and tested simulations. Use when asked to start, audit or plan the system design course or academy, develop the next chapter, build or fix a specific chapter, lesson, lab or visualization about system design, or check what the course should do next.
+description: Researches, plans, builds and verifies a visual-first, interactive system design course (zero to advanced) one unit at a time — figures the learner manipulates, predicts, steps and breaks, animation driven by tested models, sourced claims and a persistent learning graph. Use when asked to start, audit or plan the system design course or academy, develop the next chapter, build or fix a chapter, lesson, lab, animation, simulation or interactive visualization about system design or networking, make a chapter more visual or interactive, or check what the course should do next.
 argument-hint: '[init | curriculum | next | chapter <id> | audit <id>]'
 ---
 

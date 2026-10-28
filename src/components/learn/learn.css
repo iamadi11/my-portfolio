@@ -601,6 +601,18 @@
     font-size: 13px;
     text-transform: none;
 }
+/* A packet in motion: a small solid square, so it fits beside any label it stops at. */
+.ln-svg .ln-pkt {
+    fill: var(--ink);
+    stroke: none;
+}
+/* At phone widths a 340-unit drawing renders about 310 px wide: 13.5 units keep lettering at 12 px or more. */
+@media (max-width: 480px) {
+    .ln-svg .sl,
+    .ln-svg .dts {
+        font-size: 13.5px;
+    }
+}
 
 @media (prefers-reduced-motion: no-preference) {
     .ln-bar-fill {

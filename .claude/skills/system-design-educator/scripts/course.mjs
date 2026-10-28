@@ -302,10 +302,12 @@ function visualErrors(c, text) {
         errs.push(
             `${c.id}: no asset uses a pattern beyond predict/read (interaction must be more than quizzes)`
         );
+    // Exception lines count only outside code fences (a template or example in a fence is not a decision).
+    const prose = text.replace(/^```[\s\S]*?^```/gm, '');
     if (
         list.length &&
         !list.some((a) => !/^(none|n\/a)\b/i.test(a.fields.get('animated') ?? 'none')) &&
-        !/^Motion exception:\s*\S/m.test(text)
+        !/^Motion exception:\s*\S/m.test(prose)
     )
         errs.push(
             `${c.id}: no asset animates anything; animate a mechanism or add a "Motion exception:" line`
@@ -313,16 +315,20 @@ function visualErrors(c, text) {
     if (
         list.length &&
         list.every((a) => ['text', 'illustration'].includes(a.fields.get('type'))) &&
-        !/^Visual exception:\s*\S/m.test(text)
+        !/^Visual exception:\s*\S/m.test(prose)
     )
         errs.push(
             `${c.id}: every asset is text or illustration; add an explanatory asset or a "Visual exception:" line`
         );
     if (rank(c.status) >= rank('reviewed')) {
-        // The latest review's answers count: reviews are appended in order.
-        const line = (section(text, 'Review findings') ?? []).filter((l) => /^Visual review:/.test(l)).at(-1);
+        // The latest review counts: reviews are appended in order, each opening with a "Reviewer:" line, and all
+        // three lines must sit in that latest block (a block missing one never inherits an older review's line).
+        const all = section(text, 'Review findings') ?? [];
+        const from = all.findLastIndex((l) => /^Reviewer:/.test(l));
+        const lines = from >= 0 ? all.slice(from) : all;
+        const line = lines.filter((l) => /^Visual review:/.test(l)).at(-1);
         if (!line)
-            errs.push(`${c.id}: status ${c.status} needs a "Visual review:" line under "## Review findings"`);
+            errs.push(`${c.id}: status ${c.status} needs a "Visual review:" line in the latest review block`);
         else
             for (const [k, pass] of Object.entries(VISUAL_REVIEW)) {
                 const v = line.match(new RegExp(`\\b${k}=(yes|no)\\b`))?.[1];
@@ -330,10 +336,9 @@ function visualErrors(c, text) {
                 else if (c.status === 'verified' && v !== pass)
                     errs.push(`${c.id}: verified but the visual review says ${k}=${v}`);
             }
-        const lines = section(text, 'Review findings') ?? [];
         const rubric = lines.filter((l) => /^Visual rubric:/.test(l)).at(-1);
         if (!rubric)
-            errs.push(`${c.id}: status ${c.status} needs a "Visual rubric:" line under "## Review findings"`);
+            errs.push(`${c.id}: status ${c.status} needs a "Visual rubric:" line in the latest review block`);
         else
             for (const k of RUBRIC) {
                 const v = rubric.match(new RegExp(`\\b${k}=(pass|fail)\\b`))?.[1];
@@ -343,7 +348,7 @@ function visualErrors(c, text) {
             }
         const rejects = lines.filter((l) => /^Rejects:/.test(l)).at(-1);
         if (!rejects)
-            errs.push(`${c.id}: status ${c.status} needs a "Rejects:" line under "## Review findings"`);
+            errs.push(`${c.id}: status ${c.status} needs a "Rejects:" line in the latest review block`);
         else if (c.status === 'verified' && !/^Rejects:\s*none\s*$/i.test(rejects))
             errs.push(`${c.id}: verified with rejects: "${rejects}"`);
     }

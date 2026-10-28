@@ -155,9 +155,11 @@ describe('the animation reads the same events', () => {
         expect(positionAt(p2, 20)).toBeNull();
     });
 
-    it('a lost copy stops at the router that dropped it', () => {
-        const p3 = run('linkFail', 'UDP').copies[2];
+    it('a lost copy stops at the router that dropped it and stays there for the rest of the run', () => {
+        const r = run('linkFail', 'UDP');
+        const p3 = r.copies[2];
+        expect(positionAt(p3, 5.9)).toMatchObject({ from: 'R1', to: 'R2' });
         expect(positionAt(p3, 6.2)).toEqual({ at: 'R2', waiting: false });
-        expect(positionAt(p3, 8)).toBeNull();
+        expect(positionAt(p3, r.end)).toEqual({ at: 'R2', waiting: false });
     });
 });

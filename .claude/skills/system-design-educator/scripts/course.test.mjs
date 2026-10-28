@@ -717,6 +717,8 @@ test('visual-first standard: decomposition, patterns beyond quizzes, motion, rub
     const still = ok.replaceAll(/animated: .*/g, 'animated: none — static');
     assert.match(out(still).out, /no asset animates anything/);
     assert.equal(out(still + '\nMotion exception: a definition chapter\n').code, 0);
+    // An exception inside a code fence (an example, a template) is not a decision.
+    assert.match(out(still + '\n```\nMotion exception: example\n```\n').out, /no asset animates anything/);
     // Review lines: the rubric and rejects are required from reviewed; verified needs all pass and no rejects.
     const at = (status, tail) =>
         run(
@@ -749,4 +751,12 @@ test('visual-first standard: decomposition, patterns beyond quizzes, motion, rub
         /verified with rejects/
     );
     assert.equal(at('verified', RUBRIC_OK).code, 0);
+    // A newer review block missing its rubric and rejects lines does not inherit the older block's.
+    assert.match(
+        at(
+            'reviewed',
+            RUBRIC_OK + '\nReviewer: second fresh subagent, 2026-01-03\nVisual review: text-heavy=no\n'
+        ).out,
+        /needs a "Visual rubric:" line in the latest review block/
+    );
 });
