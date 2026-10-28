@@ -31,17 +31,10 @@ export const IP_PORTS_SOURCES: Source[] = [
         read: PKG,
     },
     {
-        id: 'rfc9293',
-        title: 'RFC 9293: Transmission Control Protocol (TCP) (August 2022)',
-        publisher: 'IETF (W. Eddy, ed.)',
-        url: 'https://www.rfc-editor.org/rfc/rfc9293',
-        read: PKG,
-    },
-    {
-        id: 'rfc768',
-        title: 'RFC 768: User Datagram Protocol (August 1980)',
-        publisher: 'IETF (J. Postel)',
-        url: 'https://www.rfc-editor.org/rfc/rfc768',
+        id: 'rfc2606',
+        title: 'RFC 2606: Reserved Top Level DNS Names (June 1999)',
+        publisher: 'IETF (D. Eastlake, A. Panitz)',
+        url: 'https://www.rfc-editor.org/rfc/rfc2606',
         read: PKG,
     },
     {
@@ -50,6 +43,20 @@ export const IP_PORTS_SOURCES: Source[] = [
         publisher: 'IETF (Fielding, Nottingham, Reschke, eds.)',
         url: 'https://www.rfc-editor.org/rfc/rfc9110',
         read: 'the published text as rendered by the HTTP WG (httpwg/httpwg.github.io @ ce03dd5)',
+    },
+    {
+        id: 'rfc9114',
+        title: 'RFC 9114: HTTP/3 (June 2022)',
+        publisher: 'IETF (M. Bishop, ed.)',
+        url: 'https://www.rfc-editor.org/rfc/rfc9114',
+        read: PKG,
+    },
+    {
+        id: 'rfc9293',
+        title: 'RFC 9293: Transmission Control Protocol (TCP) (August 2022)',
+        publisher: 'IETF (W. Eddy, ed.)',
+        url: 'https://www.rfc-editor.org/rfc/rfc9293',
+        read: PKG,
     },
     {
         id: 'rfc6335',
@@ -63,6 +70,20 @@ export const IP_PORTS_SOURCES: Source[] = [
         title: 'RFC 1122: Requirements for Internet Hosts — Communication Layers (October 1989)',
         publisher: 'IETF (R. Braden, ed.)',
         url: 'https://www.rfc-editor.org/rfc/rfc1122',
+        read: PKG,
+    },
+    {
+        id: 'rfc9112',
+        title: 'RFC 9112: HTTP/1.1 (June 2022)',
+        publisher: 'IETF (Fielding, Nottingham, Reschke, eds.)',
+        url: 'https://www.rfc-editor.org/rfc/rfc9112',
+        read: PKG,
+    },
+    {
+        id: 'rfc768',
+        title: 'RFC 768: User Datagram Protocol (August 1980)',
+        publisher: 'IETF (J. Postel)',
+        url: 'https://www.rfc-editor.org/rfc/rfc768',
         read: PKG,
     },
     {

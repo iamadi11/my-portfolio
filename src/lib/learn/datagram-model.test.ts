@@ -50,24 +50,40 @@ describe('invariants (A3)', () => {
 });
 
 describe('numbers quoted on the page', () => {
-    it('lose 3: UDP reads 1 2 4 5, last at tick 6; TCP resends and its last read is at tick 10', () => {
+    it('lose 3: UDP reads 1 2 4 5, last at tick 6; TCP resends and its last read is at tick 11', () => {
         expect(order('lose3', 'UDP')).toEqual([1, 2, 4, 5]);
         expect(simulate('lose3', 'UDP').lastRead).toBe(6);
         expect(simulate('lose3', 'UDP').category).toBe('one missing');
         const t = simulate('lose3', 'TCP');
         expect(t.copies.filter((c) => c.resend)).toEqual([
-            { n: 3, sent: 8, arrived: 10, resend: true, duplicate: false },
+            { n: 3, sent: 9, arrived: 11, resend: true, duplicate: false },
         ]);
-        expect(t.lastRead).toBe(10);
-        expect(t.reads.find((r) => r.n === 4)?.held).toBe(5);
+        expect(t.lastRead).toBe(11);
+        expect(t.reads.find((r) => r.n === 4)?.held).toBe(6);
     });
 
-    it('delay 2: UDP reads 1 3 4 5 2; TCP holds 3–5 until 2 arrives at tick 7', () => {
-        expect(order('delay2', 'UDP')).toEqual([1, 3, 4, 5, 2]);
+    it('delay 2: UDP reads 1 3 2 4 5; TCP holds 3 and 4 until 2 arrives at tick 5', () => {
+        expect(order('delay2', 'UDP')).toEqual([1, 3, 2, 4, 5]);
         expect(simulate('delay2', 'UDP').category).toBe('all, out of order');
         const t = simulate('delay2', 'TCP');
-        expect(t.reads.map((r) => r.at)).toEqual([2, 7, 7, 7, 7]);
-        expect(t.lastRead).toBe(7);
+        expect(t.reads.map((r) => r.at)).toEqual([2, 5, 5, 5, 6]);
+        expect(t.lastRead).toBe(6);
+    });
+
+    it('a late segment is never resent: its acknowledgement could return before the timer fires', () => {
+        const t = simulate('delay2', 'TCP');
+        const late = t.copies.find((c) => c.n === 2)!;
+        expect(t.copies.some((c) => c.resend)).toBe(false);
+        // Arrival plus 2 ticks for an acknowledgement to travel back, before the 7-tick timer.
+        expect(late.arrived! + 2).toBeLessThan(late.sent + 7);
+    });
+
+    it('a network duplicate has the same send tick as the original: it was copied, not sent again', () => {
+        const dups = simulate('dup4', 'UDP').copies.filter((c) => c.n === 4);
+        expect(dups.map((c) => [c.sent, c.duplicate])).toEqual([
+            [3, false],
+            [3, true],
+        ]);
     });
 
     it('duplicate 4: UDP reads 1 2 3 4 5 4; TCP discards the copy', () => {

@@ -27,14 +27,14 @@ const pick = (page, n, legend, name) =>
 const run = (page, n) => fig(page, n).getByRole('button', { name: 'Run', exact: true }).click();
 const live = (page, n) => fig(page, n).locator('p.sr-only[aria-live=polite]').allTextContents();
 
-async function demux(page, { from, to = /this server/, proto, port, unused = 'Answers as the RFCs ask' }) {
+async function demux(page, { from, to = /this server/, proto, port, firewall = 'Off' }) {
     await pick(page, 2, 'From', from);
     await pick(page, 2, 'To address', to);
     await pick(page, 2, 'Protocol', proto);
     await pick(page, 2, 'To port', port);
-    await pick(page, 2, 'Packets for unused ports', unused);
+    await pick(page, 2, 'Server firewall', firewall);
     await run(page, 2);
-    return fig(page, 2).locator('p.m-0.mt-2').innerText();
+    return fig(page, 2).locator('[data-result]').innerText();
 }
 async function datagrams(page, event, transport) {
     await pick(page, 3, 'On the way', event);
@@ -55,7 +55,7 @@ async function section1(browser) {
         const over = () =>
             page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
         const o1 = await over();
-        await demux(page, { from: /New tab/, proto: 'TCP', port: '443' });
+        await demux(page, { from: /50003/, proto: 'TCP', port: '443' });
         await fig(page, 2).getByRole('button', { name: 'Next step' }).click();
         await fig(page, 2).getByRole('button', { name: 'Next step' }).click();
         await datagrams(page, 'Delay 2', 'TCP');
@@ -82,7 +82,7 @@ async function section2(browser) {
             r.violations.map((v) => `${v.id}: ${v.nodes[0]?.target}`).join(' | ') ||
                 `${r.incomplete.length} need review`
         );
-        await demux(page, { from: /Tab 2/, proto: 'UDP', port: '9000', unused: 'A firewall drops them' });
+        await demux(page, { from: /50002/, proto: 'UDP', port: '9000', firewall: /^On/ });
         await datagrams(page, 'Lose 3', 'UDP');
         await fig(page, 3).locator('details summary').click();
         r = await axeRun(page);
@@ -128,7 +128,7 @@ async function section3(browser) {
         'the drawing of Fig. 2 highlights nothing before Run',
         (await fig(page, 2).locator('svg .ln-active').count()) === 0
     );
-    await demux(page, { from: /Tab 1/, proto: 'TCP', port: '443' });
+    await demux(page, { from: /50001/, proto: 'TCP', port: '443' });
     await pick(page, 2, 'Protocol', 'UDP');
     log(
         'Fig. 2: changing the packet after a run clears the result, the steps and the live text',
@@ -151,33 +151,34 @@ async function section4(browser) {
     const page = await ctx.newPage();
     await page.goto(BASE + ROUTE, { waitUntil: 'networkidle' });
     const cases = [
-        [{ from: /Tab 1/, proto: 'TCP', port: '443' }, /^Web server, connection A\./],
-        [{ from: /Tab 2/, proto: 'TCP', port: '443' }, /^Web server, connection B\./],
-        [{ from: /New tab/, proto: 'TCP', port: '443' }, /^Web server, as a new connection\./],
-        [{ from: /Tab 1/, proto: 'UDP', port: '8125' }, /^Metrics collector\./],
-        [{ from: /Tab 2/, proto: 'UDP', port: '8125' }, /^Metrics collector\./],
-        [{ from: /Tab 1/, proto: 'UDP', port: '443' }, /^Nobody: ICMP Port Unreachable comes back\./],
-        [{ from: /Tab 1/, proto: 'TCP', port: '9000' }, /^Nobody: a TCP reset comes back\./],
+        [{ from: /50001/, proto: 'TCP', port: '443' }, /^Web server, connection 1\./],
+        [{ from: /50002/, proto: 'TCP', port: '443' }, /^Web server, connection 2\./],
+        [{ from: /50003/, proto: 'TCP', port: '443' }, /^Web server, as a new connection\./],
+        [{ from: /50001/, proto: 'UDP', port: '8125' }, /^Metrics collector\./],
+        [{ from: /50003/, proto: 'UDP', port: '8125' }, /^Metrics collector\./],
+        [{ from: /50001/, proto: 'UDP', port: '443' }, /^Nobody: ICMP Port Unreachable comes back\./],
+        [{ from: /50001/, proto: 'TCP', port: '9000' }, /^Nobody: a TCP reset comes back\./],
         [
-            { from: /Tab 1/, proto: 'TCP', port: '9000', unused: 'A firewall drops them' },
-            /^Nobody, and nothing comes back\./,
+            { from: /50001/, proto: 'TCP', port: '9000', firewall: /^On/ },
+            /^Dropped by the firewall: nothing comes back\./,
         ],
-        [{ from: /Tab 1/, to: /another machine/, proto: 'TCP', port: '443' }, /^Never reaches this server\./],
+        [{ from: /50002/, proto: 'TCP', port: '443', firewall: /^On/ }, /^Web server, connection 2\./],
+        [{ from: /50001/, to: /another machine/, proto: 'TCP', port: '443' }, /^Never reaches this server\./],
     ];
     for (const [packet, want] of cases) {
         const got = await demux(page, packet);
         log(
-            `Fig. 2: ${packet.proto} ${packet.port} from ${packet.from.source}${packet.unused ? ', firewall' : ''}${packet.to ? ', other address' : ''}`,
+            `Fig. 2: ${packet.proto} ${packet.port} from ${packet.from.source}${packet.firewall ? ', firewall on' : ''}${packet.to ? ', other address' : ''}`,
             want.test(got),
             got.slice(0, 90)
         );
     }
     // Prediction verdicts.
-    await pick(page, 2, 'Predict first', 'Web server, connection A');
-    let got = await demux(page, { from: /Tab 2/, proto: 'TCP', port: '443' });
+    await pick(page, 2, 'Predict first', 'Web server, connection 1');
+    let got = await demux(page, { from: /50002/, proto: 'TCP', port: '443' });
     log('Fig. 2: a wrong prediction says "not quite"', /not quite/.test(got), got);
-    await pick(page, 2, 'Predict first', 'Web server, connection B');
-    got = await demux(page, { from: /Tab 2/, proto: 'TCP', port: '443' });
+    await pick(page, 2, 'Predict first', 'Web server, connection 2');
+    got = await demux(page, { from: /50002/, proto: 'TCP', port: '443' });
     log('Fig. 2: a right prediction says "right"', /right\./.test(got), got);
     // Steps: four stages; Next/Previous keep focus and announce; heavy element on each stage.
     const next = fig(page, 2).getByRole('button', { name: 'Next step' });
@@ -197,6 +198,10 @@ async function section4(browser) {
         'Fig. 2: the protocol stage draws the TCP lane heavy',
         (await fig(page, 2).locator('svg .ln-active').count()) === 1
     );
+    log(
+        'Fig. 2: the current step is shown right under the drawing',
+        /^Step 2 of 4, Protocol\./.test(await fig(page, 2).locator('[data-current-step]').innerText())
+    );
     await page.keyboard.press('Enter');
     await page.keyboard.press('Enter');
     log(
@@ -207,9 +212,9 @@ async function section4(browser) {
     // Fig. 3: numbers quoted in the text.
     const want3 = [
         ['Lose 3', 'UDP', '1 2 4 5', 'tick 6'],
-        ['Lose 3', 'TCP', '1 2 3 4 5', 'tick 10'],
-        ['Delay 2', 'UDP', '1 3 4 5 2', 'tick 7'],
-        ['Delay 2', 'TCP', '1 2 3 4 5', 'tick 7'],
+        ['Lose 3', 'TCP', '1 2 3 4 5', 'tick 11'],
+        ['Delay 2', 'UDP', '1 3 2 4 5', 'tick 6'],
+        ['Delay 2', 'TCP', '1 2 3 4 5', 'tick 6'],
         ['Duplicate 4', 'UDP', '1 2 3 4 5 4', 'tick 7'],
         ['Duplicate 4', 'TCP', '1 2 3 4 5', 'tick 6'],
         ['Nothing goes wrong', 'UDP', '1 2 3 4 5', 'tick 6'],
@@ -228,10 +233,43 @@ async function section4(browser) {
         /^Nothing goes wrong, UDP\. The application reads 1 2 3 4 5/.test(said3),
         said3
     );
+    // Firewall on: a dropped packet never reaches the protocol stage.
+    await demux(page, { from: /50001/, proto: 'UDP', port: '443', firewall: /^On/ });
+    const stages = await fig(page, 2).locator('.ln-steps li strong').allInnerTexts();
+    log(
+        'Fig. 2: the firewall drops before the protocol stage',
+        stages.join(' ') === 'Address. Firewall. Result.',
+        stages.join(' ')
+    );
+    // Fig. 3: a network copy is not drawn as sent; the list does not say it was sent.
+    await datagrams(page, 'Duplicate 4', 'UDP');
+    const sentTags = await fig(page, 3).evaluate((f) => {
+        const svg = f.querySelector('svg');
+        return [...svg.querySelectorAll('text')].filter(
+            (t) => Math.abs(t.getAttribute('y') - 39) < 1 && /^\d$/.test(t.textContent)
+        ).length;
+    });
+    const list = await fig(page, 3).locator('details li').allTextContents();
+    log(
+        'Fig. 3: a duplicate is copied by the network, not sent again (5 sent tags, 5 sent lines)',
+        sentTags === 5 &&
+            list.filter((t) => /: sent: 4$/.test(t)).length === 1 &&
+            list.some((t) => /made by the network/.test(t)),
+        `${sentTags} tags`
+    );
+    // Citations are numbered in order of first appearance.
+    const nums = await page.locator('article .ln-cite a').allTextContents();
+    let max = 0;
+    let ordered = true;
+    for (const n of nums.map(Number)) {
+        if (n > max + 1) ordered = false;
+        max = Math.max(max, n);
+    }
+    log('citations are numbered in order of first appearance', ordered && max === 12, nums.join(','));
     const text = await page.locator('article').innerText();
     log(
-        'the text quotes the model: UDP 1 2 4 5 by tick 6; TCP last read at tick 10',
-        /UDP hands over 1 2 4 5 by tick 6/.test(text) && /last\s+read moves to tick 10/.test(text)
+        'the text quotes the model: UDP 1 2 4 5 by tick 6; TCP last read at tick 11',
+        /UDP hands over 1 2 4 5 by tick 6/.test(text) && /last\s+read moves to tick 11/.test(text)
     );
     await ctx.close();
 }
@@ -241,20 +279,42 @@ async function section5(browser) {
     const ctx = await browser.newContext({ viewport: { width: 375, height: 812 } });
     const page = await ctx.newPage();
     await page.goto(BASE + ROUTE, { waitUntil: 'networkidle' });
-    await fig(page, 2).getByRole('radio', { name: /Tab 1/ }).focus();
+    await fig(page, 2)
+        .getByRole('radio', { name: /^50001/ })
+        .focus();
     await page.keyboard.press('ArrowRight');
     log(
-        'keyboard: arrow key moves to Tab 2',
-        await fig(page, 2).getByRole('radio', { name: /Tab 2/ }).isChecked()
+        'keyboard: arrow key moves to source port 50002',
+        await fig(page, 2)
+            .getByRole('radio', { name: /^50002/ })
+            .isChecked()
     );
     await fig(page, 2).getByRole('button', { name: 'Run', exact: true }).focus();
     await page.keyboard.press('Enter');
     log(
         'keyboard: Enter on Run shows the result',
-        /connection B/.test(await fig(page, 2).locator('p.m-0.mt-2').innerText())
+        /connection 2/.test(await fig(page, 2).locator('[data-result]').innerText())
     );
     const ring = await page.evaluate(() => getComputedStyle(document.activeElement).outlineStyle);
     log('keyboard: the focused Run button shows a focus outline', ring !== 'none', ring);
+    // At 375 px the controls sit above the drawing: a run brings its result into view.
+    const inView = (n) =>
+        page
+            .waitForFunction(
+                (k) => {
+                    const svg = document.querySelector(`figure[aria-labelledby="fig${k}-h"] svg`);
+                    const r = svg && svg.getBoundingClientRect();
+                    return r && r.top >= 0 && r.top < window.innerHeight - 100;
+                },
+                n,
+                { timeout: 3000 }
+            )
+            .then(() => true)
+            .catch(() => false);
+    log('375 px: after Run, the Fig. 2 drawing is in view', await inView(2));
+    await fig(page, 3).getByRole('button', { name: 'Run', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    log('375 px: after Run, the Fig. 3 timeline is in view', await inView(3));
     await ctx.close();
 }
 
@@ -263,7 +323,7 @@ async function section6(browser) {
     const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, reducedMotion: 'reduce' });
     const page = await ctx.newPage();
     await page.goto(BASE + ROUTE, { waitUntil: 'networkidle' });
-    await demux(page, { from: /Tab 1/, proto: 'TCP', port: '443' });
+    await demux(page, { from: /50001/, proto: 'TCP', port: '443' });
     await datagrams(page, 'Lose 3', 'TCP');
     const moving = await page.evaluate(
         () =>

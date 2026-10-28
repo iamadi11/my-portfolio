@@ -2,7 +2,7 @@
  * Teaching model for the ip-and-ports chapter, asset A3 (docs/system-design/chapters/ip-and-ports.md, "Asset plan"):
  * five datagrams cross a network that may lose, delay or duplicate one of them, and the receiving application reads
  * them over UDP or TCP. Deterministic; time is counted in ticks, an assumed unit that is not to scale. A teaching
- * model, not a benchmark: one event per run; data is never corrupted; TCP's resend waits a fixed 6 ticks (real TCP
+ * model, not a benchmark: one event per run; data is never corrupted; TCP's resend waits a fixed 7 ticks (real TCP
  * adapts its timer), and its acknowledgements, windows and connection set-up are left to the tcp chapter.
  */
 
@@ -16,10 +16,14 @@ export const COUNT = 5;
 /** Ticks from send to arrival. */
 const TRAVEL = 2;
 /** Extra ticks for the delayed datagram. */
-const EXTRA_DELAY = 4;
-/** Ticks after the first send at which TCP resends a lost segment (assumed; see the header). */
-const RESEND_AFTER = 6;
-/** Ticks between the first copy of the duplicated datagram and its second copy. */
+const EXTRA_DELAY = 2;
+/**
+ * Ticks after the first send at which TCP resends a segment it has heard nothing about (assumed; see the header).
+ * Longer than the delayed segment's round trip (4 ticks there, an acknowledgement 2 ticks back), so a segment that
+ * is only late is never resent in this model; real TCP can resend a late segment when its timer is shorter.
+ */
+const RESEND_AFTER = 7;
+/** Ticks between the first copy of the duplicated datagram and its second copy, made by the network (not sent). */
 const DUP_GAP = 2;
 /** Width of the timeline the figure draws. */
 export const LAST_TICK = 14;

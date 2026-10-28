@@ -53,7 +53,8 @@ export default function Page(): React.JSX.Element {
                             and port, or what comes back when none does.
                         </li>
                         <li>
-                            Explain why two tabs talking to the same server never get each other&rsquo;s data.
+                            Explain why two connections from the same machine to the same server port stay
+                            separate.
                         </li>
                         <li>
                             Say why packets can be lost, duplicated or reordered, and what an application
@@ -69,22 +70,26 @@ export default function Page(): React.JSX.Element {
                         <strong>interface</strong>, its connection to a network: 32 bits in IPv4{' '}
                         <C ids={['rfc791']} at="§3.1" />, 128 bits in IPv6 <C ids={['rfc4291']} at="§2" />.
                         Inside the machine, a <strong>port</strong>, a number within TCP or within UDP, picks
-                        the program. Every address on this page is reserved for examples{' '}
-                        <C ids={['rfc5737']} at="§3" />.
+                        the program. Every address and name on this page is reserved for examples{' '}
+                        <C ids={['rfc5737']} at="§3" /> <C ids={['rfc2606']} at="§3" />.
                     </p>
                 </div>
 
                 <figure className="bp-sheet ln-fig" aria-labelledby="fig1-h">
                     <div className="ln-fig-head">
-                        <span id="fig1-h">Fig. 1 · Address, protocol, port, program</span>
+                        <span id="fig1-h">Fig. 1 · Name, address, port, program</span>
                         <span>A picture of the idea, not a real host</span>
                     </div>
                     <div className="ln-fig-grid">
                         <HostDrawing />
                         <dl className="ln-out">
                             <div>
+                                <dt>Name www.example.com</dt>
+                                <dd>what we seek</dd>
+                            </div>
+                            <div>
                                 <dt>Address 203.0.113.10</dt>
-                                <dd>which machine</dd>
+                                <dd>where it is: which machine</dd>
                             </div>
                             <div>
                                 <dt>TCP or UDP</dt>
@@ -104,6 +109,8 @@ export default function Page(): React.JSX.Element {
                         One server. Its web server waits on TCP port 443, the default for https{' '}
                         <C ids={['rfc9110']} at="§4.2.2" />; a metrics collector on UDP port 8125 (an assumed
                         example). TCP 443 and UDP 443 are different ports: each protocol has its own numbers.
+                        This server offers nothing on UDP 443; a server that also speaks HTTP/3, which runs
+                        over UDP, would <C ids={['rfc9114']} at="§3.1" /> (chapter udp-quic).
                     </figcaption>
                 </figure>
 
@@ -114,8 +121,8 @@ export default function Page(): React.JSX.Element {
                         destination address and port. The host reads them in stages: the address (is it for
                         me?), the IP header&rsquo;s protocol field (TCP or UDP?){' '}
                         <C ids={['rfc791']} at="§3.1" />, then a lookup inside that protocol{' '}
-                        <C ids={['rfc9293']} at="§2.2" />. Try tab 1, then tab 2, then a new tab, all to TCP
-                        443; then UDP 443; then port 9000 with the firewall on.
+                        <C ids={['rfc9293']} at="§2.2" />. Try source port 50001, then 50002, then 50003, all
+                        to TCP 443; then UDP 443; then port 9000 with the firewall off and on.
                     </p>
                 </div>
 
@@ -125,24 +132,31 @@ export default function Page(): React.JSX.Element {
                     <p>
                         <strong>What the steps showed.</strong> A TCP connection is named by a pair of
                         sockets, an address with a port at each end <C ids={['rfc9293']} at="§3.4.1, §4" />.
-                        Both tabs share the browser&rsquo;s address and the server&rsquo;s address and port;
-                        only their source ports differ (50001, 50002, from the range kept for this{' '}
+                        Connections 1 and 2 share the client&rsquo;s address and the server&rsquo;s address
+                        and port; only their source ports differ (50001, 50002, from the range kept for this{' '}
                         <C ids={['rfc6335']} at="§6" />
-                        ), and that is enough to keep the connections apart. A new tab reaches the program{' '}
-                        <strong>listening</strong> on the port, which starts a new connection{' '}
-                        <C ids={['rfc9293']} at="§3.9.1.1" />. UDP has no connections: the program on the port
-                        gets every datagram, whatever its source <C ids={['rfc768']} at="Fields" />.
+                        ), and that is enough to keep them apart. A packet that opens a connection reaches the
+                        program&rsquo;s <strong>listening</strong> socket{' '}
+                        <C ids={['rfc9293']} at="§3.9.1.1" />, and TCP sets the new connection up before the
+                        program gets it (chapter tcp). UDP has no connections: in this model the program on
+                        the port gets every datagram, whatever its source port.
                     </p>
                     <p>
                         <strong>Nobody there.</strong> TCP answers a packet for a connection that does not
                         exist with a reset <C ids={['rfc9293']} at="§3.5.2" />; for UDP, the host{' '}
                         <em>should</em> send back ICMP Port Unreachable <C ids={['rfc1122']} at="§4.1.3.1" />.
-                        Many firewalls drop such packets instead (a common practice, not a rule), so no answer
-                        does not prove nothing is there.
+                        A firewall, if there is one, acts first, at the edge: it drops whatever its rule says,
+                        used port or not, and sends nothing back. So no answer proves nothing, and an answer
+                        only shows what the rule let through.
                     </p>
                     <p>
-                        <strong>Not a user, not a request.</strong> An address and port name an interface and
-                        an endpoint. Users, sessions and requests live higher up, in chapters 1 and 2.
+                        <strong>Not a user, not a request, not a tab.</strong> An address and port name an
+                        interface and an endpoint. Users, sessions and requests live higher up, in chapters 1
+                        and 2. One connection can carry many HTTP requests one after another{' '}
+                        <C ids={['rfc9112']} at="§9.3" />, and an HTTP/3 client should avoid opening several
+                        connections with the same settings to one server <C ids={['rfc9114']} at="§3.3" />, so
+                        two browser tabs may well share one connection; telling their requests apart is then
+                        HTTP&rsquo;s job (chapter http-versions).
                     </p>
 
                     <h2 id="packets">What happens on the way</h2>
@@ -152,8 +166,9 @@ export default function Page(): React.JSX.Element {
                         ports but no guarantees <C ids={['rfc768']} at="Introduction" />: a datagram can be
                         lost, arrive twice, or arrive after later ones, for example when routes change{' '}
                         <C ids={['rfc8085']} at="§3.3" />. TCP numbers every byte, resends what is lost, and
-                        hands the application an in-order stream <C ids={['rfc9293']} at="§2.2, §3.4" />.
-                        Predict first, then compare UDP with TCP for the same event.
+                        hands the application an in-order stream <C ids={['rfc9293']} at="§2.2, §3.4" />. The
+                        network still loses, delays and copies packets under TCP; TCP recovers in the two end
+                        hosts. Predict first, then compare UDP with TCP for the same event.
                     </p>
                 </div>
 
@@ -163,7 +178,7 @@ export default function Page(): React.JSX.Element {
                     <p>
                         <strong>The trade.</strong> With datagram 3 lost, UDP hands over 1 2 4 5 by tick 6;
                         TCP hands over all five, in order, but 4 and 5 wait in the host until 3 is resent, so
-                        the last read moves to tick 10. Order and completeness cost waiting after a gap. An
+                        the last read moves to tick 11. Order and completeness cost waiting after a gap. An
                         application on UDP that needs order or completeness has to build it itself{' '}
                         <C ids={['rfc8085']} at="§3.3" />.
                     </p>
@@ -188,10 +203,10 @@ export default function Page(): React.JSX.Element {
                     </Question>
                     <Question
                         n={2}
-                        ask="Tab 2 sends TCP to 203.0.113.10:443. Which connection receives it, and why not the listener?"
+                        ask="198.51.100.7:50002 sends TCP to 203.0.113.10:443. Which connection receives it, and why not the listening socket?"
                     >
                         <p>
-                            The connection whose other end is 198.51.100.7:50002 (connection B in Fig. 2). The
+                            The connection whose other end is 198.51.100.7:50002 (connection 2 in Fig. 2). The
                             listener takes only new connections; an open connection is matched by its pair of
                             sockets first.
                         </p>
@@ -209,10 +224,10 @@ export default function Page(): React.JSX.Element {
                     <h2 id="exercise">Exercise</h2>
                     <p>
                         A database server listens on TCP 5432 and has one open connection, from
-                        198.51.100.7:50010. A log collector listens on UDP 514 (an assumed example). Where do
-                        these go: (a) TCP from 198.51.100.7:50010 to port 5432; (b) TCP from
-                        198.51.100.7:50011 to port 5432; (c) UDP to port 5432, on a host that follows the
-                        RFCs?
+                        198.51.100.7:50010. A log collector listens on UDP 514 (an assumed example). No
+                        firewall. Where do these go: (a) TCP from 198.51.100.7:50010 to port 5432; (b) TCP
+                        from 198.51.100.7:50011 to port 5432, opening a new connection; (c) UDP to port 5432?
+                        Work through the stages of Fig. 2 for each.
                     </p>
                     <details className="ln-q">
                         <summary>Show the worked answer</summary>
@@ -221,9 +236,11 @@ export default function Page(): React.JSX.Element {
                                 (a) The database, on the existing connection: the pair of sockets matches.
                             </li>
                             <li>
-                                (b) The database&rsquo;s listener, as a new connection, if this packet is
-                                opening one; if it claims to belong to a connection that does not exist, TCP
-                                answers with a reset <C ids={['rfc9293']} at="§3.5.2" />.
+                                (b) The database&rsquo;s listening socket: no open connection matches 50011,
+                                the packet opens one, and TCP sets it up. (Had it claimed to belong to a
+                                connection that does not exist, TCP would answer with a reset{' '}
+                                <C ids={['rfc9293']} at="§3.5.2" />
+                                .)
                             </li>
                             <li>
                                 (c) Nobody: no UDP socket on 5432. The host should send ICMP Port Unreachable{' '}
@@ -235,8 +252,8 @@ export default function Page(): React.JSX.Element {
                     <h2 id="own-words">In your own words, and elsewhere</h2>
                     <ul>
                         <li>
-                            Explain to a friend why two tabs on the same site never receive each other&rsquo;s
-                            data.
+                            Explain to a friend how a server keeps two connections from the same laptop apart,
+                            and why that does not mean each browser tab has its own connection.
                         </li>
                         <li>
                             A load balancer that spreads connections over several servers has to recognise
