@@ -3,10 +3,10 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import ContractPlate from '@/components/learn/api-design/ContractPlate';
 import ChapterTabs from '@/components/learn/ChapterTabs';
 import { citeFor } from '@/components/learn/Cite';
 import CourseShell from '@/components/learn/CourseShell';
+import ContractPlate from '@/components/learn/api-design/ContractPlate';
 import ChapterHeader from '@/components/learn/kit/ChapterHeader';
 import Question from '@/components/learn/kit/Question';
 import {
