@@ -3,7 +3,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import Cite from '@/components/learn/Cite';
+import { citeFor } from '@/components/learn/Cite';
 import ExchangeStepper from '@/components/learn/client-server/ExchangeStepper';
 import CourseShell from '@/components/learn/CourseShell';
 import Q from '@/components/learn/kit/Question';
@@ -25,11 +25,7 @@ export const metadata: Metadata = {
     alternates: { canonical: '/learn/client-server' },
 };
 
-const TITLES: Record<string, string> = Object.fromEntries(SOURCES.map((s) => [s.id, s.title]));
-
-function C({ ids, at }: { ids: string[]; at?: string }): React.JSX.Element {
-    return <Cite ids={ids} at={at} numbers={SOURCE_NUMBER} titles={TITLES} />;
-}
+const C = citeFor(SOURCES, SOURCE_NUMBER);
 
 export default function Page(): React.JSX.Element {
     return (

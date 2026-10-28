@@ -56,3 +56,6 @@ assets-src/
 
 # Screenshots written by the browser suites (tests/browser)
 /test-results/
+
+# Pages built by the vendored anatomy skill's examples (node build.mjs [--light]); its tests need them
+/.claude/skills/anatomy/examples/*/*.html

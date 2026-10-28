@@ -3,7 +3,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import Cite from '@/components/learn/Cite';
+import { citeFor } from '@/components/learn/Cite';
 import CourseShell from '@/components/learn/CourseShell';
 import HostExplorer, { type Part } from '@/components/learn/ip-and-ports/HostExplorer';
 import { DemuxLabLazy, NetworkLabLazy } from '@/components/learn/ip-and-ports/LazyLabs';
@@ -27,11 +27,7 @@ export const metadata: Metadata = {
     alternates: { canonical: '/learn/ip-and-ports' },
 };
 
-const TITLES: Record<string, string> = Object.fromEntries(SOURCES.map((s) => [s.id, s.title]));
-
-function C({ ids, at }: { ids: string[]; at?: string }): React.JSX.Element {
-    return <Cite ids={ids} at={at} numbers={SOURCE_NUMBER} titles={TITLES} />;
-}
+const C = citeFor(SOURCES, SOURCE_NUMBER);
 
 /** What the reader sees until a figure's code has loaded (and without JavaScript). */
 function Waiting({ n, title, what }: { n: number; title: string; what: string }): React.JSX.Element {

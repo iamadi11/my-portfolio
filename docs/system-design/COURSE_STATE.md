@@ -36,6 +36,12 @@ overhaul is on branch `claude/visual-first-learning-skill`, not merged.
   route ≤ 120 kB and `/` unchanged (§10.4); WCAG 2.2 AA and Lighthouse ≥ 90 (§3); the six §10.5 device sizes with no
   horizontal scroll; reduced motion shows finished states (§10.7); `npx tsc --noEmit`, `npm run lint`, real browser
   check (§4). No new numbers.
+- 2026-10-28 Owner: the 120 kB first-load budget is the portfolio's (`/`, CLAUDE.md §10.4), not the course's.
+  Course budget: `/learn` routes ≤ 150 kB first-load and ≤ 400 kB more fetched on demand while the page is
+  scrolled (figures and their libraries in their own lazy chunks); Lighthouse ≥ 90 still binds
+  (`tests/browser/js-budget.cjs`). Supersedes the 2026-10-27 "≤ 120 kB per course route" proposal.
+- 2026-10-28 Owner: install what anatomy needs. Vendored `wheresryan22/anatomy` @ 1482e84 (MIT) as the `anatomy`
+  skill (`.claude/skills/anatomy/VENDORED.md`); added `esbuild` (dev) for its scripts; its tests 290/290.
 - 2026-10-27 Proposal (not built): when the product starts, add the route to `src/app/sitemap.ts` (today it lists
   only `/`) and check `public/sw.js` serves it under its network-first navigation rule (bump `VERSION` if rules change).
 - 2026-10-27 Curriculum v1 (mode B): 119 chapters, 12 stages, paths beginner 57 / interview 106 / production 106,

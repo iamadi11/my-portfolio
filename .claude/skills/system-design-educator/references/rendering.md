@@ -65,7 +65,11 @@ Draco/Meshopt and KTX2 textures). No stock imagery that only decorates.
   and height that says what the figure does (the page reads without JavaScript; a figure that needs no script,
   like an explore figure built on `:has()`, is server-rendered whole). Its chunk does not count toward
   first-load JS.
-- First-load JS per page stays within the host budget (this repo: ≤ 120 kB, measured by
-  `tests/browser/js-budget.cjs`); `/` must not change.
-- Add a dependency only for a figure that needs it, with its gzip size, peer ranges and the reason recorded; this
-  course has no animation or 3D library today, and the kit's clock covers 2D motion.
+- JS stays within the host's budgets, measured by `tests/browser/js-budget.cjs` (this repo, owner 2026-10-28:
+  `/learn` routes ≤ 150 kB first-load and ≤ 400 kB more on demand while the page is scrolled; `/` keeps its own
+  ≤ 120 kB and must not change). A library a figure needs goes in that figure's lazy chunk, never the page's.
+- Add a dependency only for a figure that needs it, with its gzip size, peer ranges and the reason recorded. The
+  kit's clock covers 2D motion. For a figure where an object's mechanism is the explanation (a dial read as it
+  turns, an exploded assembly), the vendored `anatomy` skill (`.claude/skills/anatomy`, MIT) supplies isometric
+  SVG solids, springs, an optional 3D turn mode and WebGL effects without a 3D library; use it monochrome (its
+  `VENDORED.md`), with the 3D justification above.
