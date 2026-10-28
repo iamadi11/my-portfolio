@@ -19,5 +19,6 @@ graphify-out
 !.claude/skills/anatomy/kit/
 .claude/skills/anatomy/kit/*
 !.claude/skills/anatomy/kit/iso-kit.ts
+!.claude/skills/anatomy/kit/iso.css
 .agents
 *.pdf
