@@ -3,10 +3,10 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import ContractPlate from '@/components/learn/api-design/ContractPlate';
 import ChapterTabs from '@/components/learn/ChapterTabs';
 import { citeFor } from '@/components/learn/Cite';
 import CourseShell from '@/components/learn/CourseShell';
-import ContractPlate from '@/components/learn/api-design/ContractPlate';
 import ChapterHeader from '@/components/learn/kit/ChapterHeader';
 import Question from '@/components/learn/kit/Question';
 import {
@@ -72,33 +72,33 @@ export default function Page(): React.JSX.Element {
                                 </p>
                                 <p>
                                     The method is the primary source of request semantics, and it says what
-                                    the client expects if the request succeeds <C ids={['rfc9110']} at="§9.1" />.
-                                    The target of a request is a resource <C ids={['rfc9110']} at="§3.1" />.
-                                    The request target is how the caller identifies it{' '}
-                                    <C ids={['rfc9110']} at="§7.1" />. {CONTRACT_TARGET} is a teaching label
-                                    for that target, not a company&apos;s API and not a product URI.{' '}
-                                    {CONTRACT_METHOD} asks for a current representation, and a retrieval that
-                                    can provide it is usually a {SUCCESS_STATUS}{' '}
+                                    the client expects if the request succeeds{' '}
+                                    <C ids={['rfc9110']} at="§9.1" />. The target of a request is a resource{' '}
+                                    <C ids={['rfc9110']} at="§3.1" />. The request target is how the caller
+                                    identifies it <C ids={['rfc9110']} at="§7.1" />. {CONTRACT_TARGET} is a
+                                    teaching label for that target, not a company&apos;s API and not a product
+                                    URI. {CONTRACT_METHOD} asks for a current representation, and a retrieval
+                                    that can provide it is usually a {SUCCESS_STATUS}{' '}
                                     <C ids={['rfc9110']} at="§9.3.1" />. For {CONTRACT_METHOD}, the content of
-                                    a {SUCCESS_STATUS} response is a representation of the target resource, and{' '}
-                                    {SUCCESS_STATUS} means the request succeeded{' '}
+                                    a {SUCCESS_STATUS} response is a representation of the target resource,
+                                    and {SUCCESS_STATUS} means the request succeeded{' '}
                                     <C ids={['rfc9110']} at="§15.3.1" />. The 2xx class means the request was
                                     received, understood, and accepted <C ids={['rfc9110']} at="§15.3" />.
                                 </p>
                                 <p>
                                     A resource cannot treat a request in a way that disagrees with the method{' '}
-                                    <C ids={['rfc9110']} at="§3.1" />. This plate allows only {CONTRACT_METHOD}.
-                                    A method the server recognizes but the resource does not allow should be
-                                    answered {NAMED_ERROR} <C ids={['rfc9110']} at="§9.1" />. {NAMED_ERROR}{' '}
-                                    means that method is known by the origin server and not supported by the
-                                    target resource. The response must include an Allow field listing the
-                                    methods the resource supports now <C ids={['rfc9110']} at="§15.5.6" />.
-                                    That field is not drawn. {NAMED_ERROR} is a 4xx client error: the request
-                                    was not fulfilled <C ids={['rfc9110']} at="§15" />. A caller has to read
-                                    the status by the semantics defined for it{' '}
-                                    <C ids={['rfc9110']} at="§2.4" />, including the class, which is the first
-                                    digit <C ids={['rfc9110']} at="§15" />. This run assumes the representation
-                                    is current. It is not a measurement.
+                                    <C ids={['rfc9110']} at="§3.1" />. This plate allows only{' '}
+                                    {CONTRACT_METHOD}. A method the server recognizes but the resource does
+                                    not allow should be answered {NAMED_ERROR}{' '}
+                                    <C ids={['rfc9110']} at="§9.1" />. {NAMED_ERROR} means that method is
+                                    known by the origin server and not supported by the target resource. The
+                                    response must include an Allow field listing the methods the resource
+                                    supports now <C ids={['rfc9110']} at="§15.5.6" />. That field is not
+                                    drawn. {NAMED_ERROR} is a 4xx client error: the request was not fulfilled{' '}
+                                    <C ids={['rfc9110']} at="§15" />. A caller has to read the status by the
+                                    semantics defined for it <C ids={['rfc9110']} at="§2.4" />, including the
+                                    class, which is the first digit <C ids={['rfc9110']} at="§15" />. This run
+                                    assumes the representation is current. It is not a measurement.
                                 </p>
                             </div>
                         </>
@@ -142,8 +142,8 @@ export default function Page(): React.JSX.Element {
                             >
                                 <p>
                                     The status is {NAMED_ERROR}, not {SUCCESS_STATUS}. The body is not seated.
-                                    POST is a method this plate does not allow, so the promised method does not
-                                    hold. {NAMED_ERROR} means the method is known and not supported by the
+                                    POST is a method this plate does not allow, so the promised method does
+                                    not hold. {NAMED_ERROR} means the method is known and not supported by the
                                     target resource. The caller sees the body off the seat.
                                 </p>
                             </Question>
@@ -154,9 +154,9 @@ export default function Page(): React.JSX.Element {
                                 <p>
                                     {SUCCESS_STATUS} means the request succeeded. The 2xx class means the
                                     request was accepted. This plate does not assign {SUCCESS_STATUS} when the
-                                    method is not {CONTRACT_METHOD}. A caller that treats the POST as a success
-                                    is using a status the plate does not give. The body stays off the seat so
-                                    that success is not what the caller sees.
+                                    method is not {CONTRACT_METHOD}. A caller that treats the POST as a
+                                    success is using a status the plate does not give. The body stays off the
+                                    seat so that success is not what the caller sees.
                                 </p>
                             </Question>
                             <Question
@@ -203,10 +203,8 @@ export default function Page(): React.JSX.Element {
                     <p>
                         Chapter 17, <strong>Resource-oriented HTTP APIs (REST)</strong>, is planned and not
                         written. Previous:{' '}
-                        <Link href="/learn/utilisation-queueing">
-                            Utilisation, queues and Little’s law
-                        </Link>
-                        . <Link href="/learn">See the whole course</Link>.
+                        <Link href="/learn/utilisation-queueing">Utilisation, queues and Little’s law</Link>.{' '}
+                        <Link href="/learn">See the whole course</Link>.
                     </p>
                 </aside>
             </article>

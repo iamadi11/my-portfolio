@@ -261,12 +261,7 @@ function Network({ inputs, run, t }: { inputs: Inputs; run: Run | null; t: numbe
                                         y2={y2}
                                         className="thin"
                                     />
-                                    <text
-                                        x={x1}
-                                        y={y1 - 52}
-                                        className="iso-label"
-                                        textAnchor="middle"
-                                    >
+                                    <text x={x1} y={y1 - 52} className="iso-label" textAnchor="middle">
                                         × failed
                                     </text>
                                 </>

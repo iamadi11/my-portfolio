@@ -154,10 +154,10 @@ function sceneOf() {
         railFar: block(railFar, 22, 3, projection),
         railNear: block(railNear, 22, 3, projection),
         bushings: [
-            cylinder(86, 53.5, 2.4, 22, 5, projection, 10, 0.2),
-            cylinder(150, 53.5, 2.4, 22, 5, projection, 10, 0.2),
-            cylinder(86, 69.5, 2.4, 22, 5, projection, 10, 0.2),
-            cylinder(150, 69.5, 2.4, 22, 5, projection, 10, 0.2),
+            { key: 'bush-far-a', paths: cylinder(86, 53.5, 2.4, 22, 5, projection, 10, 0.2) },
+            { key: 'bush-far-b', paths: cylinder(150, 53.5, 2.4, 22, 5, projection, 10, 0.2) },
+            { key: 'bush-near-a', paths: cylinder(86, 69.5, 2.4, 22, 5, projection, 10, 0.2) },
+            { key: 'bush-near-b', paths: cylinder(150, 69.5, 2.4, 22, 5, projection, 10, 0.2) },
         ],
         ruler: block(ruler, 20, 2, projection),
         ticks: topTicks(80, 154, 8, 4, 78, 22, [1.4, 2.6], projection, 'x'),
@@ -272,8 +272,8 @@ export default function ContractPlate({ pane = 'lab' }: { pane?: 'learn' | 'lab'
                             <Metal paths={scene.collar} part="collar" />
                             <Metal paths={scene.railFar} part="rail-far" />
                             <Metal paths={scene.railNear} part="rail-near" />
-                            {scene.bushings.map((paths, index) => (
-                                <Metal key={`bush-${index}`} paths={paths} part={`bush-${index}`} />
+                            {scene.bushings.map((part) => (
+                                <Metal key={part.key} paths={part.paths} part={part.key} />
                             ))}
                             <Metal paths={scene.ruler} part="ruler" />
                             <path className="iso-line" data-tone="lo" d={scene.ticks.minor} />
@@ -328,9 +328,9 @@ export default function ContractPlate({ pane = 'lab' }: { pane?: 'learn' | 'lab'
             </div>
             <figcaption className="ln-label mt-4">
                 Assumed: this plate allows only GET, and a current representation exists for that method on
-                the teaching target item. Status {SUCCESS_STATUS} is a succeeded request. Status {NAMED_ERROR}{' '}
-                is a method the resource does not allow. Both codes are from RFC 9110. item is a teaching
-                label. Not a product API. Not a measurement.
+                the teaching target item. Status {SUCCESS_STATUS} means the request succeeded. Status{' '}
+                {NAMED_ERROR} means the method is not supported by the target resource. Both codes are from
+                RFC 9110. item is a teaching label. Not a product API. Not a measurement.
             </figcaption>
         </figure>
     );

@@ -200,9 +200,11 @@ export default function Page(): React.JSX.Element {
                 <aside className="bp-sheet ln-next" aria-label="Next chapter">
                     <p className="ln-kicker">Next in the course</p>
                     <p>
-                        Chapter 16, <strong>API design: contracts between programs</strong>, is planned and
-                        not written. Previous:{' '}
-                        <Link href="/learn/estimation">Back-of-envelope estimation</Link>.{' '}
+                        Chapter 16,{' '}
+                        <Link href="/learn/api-design">
+                            <strong>API design: contracts between programs.</strong>
+                        </Link>{' '}
+                        Previous: <Link href="/learn/estimation">Back-of-envelope estimation</Link>.{' '}
                         <Link href="/learn">See the whole course</Link>.
                     </p>
                 </aside>

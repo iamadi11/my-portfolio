@@ -10,6 +10,14 @@ assets-src
 graphify-out
 .obsidian
 .cursor
-.claude
+# Local tooling stays off the build. The course figures import the anatomy kit, so that one file is uploaded.
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/anatomy/
+.claude/skills/anatomy/*
+!.claude/skills/anatomy/kit/
+.claude/skills/anatomy/kit/*
+!.claude/skills/anatomy/kit/iso-kit.ts
 .agents
 *.pdf

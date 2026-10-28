@@ -15,6 +15,7 @@ export const CHAPTER_ROUTES: Readonly<Record<string, string>> = {
     'latency-numbers': '/learn/latency-numbers',
     estimation: '/learn/estimation',
     'utilisation-queueing': '/learn/utilisation-queueing',
+    'api-design': '/learn/api-design',
     http: '/learn/http',
     'udp-quic': '/learn/udp-quic',
     'http-versions': '/learn/http-versions',

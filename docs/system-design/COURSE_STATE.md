@@ -9,12 +9,12 @@ The system design course is built only through the `system-design-educator` skil
 
 ## Current unit
 
-dns step 6. Query walk is on /learn/dns. Not verified. No animation sense pass. tcp, tls, http, udp-quic, http-versions, cloud-networking, latency-throughput, percentiles, latency-numbers, estimation, and utilisation-queueing are implemented and not verified.
+dns step 6. Query walk is on /learn/dns. Not verified. No animation sense pass. tcp, tls, http, udp-quic, http-versions, cloud-networking, latency-throughput, percentiles, latency-numbers, estimation, utilisation-queueing, and api-design are implemented and not verified.
 
 ## Next action
 
 Do not call the course world class. dns is implemented and not verified. No `animation sense: pass`.
-tcp, tls, http, udp-quic, http-versions, cloud-networking, latency-throughput, percentiles, latency-numbers, estimation, and utilisation-queueing are implemented and not verified. Do not mark a chapter verified because its files landed. api-design is still being written. They must not edit the curriculum, course state, or the route list.
+tcp, tls, http, udp-quic, http-versions, cloud-networking, latency-throughput, percentiles, latency-numbers, estimation, utilisation-queueing, and api-design are implemented and not verified. Do not mark a chapter verified because its files landed. The chapter loop stops here. REST stays planned.
 
 ## Decisions
 
@@ -176,6 +176,7 @@ tcp, tls, http, udp-quic, http-versions, cloud-networking, latency-throughput, p
 - 2026-10-28 sources: learner-facing lists leave the chapter pages for `/learn/sources`, grouped by chapter.
   Inline marks link there. The spec `## Sources` stays the author record. Skill: research-and-sources.md,
   chapter-workflow.md, visual-review.md.
+- 2026-10-29 api-design wired into the graph, the route list, and the sources page. Status implemented. Utilisation now links to it. Browser, after Reset: the body is with the caller, place caller, translate(0.00 0.00). Next seats it, place accepted, translate(300.83 122.17), status 200. Lab fig-api-h still says press Run and has no step. Quiz answers stay closed. GET only, and a current representation for the matching call, are assumptions. item is a teaching label. Not verified. No animation sense pass. Current unit stays dns. The chapter loop stops here.
 - 2026-10-29 estimation wired into the graph, the route list, and the sources page. Status implemented. Latency numbers now links to it, and it links to utilisation. The asset was type simulation with an anatomy-iso render, so check rejected it; the type is now 3d. The pattern line now includes step and manipulate, which the figure already has. Browser: Reset shows 0 plates on each pan; Next shows 1 of 2, 1 of 8, and 1 of 5; the finished stacks are 2, 8, and 5 plates, for 2 requests per second, 86,400,000 bytes stored, and 1,000 bytes per second. Lab fig-est-h still says press Run and has no step. Quiz answers stay closed. The inputs are assumed. A day is 86,400 seconds by definition. Not verified. No animation sense pass. Current unit stays dns.
 - 2026-10-29 http-versions wired into the graph, the route list, and the sources page. Status implemented. UDP and QUIC now links to it, and it links to cloud networking. Browser, HTTP/3: three responses leave; step 4 the middle response is held at translate(102.27 110.60) while the other two stay on the wire; step 6 the earliest and the latest are delivered and one response stays held. Lab fig-hver-h still says press Run and has no step. Quiz answers stay closed. The lost carrier and the tick lengths are assumed. Not verified. No animation sense pass. Current unit stays dns.
 - 2026-10-29 api-design started on its own files. Prerequisite http is implemented. It must not edit the curriculum, course state, or the route list. Current unit stays dns.

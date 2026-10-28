@@ -1,3 +1,4 @@
+import { API_DESIGN_SOURCE_NUMBER, API_DESIGN_SOURCES } from './api-design-sources';
 import { CLIENT_SERVER_SOURCE_NUMBER, CLIENT_SERVER_SOURCES } from './client-server-sources';
 import { CLOUD_NETWORKING_SOURCE_NUMBER, CLOUD_NETWORKING_SOURCES } from './cloud-networking-sources';
 import { DNS_SOURCE_NUMBER, DNS_SOURCES } from './dns-sources';
@@ -153,6 +154,14 @@ export const SOURCE_CHAPTERS: readonly SourceChapter[] = [
         note: 'Little’s 1961 abstract was fetched on 2026-10-29; the proof was not in that page. Sigman’s 2009 note was fetched the same day, §1.1 and §1.2 through the FIFO M/M/1 case. Arrival rates of 5 and 9 per second, and a service rate of 10 per second, are assumptions. The row draws the rounded mean number waiting.',
         sources: UTILISATION_QUEUEING_SOURCES,
         numbers: UTILISATION_QUEUEING_SOURCE_NUMBER,
+    },
+    {
+        id: 'api-design',
+        title: 'API design: contracts between programs',
+        href: '/learn/api-design',
+        note: 'RFC 9110 was fetched from rfc-editor.org on 2026-10-29. The sections named in the chapter were read. §9.3.3 and §10.2.1 were not read. This plate allows only GET, and the matching call finding a current representation, are assumptions. item is a teaching label.',
+        sources: API_DESIGN_SOURCES,
+        numbers: API_DESIGN_SOURCE_NUMBER,
     },
 ];
 
