@@ -3,7 +3,7 @@
 ## Contents
 
 - Quality rubric (used by authors and reviewers)
-- Visual and educational review (stage F)
+- Visual and educational review (stage 6)
 - Independent review procedure
 - Checks that must run
 - Browser checks
@@ -32,8 +32,9 @@ Each item is pass / fail / not applicable, with a file and line for every fail.
 **Visuals and models**
 
 - An asset plan exists before the explanation; every objective maps to an asset or a stated text-only reason.
-- Each asset's type fits what it teaches (visual-design.md); none is decorative; no spatial, temporal or causal
-  mechanism is taught by prose alone.
+- Each asset's type fits what it teaches (rendering.md) and its pattern what the learner must do
+  (interaction-patterns.md); none is decorative; no spatial, temporal or causal mechanism is taught by prose alone.
+- Motion explains causality and comes from the model's events (motion.md); pause, step and reduced motion work.
 - Every readout computed from model state; every control changes the model as documented.
 - Model labelled "teaching model, not a benchmark" (or "picture of the idea") with assumptions beside the visual.
 - Each claim carries its evidence class; illustrative numbers are labelled assumed; no fake tool output.
@@ -53,34 +54,15 @@ Each item is pass / fail / not applicable, with a file and line for every fail.
 
 - Status in CURRICULUM matches the evidence; COURSE_STATE updated; open issues recorded.
 
-## Visual and educational review (stage F)
+## Visual and educational review (stage 6)
 
-The reviewer works from the **rendered page** (screenshots at every required size, read zoomed in; every control
-operated by keyboard and pointer; reduced motion emulated), then the source. It answers five questions, each yes
-or no with a reason and file/line evidence:
-
-1. **text-heavy:** is this still a text-heavy chapter (the mechanism carried by paragraphs, visuals as
-   illustrations of them)? Pass = no.
-2. **mechanism-via-visual:** could a learner understand the core mechanism primarily by interacting with the
-   visuals and their short captions? Pass = yes.
-3. **every-visual-teaches:** does every major visual teach something specific, named in the asset plan? Pass = yes.
-4. **claims-defensible:** are the visual claims scientifically and technically defensible (labels, units, causal
-   order, evidence classes, stated limits)? Pass = yes.
-5. **interaction-helps:** does each interaction improve understanding rather than distract (no decorative
-   controls, no answer leaks, no motion without meaning)? Pass = yes.
-
-It also checks the 15 visual acceptance criteria (visual-design.md), flags prose that only repeats what a visual
-already shows (cut it), and records anything it could not check.
-Record the answers in the spec under Review findings, on one line:
-
-`Visual review: text-heavy=no · mechanism-via-visual=yes · every-visual-teaches=yes · claims-defensible=yes · interaction-helps=yes`
-
-A failing answer is at least a should-fix finding with its fix; `verified` needs all five passing.
+The reviewer judges the rendered page with the rubric in visual-review.md: five questions, ten dimensions, the
+reject list and the acceptance criteria, recorded as the `Visual review:`, `Visual rubric:` and `Rejects:` lines.
 
 ## Independent review procedure
 
 1. Spawn a fresh reviewer (subagent) with only: the chapter spec path, implementation paths, the running page's
-   URL, this file, visual-design.md and visual-science.md. If no
+   URL, this file, visual-review.md, scientific-modeling.md, interaction-patterns.md and motion.md. If no
    subagent can be started, the review didn't happen: say so and stay below `reviewed` (a self-review is recorded as
    a note, never as `Reviewer:`).
 2. The reviewer checks sources it can reach itself and marks what it could not check.
@@ -108,6 +90,8 @@ does not apply to this chapter (e.g. no model, so no model tests), with that rea
 - For each asset, operate the interaction its plan names and confirm the documented outcome appears.
 - Before every reveal, confirm the answer is absent from text, accessible names and live regions.
 - Operate every control with the keyboard only.
+- Play, pause, step, reset and replay every animated run; confirm each event's state matches the event list.
+- After Run at 375 px, confirm the result is in view.
 - Emulate reduced motion; confirm complete information.
 - Check for horizontal scroll and layout shift.
 - If the project gates on Lighthouse, run it for the chapter route.

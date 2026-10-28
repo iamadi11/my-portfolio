@@ -167,7 +167,41 @@ ran the same model as the author; no other model was tested.
   19 `no-console` (expected in a CLI) and 1 `no-use-before-define` (a hoisted function). The project lint scope is
   unchanged.
 
-## Known limitations
+## Experience-first overhaul (2026-10-28)
+
+Why: chapters still read as articles with figures. Even the visual-first pilot had static drawings (nothing
+animated), mostly step-through and predict interactions, and about 1,750 words. The skill now plans each chapter as
+two or three figures the learner acts on (six stages, a concept decomposition with the hardest concepts, a
+fourteen-field asset plan), adds references for interaction patterns, motion, rendering, scientific modeling and a
+visual review rubric, and `course.mjs check` enforces patterns beyond quizzes, at least one animated mechanism, and
+the rubric and reject lines at review.
+
+Inputs actually inspected:
+
+- `ui-ux-pro-max` (vendored): SKILL.md read in full; `search.py` run for a design system ("interactive technical
+  education course explorable explanations monochrome minimal") and for `ux` (animation, reduced motion, touch
+  target), `chart` (timeline, flow), `web` (aria live, keyboard) and `react` (bundle, dynamic import). Applied:
+  44 px targets with 8 px gaps, 1–2 animated elements per view, ease-out on enter, 150–300 ms micro-interactions,
+  aria-live and keyboard handlers, `next/dynamic` for heavy figures, table alternatives for flow charts. Not
+  applied: its blue accent and Space Mono (the host requires monochrome and uses Arimo).
+- `wheresryan22/anatomy` (MIT, shared by the owner; cloned @ 1482e84): SKILL.md, `references/motion.md`,
+  `references/craft.md`, `references/3d.md` read. Applied: the figure card with a live readout, one model driving
+  motion, readouts and caption, time-based motion with clamped `dt` and offscreen stop, readout text written on
+  change, an idle tour that pauses on input, 3D only when motion is the explanation, the zoom-in critique and
+  "every line ends on something". Not applied: "the object is the explanation" as a default (a physical metaphor
+  can mislead in a course that must be scientifically exact).
+- `enesozturk/dimensional-drawing` and `dimensional-drawing-motion` (vendored): motion as a pure function of time,
+  strokes before fills, one thing leads at a time.
+- Reference sites (bruno-simon.com, lusion.co, activetheory.net, 14islands.com, obys.agency, resn.co.nz): not
+  reachable from this container on 2026-10-28 (the egress proxy refused all of them). Used second-hand through the
+  repo's own teardown (`docs/v2-research/references.md`, `teardown.md`, 2026-10-16, headless capture). awwwards.com,
+  cssdesignawards.com, thefwa.com and godly.website were not reachable and have no teardown: not used.
+- Videos: no video link appears in the owner's messages in this session or in the repository; none could be
+  inspected. If the videos are shared again (links or files), they can be studied and recorded here.
+- GSAP skills (vendored): read for performance guidance (transform and opacity, one timeline); GSAP itself is not
+  installed and not added (budget).
+
+
 
 - The fresh-agent tests used one model. Haiku- and Sonnet-class runs, which the best-practices page recommends, were
   not done.

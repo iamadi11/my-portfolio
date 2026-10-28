@@ -137,9 +137,13 @@ const REQUIRED_EVIDENCE = [
 const ASSET_FIELDS = [
     'objective',
     'type',
+    'pattern',
     'learner sees',
+    'animated',
     'learner does',
+    'notice',
     'model',
+    'feedback',
     'assumptions',
     'outcome',
     'accessibility',
@@ -156,8 +160,34 @@ const ASSET_TYPES = [
     'experiment',
     'text',
 ];
-/** Types whose picture depends on inputs or time, so they need an executable model (references/visual-science.md). */
+/** Types whose picture depends on inputs or time, so they need an executable model (references/scientific-modeling.md). */
 const MODELLED = ['animated-2d', 'simulation', 'chart', '3d'];
+/** Interaction patterns (references/interaction-patterns.md); `read` is for figures the learner only reads. */
+const PATTERNS = [
+    'manipulate',
+    'predict',
+    'step',
+    'explore',
+    'break',
+    'compare',
+    'construct',
+    'quantitative',
+    'debug',
+    'read',
+];
+/** The ten dimensions of the visual rubric (references/visual-review.md). */
+const RUBRIC = [
+    'education',
+    'clarity',
+    'interaction',
+    'correctness',
+    'animation',
+    'hierarchy',
+    'accessibility',
+    'mobile',
+    'performance',
+    'consistency',
+];
 const VISUAL_REVIEW = {
     'text-heavy': 'no',
     'mechanism-via-visual': 'yes',
@@ -199,6 +229,13 @@ function visualErrors(c, text) {
     const filled = (h) => (section(text, h) ?? []).some((l) => !placeholder(l) && !/^```/.test(l));
     if (!filled('Storyboard'))
         errs.push(`${c.id}: status ${c.status} needs "## Storyboard" filled (owned by authored)`);
+    if (!filled('Concept decomposition'))
+        errs.push(`${c.id}: status ${c.status} needs "## Concept decomposition" filled (owned by authored)`);
+    const hardest = (section(text, 'Concept decomposition') ?? []).filter(
+        (l) => /^Hardest:\s*\S/.test(l) && !placeholder(l)
+    );
+    if (hardest.length < 2 || hardest.length > 3)
+        errs.push(`${c.id}: "## Concept decomposition" needs 2–3 "Hardest:" lines (has ${hardest.length})`);
     const list = assets(text);
     if (!list.length) errs.push(`${c.id}: status ${c.status} needs "## Asset plan" with "### A1 …" assets`);
     const covered = new Set();
@@ -254,6 +291,25 @@ function visualErrors(c, text) {
     for (const n of objectives)
         if (!covered.has(Number(n)))
             errs.push(`${c.id}: objective ${n} has no asset and no "- text-only: ${n} — <reason>" line`);
+    for (const a of list) {
+        const pat = a.fields.get('pattern');
+        for (const p of (pat ?? '').split(/[,+]\s*|\s+/).filter(Boolean))
+            if (!PATTERNS.includes(p) && !placeholder(pat))
+                errs.push(`${c.id}: asset ${a.name} has unknown pattern "${p}" (${PATTERNS.join(', ')})`);
+    }
+    const patterns = list.flatMap((a) => (a.fields.get('pattern') ?? '').split(/[,+]\s*|\s+/));
+    if (list.length && !patterns.some((p) => PATTERNS.includes(p) && !['predict', 'read'].includes(p)))
+        errs.push(
+            `${c.id}: no asset uses a pattern beyond predict/read (interaction must be more than quizzes)`
+        );
+    if (
+        list.length &&
+        !list.some((a) => !/^(none|n\/a)\b/i.test(a.fields.get('animated') ?? 'none')) &&
+        !/^Motion exception:\s*\S/m.test(text)
+    )
+        errs.push(
+            `${c.id}: no asset animates anything; animate a mechanism or add a "Motion exception:" line`
+        );
     if (
         list.length &&
         list.every((a) => ['text', 'illustration'].includes(a.fields.get('type'))) &&
@@ -274,6 +330,22 @@ function visualErrors(c, text) {
                 else if (c.status === 'verified' && v !== pass)
                     errs.push(`${c.id}: verified but the visual review says ${k}=${v}`);
             }
+        const lines = section(text, 'Review findings') ?? [];
+        const rubric = lines.filter((l) => /^Visual rubric:/.test(l)).at(-1);
+        if (!rubric)
+            errs.push(`${c.id}: status ${c.status} needs a "Visual rubric:" line under "## Review findings"`);
+        else
+            for (const k of RUBRIC) {
+                const v = rubric.match(new RegExp(`\\b${k}=(pass|fail)\\b`))?.[1];
+                if (!v) errs.push(`${c.id}: "Visual rubric:" needs ${k}=pass|fail`);
+                else if (c.status === 'verified' && v !== 'pass')
+                    errs.push(`${c.id}: verified but the visual rubric says ${k}=fail`);
+            }
+        const rejects = lines.filter((l) => /^Rejects:/.test(l)).at(-1);
+        if (!rejects)
+            errs.push(`${c.id}: status ${c.status} needs a "Rejects:" line under "## Review findings"`);
+        else if (c.status === 'verified' && !/^Rejects:\s*none\s*$/i.test(rejects))
+            errs.push(`${c.id}: verified with rejects: "${rejects}"`);
     }
     return errs;
 }

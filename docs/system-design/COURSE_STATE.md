@@ -9,7 +9,7 @@ The system design course is built only through the `system-design-educator` skil
 
 ## Current unit
 
-none
+ip-and-ports step 2
 
 ## Next action
 
@@ -61,6 +61,11 @@ decides the order. Chapter 3 is on branch `claude/trusting-wright-s27b5f`, not m
   explanation; models before prose; a rendered-page review answers five visual questions. Specs declare
   `Standard: visual-first`; `course.mjs check` enforces the asset plan structure (references `visual-design.md`,
   `visual-science.md`). Older specs warn until audited.
+- 2026-10-28 Experience-first standard (owner request): six stages (concept decomposition → storyboard → build
+  the experience → scientific explanation → tests → independent review), nine interaction patterns, motion that
+  explains causality from model events, 2D by default with written reasons for 3D, a ten-item model document, and
+  a visual review rubric (five questions, ten dimensions, reject list). `check` enforces it; `ip-and-ports` was
+  lowered to `researched` (no decomposition, no animation) and is being rebuilt as the pilot.
 ## Open issues
 
 - `client-server`: implemented in `/learn` on the owner's authorization (2026-10-27); two independent reviews ran
@@ -133,4 +138,6 @@ decides the order. Chapter 3 is on branch `claude/trusting-wright-s27b5f`, not m
 - 2026-10-28 C ip-and-ports: tested → reviewed → verified. Three independent reviews (pilot; fixes; final fixes):
   1 + 1 blocking and 10 + 2 + 2 should-fix findings fixed; adversarial `check` wordings accepted (structure-only
   tool). 194 unit tests, browser 64/64 + 69/69 + 48/48, 116.3 kB first-load JS, course tests 35/35.
+- 2026-10-28 Phase 1: PR #23 merged (main a0a6fd8 = af288aa's tree). Skill overhaul on
+  `claude/visual-first-learning-skill`; ip-and-ports verified → researched under the new standard.
 
