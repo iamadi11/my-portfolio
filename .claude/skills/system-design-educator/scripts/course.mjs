@@ -9,12 +9,14 @@
 // --root defaults to the current directory (the repo root when run by Claude Code).
 // Exit code 0 = ok, 1 = problems found, 2 = usage or missing files.
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const STATUSES = ['planned', 'researched', 'authored', 'implemented', 'tested', 'reviewed', 'verified'];
 const PATHS = ['beginner', 'interview', 'production'];
+/** CURRICULUM's `Product:` value once the graph is read; `built:` paths may live there. */
+let productPath = null;
 const rank = (s) => STATUSES.indexOf(s);
 
 const args = process.argv.slice(2);
@@ -66,6 +68,7 @@ function readGraph() {
         paths: c[5] ? c[5].split(/\s+/) : [],
         status: c[6],
     }));
+    productPath = product;
     return { chapters, product };
 }
 
@@ -98,6 +101,16 @@ function currentUnit() {
 
 /** Non-fatal findings `check` prints with `!` (e.g. a spec written before the visual-first standard). */
 const warnings = [];
+
+/** Checks every chapter with a page must record from `tested` on (references/verification.md, "Required checks"). */
+const REQUIRED_EVIDENCE = [
+    ['typecheck', /typecheck/],
+    ['lint', /lint/],
+    ['model tests', /model tests/],
+    ['the browser suite or browser sizes', /browser/],
+    ['keyboard', /keyboard/],
+    ['reduced motion', /reduced motion/],
+];
 
 const ASSET_FIELDS = [
     'objective',
@@ -147,14 +160,18 @@ function assets(text) {
 /** The visual-first standard (references/course-state.md, "Visual-first specs"); structure only. */
 function visualErrors(c, text) {
     const errs = [];
-    if (!/^Standard:\s*visual-first\s*$/m.test(text)) {
-        if (rank(c.status) >= rank('authored'))
-            warnings.push(
-                `${c.id}: spec predates the visual-first standard (no asset plan): audit it in mode D`
-            );
+    const standard = text.match(/^Standard:\s*(.*)$/m)?.[1].trim();
+    if (rank(c.status) < rank('authored')) return errs;
+    if (!standard)
+        return [
+            `${c.id}: status ${c.status} needs a "Standard: visual-first" line (or "Standard: legacy — <why>")`,
+        ];
+    if (/^legacy\b/.test(standard)) {
+        warnings.push(`${c.id}: spec predates the visual-first standard (${standard}): audit it in mode D`);
         return errs;
     }
-    if (rank(c.status) < rank('authored')) return errs;
+    if (standard !== 'visual-first')
+        return [`${c.id}: unknown standard "${standard}" (visual-first, or legacy — <why>)`];
     const filled = (h) => (section(text, h) ?? []).some((l) => !placeholder(l) && !/^```/.test(l));
     if (!filled('Storyboard'))
         errs.push(`${c.id}: status ${c.status} needs "## Storyboard" filled (owned by authored)`);
@@ -183,8 +200,17 @@ function visualErrors(c, text) {
             const real = paths.map((x) => x.trim()).filter(Boolean);
             if (!real.length || placeholder(built))
                 errs.push(`${at} needs "built:" paths (status ${c.status})`);
+            // Code the learner runs: files under src/ or the product route, not a folder or a doc.
             for (const x of real)
-                if (!existsSync(join(root, x))) errs.push(`${at} built path does not exist: ${x}`);
+                if (!existsSync(join(root, x)) || !statSync(join(root, x)).isFile())
+                    errs.push(`${at} built path is not an existing file: ${x}`);
+                else if (
+                    !x.startsWith('src/') &&
+                    !(productPath && productPath !== 'none' && x.startsWith(productPath))
+                )
+                    errs.push(`${at} built path is outside src/ and the product: ${x}`);
+            if (MODELLED.includes(type) && !real.some((x) => /\.test\.[a-z]+$/.test(x)))
+                errs.push(`${at} is ${type}: "built:" must list its model's test file (*.test.*)`);
         }
     }
     for (const l of section(text, 'Asset plan') ?? []) {
@@ -275,14 +301,24 @@ function specErrors(c) {
                 );
             else if (/^- [^:]+: pass\b.*\b(not run|unavailable|skipped|n\/a|fail(ed|s)?)\b/i.test(l))
                 errs.push(`${c.id}: evidence line says pass but also skipped/unavailable/failed/n/a: "${l}"`);
+        const keys = ev.map((l) => l.slice(2, l.indexOf(':')).toLowerCase());
+        for (const [name, re] of REQUIRED_EVIDENCE)
+            if (!keys.some((k) => re.test(k)))
+                errs.push(
+                    `${c.id}: status ${c.status} needs an evidence line for ${name} (pass, or n/a — reason)`
+                );
     }
     if (rank(c.status) >= rank('reviewed')) {
         const rv = section(text, 'Review findings') ?? [];
-        if (!rv.some((l) => /^Reviewer:\s*\S/.test(l)))
-            errs.push(`${c.id}: status ${c.status} needs a "Reviewer:" line under "## Review findings"`);
+        // A self-review is a note, never a "Reviewer:" line (references/verification.md).
+        if (!rv.some((l) => /^Reviewer:.*\b(fresh|independent|subagent)\b/i.test(l)))
+            errs.push(
+                `${c.id}: status ${c.status} needs a "Reviewer:" line naming a fresh/independent reviewer under "## Review findings"`
+            );
+        // The first "→" carries the outcome, so "→ open; … → fixed" stays open.
         if (c.status === 'verified')
             for (const l of rv)
-                if (/^- \[(blocking|should-fix)\]/.test(l) && !/→ (fixed|accepted:)/.test(l))
+                if (/^- \[(blocking|should[- ]fix)\]/i.test(l) && !/^[^→]*→ (fixed\b|accepted: \S)/.test(l))
                     errs.push(`${c.id}: verified with an open finding: "${l}"`);
     }
     errs.push(...visualErrors(c, text));

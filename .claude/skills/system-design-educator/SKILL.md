@@ -141,9 +141,10 @@ the checklist into your reply:
 - [ ] 3 Research         sources for every claim → chapter spec "Sources" (research-and-sources.md)   → Researched
 - [ ] 4 Storyboard (B)   per objective: asset type or text-only reason; storyboard; asset plan with model,
                          assumptions, evidence class, adversarial pass (visual-design.md, visual-science.md)
-- [ ] 5 Text (D)         14 questions, worked example, retrieval, exercise, written against the storyboard
-                         as short text beside each asset (chapter-workflow.md)                         → Authored
-- [ ] 6 Implement (C)    models + tests first, then the visuals, then the page; `built:` paths         → Implemented
+- [ ] 5 Text draft (D)   14 questions, worked example, retrieval, exercise: a draft written against the
+                         storyboard, as short text beside each asset (chapter-workflow.md)            → Authored
+- [ ] 6 Implement (C)    models + tests first, then the visuals, then the page; then revise the draft
+                         against the rendered visuals, cutting what they already show; `built:` paths → Implemented
 - [ ] 7 Test (E)         model, interaction and answer-leak tests, typecheck, lint, browser checks     → Tested
 - [ ] 8 Review (F)       fresh reviewer on the rendered page: rubric + five visual questions; fix      → Reviewed
 - [ ] 9 Update state     CURRICULUM status, COURSE_STATE (log, decisions, next action, open issues)

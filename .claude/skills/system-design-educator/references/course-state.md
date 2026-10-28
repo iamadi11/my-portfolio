@@ -14,27 +14,28 @@
 Statuses are ordered. A chapter holds the highest gate whose evidence exists **and** all lower gates. Gates are
 lowered when their evidence stops holding (a source turned out wrong, a test now fails).
 
-| Status        | Evidence required (✓ = enforced by `course.mjs check`)                                                                                               |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `planned`     | Row in `CURRICULUM.md` with id, title, prerequisites, paths ✓                                                                                        |
-| `researched`  | `chapters/<id>.md` exists ✓ with source records ✓; every claim in the boundary has a record or is listed under open questions                        |
-| `authored`    | Full teaching design (14 questions, worked example, retrieval items, exercise) and the visual decision/spec                                          |
-| `implemented` | Content and any visualization/simulation exist in the host app at the paths the spec names; no source with `via: search` supports a claim ✓          |
-| `tested`      | Evidence lists every required check and each one passed ✓ (model tests, typecheck, lint, browser checks at the required sizes and in reduced motion) |
-| `reviewed`    | An independent review (fresh agent, verification.md) ran on the implementation and its evidence: `Reviewer:` line ✓, findings listed                 |
-| `verified`    | No blocking or should-fix finding left open ✓; state updated                                                                                         |
+| Status        | Evidence required (✓ = enforced by `course.mjs check`)                                                                                                                                 |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `planned`     | Row in `CURRICULUM.md` with id, title, prerequisites, paths ✓                                                                                                                          |
+| `researched`  | `chapters/<id>.md` exists ✓ with source records ✓; every claim in the boundary has a record or is listed under open questions                                                          |
+| `authored`    | Full teaching design (14 questions, worked example, retrieval items, exercise) and the visual decision/spec                                                                            |
+| `implemented` | Content and any visualization/simulation exist in the host app at the paths the spec names; no source with `via: search` supports a claim ✓                                            |
+| `tested`      | Evidence has a line for each of typecheck, lint, model tests, browser (suite or sizes), keyboard and reduced motion ✓, each `pass` or `n/a — reason` ✓                                 |
+| `reviewed`    | An independent review (fresh agent, verification.md) ran on the implementation and its evidence: a `Reviewer:` line naming a fresh/independent reviewer or subagent ✓, findings listed |
+| `verified`    | No blocking or should-fix finding left open ✓ (the first `→` on the finding's line says `fixed` or `accepted: <reason>`); state updated                                                |
 
-**Visual-first specs** (a `Standard: visual-first` line under the title) also need, checked by `check` (✓):
+From `authored` on, every spec has a `Standard:` line under its title ✓: `visual-first`, or `legacy — <why>` for a spec
+written before the standard. **Visual-first specs** also need, checked by `check` (✓):
 
 | From          | Also required                                                                                                                                                                                                                                                                                                                                                    |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `authored`    | `## Storyboard` filled; `## Asset plan` with `### A<n>` assets, each with all ten fields ✓; every numbered objective covered by an asset or a `text-only:` line ✓; a known `type:` ✓; `simulation`, `animated-2d`, `chart` and `3d` have a real `model:` and `assumptions:` ✓; at least one non-`text`, non-`illustration` asset or a `Visual exception:` line ✓ |
-| `implemented` | Every non-`text` asset has `built:` paths that exist ✓                                                                                                                                                                                                                                                                                                           |
+| `implemented` | Every non-`text` asset has `built:` paths that are existing files under `src/` or the `Product:` path ✓; `simulation`, `animated-2d`, `chart` and `3d` list their model's test file ✓                                                                                                                                                                            |
 | `reviewed`    | A `Visual review:` line with all five keys ✓                                                                                                                                                                                                                                                                                                                     |
 | `verified`    | All five answers passing (`text-heavy=no`, the other four `yes`) ✓                                                                                                                                                                                                                                                                                               |
 
-Specs without the marker (written before the standard) get a `check` warning, not an error; bring them up to the
-standard with a mode D pass, recorded as an open issue.
+A `legacy` spec gets a `check` warning, not an error; bring it up to the standard with a mode D pass, recorded as an
+open issue. A spec with no `Standard:` line fails from `authored` on.
 
 Never skip a gate. Never mark `tested` because tests "should" pass. `check` sees only structure: a ✓ means the
 evidence is written down, not that it is good; the rest is the author's and reviewer's job.

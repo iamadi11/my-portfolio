@@ -28,7 +28,9 @@ learner will move through. Write the asset plan entry (format below). Reject a p
 temporal or causal mechanism with prose alone; do not add a visual where text is genuinely clearer.
 
 C. **Build the visual model first.** The pure model and its tests, then the visual and its interaction, then the
-page around it. The visual establishes the mental model; the prose then names and qualifies what it shows.
+page around it. The visual establishes the mental model; the prose then names and qualifies what it shows. While
+`Product: none`, stage D's text is only a draft against the storyboard (mode C step 5); it is rewritten against the
+rendered visuals when they are built (step 6), and prose that only repeats a visual is cut.
 
 D. **Concise supporting text.** Beside or right after each visual: what the learner sees, why it happens, what is
 assumed, where the model breaks. Prefer two sentences next to a figure over two paragraphs describing what a figure

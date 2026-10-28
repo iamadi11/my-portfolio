@@ -1,6 +1,7 @@
 # Map: what happens when you open a website
 
 Id: web-request · Stage: 1 · Paths: beginner interview production (status lives only in CURRICULUM.md)
+Standard: legacy — written before the visual-first standard (2026-10-27); a mode D pass adds the storyboard and asset plan
 Implementation: `src/app/learn/web-request/page.tsx`, `src/components/learn/web-request/JourneyStepper.tsx`,
 `src/lib/learn/web-request-model.ts` (+ `.test.ts`), `src/content/learn/web-request-sources.ts`
 Prerequisites: none · Related: client-server, dns, tcp, tls, http, http-caching, latency-throughput, http-versions

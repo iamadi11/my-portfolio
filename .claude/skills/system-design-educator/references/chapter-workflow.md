@@ -15,14 +15,14 @@ A chapter is built in this order. The visual model comes before the prose; the p
 learner has already seen. Detail for each stage is in visual-design.md (look, interaction, asset plan format,
 acceptance criteria) and visual-science.md (models, evidence classes, the adversarial pass).
 
-| Stage | Mode C step  | Output in the spec                                                                        |
-| ----- | ------------ | ----------------------------------------------------------------------------------------- |
-| A     | 2 Boundary   | `## Boundary`: numbered objectives, misconceptions, what prose handles badly here         |
-| B     | 4 Storyboard | `## Storyboard` (the sequence of visual states) and `## Asset plan` (one entry per asset) |
-| C     | 6 Implement  | models + tests, then the visuals, then the page; `built:` paths in the asset plan         |
-| D     | 5 / 6 Text   | `## Explanation` written against the storyboard: short text beside each visual            |
-| E     | 7 Test       | model, interaction and answer-leak tests; adversarial pass recorded per asset             |
-| F     | 8 Review     | a fresh reviewer examines the rendered page; `Visual review:` line (verification.md)      |
+| Stage | Mode C step  | Output in the spec                                                                                                                   |
+| ----- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| A     | 2 Boundary   | `## Boundary`: numbered objectives, misconceptions, what prose handles badly here                                                    |
+| B     | 4 Storyboard | `## Storyboard` (the sequence of visual states) and `## Asset plan` (one entry per asset)                                            |
+| D     | 5 Text draft | `## Explanation` drafted against the storyboard: short text planned beside each visual                                               |
+| C     | 6 Implement  | models + tests, then the visuals, then the page; the draft revised against the rendered visuals (cut what they show); `built:` paths |
+| E     | 7 Test       | model, interaction and answer-leak tests; adversarial pass recorded per asset                                                        |
+| F     | 8 Review     | a fresh reviewer examines the rendered page; `Visual review:` line (verification.md)                                                 |
 
 The spec carries `Standard: visual-first` under its title; `course.mjs check` then requires the asset plan, its
 fields, objective coverage and, from `reviewed`, the visual review line. Chapters written before this standard lack

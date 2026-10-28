@@ -69,7 +69,8 @@ or no with a reason and file/line evidence:
 5. **interaction-helps:** does each interaction improve understanding rather than distract (no decorative
    controls, no answer leaks, no motion without meaning)? Pass = yes.
 
-It also checks the 15 visual acceptance criteria (visual-design.md) and records any it could not check.
+It also checks the 15 visual acceptance criteria (visual-design.md), flags prose that only repeats what a visual
+already shows (cut it), and records anything it could not check.
 Record the answers in the spec under Review findings, on one line:
 
 `Visual review: text-heavy=no · mechanism-via-visual=yes · every-visual-teaches=yes · claims-defensible=yes · interaction-helps=yes`
@@ -83,7 +84,7 @@ A failing answer is at least a should-fix finding with its fix; `verified` needs
    subagent can be started, the review didn't happen: say so and stay below `reviewed` (a self-review is recorded as
    a note, never as `Reviewer:`).
 2. The reviewer checks sources it can reach itself and marks what it could not check.
-3. Findings come back by severity: **blocking** (wrong, inaccessible, broken), **should fix**, **note**.
+3. Findings come back by severity: **blocking** (wrong, inaccessible, broken), **should-fix**, **note**.
 4. The author fixes blocking and should-fix findings or records a reason for each one not fixed; notes are optional.
 5. Record findings and outcomes in the spec (format in course-state.md). `reviewed` = review ran on the
    implementation and its evidence; `verified` = no open blocking or should-fix.

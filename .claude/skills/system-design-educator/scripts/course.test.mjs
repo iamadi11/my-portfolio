@@ -18,7 +18,15 @@ const row = (id, order, prereqs, status) =>
     `| ${id} | ${order} | 1 | Title ${id} | ${prereqs} | beginner | ${status} |`;
 
 /** A course folder: graph rows, optional Product line, COURSE_STATE current unit, chapter specs. */
-function course({ rows = [], product = 'none', unit = 'none', state = 'initialized', specs = {}, raw } = {}) {
+function course({
+    rows = [],
+    product = 'none',
+    unit = 'none',
+    state = 'initialized',
+    specs = {},
+    raw,
+    files = {},
+} = {}) {
     const root = mkdtempSync(join(tmpdir(), 'sde-'));
     made.push(root);
     const docs = join(root, 'docs/system-design');
@@ -35,6 +43,10 @@ function course({ rows = [], product = 'none', unit = 'none', state = 'initializ
             `# Course state\n\nState: ${state}\n\n## Current unit\n\n${unit}\n\n## Next action\n\nx\n`
         );
     for (const [id, text] of Object.entries(specs)) writeFileSync(join(docs, 'chapters', `${id}.md`), text);
+    for (const [path, text] of Object.entries(files)) {
+        mkdirSync(dirname(join(root, path)), { recursive: true });
+        writeFileSync(join(root, path), text);
+    }
     return root;
 }
 
@@ -43,12 +55,16 @@ function run(root, ...args) {
     return { code: r.status, out: r.stdout + r.stderr };
 }
 
+const LEGACY = 'Standard: legacy — fixture\n\n';
 const CONTENT =
+    LEGACY +
     '## Boundary\n\nObjectives: x\n\n## Explanation (14 questions)\n\n1. Problem: x\n\n## Visual\n\nDecision: text only\n\n## Practice\n\nQ1\n\n';
 const READ = CONTENT + '## Sources\n\n- id: rfc9110\n  title: RFC 9110\n  via: read\n  supports: [c1]\n';
 const SEARCH = CONTENT + '## Sources\n\n- id: rfc9110\n  title: RFC 9110\n  via: search\n  supports: [c1]\n';
 const PASS =
-    '\n## Evidence\n\n- typecheck: pass — tsc (2026-01-01)\n- browser: pass — playwright (2026-01-01)\n';
+    '\n## Evidence\n\n- typecheck: pass — tsc (2026-01-01)\n- lint: pass — eslint (2026-01-01)\n' +
+    '- model tests: pass — vitest (2026-01-01)\n- browser: pass — playwright (2026-01-01)\n' +
+    '- keyboard: pass — playwright (2026-01-01)\n- reduced motion: pass — playwright (2026-01-01)\n';
 const REVIEW = '\n## Review findings\n\nReviewer: fresh subagent, 2026-01-02\n';
 
 test('fresh graph: next is the first chapter', () => {
@@ -406,7 +422,7 @@ const asset = (n, type, extra = {}) =>
     '\n\n';
 const visual = (assetsText, more = '') =>
     'Standard: visual-first\n\n' +
-    READ.replace('Objectives: x', 'Objectives:\n\n1. predict\n2. explain') +
+    READ.replace(LEGACY, '').replace('Objectives: x', 'Objectives:\n\n1. predict\n2. explain') +
     '\n## Storyboard\n\n1. the learner sees a host\n\n## Asset plan\n\n' +
     assetsText +
     more;
@@ -463,14 +479,27 @@ test('visual-first: implemented needs built paths that exist', () => {
     const ghost = visual(asset(1, 'precision-2d', { built: '`src/nope.tsx`' }) + asset(2, 'text'));
     assert.match(
         run(course({ rows, product: 'src', specs: { a: ghost } }), 'check').out,
-        /does not exist: src\/nope\.tsx/
+        /not an existing file: src\/nope\.tsx/
     );
     const root = course({
         rows,
         product: 'src',
-        specs: { a: ghost.replace('src/nope.tsx', 'docs/system-design/CURRICULUM.md') },
+        specs: { a: ghost.replace('src/nope.tsx', 'src/fig.tsx') },
+        files: { 'src/fig.tsx': 'x' },
     });
     assert.equal(run(root, 'check').code, 0);
+});
+
+test('visual-first: built paths are files in the product, and modelled assets list their tests', () => {
+    const rows = [row('a', 1, '', 'implemented')];
+    const files = { 'src/fig.tsx': 'x', 'src/model.ts': 'x', 'src/model.test.ts': 'x' };
+    const spec = (built, type = 'precision-2d') => visual(asset(1, type, { built }) + asset(2, 'text'));
+    const out = (built, type) =>
+        run(course({ rows, product: 'src', files, specs: { a: spec(built, type) } }), 'check');
+    assert.match(out('`docs`').out, /not an existing file: docs/);
+    assert.match(out('`docs/system-design/CURRICULUM.md`').out, /outside src\/ and the product/);
+    assert.match(out('`src/fig.tsx`, `src/model.ts`', 'simulation').out, /must list its model's test file/);
+    assert.equal(out('`src/fig.tsx`, `src/model.ts`, `src/model.test.ts`', 'simulation').code, 0);
 });
 
 test('visual-first: reviewed needs the visual review; verified needs it passing', () => {
@@ -480,12 +509,10 @@ test('visual-first: reviewed needs the visual review; verified needs it passing'
         course({
             rows: [row('a', 1, '', status)],
             product: 'src',
+            files: { 'src/fig.tsx': 'x' },
             specs: {
                 a:
-                    visual(
-                        asset(1, 'precision-2d', { built: '`docs/system-design/CURRICULUM.md`' }) +
-                            asset(2, 'text')
-                    ) +
+                    visual(asset(1, 'precision-2d', { built: '`src/fig.tsx`' }) + asset(2, 'text')) +
                     PASS +
                     REVIEW +
                     (line ? `Visual review: ${line}\n` : ''),
@@ -501,8 +528,54 @@ test('visual-first: reviewed needs the visual review; verified needs it passing'
     assert.equal(run(base('verified', ok), 'check').code, 0);
 });
 
-test('legacy spec without the visual-first marker warns but passes', () => {
-    const r = run(course({ rows: [row('a', 1, '', 'authored')], specs: { a: READ } }), 'check');
-    assert.equal(r.code, 0);
-    assert.match(r.out, /! a: spec predates the visual-first standard/);
+test('a spec needs a Standard line from authored on; legacy warns, a missing one fails, even at verified', () => {
+    const rows = (status) => [row('a', 1, '', status)];
+    const legacy = run(course({ rows: rows('authored'), specs: { a: READ } }), 'check');
+    assert.equal(legacy.code, 0);
+    assert.match(legacy.out, /! a: spec predates the visual-first standard/);
+    const none = READ.replace(LEGACY, '') + PASS + REVIEW;
+    const r = run(course({ rows: rows('verified'), product: 'src', specs: { a: none } }), 'check');
+    assert.equal(r.code, 1);
+    assert.match(r.out, /needs a "Standard: visual-first" line/);
+    assert.equal(
+        run(course({ rows: rows('researched'), specs: { a: READ.replace(LEGACY, '') } }), 'check').code,
+        0
+    );
+});
+
+test('tested needs every required check recorded, not just any pass', () => {
+    const r = run(
+        course({
+            rows: [row('a', 1, '', 'tested')],
+            product: 'src',
+            specs: { a: READ + '\n## Evidence\n\n- x: pass\n' },
+        }),
+        'check'
+    );
+    for (const k of ['typecheck', 'lint', 'model tests', 'the browser suite', 'keyboard', 'reduced motion'])
+        assert.match(r.out, new RegExp(`needs an evidence line for ${k}`));
+});
+
+test('verified: open findings cannot hide behind spelling, case or a later arrow; reviewer must be fresh', () => {
+    const v = (findings, reviewer = REVIEW) =>
+        run(
+            course({
+                rows: [row('a', 1, '', 'verified')],
+                product: 'src',
+                specs: { a: READ + PASS + reviewer + findings },
+            }),
+            'check'
+        );
+    for (const f of [
+        '- [should fix] invented chart → open\n',
+        '- [Blocking] wrong number → open\n',
+        '- [should-fix] the chart is invented → open; was not → fixed\n',
+        '- [should-fix] x → accepted:\n',
+    ])
+        assert.match(v(f).out, /verified with an open finding/, f);
+    assert.equal(v('- [should-fix] x → fixed (model.ts)\n- [note] y → open\n').code, 0);
+    assert.match(
+        v('', '\n## Review findings\n\nReviewer: me, 2026-01-02\n').out,
+        /naming a fresh\/independent reviewer/
+    );
 });
