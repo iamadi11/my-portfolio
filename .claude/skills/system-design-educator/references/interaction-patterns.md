@@ -95,6 +95,7 @@ lacks):
 - `Transport`: Play/Pause, Previous/Next step, Reset, Replay, with the current step announced (step, break).
 - `useClock`: the figure's time, play/pause/seek/step, stops offscreen, reduced motion → stepped (motion.md).
 - `Question`: a recall question with its answer behind a disclosure.
-- `LazyFigure`: renders the static drawing, loads the interactive figure when it nears the viewport
-  (rendering.md).
+- `NearViewport`: renders a server-rendered fallback card (same figure id and height), loads the interactive
+  figure with `React.lazy` when it nears the viewport (rendering.md).
 - `reveal`: after Run, bring the whole result into view.
+- `verdict`: the line that judges a prediction (none made, right, not quite).

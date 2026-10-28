@@ -677,3 +677,63 @@
     font-size: 0.8125rem;
     color: var(--ink-2);
 }
+
+/* Chapter 3, Fig. 1: select a part to draw it heavy and show its role (CSS :has, no script). */
+.ln-explore .ln-role {
+    display: none;
+    margin-top: 0.75rem;
+    font-size: 0.9375rem;
+}
+.ln-explore:has(input[value='name']:checked) .ln-role[data-part='name'],
+.ln-explore:has(input[value='address']:checked) .ln-role[data-part='address'],
+.ln-explore:has(input[value='protocol']:checked) .ln-role[data-part='protocol'],
+.ln-explore:has(input[value='port']:checked) .ln-role[data-part='port'],
+.ln-explore:has(input[value='program']:checked) .ln-role[data-part='program'] {
+    display: block;
+}
+.ln-explore:has(input[value='name']:checked) .ln-part[data-part='name'] rect,
+.ln-explore:has(input[value='address']:checked) .ln-part[data-part='address'] rect,
+.ln-explore:has(input[value='protocol']:checked) .ln-part[data-part='protocol'],
+.ln-explore:has(input[value='port']:checked) .ln-part[data-part='port'],
+.ln-explore:has(input[value='program']:checked) .ln-part[data-part='program'] {
+    stroke-width: 2.4px;
+    fill: var(--fill-2);
+}
+@media (prefers-reduced-motion: no-preference) {
+    .ln-explore .ln-part,
+    .ln-explore .ln-part rect {
+        transition:
+            stroke-width 200ms ease-out,
+            fill 200ms ease-out;
+    }
+}
+
+/* Waiting card for a figure whose code loads as the reader nears it. */
+.ln-fig-wait {
+    min-height: 32rem;
+}
+
+/* Chapter 3, Fig. 3: the same network under both transports. */
+.ln-compare {
+    width: 100%;
+    margin-top: 0.75rem;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+}
+.ln-compare caption {
+    text-align: left;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+}
+.ln-compare th,
+.ln-compare td {
+    padding: 0.25rem 0.5rem 0.25rem 0;
+    border-bottom: 1px solid var(--rule);
+    text-align: left;
+}
+.ln-transport .ln-btn {
+    min-width: 44px;
+    min-height: 44px;
+}

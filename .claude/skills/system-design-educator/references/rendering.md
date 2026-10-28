@@ -60,9 +60,11 @@ Draco/Meshopt and KTX2 textures). No stock imagery that only decorates.
 
 ## Loading and budgets
 
-- Pages are server components; each interactive figure is a client component loaded by the kit's `LazyFigure`
-  when it nears the viewport, with its static drawing server-rendered as the fallback (progressive enhancement:
-  the page reads without JavaScript). Its chunk does not count toward first-load JS.
+- Pages are server components; each interactive figure is a client component loaded by the kit's `NearViewport`
+  (`React.lazy` inside it) when it nears the viewport, with a server-rendered fallback card of the same figure id
+  and height that says what the figure does (the page reads without JavaScript; a figure that needs no script,
+  like an explore figure built on `:has()`, is server-rendered whole). Its chunk does not count toward
+  first-load JS.
 - First-load JS per page stays within the host budget (this repo: ≤ 120 kB, measured by
   `tests/browser/js-budget.cjs`); `/` must not change.
 - Add a dependency only for a figure that needs it, with its gzip size, peer ranges and the reason recorded; this

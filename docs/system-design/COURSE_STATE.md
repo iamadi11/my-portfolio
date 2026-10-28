@@ -9,13 +9,14 @@ The system design course is built only through the `system-design-educator` skil
 
 ## Current unit
 
-ip-and-ports step 2
+ip-and-ports step 8 (independent review of the visual-first pilot)
 
 ## Next action
 
-Mode D for `web-request` and `client-server` (legacy specs: add the storyboard and asset plan, build missing
-assets, cut prose the visuals carry), or mode C for the next eligible chapter, `dns` (`course.mjs next`). The owner
-decides the order. Chapter 3 is on branch `claude/trusting-wright-s27b5f`, not merged.
+A fresh reviewer examines the skill and the rendered ip-and-ports pilot (visual-review.md); fix blocking and
+should-fix findings, record the three review lines, then set the status the gates allow. After that: mode D for
+`web-request` and `client-server`, or mode C for `dns` (`course.mjs next`); the owner decides the order. The
+overhaul is on branch `claude/visual-first-learning-skill`, not merged.
 
 ## Decisions
 
@@ -140,4 +141,8 @@ decides the order. Chapter 3 is on branch `claude/trusting-wright-s27b5f`, not m
   tool). 194 unit tests, browser 64/64 + 69/69 + 48/48, 116.3 kB first-load JS, course tests 35/35.
 - 2026-10-28 Phase 1: PR #23 merged (main a0a6fd8 = af288aa's tree). Skill overhaul on
   `claude/visual-first-learning-skill`; ip-and-ports verified → researched under the new standard.
-
+- 2026-10-28 ip-and-ports rebuilt visual-first (steps 2–7): concept decomposition and storyboard; Fig. 1 explore
+  (no script), Fig. 2 packet travels through the host's checks, Fig. 3 a network of four routers (route change,
+  link failure, congestion; `network-model.ts`, 37 tests); kit `useClock`, `Transport`, `NearViewport`,
+  `verdict`. 213 unit tests, browser 72/72 + 69/69 + 48/48 + 5/5, 109.5 kB first-load JS (was 116.3), Lighthouse
+  mobile 99 / desktop 100. Status researched → tested.

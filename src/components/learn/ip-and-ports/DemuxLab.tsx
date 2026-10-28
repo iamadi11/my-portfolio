@@ -1,10 +1,13 @@
 'use client';
 
-import React, { useId, useRef, useState } from 'react';
+import React, { useId, useMemo, useRef, useState } from 'react';
 
 import Arrowhead from '@/components/learn/kit/Arrowhead';
 import Choice from '@/components/learn/kit/Choice';
 import { revealAfterRender } from '@/components/learn/kit/reveal';
+import Transport from '@/components/learn/kit/Transport';
+import { useClock } from '@/components/learn/kit/useClock';
+import { verdict as judge } from '@/components/learn/kit/verdict';
 import {
     demux,
     DESTS,
@@ -18,6 +21,7 @@ import {
     SOURCE_PORT,
     SOURCES,
     type Delivery,
+    type Step,
     type Dest,
     type Firewall,
     type Outcome,
@@ -29,8 +33,10 @@ import {
 /**
  * Fig. 2 of the ip-and-ports chapter (asset A2): build a packet, predict where it goes, run, then step through the
  * host's stages (address, firewall if on, protocol, lookup, result). Every outcome comes from `demux()`. Nothing
- * about the outcome is on the page until Run, and any change clears it, so the prediction is a real one. Nothing
- * animates; the element the current stage reads is drawn heavy, and the current step sits right under the drawing.
+ * about the outcome is on the page until Run, and any change clears it, so the prediction is a real one. The packet
+ * tag travels from stage to stage and any reply travels back to the sender, on one clock the learner can play, pause
+ * and step (reduced motion: no gliding, the tag jumps from stage to stage). The element the current stage reads is
+ * drawn heavy, and the current step sits right under the drawing; the outcome appears when the run has finished.
  */
 
 const SOURCE_LABEL: Record<Source, string> = {
@@ -96,14 +102,92 @@ function focus(p: Packet, d: Delivery, stage: Stage | undefined): Set<string> {
     return new Set();
 }
 
+/** Where the packet tag sits when a stage has acted on it (drawing coordinates): beside each part's text, never on it. */
+const SPOT: Record<string, [number, number]> = {
+    origin: [300, 18],
+    addr: [246, 74],
+    other: [298, 389],
+    fw: [294, 105],
+    'lane-TCP': [56, 140],
+    'lane-UDP': [212, 140],
+    'conn-1': [159, 188],
+    'conn-2': [159, 216],
+    'listen-443': [162, 271],
+    'tcp-none': [150, 307],
+    'udp-8125': [282, 201],
+    'udp-none': [288, 312],
+};
+/** What travels back to the sender, if anything. */
+const REPLY: Partial<Record<Outcome, string>> = {
+    'connection 1': 'answer',
+    'connection 2': 'answer',
+    'new connection': 'set-up',
+    'tcp reset': 'RST',
+    'icmp unreachable': 'ICMP',
+};
+/** Share of each stage's time spent travelling to it; the rest the tag rests there. */
+const TRAVEL = 0.6;
+const eio = (x: number): number => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
+
+/** The spot each stage moves the packet to, in order. */
+function route(p: Packet, d: Delivery): [number, number][] {
+    return d.steps.map((s) => {
+        if (s.stage === 'address') return SPOT[p.dest === 'server' ? 'addr' : 'other'];
+        if (s.stage === 'firewall') return SPOT.fw;
+        if (s.stage === 'protocol') return SPOT[`lane-${p.proto}`];
+        return SPOT[TARGET[d.outcome]];
+    });
+}
+
+/** The packet tag at time t: it travels to stage k during [k, k + TRAVEL] and rests there until k + 1. */
+function packetAt(spots: [number, number][], t: number): [number, number] {
+    const k = Math.min(spots.length - 1, Math.floor(t));
+    const from = k === 0 ? SPOT.origin : spots[k - 1];
+    const f = Math.min(1, Math.max(0, (t - k) / TRAVEL));
+    const e = t >= spots.length ? 1 : eio(f);
+    return [from[0] + (spots[k][0] - from[0]) * e, from[1] + (spots[k][1] - from[1]) * e];
+}
+
+/** The packet's tag moving through the host's stages, and the reply (if any) travelling back to the sender. */
+function Moving({ p, d, t }: { p: Packet; d: Delivery; t: number }): React.JSX.Element {
+    const spots = route(p, d);
+    const [x, y] = packetAt(spots, t);
+    const n = spots.length;
+    const reply = REPLY[d.outcome];
+    const r = Math.min(1, Math.max(0, (t - n) / TRAVEL));
+    const [ex, ey] = spots[n - 1];
+    const ry = ey + (SPOT.origin[1] - ey) * eio(r);
+    const rx = ex + (SPOT.origin[0] - ex) * eio(r);
+    return (
+        <g>
+            <g transform={`translate(${x} ${y})`}>
+                <rect x={-13} y={-9} width={26} height={18} rx={3} className="nb ln-active" />
+                <text x={0} y={5} textAnchor="middle" className="dts">
+                    pkt
+                </text>
+            </g>
+            {reply && t > n ? (
+                <g transform={`translate(${rx} ${ry})`}>
+                    <rect x={-22} y={-9} width={44} height={18} rx={3} className="slot" />
+                    <text x={0} y={5} textAnchor="middle" className="dts">
+                        {reply}
+                    </text>
+                </g>
+            ) : null}
+        </g>
+    );
+}
+
 function Drawing({
     p,
     d,
     stage,
+    t,
 }: {
     p: Packet;
     d: Delivery | null;
     stage: Stage | undefined;
+    t: number;
 }): React.JSX.Element {
     const marker = useId().replace(/:/g, '');
     const on = d ? focus(p, d, stage) : new Set<string>();
@@ -137,7 +221,7 @@ function Drawing({
             {p.firewall === 'on' ? (
                 <>
                     <rect x={16} y={94} width={296} height={22} rx={3} className={box('fw', 'hug')} />
-                    <text x={164} y={110} textAnchor="middle" className="dts">
+                    <text x={150} y={110} textAnchor="middle" className="dts">
                         firewall: allow TCP 443, UDP 8125
                     </text>
                 </>
@@ -166,8 +250,11 @@ function Drawing({
                 443 · web server
             </text>
             <rect x={22} y={290} width={158} height={34} rx={3} className={box('tcp-none', 'slot')} />
-            <text x={101} y={312} textAnchor="middle" className="dts">
-                8125, 9000: nobody
+            <text x={30} y={304} className="dts">
+                8125, 9000
+            </text>
+            <text x={30} y={319} className="sl">
+                nobody
             </text>
             <rect x={194} y={124} width={118} height={206} rx={4} className={box('lane-UDP', 'well')} />
             <text x={253} y={144} textAnchor="middle" className="vt">
@@ -184,10 +271,10 @@ function Drawing({
                 collector
             </text>
             <rect x={200} y={282} width={106} height={42} rx={3} className={box('udp-none', 'slot')} />
-            <text x={253} y={300} textAnchor="middle" className="dts">
+            <text x={208} y={300} className="dts">
                 443, 9000
             </text>
-            <text x={253} y={316} textAnchor="middle" className="sl">
+            <text x={208} y={316} className="sl">
                 nobody
             </text>
             {fate ? (
@@ -200,7 +287,80 @@ function Drawing({
             <text x={164} y={394} textAnchor="middle" className="dts">
                 another machine · {OTHER}
             </text>
+            {d ? <Moving p={p} d={d} t={t} /> : null}
         </svg>
+    );
+}
+
+/** The clock's marks: the moment the tag arrives at each stage, and the reply reaching the sender, if any. */
+const marksOf = (n: number, reply: boolean): number[] => [
+    ...Array.from({ length: n }, (_, k) => k + TRAVEL),
+    ...(reply ? [n + TRAVEL] : []),
+];
+
+/** What Previous and Next announce at mark n. */
+const stepWords = (steps: Step[], n: number, reply: string): string =>
+    n >= steps.length
+        ? `The reply reaches the sender: ${reply}.`
+        : `Step ${n + 1} of ${steps.length}, ${STAGE_LABEL[steps[n].stage]}. ${steps[n].text}`;
+
+/** The stage the packet is at now, in words, under the drawing; and the reply once it has reached the sender. */
+function CurrentStep({
+    step,
+    n,
+    of,
+    reply,
+}: {
+    step: Step | undefined;
+    n: number;
+    of: number;
+    reply: string | null;
+}): React.JSX.Element {
+    if (!step)
+        return (
+            <p className="m-0 mt-2" data-current-step>
+                The packet is on its way.
+            </p>
+        );
+    return (
+        <p className="m-0 mt-2" data-current-step>
+            <strong>
+                Step {n} of {of}, {STAGE_LABEL[step.stage]}.
+            </strong>{' '}
+            {step.text} <span className="ln-step-why">({step.source})</span>
+            {reply ? ` Then the reply reaches the sender: ${reply}.` : null}
+        </p>
+    );
+}
+
+/** Every stage for this packet, as buttons that jump the run to that stage. */
+function StepList({
+    steps,
+    current,
+    goTo,
+}: {
+    steps: Step[];
+    current: number;
+    goTo: (i: number) => void;
+}): React.JSX.Element {
+    return (
+        <ol className="ln-steps" aria-label="All the host's stages for this packet">
+            {steps.map((s, i) => (
+                <li key={s.stage}>
+                    <button
+                        type="button"
+                        className="ln-step"
+                        aria-current={i === current ? 'step' : undefined}
+                        onClick={() => goTo(i)}
+                    >
+                        <span className="ln-step-n">{i + 1}</span>
+                        <span>
+                            <strong>{STAGE_LABEL[s.stage]}.</strong> {s.text}
+                        </span>
+                    </button>
+                </li>
+            ))}
+        </ol>
     );
 }
 
@@ -209,12 +369,18 @@ export default function DemuxLab(): React.JSX.Element {
     const [guess, setGuess] = useState<Outcome | null>(null);
     /** The last run, or null until the learner runs. Cleared when the packet or the prediction changes. */
     const [run, setRun] = useState<{ p: Packet; d: Delivery; guess: Outcome | null } | null>(null);
-    const [at, setAt] = useState(0);
     const [announce, setAnnounce] = useState('');
     const stage = useRef<HTMLDivElement>(null);
+    const steps = run?.d.steps ?? [];
+    // One mark per stage (the moment the tag arrives there), and one for the reply reaching the sender, if any.
+    const hasReply = run ? REPLY[run.d.outcome] !== undefined : false;
+    const marks = useMemo(() => marksOf(steps.length, hasReply), [steps.length, hasReply]);
+    const clock = useClock({ marks, end: marks.at(-1) ?? 1 });
+    const at = Math.min(steps.length - 1, Math.max(0, clock.at));
     const clear = (): void => {
         setRun(null);
         setAnnounce('');
+        clock.reset();
     };
     const set = (patch: Partial<Packet>): void => {
         setP((x) => ({ ...x, ...patch }));
@@ -222,24 +388,23 @@ export default function DemuxLab(): React.JSX.Element {
     };
     const go = (): void => {
         setRun({ p, d: demux(p), guess });
-        setAt(0);
         setAnnounce('');
+        clock.restart();
         revealAfterRender(() => stage.current);
     };
-    const steps = run?.d.steps ?? [];
-    const goTo = (i: number): void => {
-        const n = Math.min(steps.length - 1, Math.max(0, i));
-        setAt(n);
-        setAnnounce(`Step ${n + 1} of ${steps.length}, ${STAGE_LABEL[steps[n].stage]}. ${steps[n].text}`);
+    const say = (k: number): void => {
+        setAnnounce(stepWords(steps, Math.min(marks.length - 1, Math.max(0, k)), run?.d.reply ?? ''));
     };
-    const verdict = run
-        ? run.guess === null
-            ? 'You ran it without a prediction.'
-            : run.guess === run.d.outcome
-              ? `You predicted “${OUTCOME_LABEL[run.guess]}”: right.`
-              : `You predicted “${OUTCOME_LABEL[run.guess]}”: not quite.`
-        : '';
-    const current = steps[at];
+    const goTo = (i: number): void => {
+        clock.seek(marks[Math.min(marks.length - 1, Math.max(0, i))]);
+        say(i);
+    };
+    const currentIndex = clock.at >= 0 ? at : -1;
+    const current: Step | undefined = steps[currentIndex];
+    // The outcome is shown once the packet (and any reply) has finished: the animation leads.
+    const done = clock.at >= marks.length - 1 ? run : null;
+    const verdict = done ? judge(done.guess, done.d.outcome, OUTCOME_LABEL) : '';
+    const replied = hasReply && clock.at >= steps.length;
     return (
         <figure className="bp-sheet ln-fig" aria-labelledby="fig2-h">
             <div className="ln-fig-head">
@@ -301,68 +466,41 @@ export default function DemuxLab(): React.JSX.Element {
                 </div>
                 <div>
                     <div ref={stage}>
-                        <Drawing p={p} d={run?.d ?? null} stage={current?.stage} />
-                        {run ? (
+                        <Drawing p={p} d={run?.d ?? null} stage={current?.stage} t={clock.t} />
+                        {done ? (
                             <p className="m-0 mt-2" data-result>
-                                <strong>{OUTCOME_LABEL[run.d.outcome]}.</strong> {verdict} Sender gets back:{' '}
-                                {run.d.reply}.
+                                <strong>{OUTCOME_LABEL[done.d.outcome]}.</strong> {verdict} Sender gets back:{' '}
+                                {done.d.reply}.
                             </p>
                         ) : null}
-                        {run && current ? (
+                        {run ? (
                             <>
-                                <p className="m-0 mt-2" data-current-step>
-                                    <strong>
-                                        Step {at + 1} of {steps.length}, {STAGE_LABEL[current.stage]}.
-                                    </strong>{' '}
-                                    {current.text} <span className="ln-step-why">({current.source})</span>
-                                </p>
-                                <div className="ln-nav">
-                                    <button
-                                        type="button"
-                                        className="ln-btn"
-                                        aria-disabled={at === 0}
-                                        onClick={() => goTo(at - 1)}
-                                    >
-                                        Previous step
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="ln-btn"
-                                        aria-disabled={at === steps.length - 1}
-                                        onClick={() => goTo(at + 1)}
-                                    >
-                                        Next step
-                                    </button>
-                                </div>
+                                <CurrentStep
+                                    step={current}
+                                    n={at + 1}
+                                    of={steps.length}
+                                    reply={replied ? run.d.reply : null}
+                                />
+                                <Transport
+                                    label="Run controls"
+                                    playing={clock.playing}
+                                    atStart={clock.t <= 0}
+                                    atEnd={clock.at >= marks.length - 1}
+                                    onPlay={clock.play}
+                                    onPause={clock.pause}
+                                    onPrev={() => goTo(clock.at - 1)}
+                                    onNext={() => goTo(clock.at + 1)}
+                                    onReset={clock.reset}
+                                />
                             </>
                         ) : (
                             <p className="ln-frame">Build a packet, predict, then press Run.</p>
                         )}
                     </div>
-                    {run ? (
-                        <>
-                            <ol className="ln-steps" aria-label="All the host's stages for this packet">
-                                {steps.map((s, i) => (
-                                    <li key={s.stage}>
-                                        <button
-                                            type="button"
-                                            className="ln-step"
-                                            aria-current={i === at ? 'step' : undefined}
-                                            onClick={() => goTo(i)}
-                                        >
-                                            <span className="ln-step-n">{i + 1}</span>
-                                            <span>
-                                                <strong>{STAGE_LABEL[s.stage]}.</strong> {s.text}
-                                            </span>
-                                        </button>
-                                    </li>
-                                ))}
-                            </ol>
-                        </>
-                    ) : null}
+                    {run ? <StepList steps={steps} current={currentIndex} goTo={goTo} /> : null}
                     <p className="sr-only" aria-live="polite">
-                        {run
-                            ? `${label(run.p)}: ${OUTCOME_LABEL[run.d.outcome]}. ${verdict} Sender gets back: ${run.d.reply}.`
+                        {done
+                            ? `${label(done.p)}: ${OUTCOME_LABEL[done.d.outcome]}. ${verdict} Sender gets back: ${done.d.reply}.`
                             : ''}
                     </p>
                     <p className="sr-only" aria-live="polite">
