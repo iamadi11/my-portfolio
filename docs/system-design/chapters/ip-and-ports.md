@@ -135,7 +135,7 @@ Objective coverage: 1 → A2 · 2 → A2 · 3 → A3 · 4 → A1
 - type: simulation
 - learner sees: a timeline (ticks 0–14, labelled "assumed unit, not to scale") with rows sent / arrived / read; numbered tags (copies arriving at the same tick stacked); a key with one line style per meaning (solid sent, dashed resent, dotted network copy, × lost or thrown away, bracket waiting); readouts: read order, number of reads, last read tick; the timeline as a list
 - learner does: picks the network event (none, lose 3, delay 2, duplicate 4) and the transport (UDP, TCP); predicts what the application reads (all in order / all but out of order / one missing / one twice); runs; switches transport to compare
-- model: deterministic discrete time. Datagram i (1–5) sent at tick i−1, arrives 2 ticks later. Lose 3: the first copy never arrives; TCP resends it 7 ticks after the first send (assumed fixed timer, longer than the delayed segment's round trip of 4 + 2 ticks, so a late segment is never resent). Delay 2: 2 extra ticks. Duplicate 4: the network makes a second copy that arrives 2 ticks after the first (not sent again). UDP: the application reads each copy when it arrives. TCP: reads segment k at max(its first arrival, the read of k−1); a later copy of data already received is discarded
+- model: deterministic discrete time. Datagram i (1–5) sent at tick i−1, arrives 2 ticks later. Lose 3: the first copy never arrives; TCP resends it 7 ticks after the first send (assumed fixed timer, longer than the delayed segment's round trip of 4 + 2 ticks, so a late segment is never resent). Delay 2: 2 extra ticks (it arrives at the same tick as 4; the drawing stacks the delayed one below). Duplicate 4: the network makes a second copy that arrives 2 ticks after the first (not sent again). UDP: the application reads each copy when it arrives. TCP: reads segment k at max(its first arrival, the read of k−1); a later copy of data already received is discarded
 - assumptions: one event per run; the network never corrupts data; TCP's real retransmission timer adapts and can resend a late segment, and its acknowledgements, windows and connection set-up are left to the tcp chapter (caption says so); "segment" and "datagram" counted the same way; guards "TCP makes the network reliable" (the loss still shows under TCP; text says TCP recovers in the end hosts), "packets arrive in order", "a duplicate means the sender sent twice" (dotted fork), "the animation speed is the network's speed" (ticks not to scale)
 - outcome: the learner predicts UDP's and TCP's reads for each event and explains that TCP's ordering makes later data wait for a missing piece
 - accessibility: radio groups; Run; the timeline aria-hidden with the same events as an ordered list; one polite live region for the summary; reduced motion: static drawing
@@ -341,21 +341,21 @@ gets this flow".
 
 ## Evidence
 
-All on the production build of the working tree after ea8f465 with the second-round fixes (committed with this
+All on the production build of the working tree after 857aeeb with the third-round fixes (committed with this
 evidence), 2026-10-28.
 
 - model tests: pass — npx vitest run: 194/194 (demux-model 16: 72 packets one outcome each, stage order, two connections by source port, new connection set up by TCP, UDP rule labelled a model choice, reset/ICMP, firewall at the edge before the protocol stage, sources or "model:" on every step, no users/requests/tabs; datagram-model 18: conservation, TCP in order, UDP = arrivals, a late segment never resent, a network duplicate not sent again, every number the page quotes) (2026-10-28)
 - typecheck: pass — npx tsc --noEmit (2026-10-28)
 - lint and format: pass — npm run lint; npx eslint tests/browser (0 errors); prettier --check src docs tests README.md .claude/skills (2026-10-28)
-- browser suite: pass — tests/browser/ip-and-ports.cjs 63/63: six sizes without horizontal scroll or console errors, axe WCAG 2.2 A/AA at 375 and 1280 on load and after runs, leak checks before Run and after a change, ten demux cases and seven datagram cases against the model, prediction verdicts, current step under the drawing, step announcements, firewall stages, duplicate drawn as a network copy, citations numbered top-down, the text's quoted numbers, keyboard, after Run at 375 px the drawing, its current step and the timeline are fully in view, and at 768 px the timeline, reduced motion, links from /learn and chapter 2, sitemap, / renders (2026-10-28)
+- browser suite: pass — tests/browser/ip-and-ports.cjs 64/64: six sizes without horizontal scroll or console errors, axe WCAG 2.2 A/AA at 375 and 1280 on load and after runs, leak checks before Run and after a change, ten demux cases and seven datagram cases against the model, prediction verdicts, current step under the drawing, step announcements, firewall stages, duplicate drawn as a network copy, citations numbered top-down, the text's quoted numbers, keyboard, after Run at 375 px the drawing, its current step and the timeline are fully in view, and at 768 px the timeline and Fig. 2's outcome line and current step, reduced motion, links from /learn and chapter 2, sitemap, / renders (2026-10-28)
 - keyboard: pass — ip-and-ports.cjs: arrow keys move within radio groups, Enter on Run shows the result, focus outline on Run, Next keeps focus and is aria-disabled at the last step (2026-10-28)
 - reduced motion: pass — ip-and-ports.cjs with reducedMotion reduce: nothing in the figures transitions or animates; the post-Run scroll jumps instead of gliding; steps and readouts complete (2026-10-28)
 - regression suites: pass — web-request 69/69, client-server 48/48 (2026-10-28)
-- JS budget: pass — tests/browser/js-budget.cjs: /learn/ip-and-ports 116.2 kB, / 115.6 kB, all five routes ≤ 120 kB; next build: the chapter 114 kB first-load, / unchanged at 110 kB (2026-10-28)
-- lighthouse: pass — Lighthouse 12.2.1 on the final build: /learn/ip-and-ports mobile 100 and 99, desktop 100; accessibility, best practices and SEO 100; CLS 0. Before the review fixes: mobile 91 on the first run after a server start (TBT 310 ms), then 99 and 100 (2026-10-28)
+- JS budget: pass — tests/browser/js-budget.cjs: /learn/ip-and-ports 116.3 kB, / 115.6 kB, all five routes ≤ 120 kB; next build: the chapter 114 kB first-load, / unchanged at 110 kB (2026-10-28)
+- lighthouse: pass — Lighthouse 12.2.1 on the final build: /learn/ip-and-ports mobile 91 on the first run after a server start, then 99; desktop 100; accessibility, best practices and SEO 100; CLS 0. The same first-run dip appeared on earlier builds (91, then 99 and 100) (2026-10-28)
 - screenshots read: pass — every figure at 375, 402, 768, 1280, 1440 and 1920 read by eye after the fixes; overlapping arrival tags (delay 2) and the hidden "IPv6: 128" label found and fixed this round (2026-10-28)
 - pre-commit audit: pass — npx fallow audit: no dead code, no complexity finding; one duplication warning (the cite helper shared by the three chapter pages) (2026-10-28)
-- course checks: pass — course.mjs check ok (two legacy warnings: web-request, client-server); course.mjs skill ok; course.test.mjs 33/33 (2026-10-28)
+- course checks: pass — course.mjs check ok (two legacy warnings: web-request, client-server); course.mjs skill ok; course.test.mjs 35/35 (2026-10-28)
 
 ## Review findings
 
@@ -396,4 +396,14 @@ Visual review: text-heavy=no · mechanism-via-visual=yes · every-visual-teaches
 - [note] Stage table in chapter-workflow.md runs A, B, D, C → accepted: it lists mode C steps in order; stage letters name the kind of work, and step 5 is labelled a draft revised in step 6
 - [note] Most course.test.mjs fixtures default to `Standard: legacy` → accepted: the visual-first rules have their own fixtures (seven tests); the legacy default keeps the older gate tests focused
 - [note] "Two tabs may well share one connection" has no browser-behaviour source → accepted: it is worded as a possibility that follows from RFC 9112 §9.3 and RFC 9114 §3.3, not as a claim about any browser
+
+Reviewer: third fresh subagent (check of 857aeeb on a production build: mouse, keyboard and reduced motion at 375, 402, 768, 1280 and 1440 px; new gaming fixtures for `check`), 2026-10-28
+Visual review: text-heavy=no · mechanism-via-visual=yes · every-visual-teaches=yes · claims-defensible=yes · interaction-helps=yes
+
+- [should-fix] This chapter could not reach `verified`: its own finding quoted "fixed? no", and `check` read the first (stale) "Visual review:" line → fixed (no global "fixed?" test; the latest "Visual review:" line counts; tests for both)
+- [should-fix] `check` gameable by further wordings (tag variants, headings with a suffix or in setext form, skip words in the key or after "pass", placeholder n/a reasons, symlinks, commented-out Standard lines, reviewer negations, own-words arrows that lead to "fixed") → accepted: deliberately misleading wording can always be bent past a pattern, so `check` targets honest slips and the independent review catches the rest (course-state.md now says so). The slips an honest author can make are now caught, with tests: `[blocker]`, `[critical]`, numbered or emphasised tags; "## Review findings (round 2)"; skip words anywhere on a pass line; "n/a — TBD"; symlinked built paths; HTML comments; an outcome fixed and later reverted
+- [should-fix] Fig. 3, Delay 2: arrow 4 ran through the "3" tag → fixed (at a tie the copy sent last keeps the row and the delayed one stacks below; its arrow goes down outside the cluster, then across; screenshots at 375 and 1280 read)
+- [note] 768 px: Fig. 2's outcome line just below the fold after Run → fixed (the outcome line sits in the revealed block under the drawing; browser check at 768)
+- [note] An own-words "→ open-ended" read as open → fixed (open must end the word)
+- [note] The browser suite checks visibility, not drawing collisions → accepted: collisions are checked by reading the screenshots at every size (Evidence, "screenshots read")
 

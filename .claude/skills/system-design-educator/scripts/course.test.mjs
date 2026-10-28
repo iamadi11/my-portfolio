@@ -2,7 +2,7 @@
 // builds a throwaway course in the OS temp folder, never touching the real docs/system-design.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { after, test } from 'node:test';
@@ -629,4 +629,67 @@ test('verified: open findings cannot hide behind spelling, case or a later arrow
         v('', '\n## Review findings\n\nReviewer: me, 2026-01-02\n').out,
         /naming a fresh\/independent reviewer/
     );
+});
+
+test('honest-slip guards: section suffixes, the latest visual review, comments, skip words, tags, symlinks', () => {
+    const v = (findings) =>
+        run(
+            course({
+                rows: [row('a', 1, '', 'verified')],
+                product: 'src',
+                specs: { a: READ + PASS + REVIEW + findings },
+            }),
+            'check'
+        );
+    // A later "## Review findings (round 2)" section is read.
+    assert.match(v('\n## Review findings (round 2)\n\n- [blocker] still wrong → open\n').out, /still wrong/);
+    // Quoting "fixed? no" inside a finding's own words does not reopen it.
+    assert.equal(v('- [should-fix] the text said "fixed? no" → fixed (page.tsx)\n').code, 0);
+    assert.match(v('- [critical] x → fixed, then reopened\n').out, /open finding/);
+    // Skip words anywhere on a pass line, including the key.
+    const tested = (ev) =>
+        run(
+            course({ rows: [row('a', 1, '', 'tested')], product: 'src', specs: { a: READ + PASS + ev } }),
+            'check'
+        ).out;
+    assert.match(tested('- lint (not run): pass\n'), /says pass but also/);
+    assert.match(tested('- keyboard 2: pass — TODO\n'), /says pass but also/);
+    assert.match(tested('- extra: n/a — TBD\n'), /without a reason/);
+    // A commented-out Standard line does not count.
+    const commented = READ.replace(LEGACY, '<!-- Standard: legacy — x -->\n\n');
+    assert.match(
+        run(course({ rows: [row('a', 1, '', 'authored')], specs: { a: commented } }), 'check').out,
+        /needs a "Standard/
+    );
+});
+
+test('visual review: the latest line counts; built paths cannot be symlinks', () => {
+    const ok =
+        'text-heavy=no · mechanism-via-visual=yes · every-visual-teaches=yes · claims-defensible=yes · interaction-helps=yes';
+    const bad = ok.replace('claims-defensible=yes', 'claims-defensible=no');
+    const spec = (lines) =>
+        visual(asset(1, 'precision-2d', { built: '`src/fig.tsx`' }) + asset(2, 'text')) +
+        PASS +
+        REVIEW +
+        lines.map((l) => `Visual review: ${l}\n`).join('');
+    const at = (lines) =>
+        run(
+            course({
+                rows: [row('a', 1, '', 'verified')],
+                product: 'src',
+                files: { 'src/fig.tsx': 'x' },
+                specs: { a: spec(lines) },
+            }),
+            'check'
+        );
+    assert.equal(at([bad, ok]).code, 0);
+    assert.match(at([ok, bad]).out, /claims-defensible=no/);
+    const root = course({
+        rows: [row('a', 1, '', 'implemented')],
+        product: 'src',
+        files: { 'docs/notes.md': 'x', 'src/keep.ts': 'x' },
+        specs: { a: visual(asset(1, 'precision-2d', { built: '`src/link.tsx`' }) + asset(2, 'text')) },
+    });
+    symlinkSync(join(root, 'docs/notes.md'), join(root, 'src/link.tsx'));
+    assert.match(run(root, 'check').out, /not an existing file: src\/link\.tsx/);
 });

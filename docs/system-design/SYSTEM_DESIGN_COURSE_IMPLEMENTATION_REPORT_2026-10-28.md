@@ -348,12 +348,12 @@ The final notes' fixes are an SVG coordinate change and one added unit test. The
 **Chapter 3, `ip-and-ports` (pilot, `91bea9c` + `60b5713`).**
 
 - Route: `/learn/ip-and-ports`. Three figures: a name/address/port drawing, a demultiplexing simulation and a datagram timeline.
-- Status: `reviewed`. One blocking and ten should-fix findings were fixed; a fresh check of the fixes is the last step before `verified`.
-- Measurements: first-load JS 116.2 kB; browser suite 62/62; Lighthouse mobile 99–100.
+- Status: `verified` (`course.mjs check` ok). Three independent reviews: the pilot (1 blocking, 10 should-fix), the fixes (1 blocking, 2 should-fix), the final fixes (2 should-fix). All were fixed, except the adversarial `check` wordings, which were accepted as out of reach for a structure-only tool.
+- Measurements: first-load JS 116.3 kB; browser suite 64/64; Lighthouse mobile 91 on the first run after a server start, then 99; desktop 100.
 
 **Not done or not verified.**
 
 - No real screen-reader run.
 - RFC status is as of the doc-rfc snapshot (January 2023).
 - The production deployment of `f12c089` was not checked.
-- The Chapter 3 PR is not opened or merged.
+- The Chapter 3 PR is not opened or merged (no authorization to merge this work).

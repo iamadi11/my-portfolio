@@ -9,13 +9,13 @@ The system design course is built only through the `system-design-educator` skil
 
 ## Current unit
 
-ip-and-ports step 8
+none
 
 ## Next action
 
-Mode C for the next eligible chapter, `ip-and-ports` (its prerequisite `client-server` is verified and released:
-PR #20, main 71fd4d8, production deployment recorded as success on GitHub). Follow-ups from the release are listed
-in `SYSTEM_DESIGN_COURSE_IMPLEMENTATION_REPORT_2026-10-28.md` §13.
+Mode D for `web-request` and `client-server` (legacy specs: add the storyboard and asset plan, build missing
+assets, cut prose the visuals carry), or mode C for the next eligible chapter, `dns` (`course.mjs next`). The owner
+decides the order. Chapter 3 is on branch `claude/trusting-wright-s27b5f`, not merged.
 
 ## Decisions
 
@@ -130,3 +130,7 @@ in `SYSTEM_DESIGN_COURSE_IMPLEMENTATION_REPORT_2026-10-28.md` §13.
 - 2026-10-27 C ip-and-ports (visual-first pilot): planned → tested. Storyboard and asset plan first (A1 drawing,
   A2 demultiplexing simulation, A3 datagram timeline); models and tests, then figures, then text. Route
   `/learn/ip-and-ports`, 113 kB first-load JS; browser suite 55/55; regression 69/69 and 48/48.
+- 2026-10-28 C ip-and-ports: tested → reviewed → verified. Three independent reviews (pilot; fixes; final fixes):
+  1 + 1 blocking and 10 + 2 + 2 should-fix findings fixed; adversarial `check` wordings accepted (structure-only
+  tool). 194 unit tests, browser 64/64 + 69/69 + 48/48, 116.3 kB first-load JS, course tests 35/35.
+

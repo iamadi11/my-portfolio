@@ -77,10 +77,11 @@ function Timeline({ r }: { r: Run }): React.JSX.Element {
         stack.set(q.at, k + 1);
         return { ...q, dy: k * 22 };
     });
-    // Copies arriving at the same tick stack downwards too, in send order.
+    // Copies arriving at the same tick stack downwards too: the one sent last keeps the row, so a delayed copy sits
+    // below and its longer arrow passes between the tags instead of through one.
     const arrivedAt = new Map<number, number>();
     const arrivedDy = new Map<Copy, number>();
-    for (const c of r.copies)
+    for (const c of [...r.copies].sort((a, b) => b.sent - a.sent))
         if (c.arrived !== null) {
             const k = arrivedAt.get(c.arrived) ?? 0;
             arrivedAt.set(c.arrived, k + 1);
@@ -128,15 +129,19 @@ function Timeline({ r }: { r: Run }): React.JSX.Element {
                         />
                     );
                 }
-                // A copy stacked under another at the same tick: end beside its tag, not on the one above.
+                // A copy stacked under another at the same tick: neighbouring tags almost touch, so its arrow goes
+                // down two ticks earlier, outside the cluster, then across to the tag.
                 const dy = arrivedDy.get(c) ?? 0;
+                const end = x(c.arrived as number);
                 return (
-                    <line
+                    <path
                         key={`${c.n}-${c.sent}-${c.arrived}`}
-                        x1={x(c.sent)}
-                        y1={top}
-                        x2={dy ? x(c.arrived) - 10 : x(c.arrived)}
-                        y2={dy ? ROW.arrived + dy : bottom}
+                        d={
+                            dy
+                                ? `M ${x(c.sent)} ${top} L ${end - 2 * DX} ${bottom} V ${ROW.arrived + dy} H ${end - 10}`
+                                : `M ${x(c.sent)} ${top} L ${end} ${bottom}`
+                        }
+                        fill="none"
                         className={c.resend ? 'thin ln-skip' : 'thin'}
                         markerEnd={`url(#${marker})`}
                     />

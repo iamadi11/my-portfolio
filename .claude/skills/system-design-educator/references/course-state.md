@@ -38,7 +38,9 @@ A `legacy` spec gets a `check` warning, not an error; bring it up to the standar
 open issue. A spec with no `Standard:` line fails from `authored` on.
 
 Never skip a gate. Never mark `tested` because tests "should" pass. `check` sees only structure: a ✓ means the
-evidence is written down, not that it is good; the rest is the author's and reviewer's job.
+evidence is written down, not that it is good; the rest is the author's and reviewer's job. It catches honest
+slips (a missing line, an open finding, a stale review), not a deliberately misleading spec: wording can always be
+bent past a pattern, which is why every gate past `tested` needs an independent reviewer.
 
 ## Evidence formats `check` reads
 

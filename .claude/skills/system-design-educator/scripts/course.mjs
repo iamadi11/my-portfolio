@@ -9,7 +9,7 @@
 // --root defaults to the current directory (the repo root when run by Claude Code).
 // Exit code 0 = ok, 1 = problems found, 2 = usage or missing files.
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, posix, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -81,7 +81,9 @@ function section(text, heading) {
     const out = [];
     for (const l of text.split('\n')) {
         if (l.startsWith('## ')) {
-            inside = l.trim().toLowerCase() === want;
+            // "## Review findings (round 2)" is the same section.
+            const h = l.trim().toLowerCase();
+            inside = h === want || h.startsWith(`${want} `);
             found ||= inside;
         } else if (inside && l.trim()) out.push(l.trim());
     }
@@ -106,16 +108,21 @@ function currentUnit() {
 const warnings = [];
 
 /** A blocking or should-fix finding line, however the tag is spelled or emphasised. */
-const SERIOUS = /^-\s*\**\s*\[(blocking|should[- ]?fix|must[- ]?fix)\]/i;
+const SERIOUS =
+    /^(?:[-*+]|\d+\.)\s*[*_`]*\s*\[\s*(blocking|blocker|critical|should[-_ ]?fix|must[-_ ]?fix)\s*\]/i;
 
 /**
- * A finding is closed when an arrow (→ or ->) leads to "fixed" or "accepted: <reason>", and no arrow leads to "open"
- * and no "fixed?" casts doubt on it. Arrows inside the finding's own words ("A → B") don't count either way.
+ * A finding is closed when an arrow (→ or ->) leads to "fixed" or "accepted: <reason>", and no arrow leads to "open",
+ * "reopened" or "unresolved". Arrows inside the finding's own words ("A → B") don't count either way. This guards
+ * against honest slips, not a deliberately misleading line: that is what the independent review is for.
  */
 const closed = (l) =>
     /(→|->)\s*(fixed\b(?!\s*\?)|accepted:\s*\S)/i.test(l) &&
-    !/(→|->)\s*(still\s+)?open\b/i.test(l) &&
-    !/\bfixed\s*\?/i.test(l);
+    !/(→|->)\s*(still\s+)?(open|reopened|unresolved)(?![\w-])/i.test(l) &&
+    !/(→|->)\s*fixed\b[^→]*\b(reopened|unresolved)\b/i.test(l);
+
+/** HTML comments are not part of the spec: a commented-out line must not count. */
+const uncomment = (text) => text.replace(/<!--[\s\S]*?-->/g, '');
 
 /** Checks every chapter with a page must record from `tested` on (references/verification.md, "Required checks"). */
 const REQUIRED_EVIDENCE = [
@@ -221,7 +228,11 @@ function visualErrors(c, text) {
             for (const x of real)
                 if (posix.normalize(x) !== x || x.split('/').includes('..') || x.startsWith('/'))
                     errs.push(`${at} built path must be a plain relative path: ${x}`);
-                else if (!existsSync(join(root, x)) || !statSync(join(root, x)).isFile())
+                else if (
+                    !existsSync(join(root, x)) ||
+                    lstatSync(join(root, x)).isSymbolicLink() ||
+                    !statSync(join(root, x)).isFile()
+                )
                     errs.push(`${at} built path is not an existing file: ${x}`);
                 else if (
                     !x.startsWith('src/') &&
@@ -252,7 +263,8 @@ function visualErrors(c, text) {
             `${c.id}: every asset is text or illustration; add an explanatory asset or a "Visual exception:" line`
         );
     if (rank(c.status) >= rank('reviewed')) {
-        const line = (section(text, 'Review findings') ?? []).find((l) => /^Visual review:/.test(l));
+        // The latest review's answers count: reviews are appended in order.
+        const line = (section(text, 'Review findings') ?? []).filter((l) => /^Visual review:/.test(l)).at(-1);
         if (!line)
             errs.push(`${c.id}: status ${c.status} needs a "Visual review:" line under "## Review findings"`);
         else
@@ -275,7 +287,7 @@ function specErrors(c) {
     if (rank(c.status) < rank('researched')) return [];
     if (!existsSync(file))
         return [`${c.id}: status ${c.status} but docs/system-design/chapters/${c.id}.md is missing`];
-    const text = readFileSync(file, 'utf8');
+    const text = uncomment(readFileSync(file, 'utf8'));
     const errs = [];
     const sources = (section(text, 'Sources') ?? [])
         .join('\n')
@@ -318,9 +330,17 @@ function specErrors(c) {
                 errs.push(
                     `${c.id}: evidence line is not a pass: "${l}" (a failed or not-run check means not tested)`
                 );
-            else if (/^- [^:]+: pass\b.*\b(not run|unavailable|skipped|n\/a|fail(ed|s)?)\b/i.test(l))
+            else if (
+                /^- [^:]+: pass\b/.test(l) &&
+                /\b(not run|not tested|unavailable|skipped|todo|tbd|pending|n\/a|fail(ed|s)?)\b/i.test(
+                    l.replace(/: pass\b/, '')
+                )
+            )
                 errs.push(`${c.id}: evidence line says pass but also skipped/unavailable/failed/n/a: "${l}"`);
-            else if (/^- [^:]+: n\/a\b/.test(l) && !/^- [^:]+: n\/a\s*[—–-]+\s*\S/.test(l))
+            else if (
+                /^- [^:]+: n\/a\b/.test(l) &&
+                !/^- [^:]+: n\/a\s*[—–-]+\s*(?!(tbd|todo|later|reason)\b)[a-z]{3,}/i.test(l)
+            )
                 errs.push(`${c.id}: evidence line is n/a without a reason: "${l}"`);
         const keys = ev.map((l) => l.slice(2, l.indexOf(':')).toLowerCase());
         for (const k of keys)

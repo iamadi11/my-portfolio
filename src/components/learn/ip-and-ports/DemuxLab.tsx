@@ -302,6 +302,12 @@ export default function DemuxLab(): React.JSX.Element {
                 <div>
                     <div ref={stage}>
                         <Drawing p={p} d={run?.d ?? null} stage={current?.stage} />
+                        {run ? (
+                            <p className="m-0 mt-2" data-result>
+                                <strong>{OUTCOME_LABEL[run.d.outcome]}.</strong> {verdict} Sender gets back:{' '}
+                                {run.d.reply}.
+                            </p>
+                        ) : null}
                         {run && current ? (
                             <>
                                 <p className="m-0 mt-2" data-current-step>
@@ -335,10 +341,6 @@ export default function DemuxLab(): React.JSX.Element {
                     </div>
                     {run ? (
                         <>
-                            <p className="m-0 mt-2" data-result>
-                                <strong>{OUTCOME_LABEL[run.d.outcome]}.</strong> {verdict} Sender gets back:{' '}
-                                {run.d.reply}.
-                            </p>
                             <ol className="ln-steps" aria-label="All the host's stages for this packet">
                                 {steps.map((s, i) => (
                                     <li key={s.stage}>

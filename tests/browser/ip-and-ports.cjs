@@ -330,6 +330,14 @@ async function section5(browser) {
         '768 px: after Run, the Fig. 3 timeline is fully in view',
         await inView('figure[aria-labelledby="fig3-h"] svg')
     );
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await fig(page, 2).getByRole('button', { name: 'Run', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    log(
+        '768 px: after Run, the Fig. 2 outcome line and current step are fully in view',
+        (await inView('figure[aria-labelledby="fig2-h"] [data-result]')) &&
+            (await inView('figure[aria-labelledby="fig2-h"] [data-current-step]'))
+    );
     await ctx.close();
 }
 
