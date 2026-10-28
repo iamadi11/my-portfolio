@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Cite from '@/components/learn/Cite';
 import ExchangeStepper from '@/components/learn/client-server/ExchangeStepper';
 import CourseShell from '@/components/learn/CourseShell';
+import Q from '@/components/learn/kit/Question';
 import {
     CLIENT_SERVER_SOURCE_NUMBER as SOURCE_NUMBER,
     CLIENT_SERVER_SOURCES as SOURCES,
@@ -28,28 +29,6 @@ const TITLES: Record<string, string> = Object.fromEntries(SOURCES.map((s) => [s.
 
 function C({ ids, at }: { ids: string[]; at?: string }): React.JSX.Element {
     return <Cite ids={ids} at={at} numbers={SOURCE_NUMBER} titles={TITLES} />;
-}
-
-function Q({
-    n,
-    ask,
-    children,
-}: {
-    n: number;
-    ask: React.ReactNode;
-    children: React.ReactNode;
-}): React.JSX.Element {
-    return (
-        <div className="ln-q">
-            <p>
-                <strong>Q{n}.</strong> {ask}
-            </p>
-            <details>
-                <summary>Show the answer</summary>
-                {children}
-            </details>
-        </div>
-    );
 }
 
 export default function Page(): React.JSX.Element {
@@ -629,8 +608,8 @@ Content-Length: 27
                 <aside className="bp-sheet ln-next" aria-label="Next chapter">
                     <p className="ln-kicker">Next in the course</p>
                     <p>
-                        Chapter 3, <strong>Addresses, packets and ports</strong>, is planned and not written
-                        yet. Previous: <Link href="/learn/web-request">chapter 1</Link>.{' '}
+                        Chapter 3, <Link href="/learn/ip-and-ports">Addresses, packets and ports</Link>.
+                        Previous: <Link href="/learn/web-request">chapter 1</Link>.{' '}
                         <Link href="/learn">See the whole course</Link>.
                     </p>
                 </aside>

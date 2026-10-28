@@ -64,6 +64,10 @@ Every chapter is on at least one path; core chapters are on all three.
 - Objectives are observable: "explain why a retry without jitter can synchronise clients", not "understand
   retries". Two to four per chapter.
 - Each chapter names the misconceptions it targets (e.g. "more servers always means faster").
+- Prefer objectives a learner can show by acting on a model ("predict which process receives a datagram",
+  "find the arrival rate at which the queue grows"): they become the chapter's interactive assets. When mode B
+  sees a mechanism that is spatial, temporal or causal, note the likely visual in the chapter's objective cell
+  (e.g. "… — visual: step-through of a write reaching replicas"); mode C decides the asset plan.
 
 ## Changing the graph
 

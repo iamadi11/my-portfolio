@@ -13,9 +13,9 @@ none
 
 ## Next action
 
-Mode C for the next eligible chapter, `ip-and-ports` (its prerequisite `client-server` is verified and released:
-PR #20, main 71fd4d8, production deployment recorded as success on GitHub). Follow-ups from the release are listed
-in `SYSTEM_DESIGN_COURSE_IMPLEMENTATION_REPORT_2026-10-28.md` §13.
+Mode D for `web-request` and `client-server` (legacy specs: add the storyboard and asset plan, build missing
+assets, cut prose the visuals carry), or mode C for the next eligible chapter, `dns` (`course.mjs next`). The owner
+decides the order. Chapter 3 is on branch `claude/trusting-wright-s27b5f`, not merged.
 
 ## Decisions
 
@@ -57,12 +57,18 @@ in `SYSTEM_DESIGN_COURSE_IMPLEMENTATION_REPORT_2026-10-28.md` §13.
   reads at build time (a Vercel preview failed with ENOENT on it; reproduced and fixed by building from only the
   files the ignore rules upload). Any other build-time read from `docs/` needs the same exception.
 
+- 2026-10-27 Visual-first standard (owner request): chapters are planned as a storyboard and asset plan before the
+  explanation; models before prose; a rendered-page review answers five visual questions. Specs declare
+  `Standard: visual-first`; `course.mjs check` enforces the asset plan structure (references `visual-design.md`,
+  `visual-science.md`). Older specs warn until audited.
 ## Open issues
 
 - `client-server`: implemented in `/learn` on the owner's authorization (2026-10-27); two independent reviews ran
-  (implementation, then a check of its fixes). No real screen reader was used (DOM/ARIA only). The browser suites
-  used as evidence live outside the repo (they need a locally downloaded axe-core and a running build); committing
-  a runnable suite is a follow-up (client-server).
+  (implementation, then a check of its fixes). No real screen reader was used (DOM/ARIA only); a manual checklist
+  is in `SCREEN_READER_CHECKLIST.md`. The browser suites are now in the repo (`tests/browser/`, PR #22).
+- `web-request` and `client-server` predate the visual-first standard (2026-10-27): no storyboard or asset plan;
+  `course.mjs check` warns. Each needs a mode D pass to add them, build any missing assets and cut prose the
+  visuals then carry. Their `verified` status stands under the earlier rubric.
 - The Idempotency-Key field is an IETF Internet-Draft read in the WG's editor's copy (@ a2cd12a); its published
   draft number and status are unchecked (datatracker unreachable) (client-server).
 - RFC 6265 (cookies) may have been obsoleted by the 6265bis revision (search only: approved, no published number
@@ -118,3 +124,13 @@ in `SYSTEM_DESIGN_COURSE_IMPLEMENTATION_REPORT_2026-10-28.md` §13.
   build). 159 unit tests, 48/48 + 69/69 browser checks, Lighthouse 100/99 mobile, first-load JS 112 kB.
 - 2026-10-27 release: PR #20 merged (71fd4d8; production deployment recorded as success on GitHub). Report:
   `SYSTEM_DESIGN_COURSE_IMPLEMENTATION_REPORT_2026-10-28.md`.
+- 2026-10-27 maintenance: PR #22 merged (f12c089): browser suites in the repo, screen-reader checklist, source
+  re-checks, critters kept. Independent review: no blocking; 3 should-fix fixed (af6897f) and re-verified.
+- 2026-10-27 skill: visual-first upgrade (stages A–F, asset plan, visual review, structural checks; 29 course tests).
+- 2026-10-27 C ip-and-ports (visual-first pilot): planned → tested. Storyboard and asset plan first (A1 drawing,
+  A2 demultiplexing simulation, A3 datagram timeline); models and tests, then figures, then text. Route
+  `/learn/ip-and-ports`, 113 kB first-load JS; browser suite 55/55; regression 69/69 and 48/48.
+- 2026-10-28 C ip-and-ports: tested → reviewed → verified. Three independent reviews (pilot; fixes; final fixes):
+  1 + 1 blocking and 10 + 2 + 2 should-fix findings fixed; adversarial `check` wordings accepted (structure-only
+  tool). 194 unit tests, browser 64/64 + 69/69 + 48/48, 116.3 kB first-load JS, course tests 35/35.
+

@@ -320,3 +320,40 @@ The final notes' fixes are an SVG coordinate change and one added unit test. The
 3. `src/lib/learn/client-server-model.ts` and its tests, the teaching model behind every number in Fig. 1.
 4. PR [#20](https://github.com/iamadi11/my-portfolio/pull/20) and PR [#19](https://github.com/iamadi11/my-portfolio/pull/19).
 5. `docs/system-design/COURSE_STATE.md`: open issues and next action.
+
+## 15. Progress, 2026-10-27 to 2026-10-28
+
+**Maintenance (PR [#22](https://github.com/iamadi11/my-portfolio/pull/22), merged → `f12c089`).**
+
+- Browser suites now in the repo: `tests/browser/`, run with `npm run test:browser`; Playwright 1.63.0 and axe-core 4.10.3 are pinned.
+- Manual screen-reader checklist: `SCREEN_READER_CHECKLIST.md`. No real screen-reader test has been run.
+- Source re-checks are recorded in the chapter specs.
+- `critters` kept: Next's `optimizeCss` needs it. This corrects §13 item 5.
+- Review: an independent review found no blocking issue and 3 should-fix items. They were fixed in `af6897f` and the fixes re-verified. The Vercel preview passed.
+- The production deployment of `f12c089` was not verified from this container: the Vercel API returned 403.
+
+**Visual-first skill upgrade (`904d678`, hardened in `95ba76a`).**
+
+- Chapters are now built in stages A–F. The storyboard and asset plan come before the explanation, and models before visuals before text. A fresh reviewer then judges the rendered page against five questions.
+- New references: `visual-design.md` (asset types, monochrome grammar, interaction patterns, motion, accessibility, performance, asset plan format, 15 acceptance criteria) and `visual-science.md` (model fidelity, adversarial misconception pass, evidence classes, invariants, uncertainty).
+- `course.mjs check` now enforces:
+  - the asset plan;
+  - objective coverage;
+  - built files and their tests;
+  - the evidence keys;
+  - the visual review.
+- An independent review of the skill found loopholes in `check`. All of them are closed, and the reviewer's own gaming fixtures now fail.
+- Chapters 1 and 2 are marked `Standard: legacy`, pending a mode D pass.
+
+**Chapter 3, `ip-and-ports` (pilot, `91bea9c` + `60b5713`).**
+
+- Route: `/learn/ip-and-ports`. Three figures: a name/address/port drawing, a demultiplexing simulation and a datagram timeline.
+- Status: `verified` (`course.mjs check` ok). Three independent reviews: the pilot (1 blocking, 10 should-fix), the fixes (1 blocking, 2 should-fix), the final fixes (2 should-fix). All were fixed, except the adversarial `check` wordings, which were accepted as out of reach for a structure-only tool.
+- Measurements: first-load JS 116.3 kB; browser suite 64/64; Lighthouse mobile 91 on the first run after a server start, then 99; desktop 100.
+
+**Not done or not verified.**
+
+- No real screen-reader run.
+- RFC status is as of the doc-rfc snapshot (January 2023).
+- The production deployment of `f12c089` was not checked.
+- The Chapter 3 PR is not opened or merged (no authorization to merge this work).

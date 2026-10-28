@@ -9,12 +9,14 @@
 // --root defaults to the current directory (the repo root when run by Claude Code).
 // Exit code 0 = ok, 1 = problems found, 2 = usage or missing files.
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync, lstatSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { dirname, join, posix, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const STATUSES = ['planned', 'researched', 'authored', 'implemented', 'tested', 'reviewed', 'verified'];
 const PATHS = ['beginner', 'interview', 'production'];
+/** CURRICULUM's `Product:` value once the graph is read; `built:` paths may live there. */
+let productPath = null;
 const rank = (s) => STATUSES.indexOf(s);
 
 const args = process.argv.slice(2);
@@ -66,20 +68,26 @@ function readGraph() {
         paths: c[5] ? c[5].split(/\s+/) : [],
         status: c[6],
     }));
+    productPath = product;
     return { chapters, product };
 }
 
 /** Lines of a `## heading` section (up to the next `## `), trimmed, blank lines dropped. */
 function section(text, heading) {
-    const lines = text.split('\n');
-    const at = lines.findIndex((l) => l.trim().toLowerCase() === `## ${heading}`.toLowerCase());
-    if (at < 0) return null;
+    // Every section with this heading counts, so a second "## Review findings" cannot hide lines.
+    const want = `## ${heading}`.toLowerCase();
+    let inside = false;
+    let found = false;
     const out = [];
-    for (const l of lines.slice(at + 1)) {
-        if (l.startsWith('## ')) break;
-        if (l.trim()) out.push(l.trim());
+    for (const l of text.split('\n')) {
+        if (l.startsWith('## ')) {
+            // "## Review findings (round 2)" is the same section.
+            const h = l.trim().toLowerCase();
+            inside = h === want || h.startsWith(`${want} `);
+            found ||= inside;
+        } else if (inside && l.trim()) out.push(l.trim());
     }
-    return out;
+    return found ? out : null;
 }
 
 /** COURSE_STATE's `State:` line: true only when it exists and says initialized. */
@@ -96,6 +104,180 @@ function currentUnit() {
     return id && id !== 'none' ? id : null;
 }
 
+/** Non-fatal findings `check` prints with `!` (e.g. a spec written before the visual-first standard). */
+const warnings = [];
+
+/** A blocking or should-fix finding line, however the tag is spelled or emphasised. */
+const SERIOUS =
+    /^(?:[-*+]|\d+\.)\s*[*_`]*\s*\[\s*(blocking|blocker|critical|should[-_ ]?fix|must[-_ ]?fix)\s*\]/i;
+
+/**
+ * A finding is closed when an arrow (→ or ->) leads to "fixed" or "accepted: <reason>", and no arrow leads to "open",
+ * "reopened" or "unresolved". Arrows inside the finding's own words ("A → B") don't count either way. This guards
+ * against honest slips, not a deliberately misleading line: that is what the independent review is for.
+ */
+const closed = (l) =>
+    /(→|->)\s*(fixed\b(?!\s*\?)|accepted:\s*\S)/i.test(l) &&
+    !/(→|->)\s*(still\s+)?(open|reopened|unresolved)(?![\w-])/i.test(l) &&
+    !/(→|->)\s*fixed\b[^→]*\b(reopened|unresolved)\b/i.test(l);
+
+/** HTML comments are not part of the spec: a commented-out line must not count. */
+const uncomment = (text) => text.replace(/<!--[\s\S]*?-->/g, '');
+
+/** Checks every chapter with a page must record from `tested` on (references/verification.md, "Required checks"). */
+const REQUIRED_EVIDENCE = [
+    ['typecheck', /typecheck/],
+    ['lint', /lint/],
+    ['model tests', /model tests/],
+    ['the browser suite or browser sizes', /browser/],
+    ['keyboard', /keyboard/],
+    ['reduced motion', /reduced motion/],
+];
+
+const ASSET_FIELDS = [
+    'objective',
+    'type',
+    'learner sees',
+    'learner does',
+    'model',
+    'assumptions',
+    'outcome',
+    'accessibility',
+    'tests',
+    'evidence',
+];
+const ASSET_TYPES = [
+    'precision-2d',
+    'animated-2d',
+    'simulation',
+    'chart',
+    '3d',
+    'illustration',
+    'experiment',
+    'text',
+];
+/** Types whose picture depends on inputs or time, so they need an executable model (references/visual-science.md). */
+const MODELLED = ['animated-2d', 'simulation', 'chart', '3d'];
+const VISUAL_REVIEW = {
+    'text-heavy': 'no',
+    'mechanism-via-visual': 'yes',
+    'every-visual-teaches': 'yes',
+    'claims-defensible': 'yes',
+    'interaction-helps': 'yes',
+};
+const placeholder = (v) => !v || /(\.\.\.|…)$|<[^>]+>|TEST-PLACEHOLDER/.test(v) || !/\w/.test(v);
+
+/** `### A<n>` entries under "## Asset plan", each as { name, fields: Map(key → value) }. */
+function assets(text) {
+    const out = [];
+    for (const l of section(text, 'Asset plan') ?? []) {
+        const head = l.match(/^###\s+(A\d+)\b/);
+        if (head) out.push({ name: head[1], fields: new Map() });
+        const field = l.match(/^- ([a-z][a-z -]*?):\s*(.*)$/);
+        if (field && out.length) out.at(-1).fields.set(field[1], field[2].trim());
+    }
+    return out;
+}
+
+/** The visual-first standard (references/course-state.md, "Visual-first specs"); structure only. */
+function visualErrors(c, text) {
+    const errs = [];
+    const standard = text.match(/^Standard:\s*(.*)$/m)?.[1].trim();
+    if (rank(c.status) < rank('authored')) return errs;
+    if (!standard)
+        return [
+            `${c.id}: status ${c.status} needs a "Standard: visual-first" line (or "Standard: legacy — <why>")`,
+        ];
+    if (/^legacy\b/.test(standard) && !/^legacy\s*[—–-]+\s*\S/.test(standard))
+        return [`${c.id}: "Standard: legacy" needs a reason ("Standard: legacy — <why>")`];
+    if (/^legacy\b/.test(standard)) {
+        warnings.push(`${c.id}: spec predates the visual-first standard (${standard}): audit it in mode D`);
+        return errs;
+    }
+    if (standard !== 'visual-first')
+        return [`${c.id}: unknown standard "${standard}" (visual-first, or legacy — <why>)`];
+    const filled = (h) => (section(text, h) ?? []).some((l) => !placeholder(l) && !/^```/.test(l));
+    if (!filled('Storyboard'))
+        errs.push(`${c.id}: status ${c.status} needs "## Storyboard" filled (owned by authored)`);
+    const list = assets(text);
+    if (!list.length) errs.push(`${c.id}: status ${c.status} needs "## Asset plan" with "### A1 …" assets`);
+    const covered = new Set();
+    for (const a of list) {
+        const at = `${c.id}: asset ${a.name}`;
+        for (const f of ASSET_FIELDS)
+            if (placeholder(a.fields.get(f))) errs.push(`${at} needs "${f}:" filled`);
+        const type = a.fields.get('type');
+        if (type && !ASSET_TYPES.includes(type))
+            errs.push(`${at} has unknown type "${type}" (${ASSET_TYPES.join(', ')})`);
+        if (MODELLED.includes(type))
+            for (const f of ['model', 'assumptions'])
+                if (/^(none|n\/a|conceptual\b)/i.test(a.fields.get(f) ?? ''))
+                    errs.push(
+                        `${at} is ${type}, so "${f}:" must describe an executable model, not "${a.fields.get(f)}"`
+                    );
+        for (const n of (a.fields.get('objective') ?? '').match(/\d+/g) ?? []) covered.add(Number(n));
+        if (rank(c.status) >= rank('implemented') && type !== 'text') {
+            const built = a.fields.get('built');
+            const paths = built?.includes('`')
+                ? [...built.matchAll(/`([^`]+)`/g)].map((m) => m[1])
+                : (built ?? '').split(/[,;]\s*/);
+            const real = paths.map((x) => x.trim()).filter(Boolean);
+            if (!real.length || placeholder(built))
+                errs.push(`${at} needs "built:" paths (status ${c.status})`);
+            // Code the learner runs: files under src/ or the product route, not a folder or a doc.
+            for (const x of real)
+                if (posix.normalize(x) !== x || x.split('/').includes('..') || x.startsWith('/'))
+                    errs.push(`${at} built path must be a plain relative path: ${x}`);
+                else if (
+                    !existsSync(join(root, x)) ||
+                    lstatSync(join(root, x)).isSymbolicLink() ||
+                    !statSync(join(root, x)).isFile()
+                )
+                    errs.push(`${at} built path is not an existing file: ${x}`);
+                else if (
+                    !x.startsWith('src/') &&
+                    !(productPath && productPath !== 'none' && x.startsWith(productPath))
+                )
+                    errs.push(`${at} built path is outside src/ and the product: ${x}`);
+            if (MODELLED.includes(type) && !real.some((x) => /\.test\.[a-z]+$/.test(x)))
+                errs.push(`${at} is ${type}: "built:" must list its model's test file (*.test.*)`);
+        }
+    }
+    for (const l of section(text, 'Asset plan') ?? []) {
+        const t = l.match(/^- text-only:\s*(\d+)\s*[—-]+\s*(\S.*)$/);
+        if (t) covered.add(Number(t[1]));
+    }
+    const objectives = (section(text, 'Boundary') ?? [])
+        .map((l) => l.match(/^(\d+)\.\s/)?.[1])
+        .filter(Boolean);
+    if (!objectives.length) errs.push(`${c.id}: "## Boundary" needs numbered objectives (1. …)`);
+    for (const n of objectives)
+        if (!covered.has(Number(n)))
+            errs.push(`${c.id}: objective ${n} has no asset and no "- text-only: ${n} — <reason>" line`);
+    if (
+        list.length &&
+        list.every((a) => ['text', 'illustration'].includes(a.fields.get('type'))) &&
+        !/^Visual exception:\s*\S/m.test(text)
+    )
+        errs.push(
+            `${c.id}: every asset is text or illustration; add an explanatory asset or a "Visual exception:" line`
+        );
+    if (rank(c.status) >= rank('reviewed')) {
+        // The latest review's answers count: reviews are appended in order.
+        const line = (section(text, 'Review findings') ?? []).filter((l) => /^Visual review:/.test(l)).at(-1);
+        if (!line)
+            errs.push(`${c.id}: status ${c.status} needs a "Visual review:" line under "## Review findings"`);
+        else
+            for (const [k, pass] of Object.entries(VISUAL_REVIEW)) {
+                const v = line.match(new RegExp(`\\b${k}=(yes|no)\\b`))?.[1];
+                if (!v) errs.push(`${c.id}: "Visual review:" needs ${k}=yes|no`);
+                else if (c.status === 'verified' && v !== pass)
+                    errs.push(`${c.id}: verified but the visual review says ${k}=${v}`);
+            }
+    }
+    return errs;
+}
+
 /**
  * What a chapter spec must contain for its status (formats in references/course-state.md). Structure only: the
  * script can't judge quality, but it stops a status from claiming evidence that isn't written down.
@@ -105,7 +287,7 @@ function specErrors(c) {
     if (rank(c.status) < rank('researched')) return [];
     if (!existsSync(file))
         return [`${c.id}: status ${c.status} but docs/system-design/chapters/${c.id}.md is missing`];
-    const text = readFileSync(file, 'utf8');
+    const text = uncomment(readFileSync(file, 'utf8'));
     const errs = [];
     const sources = (section(text, 'Sources') ?? [])
         .join('\n')
@@ -148,18 +330,47 @@ function specErrors(c) {
                 errs.push(
                     `${c.id}: evidence line is not a pass: "${l}" (a failed or not-run check means not tested)`
                 );
-            else if (/^- [^:]+: pass\b.*\b(not run|unavailable|skipped|n\/a|fail(ed|s)?)\b/i.test(l))
+            else if (
+                /^- [^:]+: pass\b/.test(l) &&
+                /\b(not run|not tested|unavailable|skipped|todo|tbd|pending|n\/a|fail(ed|s)?)\b/i.test(
+                    l.replace(/: pass\b/, '')
+                )
+            )
                 errs.push(`${c.id}: evidence line says pass but also skipped/unavailable/failed/n/a: "${l}"`);
+            else if (
+                /^- [^:]+: n\/a\b/.test(l) &&
+                !/^- [^:]+: n\/a\s*[—–-]+\s*(?!(tbd|todo|later|reason)\b)[a-z]{3,}/i.test(l)
+            )
+                errs.push(`${c.id}: evidence line is n/a without a reason: "${l}"`);
+        const keys = ev.map((l) => l.slice(2, l.indexOf(':')).toLowerCase());
+        for (const k of keys)
+            if (REQUIRED_EVIDENCE.filter(([, re]) => re.test(k)).length > 1)
+                errs.push(`${c.id}: one required check per evidence line, not "${k}"`);
+        for (const [name, re] of REQUIRED_EVIDENCE)
+            if (!keys.some((k) => re.test(k)))
+                errs.push(
+                    `${c.id}: status ${c.status} needs an evidence line for ${name} (pass, or n/a — reason)`
+                );
     }
     if (rank(c.status) >= rank('reviewed')) {
         const rv = section(text, 'Review findings') ?? [];
-        if (!rv.some((l) => /^Reviewer:\s*\S/.test(l)))
-            errs.push(`${c.id}: status ${c.status} needs a "Reviewer:" line under "## Review findings"`);
+        // A self-review is a note, never a "Reviewer:" line (references/verification.md).
+        if (
+            !rv.some(
+                (l) =>
+                    /^Reviewer:.*\b(fresh|independent|subagent)\b/i.test(l) &&
+                    !/\b(not (fresh|independent)|self|myself)\b/i.test(l)
+            )
+        )
+            errs.push(
+                `${c.id}: status ${c.status} needs a "Reviewer:" line naming a fresh/independent reviewer under "## Review findings"`
+            );
         if (c.status === 'verified')
             for (const l of rv)
-                if (/^- \[(blocking|should-fix)\]/.test(l) && !/→ (fixed|accepted:)/.test(l))
+                if (SERIOUS.test(l) && !closed(l))
                     errs.push(`${c.id}: verified with an open finding: "${l}"`);
     }
+    errs.push(...visualErrors(c, text));
     return errs;
 }
 
@@ -349,6 +560,7 @@ if (cmd === 'next') {
     const { chapters, product } = readGraph();
     console.log(`${chapters.length} chapters · product: ${product ?? 'missing'}`);
     const errs = check(chapters);
+    for (const w of warnings) console.log(`! ${w}`);
     if (!initialized())
         console.log('! COURSE_STATE.md is missing or not "State: initialized": mode A comes first');
     const unit = currentUnit();

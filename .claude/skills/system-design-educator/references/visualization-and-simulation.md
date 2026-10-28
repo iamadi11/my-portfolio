@@ -13,16 +13,18 @@
 
 ## Choose the medium
 
-Pick the cheapest medium that teaches the mechanism. Write the decision and its reason in the spec.
+Pick the cheapest medium that teaches each objective's mechanism, **per objective, not per chapter**: a chapter
+usually needs several assets. Record each choice as an asset plan entry (format and asset types in
+visual-design.md); the table below maps media to the asset `type:` values.
 
-| Medium                                 | Use when                                                                                     |
-| -------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Text only                              | The idea is a definition or a short argument; a picture would only decorate                  |
-| Static drawing                         | Structure matters (components, layers, a sequence of steps) but nothing changes with input   |
-| Stepper (static frames, learner-paced) | A process with discrete steps (a DNS lookup, a TLS handshake)                                |
-| Interactive with a closed-form model   | One or two variables with a known formula (Little's law, utilisation)                        |
-| Discrete-event simulation              | Behaviour emerges from many requests over time (queues, retries, tail latency, backpressure) |
-| 3D                                     | Only per "When 3D is justified" below                                                        |
+| Medium                                   | Use when                                                                                     |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Text only (`text`)                       | The idea is a definition or a short argument; a picture would only decorate                  |
+| Static drawing (`precision-2d`)          | Structure matters (components, layers, a sequence of steps) but nothing changes with input   |
+| Stepper (`animated-2d`, learner-paced)   | A process with discrete steps (a DNS lookup, a TLS handshake)                                |
+| Closed-form model (`simulation`/`chart`) | One or two variables with a known formula (Little's law, utilisation)                        |
+| Discrete-event sim (`simulation`)        | Behaviour emerges from many requests over time (queues, retries, tail latency, backpressure) |
+| 3D (`3d`)                                | Only per "When 3D is justified" below                                                        |
 
 ## Visual design process (14 steps)
 

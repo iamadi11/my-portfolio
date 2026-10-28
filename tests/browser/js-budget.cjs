@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
 const { BASE } = require('./config.cjs');
 
 const BUDGET_BYTES = 120_000;
-const ROUTES = ['/', '/learn', '/learn/web-request', '/learn/client-server'];
+const ROUTES = ['/', '/learn', '/learn/web-request', '/learn/client-server', '/learn/ip-and-ports'];
 
 (async () => {
     const browser = await chromium.launch();

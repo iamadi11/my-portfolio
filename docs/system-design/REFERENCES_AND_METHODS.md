@@ -36,7 +36,13 @@ From the official pages:
 Applied here:
 
 - SKILL.md holds the modes and gates.
-- Seven reference files are each loaded only by the step that needs them.
+- Nine reference files are each loaded only by the step that needs them.
+- Visual-first standard (2026-10-27): chapters had come out prose-heavy because the workflow wrote the explanation
+  before the visual, allowed one "Visual" decision per chapter, and checked only that the section was non-empty.
+  The skill now plans a storyboard and an asset plan per objective first (`visual-design.md`), holds each visual
+  to a model, evidence class and adversarial misconception pass (`visual-science.md`), reviews the rendered page
+  against five questions (`verification.md`), and `course.mjs check` enforces the plan's structure. Its research
+  basis (all snippet only, except WCAG and MDN, read in their repositories) is in `learning-science.md`.
 - `scripts/course.mjs` validates the graph, picks the next chapter and validates the skill itself.
 
 ## Learning science

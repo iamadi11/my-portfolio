@@ -662,3 +662,18 @@
     max-width: 26rem;
     margin-inline: auto;
 }
+
+/* Chapter 3: a dotted line is a copy the network made (Fig. 3); the key to a drawing's line styles. */
+.ln-svg .ln-dot {
+    stroke-dasharray: 1.5 3;
+}
+.ln-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+}

@@ -1,6 +1,7 @@
 # Clients, servers and request–response
 
 Id: client-server · Stage: 1 · Paths: beginner interview production (status lives only in CURRICULUM.md)
+Standard: legacy — written before the visual-first standard (2026-10-27); a mode D pass adds the storyboard and asset plan
 Implementation: `src/app/learn/client-server/page.tsx`, `src/components/learn/client-server/ExchangeStepper.tsx`,
 `src/lib/learn/client-server-model.ts` (+ `.test.ts`), `src/content/learn/client-server-sources.ts` (owner
 authorized integration on 2026-10-27).

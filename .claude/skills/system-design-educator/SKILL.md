@@ -10,6 +10,10 @@ You build a system design course the way a careful author and engineer would: on
 traced to a source, every number a learner sees computed by a tested model, and the course state written down so the
 next session continues instead of starting over.
 
+**Visual first.** A chapter teaches its mechanisms mainly through precise diagrams, step-throughs and small
+simulations the learner acts on; prose names and qualifies what they have just seen. The asset plan comes before
+the explanation, and the review judges the rendered page, not the text.
+
 **One unit per invocation.** A unit is one mode A run, one mode B run, one chapter (mode C) or one repair (mode D).
 Never author several chapters in one go, even when asked to "build the course": do the next unit, record state, and
 say what comes next.
@@ -30,22 +34,28 @@ Read references only when the step needs them (each is one level deep from here)
 
 - [references/course-state.md](references/course-state.md): state formats, status gates, how "next" is chosen.
 - [references/curriculum.md](references/curriculum.md): learning graph, paths, minimum coverage, chapter sizing.
-- [references/chapter-workflow.md](references/chapter-workflow.md): the 14-question explanation pattern, chapter
-  spec template, assessment design.
+- [references/chapter-workflow.md](references/chapter-workflow.md): stages A–F, the 14-question explanation
+  pattern, chapter spec template (storyboard and asset plan), assessment design.
 - [references/research-and-sources.md](references/research-and-sources.md): source hierarchy, source records,
   claim checks, the oversimplification list.
 - [references/learning-science.md](references/learning-science.md): which teaching techniques to use and how strong
   the evidence is.
-- [references/visualization-and-simulation.md](references/visualization-and-simulation.md): choosing a medium, the
-  visual design process, simulation models and their tests, 3D criteria, accessibility.
-- [references/verification.md](references/verification.md): quality rubric, independent review, browser checks.
+- [references/visual-design.md](references/visual-design.md): asset types, the monochrome visual grammar,
+  interaction patterns, motion, accessibility, performance, asset plan format, the 15 visual acceptance criteria.
+- [references/visual-science.md](references/visual-science.md): model fidelity, the adversarial misconception
+  pass, evidence classes, units and invariants, uncertainty.
+- [references/visualization-and-simulation.md](references/visualization-and-simulation.md): choosing a medium per
+  objective, the visual design process, simulation models and their tests, 3D criteria.
+- [references/verification.md](references/verification.md): quality rubric, the rendered visual review (five
+  questions), independent review, browser checks.
 
 Script (run it from the repo root; don't read it): `node ${CLAUDE_SKILL_DIR}/scripts/course.mjs <command>`
 
 - `next`: the next chapter and why (resume, finish started work, or start the next whose prerequisites are ready).
 - `check`: the graph (ids, rows, prerequisites, cycles, paths, and that every path holds its chapters'
   prerequisites), COURSE_STATE's current unit, and that each chapter's
-  spec holds the evidence its status claims (sources, passing checks, a reviewer, no open findings).
+  spec holds the evidence its status claims (sources, passing checks, a reviewer, no open findings; for
+  `Standard: visual-first` specs also the asset plan, objective coverage, built paths and the visual review).
 - `show <id>`: one chapter's status, prerequisites and whether it can start; fails on an unknown id.
 - `skill`: this skill's own files. Tests: `node --test ${CLAUDE_SKILL_DIR}/scripts/course.test.mjs`.
 
@@ -127,19 +137,22 @@ the checklist into your reply:
 
 ```
 - [ ] 1 Read state       COURSE_STATE, CURRICULUM, the chapter's prerequisites' specs (for vocabulary already taught)
-- [ ] 2 Boundary         objectives, what is in, what is deferred to which chapter, misconceptions to target
+- [ ] 2 Boundary (A)     numbered objectives, in/deferred, misconceptions, what prose handles badly here
 - [ ] 3 Research         sources for every claim → chapter spec "Sources" (research-and-sources.md)   → Researched
-- [ ] 4 Teaching design  14-question pattern, worked example, retrieval questions, exercise (chapter-workflow.md)
-- [ ] 5 Visual design    medium decision + visual spec, or "text is enough" with reason (visualization-and-simulation.md) → Authored
-- [ ] 6 Implement        content, components, simulation model in the host app                        → Implemented
-- [ ] 7 Test             model tests, typecheck, lint, browser checks at the required sizes            → Tested
-- [ ] 8 Independent review  a fresh reviewer (subagent) checks against verification.md; fix findings  → Reviewed
+- [ ] 4 Storyboard (B)   per objective: asset type or text-only reason; storyboard; asset plan with model,
+                         assumptions, evidence class, adversarial pass (visual-design.md, visual-science.md)
+- [ ] 5 Text draft (D)   14 questions, worked example, retrieval, exercise: a draft written against the
+                         storyboard, as short text beside each asset (chapter-workflow.md)            → Authored
+- [ ] 6 Implement (C)    models + tests first, then the visuals, then the page; then revise the draft
+                         against the rendered visuals, cutting what they already show; `built:` paths → Implemented
+- [ ] 7 Test (E)         model, interaction and answer-leak tests, typecheck, lint, browser checks     → Tested
+- [ ] 8 Review (F)       fresh reviewer on the rendered page: rubric + five visual questions; fix      → Reviewed
 - [ ] 9 Update state     CURRICULUM status, COURSE_STATE (log, decisions, next action, open issues)
 - [ ] 10 Report          what was built, gate reached, evidence, what didn't run, next unit
 ```
 
 Work the steps in order. The spec file `chapters/<id>.md` is created in step 2 from the template in
-chapter-workflow.md; a step is **complete** when every template part it owns is filled (not empty, not a
+chapter-workflow.md (it carries `Standard: visual-first`); never draft the explanation before the asset plan; a step is **complete** when every template part it owns is filled (not empty, not a
 placeholder). If a step can't be completed, stop there: don't attempt later steps.
 
 - **Stopping.** "Current unit" stays `<id> step <n>` at the first incomplete step; the status is the highest gate
@@ -154,7 +167,7 @@ placeholder). If a step can't be completed, stop there: don't attempt later step
 
 **Verified** is the last gate: implemented, tested, independently reviewed, every blocking and should-fix finding
 closed. While `CURRICULUM.md` says `Product: none`, the chapter stops at **Authored**, which then counts as done for
-`next`. Step 8 still runs as a spec review (sources, teaching pattern, visual spec); record and fix its findings,
+`next`. Step 8 still runs as a spec review (sources, teaching pattern, storyboard and asset plan); record and fix its findings,
 but the status stays **Authored**. If no fresh reviewer can be started, record `- spec review: not run — <reason>`
 under Evidence and say so in the report.
 
@@ -168,7 +181,9 @@ unit. No speculative framework for chapters that don't exist yet.
 
 Run `course.mjs show <id>` (unknown id: stop and report) and `course.mjs check`. Read the chapter spec, its
 implementation and its sources. Check it with [verification.md](references/verification.md)
-(claims against sources, teaching pattern, model numbers, tests, accessibility, reduced motion). Record findings by
+(claims against sources, teaching pattern, model numbers, tests, accessibility, reduced motion). A spec without
+`Standard: visual-first` is brought up to it here: add the storyboard and asset plan, build the missing assets,
+and cut prose the visuals now carry. Record findings by
 severity in the spec's Review findings section under an `Audit: author (mode D), <date>` line (only an independent
 review gets a `Reviewer:` line), then fix them in place with the smallest change; don't redesign a chapter that only
 needs repairs. Any fix
