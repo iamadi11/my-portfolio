@@ -24,8 +24,9 @@ lowered when their evidence stops holding (a source turned out wrong, a test now
 | `reviewed`    | An independent review (fresh agent, verification.md) ran on the implementation and its evidence: a `Reviewer:` line naming a fresh/independent reviewer or subagent ✓, findings listed  |
 | `verified`    | No blocking or should-fix finding left open ✓: an arrow (`→`) leads to `fixed` or `accepted: <reason>`, none leads to `open`; every `## Review findings` section is read; state updated |
 
-From `authored` on, every spec has a `Standard:` line under its title ✓: `visual-first`, or `legacy — <why>` for a spec
-written before the standard. **Visual-first specs** also need, checked by `check` (✓):
+From `authored` on, every spec has a `Standard:` line under its title ✓: `anatomy-3d` (current), `visual-first`
+(previous; `check` warns), or `legacy — <why>` for a spec written before either. **`visual-first` and `anatomy-3d`
+specs** also need, checked by `check` (✓):
 
 | From          | Also required                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -34,8 +35,11 @@ written before the standard. **Visual-first specs** also need, checked by `check
 | `reviewed`    | `Visual review:` (five keys), `Visual rubric:` (ten dimensions) and `Rejects:` lines ✓; the latest of each counts                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `verified`    | All five answers passing (`text-heavy=no`, the other four `yes`), every rubric dimension `pass`, `Rejects: none` ✓                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
-A `legacy` spec gets a `check` warning, not an error; bring it up to the standard with a mode D pass, recorded as an
-open issue. A spec with no `Standard:` line fails from `authored` on.
+A `legacy` or `visual-first` spec gets a `check` warning, not an error; bring it up to `anatomy-3d` with a mode D
+pass. `anatomy-3d` adds, on every asset: `object:`, `render:` (`anatomy-turn`, `anatomy-iso` or `flat-2d`) and
+`fidelity:` ✓. `anatomy-turn` also needs `depth:` ✓. `render: anatomy-iso` or `anatomy-turn` requires `type: 3d` ✓.
+A chapter of only `flat-2d` assets needs a `Flat exception:` line ✓. A spec with no `Standard:` line fails from
+`authored` on.
 
 Never skip a gate. Never mark `tested` because tests "should" pass. `check` sees only structure: a ✓ means the
 evidence is written down, not that it is good; the rest is the author's and reviewer's job. It catches honest

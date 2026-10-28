@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import {
     exchange,
@@ -16,11 +16,13 @@ import {
     type Result,
 } from '@/lib/learn/client-server-model';
 
+import { block, corners, cylinder, fit, Metal, place } from '../anatomy/metal';
+
 /**
  * Fig. 1 of the client-server chapter: one request-response exchange, a choice of what goes wrong, and an optional
  * retry, stepped through on a two-lane drawing. Every outcome comes from `exchange()`. Nothing about an outcome is on
- * the page until the learner presses Run or checks the predictions, so the prediction is a real one. Nothing
- * animates; the current step is drawn heavy.
+ * the page until the learner presses Run or checks the predictions, so the prediction is a real one. The packet's
+ * horizontal position is the current event: it arrives, is lost on the way, or comes back.
  */
 
 const METHOD_LABEL: Record<Method, string> = {
@@ -65,6 +67,9 @@ const WRONG: Record<string, Record<string, string>> = {
 };
 
 const DEFAULT_INPUTS: Inputs = { method: 'GET', fault: 'none', retry: false };
+
+/** Learn shows the failure the chapter is about: the server did the work, the reply never comes back. */
+const LEARN_RUN: Inputs = { method: 'POST', fault: 'responseLost', retry: false };
 
 function Prediction({ onRunCase }: { onRunCase: (c: Inputs) => void }): React.JSX.Element {
     const [picked, setPicked] = useState<Record<string, string>>({});
@@ -300,6 +305,101 @@ function AttemptBlock({
     );
 }
 
+/** Where the packet rests for each event. x is along the client (52) to server (268) line. */
+const PACKET_X: Record<Event['kind'], number> = {
+    request: 268,
+    'request-lost': 150,
+    server: 268,
+    response: 52,
+    'response-lost': 150,
+    'response-late': 52,
+    client: 52,
+};
+
+/**
+ * The packet moves to the place this event says it is. Lost events stop halfway and are marked lost.
+ * Reduced motion jumps. The trace below stays a still of the whole run.
+ */
+function PacketRide({ event }: { event: Event }): React.JSX.Element {
+    const body = useRef<SVGGElement>(null);
+    const x = useRef(52);
+    const gaveUp = event.kind === 'client' && event.text.includes(NO_RESPONSE);
+    const stillWorking = gaveUp && event.text.includes('still working');
+    const lost = event.kind === 'request-lost' || event.kind === 'response-lost' || (gaveUp && !stillWorking);
+    const target = stillWorking ? PACKET_X.server : gaveUp ? PACKET_X['response-lost'] : PACKET_X[event.kind];
+    const scene = useMemo(() => {
+        const client = { plan: { x: -8, y: -22, w: 40, d: 44, r: 3 }, z: 0, h: 10 };
+        const screen = { plan: { x: -2, y: -6, w: 26, d: 8, r: 1 }, z: 10, h: 16 };
+        const server = { plan: { x: 118, y: -26, w: 44, d: 52, r: 3 }, z: 0, h: 28 };
+        const cable = { plan: { x: 28, y: -2, w: 92, d: 4, r: 0 }, z: 12, h: 2 };
+        const packet = { plan: { x: 8, y: -9, w: 18, d: 16, r: 1.5 }, z: 16, h: 10 };
+        const dropped = { plan: { x: 64, y: 22, w: 18, d: 16, r: 1.5 }, z: 1, h: 10 };
+        const keys = { plan: { x: -2, y: 24, w: 30, d: 12, r: 1 }, z: 0, h: 3 };
+        const projection = fit(corners([client, screen, server, cable, packet, dropped, keys]), 720, 280);
+        const vents = [
+            { key: 'vent-a', paths: cylinder(128, -2, 3, 28, 6, projection, 12, 0.3) },
+            { key: 'vent-b', paths: cylinder(146, -2, 3, 28, 6, projection, 12, 0.3) },
+        ];
+        return { projection, client, screen, server, cable, packet, keys, vents };
+    }, []);
+    useEffect(() => {
+        const node = body.current;
+        if (!node) return () => undefined;
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let raf = 0;
+        let last = performance.now();
+        const tick = (now: number): void => {
+            const dt = Math.min(0.05, (now - last) / 1000);
+            last = now;
+            const k = reduce ? 1 : 1 - Math.exp(-dt / 0.16);
+            x.current += (target - x.current) * k;
+            if (Math.abs(target - x.current) < 0.4) x.current = target;
+            const along = 8 + ((x.current - 52) / 216) * 124;
+            const down = lost && Math.abs(x.current - target) < 8;
+            node.setAttribute(
+                'transform',
+                place([8, -9, 16], [along, down ? 22 : -9, down ? 1 : 16], scene.projection)
+            );
+            if (x.current !== target) raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(raf);
+    }, [lost, scene.projection, target]);
+    const atServer = target === 268;
+    const offWire = lost;
+    return (
+        <div className="iso" data-theme="light">
+            <svg className="iso-svg" viewBox="0 0 720 280" role="img" aria-label={event.text}>
+                <Metal paths={block(scene.keys.plan, scene.keys.z, scene.keys.h, scene.projection)} />
+                <Metal paths={block(scene.client.plan, scene.client.z, scene.client.h, scene.projection)} />
+                <Metal
+                    lit={!atServer}
+                    paths={block(scene.screen.plan, scene.screen.z, scene.screen.h, scene.projection)}
+                />
+                <Metal paths={block(scene.cable.plan, scene.cable.z, scene.cable.h, scene.projection)} />
+                <Metal
+                    lit={atServer}
+                    paths={block(scene.server.plan, scene.server.z, scene.server.h, scene.projection)}
+                />
+                {scene.vents.map((vent) => (
+                    <Metal key={vent.key} paths={vent.paths} />
+                ))}
+                <g ref={body}>
+                    <Metal
+                        lit
+                        paths={block(scene.packet.plan, scene.packet.z, scene.packet.h, scene.projection)}
+                    />
+                </g>
+            </svg>
+            <p className="ln-bench-read">
+                {offWire
+                    ? 'The body is off the wire. The client cannot tell whether the server did the work.'
+                    : event.text}
+            </p>
+        </div>
+    );
+}
+
 /**
  * Two lanes, one block per attempt, in time order. In the late case the first request's response is drawn last,
  * after the client gave up and after any retry. The arrow or mark of the current event is drawn heavy.
@@ -387,8 +487,14 @@ function summarize(c: Inputs, r: Result): string {
     );
 }
 
-export default function ExchangeStepper(): React.JSX.Element {
-    const [inputs, setInputs] = useState<Inputs>(DEFAULT_INPUTS);
+export default function ExchangeStepper({
+    pane = 'lab',
+}: {
+    /** Learn steps a POST whose reply is lost. Lab chooses the method, the fault, and whether to retry. */
+    pane?: 'learn' | 'lab';
+}): React.JSX.Element {
+    const figId = `fig-exchange-${pane}`;
+    const [inputs, setInputs] = useState<Inputs>(pane === 'learn' ? LEARN_RUN : DEFAULT_INPUTS);
     /** The last run: its inputs and result, or null until the learner runs a case. Cleared when a choice changes. */
     const [run, setRun] = useState<{ c: Inputs; r: Result } | null>(null);
     const [at, setAt] = useState(0);
@@ -404,6 +510,11 @@ export default function ExchangeStepper(): React.JSX.Element {
         setAt(0);
         setAnnounce('');
     };
+    useEffect(() => {
+        if (pane !== 'learn') return undefined;
+        setRun({ c: LEARN_RUN, r: exchange(LEARN_RUN) });
+        return undefined;
+    }, [pane]);
     const events = run?.r.events ?? [];
     const goTo = (i: number): void => {
         const n = Math.min(events.length - 1, Math.max(0, i));
@@ -411,45 +522,47 @@ export default function ExchangeStepper(): React.JSX.Element {
         setAnnounce(`Step ${n + 1} of ${events.length}. ${events[n].text}`);
     };
     return (
-        <figure className="bp-sheet ln-fig" aria-labelledby="fig1-h">
+        <figure className="bp-sheet ln-fig" aria-labelledby={figId}>
             <div className="ln-fig-head">
-                <span id="fig1-h">Fig. 1 · One exchange, and what each side knows</span>
+                <span id={figId}>Fig. 1 · One exchange, and what each side knows</span>
                 <span>Teaching model, not a benchmark</span>
             </div>
-            <div className="ln-fig-grid">
-                <div>
-                    <Prediction onRunCase={go} />
-                    <div className="ln-controls">
-                        <Choice
-                            legend="Request"
-                            options={METHODS}
-                            labels={METHOD_LABEL}
-                            value={inputs.method}
-                            onChange={(m) => set({ method: m })}
-                        />
-                        <Choice
-                            legend="What goes wrong"
-                            options={FAULTS}
-                            labels={FAULT_LABEL}
-                            value={inputs.fault}
-                            onChange={(f) => set({ fault: f })}
-                        />
-                        <fieldset>
-                            <legend>If no response comes</legend>
-                            <label className="ln-check">
-                                <input
-                                    type="checkbox"
-                                    checked={inputs.retry}
-                                    onChange={(e) => set({ retry: e.target.checked })}
-                                />
-                                Send the same request again, once
-                            </label>
-                        </fieldset>
-                        <button type="button" className="ln-btn" onClick={() => go(inputs)}>
-                            Run
-                        </button>
+            <div className={pane === 'lab' ? 'ln-fig-grid' : 'ln-fig-grid ln-fig-grid-one'}>
+                {pane === 'lab' ? (
+                    <div>
+                        <Prediction onRunCase={go} />
+                        <div className="ln-controls">
+                            <Choice
+                                legend="Request"
+                                options={METHODS}
+                                labels={METHOD_LABEL}
+                                value={inputs.method}
+                                onChange={(m) => set({ method: m })}
+                            />
+                            <Choice
+                                legend="What goes wrong"
+                                options={FAULTS}
+                                labels={FAULT_LABEL}
+                                value={inputs.fault}
+                                onChange={(f) => set({ fault: f })}
+                            />
+                            <fieldset>
+                                <legend>If no response comes</legend>
+                                <label className="ln-check">
+                                    <input
+                                        type="checkbox"
+                                        checked={inputs.retry}
+                                        onChange={(e) => set({ retry: e.target.checked })}
+                                    />
+                                    Send the same request again, once
+                                </label>
+                            </fieldset>
+                            <button type="button" className="ln-btn" onClick={() => go(inputs)}>
+                                Run
+                            </button>
+                        </div>
                     </div>
-                </div>
+                ) : null}
                 <div>
                     <p className="ln-label m-0 mb-2">
                         Before: order 42 exists, quantity 1 (1 order in total). Request sent:{' '}
@@ -457,6 +570,7 @@ export default function ExchangeStepper(): React.JSX.Element {
                     </p>
                     {run ? (
                         <>
+                            {events[at] ? <PacketRide event={events[at]} /> : null}
                             <Diagram result={run.r} current={events[at]} />
                             <ol className="ln-steps" aria-label="Events of this run">
                                 {events.map((e, i) => (
@@ -535,9 +649,11 @@ export default function ExchangeStepper(): React.JSX.Element {
                 </div>
             </div>
             <figcaption className="ln-label mt-4">
-                Assumes at most one retry, which always arrives and gets its response in time; the server
-                carries out a request completely or not at all; nobody else changes order 42 meanwhile; the
-                keyed server records each key with its result; no proxies.
+                Screen and keys: the browser. Tall cabinet: the server. The body is the message; it drops off
+                the wire when the model says it was lost. The line under the drawing names the event. Assumes
+                at most one retry, which always arrives and gets its response in time; the server carries out
+                a request completely or not at all; nobody else changes order 42 meanwhile; the keyed server
+                records each key with its result; no proxies.
             </figcaption>
         </figure>
     );

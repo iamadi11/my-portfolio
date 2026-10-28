@@ -28,8 +28,9 @@ For every hard concept, design around six questions before any prose: what shoul
 can they see that makes it easier; what can they manipulate to discover the rule; what can they predict before
 observing; what feedback connects the outcome to the mechanism; what should they be able to explain or transfer.
 
-The spec carries `Standard: visual-first` under its title; `course.mjs check` enforces the structure. Specs written
-before this standard say `Standard: legacy — <why>` and get a mode D pass.
+The spec carries `Standard: anatomy-3d` under its title; `course.mjs check` enforces the structure, including
+`object:`, `render:` and `fidelity:` on every asset. `visual-first` is the previous standard: `check` still
+enforces its fields and warns until a mode D pass. Specs written before either say `Standard: legacy — <why>`.
 
 ## The 14-question explanation pattern
 
@@ -64,6 +65,8 @@ design, sees it work, then sees it break.
   can skip without losing the thread.
 - Name the parts before the process (pre-training): a short "parts you'll meet" list before the mechanism.
 - Short sentences, active voice, ~70ch measure. No filler, no hype, no "simply"/"just" for hard things.
+- Mechanism prose beside the figures stays under about 900 words. The machine carries the sequence. Citations
+  and the fidelity sentence stay. This cap is a hypothesis, not a measured optimum.
 - Flag every simplification you make and point to where it's corrected (see the oversimplification list in
   research-and-sources.md).
 
@@ -74,7 +77,7 @@ design, sees it work, then sees it break.
 
 Id: <id> · Stage: <n> · Paths: <...> (status lives only in CURRICULUM.md)
 Prerequisites: <ids> · Related: <ids>
-Standard: visual-first
+Standard: anatomy-3d
 
 ## Boundary
 
@@ -116,6 +119,9 @@ Objective coverage: 1 → A1 · 2 → A2
 
 - objective: 1
 - type: precision-2d | animated-2d | simulation | chart | 3d | illustration | experiment | text
+- object: <the physical machine, one sentence, or "none — flat exception">
+- render: anatomy-turn | anatomy-iso | flat-2d
+- fidelity: <computed / scaled / assumed / faked, each quantity named>
 - pattern: manipulate | predict | step | explore | break | compare | construct | quantitative | debug | read
 - learner sees: <initial view>
 - animated: <what moves and what the motion means, or "none — <reason>">
@@ -130,6 +136,19 @@ Objective coverage: 1 → A1 · 2 → A2
 - evidence: <source ids with sections, and the evidence class of each claim>
 - built: <file paths, from Implemented>
 
+## Animation sense
+
+Fill this before geometry (motion.md). One subsection per animated asset.
+
+### A1. Animation sense
+
+- Mechanism: <the real process, one sentence>
+- Moving quantity: <the mark that moves>
+- Model field: <the state it equals, with units>
+- Learner predicts: <what they commit before the move>
+- If the moving part is deleted: the lesson is gone
+- Research (before drawing): <source id, via: read, date>
+
 ## Explanation (14 questions)
 
 1. Problem: ...
@@ -141,7 +160,7 @@ Objective coverage: 1 → A1 · 2 → A2
 
 ## Visual
 
-Decision: <which figures carry the chapter, and why 2D or 3D>
+Decision: <which machines carry the chapter, and the render of each (anatomy-turn, anatomy-iso, flat-2d)>
 
 ## Practice
 
@@ -149,9 +168,17 @@ Retrieval questions (with answer and why each wrong option is wrong): ...
 Exercise (apply/transfer): ...
 Spaced review: <which later chapters re-ask which question>
 
+## Tabs
+
+- Learn: <the figure and the one rule it shows; what this tab does not repeat>
+- Lab: <the inputs, the prediction, and the fault the learner can cause>
+- Quiz: <what is asked; the answer stays hidden until opened>
+
 ## Sources
 
 - id: <source id> (full record: research-and-sources.md; `via` and `supports` are checked)
+
+The spec keeps this list. The built chapter does not render it. Inline marks link to `/learn/sources#src-<chapter>-<id>`.
 
 ## Open questions / unverified
 

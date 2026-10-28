@@ -6,6 +6,7 @@
 - Visual and educational review (stage 6)
 - Independent review procedure
 - Checks that must run
+- Verify the animation
 - Browser checks
 
 ## Quality rubric
@@ -83,6 +84,33 @@ Never replace a required check with a weaker one and call it a pass.
 model, browser checks (sizes, keyboard, reduced motion) for any chapter with a page. `n/a` is only for a check that
 does not apply to this chapter (e.g. no model, so no model tests), with that reason; "couldn't run it" is never
 `n/a`. A `pass` line must not also say skipped, unavailable or failed (`check` rejects it).
+
+## Verify the animation
+
+Run this on the rendered page after the model tests pass, and before the chapter is called tested. It is
+evidence for step 7. It is not a review. A self-check does not satisfy step 8.
+
+Use Play, Pause, Previous, Next, Reset if the figure has them. Repeat with the keyboard only. Emulate
+`prefers-reduced-motion: reduce`. Hide the prose (crop the screenshot, or cover the paragraphs) and look only
+at the figure and its readout.
+
+Record one line when every item passes:
+
+`- animation sense: pass — Verify the animation (<date>, URL)`
+
+Any failure:
+
+`- animation sense: fail — <item>: <what you saw>`
+
+A fail or `not run` keeps the chapter below tested.
+
+| Item | Pass when |
+| --- | --- |
+| Event sync | At each step, the mark's position, width, count, or presence equals the model field named in Animation sense. "Something moved" is a fail. |
+| Causal read | With the paragraphs hidden, you can say what changed and why. |
+| Reduced motion | The end state and the readout match the full run. Every event is reachable without watching the interpolation. |
+| Keyboard | Every event is reachable from the keyboard. Focus is visible. |
+| Honest control | A control that should change the model changes the picture. A control that does not change the model does not fake a move. |
 
 ## Browser checks
 

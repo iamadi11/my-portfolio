@@ -44,7 +44,15 @@ export default function CourseShell({
                         ))}
                     </ol>
                 </nav>
-                <span className="ln-note">A course in progress</span>
+                {crumbs?.some((c) => c.label === 'Sources') ? (
+                    <span className="ln-note" aria-current="page">
+                        Sources
+                    </span>
+                ) : (
+                    <Link href="/learn/sources" className="ln-note">
+                        Sources
+                    </Link>
+                )}
             </header>
             <main id="main-content" tabIndex={-1}>
                 {children}

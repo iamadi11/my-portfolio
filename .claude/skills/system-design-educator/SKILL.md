@@ -1,6 +1,6 @@
 ---
 name: system-design-educator
-description: Researches, plans, builds and verifies a visual-first, interactive system design course (zero to advanced) one unit at a time — figures the learner manipulates, predicts, steps and breaks, animation driven by tested models, sourced claims and a persistent learning graph. Use when asked to start, audit or plan the system design course or academy, develop the next chapter, build or fix a chapter, lesson, lab, animation, simulation or interactive visualization about system design or networking, make a chapter more visual or interactive, or check what the course should do next.
+description: Researches, plans, builds and verifies a system design course (zero to advanced) one unit at a time. Each chapter is an Anatomy machine — isometric 3D by default, true turn-3D when a part must move in depth — whose motion comes from a tested model, with a fidelity ledger and short text beside the figure, plus a persistent learning graph. Use when asked to start, audit or plan the system design course or academy, develop the next chapter, build or fix a chapter, lesson, lab, animation, simulation or interactive visualization about system design or networking, make a chapter more visual or interactive, or check what the course should do next.
 argument-hint: '[init | curriculum | next | chapter <id> | audit <id>]'
 ---
 
@@ -10,11 +10,29 @@ You build a system design course the way a careful author and engineer would: on
 traced to a source, every number a learner sees computed by a tested model, and the course state written down so the
 next session continues instead of starting over.
 
-**Experience first.** Learners understand a system by observing, manipulating, predicting and experimenting with
-it. A chapter is conceived as two or three figures the learner acts on, each driven by a tested model, with motion
-that shows cause and effect; text introduces the problem, labels the figure, explains the surprise, states the
-assumptions and summarises. Interaction is central (nine patterns, quizzes only one of them), every motion means
-something, and every claim is defensible: spectacle never hides a wrong explanation.
+**Three tabs.** A built chapter is Learn, Interactive Lab, and Quiz
+([references/three-tabs.md](references/three-tabs.md)). Learn is the mechanism, watched. The lab is the same
+model with inputs, a prediction, and the faults the model can show. The quiz asks after that, with the answer
+hidden until the learner opens it. The same paragraph does not appear in two tabs.
+
+**The mechanism first.** A chapter is one Anatomy machine a learner can step and break. Draw it only after the
+mechanism has been read from a primary source and written as an Animation sense block: the moving mark equals
+one model field, and deleting that mark deletes the lesson. The default picture is isometric 3D (Anatomy
+solids, four-tone shading, painter's order). Turn-3D is for a part that must turn in depth. A wait is time a message spends at the machine that step actually is: the browser, the machine that
+answers a name, the server. The mark's position is the model's elapsed time, and a longer wait is a longer
+stretch. A message is a body on a wire between two machines: its position is the event. A lookup is that body
+visiting the other machine, then coming back. The readout names the state in the learner's words. A CSS bar,
+a circle on a line, a stack of slabs, or the chapter's nouns painted on those slabs, is not the figure. A
+ruler whose caption translates the shapes ("a drum means the lookup"), a carriage that only hops between
+captions, and a bench of drawers standing in for protocols, are rejects. Say the lesson aloud with the
+caption covered. If you cannot, the object is wrong. `flat-2d` is allowed only with a `Flat exception:` that names the model field a solid would have
+to fake. Motion comes from a tested model. Before the chapter is called tested, run the animation in the
+browser and record `animation sense: pass` (verification.md). Text names the part, states the rule and the
+limit, and does not repeat the figure. Before geometry, open Anatomy and the UI skill as
+[references/craft-bar.md](references/craft-bar.md) says. Rules:
+[references/anatomy-3d.md](references/anatomy-3d.md) and [references/motion.md](references/motion.md). Read the
+vendored Anatomy skill, section "The one idea that matters", before an isometric or turning figure, and its
+`references/3d.md` before any turning part.
 
 **One unit per invocation.** A unit is one mode A run, one mode B run, one chapter (mode C) or one repair (mode D).
 Never author several chapters in one go, even when asked to "build the course": do the next unit, record state, and
@@ -46,12 +64,16 @@ Read references only when the step needs them (each is one level deep from here)
   rules, and the kit components that implement them.
 - [references/motion.md](references/motion.md): animation that explains causality: the clock, events, controls,
   easing, reduced motion, performance.
-- [references/rendering.md](references/rendering.md): asset types, 2D by default, when 3D is justified, external
-  assets, lazy loading and budgets.
+- [references/rendering.md](references/rendering.md): asset types, Anatomy isometric and turn-3D, when a flat
+  diagram is allowed, external assets, lazy loading and budgets.
+- [references/craft-bar.md](references/craft-bar.md): which skills to open before a figure, and what not to take from them.
+- [references/anatomy-3d.md](references/anatomy-3d.md): the machine as the lesson, preference order (turn-3D, then
+  isometric 3D, flat only with a reason), the fidelity ledger, and how a fresher meets each chapter.
 - [references/scientific-modeling.md](references/scientific-modeling.md): the ten-item model document, model kinds,
   evidence classes, the adversarial pass, invariants, model tests.
 - [references/visual-design.md](references/visual-design.md): page layout, the figure card, the monochrome visual
   grammar, typography, controls, accessibility of the visual layer.
+- [references/three-tabs.md](references/three-tabs.md): Learn, Interactive Lab, and Quiz. What each tab may contain.
 - [references/visual-review.md](references/visual-review.md): the release rubric: five questions, ten dimensions,
   reject list, acceptance criteria, what to record.
 - [references/verification.md](references/verification.md): quality rubric, independent review procedure, checks
@@ -63,8 +85,8 @@ Script (run it from the repo root; don't read it): `node ${CLAUDE_SKILL_DIR}/scr
 - `check`: the graph (ids, rows, prerequisites, cycles, paths, and that every path holds its chapters'
   prerequisites), COURSE_STATE's current unit, and that each chapter's
   spec holds the evidence its status claims (sources, passing checks, a reviewer, no open findings; for
-  `Standard: visual-first` specs also the concept decomposition, asset plan, patterns, motion, objective coverage,
-  built paths and the visual review rubric).
+  `visual-first` and `anatomy-3d` specs also the concept decomposition, asset plan, patterns, motion, objective
+  coverage, built paths and the visual review rubric; `anatomy-3d` also object, render and fidelity).
 - `show <id>`: one chapter's status, prerequisites and whether it can start; fails on an unknown id.
 - `skill`: this skill's own files. Tests: `node --test ${CLAUDE_SKILL_DIR}/scripts/course.test.mjs`.
 
@@ -149,23 +171,31 @@ the checklist into your reply:
 - [ ] 2 Decompose (1)    numbered objectives, in/deferred, misconceptions; concept decomposition with the 2–3
                          hardest concepts, each with the six design questions answered (chapter-workflow.md)
 - [ ] 3 Research         sources for every claim → chapter spec "Sources" (research-and-sources.md)   → Researched
-- [ ] 4 Storyboard (2)   the learner's path through 2–3 figures; asset plan per figure: pattern, what moves
-                         and why, what is manipulated and noticed, model, feedback, tests, fallback
-                         (interaction-patterns.md, motion.md, rendering.md, scientific-modeling.md)
+- [ ] 4 Storyboard (2)   one machine; asset plan per figure: object, render, fidelity, pattern.
+                         Before any geometry, fill "## Animation sense" (motion.md): mechanism, moving
+                         quantity, model field, prediction, "the lesson is gone", and the source read first.
+                         Then what moves and why, what is manipulated, model, feedback, tests, fallback
+                         (anatomy-3d.md, interaction-patterns.md, motion.md, rendering.md, scientific-modeling.md)
 - [ ] 5 Text draft (4)   14 questions, worked example, retrieval, exercise, drafted against the storyboard
                          as short text beside each figure (chapter-workflow.md)                      → Authored
-- [ ] 6 Build (3, 4)     models + tests first, then the figures and their motion, then the page; then
-                         rewrite the text against the rendered figures, cutting what they show       → Implemented
-- [ ] 7 Test (5)         model, interaction, transition, reset/replay, leak, reduced-motion and mobile
-                         tests, typecheck, lint, budgets, browser checks (verification.md)           → Tested
+- [ ] 6 Build (3, 4)     models + tests first, then the figures and their motion, then the page as
+                         three tabs (three-tabs.md): Learn watches the mechanism, Lab changes the model,
+                         Quiz asks with the answer hidden. Do not repeat a paragraph across tabs.
+                         Do not render the bibliography on the chapter. Link to `/learn/sources`
+                         (research-and-sources.md)                                                   → Implemented
+- [ ] 7 Test (5)         model tests, then Verify the animation in the browser (verification.md):
+                         each event's mark matches the model field, the figure still explains with the
+                         prose hidden, reduced motion shows the end state, keyboard reaches every event.
+                         Record `- animation sense: pass`. Also typecheck, lint, budgets                 → Tested
 - [ ] 8 Review (6)       fresh reviewer on the rendered page: visual-review.md rubric; fix findings  → Reviewed
 - [ ] 9 Update state     CURRICULUM status, COURSE_STATE (log, decisions, next action, open issues)
 - [ ] 10 Report          what was built, gate reached, evidence, what didn't run, next unit
 ```
 
 Work the steps in order. The spec file `chapters/<id>.md` is created in step 2 from the template in
-chapter-workflow.md (it carries `Standard: visual-first`); never draft the explanation before the asset plan; a step is **complete** when every template part it owns is filled (not empty, not a
-placeholder). If a step can't be completed, stop there: don't attempt later steps.
+chapter-workflow.md (it carries `Standard: anatomy-3d`); never draft the explanation before the asset plan; a step is **complete** when every template part it owns is filled (not empty, not a
+placeholder). If a step can't be completed, stop there: don't attempt later steps. A new chapter does not use
+`visual-first`; that standard is the previous one and `check` warns until a mode D pass brings it up to `anatomy-3d`.
 
 - **Stopping.** "Current unit" stays `<id> step <n>` at the first incomplete step; the status is the highest gate
   whose evidence exists. **Blocked** means the step needs something outside the chapter (an unreadable source with
@@ -193,9 +223,9 @@ unit. No speculative framework for chapters that don't exist yet.
 
 Run `course.mjs show <id>` (unknown id: stop and report) and `course.mjs check`. Read the chapter spec, its
 implementation and its sources. Check it with [verification.md](references/verification.md)
-(claims against sources, teaching pattern, model numbers, tests, accessibility, reduced motion). A spec without
-`Standard: visual-first` is brought up to it here: add the storyboard and asset plan, build the missing assets,
-and cut prose the visuals now carry. Record findings by
+(claims against sources, teaching pattern, model numbers, tests, accessibility, reduced motion). `anatomy-3d` is
+the bar. A `legacy` or `visual-first` spec is brought up to it here: name the Anatomy object, set `render:` and
+`fidelity:`, build the machine, and cut prose the machine now carries. Record findings by
 severity in the spec's Review findings section under an `Audit: author (mode D), <date>` line (only an independent
 review gets a `Reviewer:` line), then fix them in place with the smallest change; don't redesign a chapter that only
 needs repairs. Any fix

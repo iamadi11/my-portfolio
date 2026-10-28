@@ -58,6 +58,7 @@ function run(root, ...args) {
 const LEGACY = 'Standard: legacy — fixture\n\n';
 const CONTENT =
     LEGACY +
+    '## Tabs\n\n- Learn: the figure, not the controls\n- Lab: the model inputs\n- Quiz: retrieval, answer hidden\n\n' +
     '## Boundary\n\nObjectives: x\n\n## Explanation (14 questions)\n\n1. Problem: x\n\n## Visual\n\nDecision: text only\n\n## Practice\n\nQ1\n\n';
 const READ = CONTENT + '## Sources\n\n- id: rfc9110\n  title: RFC 9110\n  via: read\n  supports: [c1]\n';
 const SEARCH = CONTENT + '## Sources\n\n- id: rfc9110\n  title: RFC 9110\n  via: search\n  supports: [c1]\n';
@@ -439,6 +440,83 @@ test('visual-first: a complete asset plan passes authored', () => {
     const spec = visual(asset(1, 'precision-2d') + asset(2, 'simulation'));
     const r = run(course({ rows: [row('a', 1, '', 'authored')], specs: { a: spec } }), 'check');
     assert.equal(r.code, 0, r.out);
+    assert.match(r.out, /predates the anatomy-3d standard \(visual-first\)/);
+});
+
+test('anatomy-3d: machines need an object, a render and a fidelity class', () => {
+    const rows = [row('a', 1, '', 'authored')];
+    const machine = (extra = {}) =>
+        asset(1, '3d', {
+            object: 'a carriage on a rail of four stations',
+            render: 'anatomy-iso',
+            fidelity: 'computed: dwell from summarize(); assumed: the round trip',
+            ...extra,
+        });
+    const spec = (body) => visual(body).replace('Standard: visual-first', 'Standard: anatomy-3d');
+    const bare = spec(asset(1, '3d') + asset(2, 'text'));
+    assert.match(run(course({ rows, specs: { a: bare } }), 'check').out, /A1 needs "object:" filled/);
+    assert.match(run(course({ rows, specs: { a: bare } }), 'check').out, /no Anatomy machine/);
+    const turned = spec(machine({ render: 'anatomy-turn' }) + asset(2, 'text'));
+    assert.match(run(course({ rows, specs: { a: turned } }), 'check').out, /"depth:"/);
+    const flat = spec(
+        asset(1, 'precision-2d', { object: 'none', render: 'flat-2d', fidelity: 'assumed: a count' }) +
+            asset(2, 'text', { object: 'none', render: 'flat-2d', fidelity: 'assumed: a label' })
+    );
+    assert.match(run(course({ rows, specs: { a: flat } }), 'check').out, /Flat exception/);
+    const ok = spec(machine() + asset(2, 'text', { object: 'none', render: 'flat-2d', fidelity: 'assumed: the caption' }));
+    assert.equal(run(course({ rows, specs: { a: ok } }), 'check').code, 0, run(course({ rows, specs: { a: ok } }), 'check').out);
+});
+
+test('anatomy-3d: an implemented animation needs Animation sense, and tested needs a pass', () => {
+    const rows = (status) => [row('a', 1, '', status)];
+    const files = { 'src/fig.tsx': 'x', 'src/fig.test.ts': 'x' };
+    const machine =
+        asset(1, '3d', {
+            object: 'a rail whose length is the wait',
+            render: 'anatomy-iso',
+            fidelity: 'computed: marker position from summarize()',
+            built: '`src/fig.tsx`, `src/fig.test.ts`',
+        }) + asset(2, 'text', { object: 'none', render: 'flat-2d', fidelity: 'assumed: the caption' });
+    const spec = visual(machine).replace('Standard: visual-first', 'Standard: anatomy-3d');
+    const sense = `
+## Animation sense
+
+- Mechanism: the wait is the sum of the steps
+- Moving quantity: marker position
+- Model field: elapsed ms from summarize()
+- Learner predicts: the repeat-visit total
+- If the moving part is deleted: the lesson is gone
+- Research (before drawing): fetch, via: read, 2026-10-28
+`;
+    const missing = run(course({ rows: rows('implemented'), product: 'src', files, specs: { a: spec } }), 'check');
+    assert.match(missing.out, /Animation sense/);
+    assert.equal(
+        run(course({ rows: rows('implemented'), product: 'src', files, specs: { a: spec + sense } }), 'check')
+            .code,
+        0
+    );
+    const tested = run(
+        course({ rows: rows('tested'), product: 'src', files, specs: { a: spec + sense + PASS } }),
+        'check'
+    );
+    assert.match(tested.out, /animation sense: pass/);
+    const passed = spec + sense + PASS.replace('- typecheck:', '- animation sense: pass — browser 2026-10-28\n- typecheck:');
+    assert.equal(
+        run(course({ rows: rows('tested'), product: 'src', files, specs: { a: passed } }), 'check').code,
+        0
+    );
+});
+
+test('implemented chapter needs Learn, Lab and Quiz', () => {
+    const rows = [row('a', 1, '', 'implemented')];
+    const bare = READ.replace(
+        '## Tabs\n\n- Learn: the figure, not the controls\n- Lab: the model inputs\n- Quiz: retrieval, answer hidden\n\n',
+        ''
+    );
+    assert.match(run(course({ rows, specs: { a: bare } }), 'check').out, /needs "## Tabs"/);
+    const noQuiz = READ.replace('- Quiz: retrieval, answer hidden\n', '');
+    assert.match(run(course({ rows, specs: { a: noQuiz } }), 'check').out, /needs "- Quiz:/);
+    assert.doesNotMatch(run(course({ rows, specs: { a: READ } }), 'check').out, /## Tabs/);
 });
 
 test('visual-first: missing asset plan, fields, coverage and unknown type fail', () => {
@@ -540,11 +618,11 @@ test('a spec needs a Standard line from authored on; legacy warns, a missing one
     const rows = (status) => [row('a', 1, '', status)];
     const legacy = run(course({ rows: rows('authored'), specs: { a: READ } }), 'check');
     assert.equal(legacy.code, 0);
-    assert.match(legacy.out, /! a: spec predates the visual-first standard/);
+    assert.match(legacy.out, /! a: spec predates the anatomy-3d standard/);
     const none = READ.replace(LEGACY, '') + PASS + REVIEW;
     const r = run(course({ rows: rows('verified'), product: 'src', specs: { a: none } }), 'check');
     assert.equal(r.code, 1);
-    assert.match(r.out, /needs a "Standard: visual-first" line/);
+    assert.match(r.out, /needs a "Standard:" line/);
     assert.equal(
         run(course({ rows: rows('researched'), specs: { a: READ.replace(LEGACY, '') } }), 'check').code,
         0

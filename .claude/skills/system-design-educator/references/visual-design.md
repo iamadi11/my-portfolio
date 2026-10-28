@@ -14,6 +14,13 @@ controls and accessibility of the visual layer. Motion has its own reference (mo
 - Accessibility of the visual layer
 - Where these rules come from
 
+## Page layout: three tabs, then the figure
+
+A built chapter opens with the title, one sentence, and the goals, then three tabs (three-tabs.md): Learn,
+Interactive Lab, Quiz. Learn leads with the figure. The lab leads with the controls and the same model. The
+quiz is questions only. Selected tab: a heavy rule, not a second colour. Each tab is at least 44 px tall,
+reachable by keyboard, and the inactive panel is hidden.
+
 ## Page layout: experience first
 
 - The page leads with the question and the first figure, not a wall of text: title, one-sentence lede, the

@@ -51,7 +51,7 @@ unreachable), except the WCAG and MDN rows, which were read in full from their s
 | Ainsworth 2006 (DeFT), _Learning and Instruction_ 16(3): multiple representations help when each complements, constrains or deepens the others, and learners must be helped to relate them. Snippet only                                                        | Each asset has one stated objective; text names what the visual shows; one grammar across assets                        |
 | Mayer's multimedia principles (spatial/temporal contiguity, segmenting, signaling). Secondary summaries, snippet only                                                                                                                                           | Short text beside its visual (stage D); stepper segments; one focus highlighted                                         |
 | Wieman, Perkins & Adams 2008, _Am. J. Phys._ 76; PhET implicit scaffolding (arXiv 1306.6544): interactive simulations with constrained, meaningful controls supported exploration. Snippet only                                                                 | Few meaningful controls with ranges; every control changes the model; predict → run → explain                           |
-| Munzner (visualization analysis and design): avoid unjustified 3D (occlusion, perspective distortion, tilted text); 3D suits truly spatial data. Snippet only (lecture slides)                                                                                  | `3d` only with a stated reason, a 2D fallback and lazy loading                                                          |
+| Munzner (visualization analysis and design): avoid unjustified 3D for abstract charts (occlusion, perspective distortion, tilted text); 3D suits truly spatial data. Snippet only (lecture slides)                                                          | Charts stay flat. A mechanism is not a chart: it is an Anatomy machine (anatomy-3d.md). Judgement, not a finding in Munzner |
 | WCAG 2.2: 1.4.1, 1.4.11, 2.1.1, 2.2.2, 2.5.7, 2.5.8, 4.1.3, 1.4.10 (AA or A); 2.3.3 is AAA. Read in w3c/wcag @ 457cece                                                                                                                                          | Accessibility list in visual-design.md                                                                                  |
 | MDN: `prefers-reduced-motion` (vestibular triggers include scaling and panning); transform and opacity are composited. Read in mdn/content                                                                                                                      | Reduced-motion forms; animate transform/opacity only                                                                    |
 
@@ -73,7 +73,8 @@ self-explanation and transfer prompts → spaced-review items for later chapters
   words and pictures together because the content benefits, not to suit a style.
 - **Re-reading, highlighting, summarising** as the main activity: low utility per Dunlosky 2013 (snippet only).
 - **Animation as explanation by itself**: watching is the weakest engagement level and can add extraneous load.
-- **Decorative realism and 3D for its own sake**: extraneous material (coherence).
+- **Decorative realism and 3D for its own sake**: extraneous material (coherence). A turning camera, a particle
+  cloud or a city of boxes is this. An Anatomy machine whose moving part is the model's state is not.
 
 ## Limits
 

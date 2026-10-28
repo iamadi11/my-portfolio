@@ -298,7 +298,30 @@ Simplifications flagged (each corrected in its chapter):
 
 ## Visual
 
-Decision: **stepper with a computed comparison** (static frames, learner-paced, plus a closed-form model).
+Decision: **time rail** (2026-10-28). The sorting bench is gone. A carriage between captions did not show a wait. Segment width is `networkMs + serverMs`. The marker's position is the running sum through the selected step (`elapsedAt` in `TimeRail.tsx`). Flat on purpose: a solid of stations would name machines the model does not simulate.
+
+Flat exception: the mechanism is a duration. An isometric bench would teach the metaphor.
+
+Fidelity, under the figure: computed widths and marker position from `summarize()`; assumed slider values; one model millisecond drawn in 0.012 seconds (scaled). Not a drawing of a DNS server or a TLS record.
+
+Previous reviews do not cover the rail. Status stays `implemented` until the animation is verified in the browser and reviewed again.
+
+## Tabs
+
+- Learn: the time rail, stepped. No sliders and no prediction.
+- Lab: visit and the three times, then the repeat-visit prediction. The rail shows the same model. Not the quiz.
+- Quiz: the five questions. Answers stay behind "Show the answer".
+
+## Animation sense
+
+### A1. Animation sense
+
+- Mechanism: time to the first byte is DNS, then a TCP round trip, then a TLS round trip, then the request round trip plus server work, in that order.
+- Moving quantity: the marker on the rail
+- Model field: elapsed milliseconds, the running sum of `steps().networkMs` and `serverMs` through the selected step
+- Learner predicts: the repeat-visit total at an 80 ms round trip, before Run
+- If the moving part is deleted: the lesson is gone
+- Research (before drawing): fetch connection timing and RFC 9111, already in Sources, via: read, re-read before this rail replaced the bench (2026-10-28)
 
 - The journey is a sequence of discrete steps, which is the stepper case in visualization-and-simulation.md (now `step` in
   interaction-patterns.md).
@@ -714,6 +737,9 @@ websites were unreachable from the authoring container.
   verification.md; it is recorded here so it is not mistaken for one that ran.
 
 ## Evidence
+
+The lines below are the 2026-10-27 passes for the box-diagram page. They do not cover the sorting bench
+(2026-10-28). Status is `implemented` until those checks are repeated on the bench.
 
 Final evidence, on the code at the end of the closing review (commit after f441d44), 2026-10-27:
 

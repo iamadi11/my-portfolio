@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useId, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import Arrowhead from '@/components/learn/kit/Arrowhead';
 import Choice from '@/components/learn/kit/Choice';
 import { revealAfterRender } from '@/components/learn/kit/reveal';
 import Transport from '@/components/learn/kit/Transport';
@@ -12,7 +11,6 @@ import {
     CATEGORIES,
     EVENTS,
     FAIL_AT,
-    LINKS,
     positionAt,
     routeAt,
     RTO,
@@ -27,6 +25,19 @@ import {
     type Node,
     type Run,
 } from '@/lib/learn/network-model';
+
+import {
+    block,
+    corners,
+    cylinder,
+    fit,
+    iso,
+    Metal,
+    place,
+    type Plan,
+    type Point3,
+    type Projection,
+} from '../anatomy/metal';
 
 /**
  * Fig. 3 of the ip-and-ports chapter (asset A3): five datagrams cross a network with two paths; the learner picks
@@ -47,14 +58,22 @@ const CATEGORY_LABEL: Record<Category, string> = {
     'some missing': 'Some missing',
 };
 
-/** Node positions in the drawing (viewBox 340 × 196). */
-const AT: Record<Node, [number, number]> = {
-    S: [26, 96],
-    R1: [98, 96],
-    R2: [170, 40],
-    R3: [170, 156],
-    R4: [242, 96],
-    H: [314, 96],
+/** Where each machine sits. A packet's place is this point, plus a queue or a drop offset. */
+const SEAT: Record<Node, Point3> = {
+    S: [0, 0, 18],
+    R1: [48, 0, 18],
+    R2: [96, -42, 18],
+    R3: [96, 42, 18],
+    R4: [144, 0, 18],
+    H: [192, 0, 18],
+};
+const BOX: Record<Node, Plan> = {
+    S: { x: -16, y: -14, w: 32, d: 28, r: 3 },
+    R1: { x: 34, y: -12, w: 28, d: 24, r: 2 },
+    R2: { x: 82, y: -54, w: 28, d: 24, r: 2 },
+    R3: { x: 82, y: 30, w: 28, d: 24, r: 2 },
+    R4: { x: 130, y: -12, w: 28, d: 24, r: 2 },
+    H: { x: 176, y: -14, w: 32, d: 28, r: 3 },
 };
 const EDGES: [Node, Node][] = [
     ['S', 'R1'],
@@ -64,6 +83,7 @@ const EDGES: [Node, Node][] = [
     ['R3', 'R4'],
     ['R4', 'H'],
 ];
+const BODY: Plan = { x: -7, y: -5, w: 14, d: 10, r: 1.5 };
 
 const lerp = (a: number, b: number, p: number): number => a + (b - a) * p;
 /** Ease-in-out for travel (references/motion.md): smooth start and stop, constant overall timing. */
@@ -74,44 +94,114 @@ function tagAt(
     t: number,
     queueIndex: number,
     lostIndex: number
-): { x: number; y: number; lost: boolean } | null {
+): { at: Point3; lost: boolean } | null {
     const pos = positionAt(c, t);
     if (!pos) return null;
     if ('at' in pos) {
-        const [x, y] = AT[pos.at];
-        // Waiting packets line up to the upper left of R2 as its queue (first in line nearest R2), clear of the
-        // links and inside the drawing; dropped ones line up to its upper right and stay there.
+        const [x, y, z] = SEAT[pos.at];
+        // Waiting copies line up beside R2, nearest first. A dropped copy stays off the wire.
         return pos.waiting
-            ? { x: x - 20 - 18 * queueIndex, y: y - 26, lost: false }
-            : { x: x + (c.lost ? 24 + 28 * lostIndex : 0), y: y - 24, lost: !!c.lost };
+            ? { at: [x - 16 - 14 * queueIndex, y, z], lost: false }
+            : { at: [x + (c.lost ? 18 + 16 * lostIndex : 0), y, c.lost ? 2 : z], lost: !!c.lost };
     }
-    const [x1, y1] = AT[pos.from];
-    const [x2, y2] = AT[pos.to];
+    const [x1, y1, z1] = SEAT[pos.from];
+    const [x2, y2, z2] = SEAT[pos.to];
     const p = eio(pos.p);
-    // Tags ride just above the link, so they never cover a router's name.
-    return { x: lerp(x1, x2, p), y: lerp(y1, y2, p) - 16, lost: false };
+    return {
+        at: [lerp(x1, x2, p), lerp(y1, y2, p), lerp(z1, z2, p) + 6],
+        lost: false,
+    };
 }
 
-/** A link's delay, on the side away from the tags (which ride above it); a failed link's longer label ends left of
- * the line, clear of it. */
-function LinkLabel({ a, b, failed }: { a: Node; b: Node; failed: boolean }): React.JSX.Element {
-    const [x1, y1] = AT[a];
-    const [x2, y2] = AT[b];
-    const [dx, dy] = failed ? [-6, 16] : y1 === y2 ? [0, 14] : y2 > y1 ? [-10, 14] : [10, 4];
-    return (
-        <text
-            x={(x1 + x2) / 2 + dx}
-            y={(y1 + y2) / 2 + dy}
-            className="dts"
-            textAnchor={failed ? 'end' : 'middle'}
-        >
-            {failed ? '× failed' : LINKS[`${a}-${b}`]}
-        </text>
+const NODES: Node[] = ['S', 'R1', 'R2', 'R3', 'R4', 'H'];
+
+type Part = { key: string; paths: ReturnType<typeof block>; lit?: boolean };
+
+/** Bench, a computer that sends, four short racks, and a tall rack that receives. */
+function buildScene(): {
+    projection: Projection;
+    feet: { key: string; paths: ReturnType<typeof block> }[];
+    screws: { key: string; paths: ReturnType<typeof cylinder> }[];
+    base: ReturnType<typeof block>;
+    machines: Record<Node, Part[]>;
+    body: ReturnType<typeof block>;
+    mark: [number, number];
+} {
+    const base: Plan = { x: -32, y: -68, w: 256, d: 140, r: 6 };
+    const foot = (x: number, y: number) => ({ plan: { x, y, w: 12, d: 12, r: 1 }, z: -6, h: 6 });
+    const feet = [
+        foot(base.x + 14, base.y + 12),
+        foot(base.x + base.w - 26, base.y + 12),
+        foot(base.x + 14, base.y + base.d - 24),
+        foot(base.x + base.w - 26, base.y + base.d - 24),
+    ];
+    const send = BOX.S;
+    const host = BOX.H;
+    const screen = { x: send.x + 5, y: send.y + 3, w: 18, d: 5, r: 1 };
+    const keys = { x: send.x + 4, y: send.y + send.d - 9, w: 22, d: 7, r: 1 };
+    const hostScreen = { x: host.x + 6, y: host.y + 4, w: 16, d: 5, r: 1 };
+    const projection = fit(
+        corners([
+            { plan: base, z: -6, h: 8 },
+            ...feet,
+            { plan: send, z: 0, h: 28 },
+            { plan: host, z: 0, h: 32 },
+            ...NODES.filter((n) => n !== 'S' && n !== 'H').map((n) => ({ plan: BOX[n], z: 0, h: 22 })),
+            { plan: BODY, z: 0, h: 10 },
+        ]),
+        720,
+        360
     );
+    const rack = (n: Node, h: number): Part[] => {
+        const plan = BOX[n];
+        const cx = plan.x + plan.w / 2;
+        const cy = plan.y + plan.d / 2;
+        return [
+            { key: `${n}-case`, paths: block(plan, 0, h, projection) },
+            { key: `${n}-vent`, paths: cylinder(cx, cy, 2.8, h, 5, projection, 12, 0.3) },
+        ];
+    };
+    const machines: Record<Node, Part[]> = {
+        S: [
+            { key: 'send-case', paths: block(send, 0, 10, projection) },
+            { key: 'send-screen', paths: block(screen, 10, 14, projection), lit: true },
+            { key: 'send-keys', paths: block(keys, 0, 3, projection) },
+        ],
+        R1: rack('R1', 20),
+        R2: rack('R2', 20),
+        R3: rack('R3', 20),
+        R4: rack('R4', 20),
+        H: [
+            { key: 'host-case', paths: block(host, 0, 32, projection) },
+            {
+                key: 'host-vent-a',
+                paths: cylinder(host.x + 10, host.y + 16, 2.6, 32, 5, projection, 12, 0.3),
+            },
+            {
+                key: 'host-vent-b',
+                paths: cylinder(host.x + 22, host.y + 16, 2.6, 32, 5, projection, 12, 0.3),
+            },
+            { key: 'host-screen', paths: block(hostScreen, 32, 8, projection) },
+        ],
+    };
+    return {
+        projection,
+        feet: feet.map((f) => ({
+            key: `foot-${f.plan.x}-${f.plan.y}`,
+            paths: block(f.plan, f.z, f.h, projection),
+        })),
+        screws: feet.map((f) => ({
+            key: `screw-${f.plan.x}-${f.plan.y}`,
+            paths: cylinder(f.plan.x + 6, f.plan.y + 6, 1.5, 0, 2.2, projection, 10, 0.3),
+        })),
+        base: block(base, 0, 4, projection),
+        machines,
+        body: block(BODY, 0, 8, projection),
+        mark: iso([BODY.x + BODY.w / 2, BODY.y + BODY.d / 2, 6], projection),
+    };
 }
 
 function Network({ inputs, run, t }: { inputs: Inputs; run: Run | null; t: number }): React.JSX.Element {
-    const marker = useId().replace(/:/g, '');
     const route = run ? routeAt(inputs.event, t) : routeAt(inputs.event, 0);
     const onRoute = (a: Node, b: Node): boolean => {
         if (!run) return false;
@@ -128,75 +218,100 @@ function Network({ inputs, run, t }: { inputs: Inputs; run: Run | null; t: numbe
         })
         .sort((a, b) => a.sent - b.sent);
     const lostOnes = copies.filter((c) => c.lost && c.lost.at <= t).sort((a, b) => a.lost!.at - b.lost!.at);
+    const hostLit = copies.some((c) => {
+        const p = positionAt(c, t);
+        return p !== null && 'at' in p && p.at === 'H' && !c.lost;
+    });
+    const scene = useMemo(() => buildScene(), []);
+    const rest: Point3 = [BODY.x, BODY.y, 0];
+    const order = [...NODES].sort(
+        (a, b) => iso(SEAT[a], scene.projection)[1] - iso(SEAT[b], scene.projection)[1]
+    );
     return (
-        <svg className="bp-svg ln-svg" viewBox="0 0 340 196" aria-hidden="true">
-            <defs>
-                <Arrowhead id={marker} />
-            </defs>
-            {EDGES.map(([a, b]) => {
-                const [x1, y1] = AT[a];
-                const [x2, y2] = AT[b];
-                const isFailed = failed && a === 'R2' && b === 'R4';
-                return (
-                    <g key={`${a}-${b}`}>
-                        <line
-                            x1={x1}
-                            y1={y1}
-                            x2={x2}
-                            y2={y2}
-                            className={[
-                                'thin',
-                                onRoute(a, b) && !isFailed && 'ln-active',
-                                isFailed && 'ln-skip',
-                            ]
-                                .filter(Boolean)
-                                .join(' ')}
-                        />
-                        <LinkLabel a={a} b={b} failed={!!isFailed} />
+        <div className="iso" data-theme="light">
+            <svg className="bp-svg ln-svg iso-svg" viewBox="0 0 720 360" aria-hidden="true">
+                {scene.feet.map((f) => (
+                    <Metal key={f.key} paths={f.paths} />
+                ))}
+                {scene.screws.map((screw) => (
+                    <Metal key={screw.key} paths={screw.paths} />
+                ))}
+                <Metal paths={scene.base} />
+                {EDGES.map(([a, b]) => {
+                    const [x1, y1] = iso([SEAT[a][0], SEAT[a][1], 8], scene.projection);
+                    const [x2, y2] = iso([SEAT[b][0], SEAT[b][1], 8], scene.projection);
+                    const isFailed = failed && a === 'R2' && b === 'R4';
+                    return (
+                        <g key={`${a}-${b}`}>
+                            <line
+                                x1={x1}
+                                y1={y1}
+                                x2={isFailed ? x1 + (x2 - x1) * 0.35 : x2}
+                                y2={isFailed ? y1 + (y2 - y1) * 0.35 : y2}
+                                className={['thin', onRoute(a, b) && !isFailed && 'ln-active']
+                                    .filter(Boolean)
+                                    .join(' ')}
+                            />
+                            {isFailed ? (
+                                <>
+                                    <line
+                                        x1={x1 + (x2 - x1) * 0.65}
+                                        y1={y1 + (y2 - y1) * 0.65}
+                                        x2={x2}
+                                        y2={y2}
+                                        className="thin"
+                                    />
+                                    <text
+                                        x={x1}
+                                        y={y1 - 52}
+                                        className="iso-label"
+                                        textAnchor="middle"
+                                    >
+                                        × failed
+                                    </text>
+                                </>
+                            ) : null}
+                        </g>
+                    );
+                })}
+                {order.map((n) => (
+                    <g key={n}>
+                        {scene.machines[n].map((part) => (
+                            <Metal
+                                key={part.key}
+                                paths={part.paths}
+                                lit={part.key === 'host-screen' ? hostLit : part.lit}
+                            />
+                        ))}
                     </g>
-                );
-            })}
-            {(['R1', 'R2', 'R3', 'R4'] as Node[]).map((n) => (
-                <g key={n}>
-                    <circle cx={AT[n][0]} cy={AT[n][1]} r={13} className="obj" />
-                    <text x={AT[n][0]} y={AT[n][1] + 5} textAnchor="middle" className="dts">
-                        {n}
-                    </text>
-                </g>
-            ))}
-            {(['S', 'H'] as Node[]).map((n) => (
-                <g key={n}>
-                    <rect x={AT[n][0] - 18} y={AT[n][1] - 16} width={36} height={32} rx={4} className="obj" />
-                    <text x={AT[n][0]} y={AT[n][1] + 5} textAnchor="middle" className="dts">
-                        {n === 'S' ? 'send' : 'host'}
-                    </text>
-                </g>
-            ))}
-            {copies.map((c) => {
-                const pos = tagAt(c, t, Math.max(0, waiting.indexOf(c)), Math.max(0, lostOnes.indexOf(c)));
-                if (!pos) return null;
-                return (
-                    <g key={`${c.n}-${c.resend ? 'r' : 'o'}`} transform={`translate(${pos.x} ${pos.y})`}>
-                        <rect
-                            x={pos.lost ? -13 : -8}
-                            y={-9}
-                            width={pos.lost ? 26 : 16}
-                            height={18}
-                            rx={2}
-                            className={c.resend ? 'slot' : 'nb'}
-                        />
-                        <text x={0} y={5} textAnchor="middle" className="dts">
-                            {pos.lost ? `×${c.n}` : c.n}
-                        </text>
-                    </g>
-                );
-            })}
-            {waiting.length ? (
-                <text x={AT.R2[0] + 18} y={AT.R2[1] - 21} className="dts">
-                    queue {waiting.length}
-                </text>
-            ) : null}
-        </svg>
+                ))}
+                {copies.map((c) => {
+                    const pos = tagAt(
+                        c,
+                        t,
+                        Math.max(0, waiting.indexOf(c)),
+                        Math.max(0, lostOnes.indexOf(c))
+                    );
+                    if (!pos) return null;
+                    return (
+                        <g
+                            key={`${c.n}-${c.resend ? 'r' : 'o'}`}
+                            transform={place(rest, pos.at, scene.projection)}
+                        >
+                            <Metal paths={scene.body} lit={!pos.lost} />
+                            <text
+                                x={scene.mark[0]}
+                                y={scene.mark[1]}
+                                textAnchor="middle"
+                                className="iso-label"
+                            >
+                                {pos.lost ? `×${c.n}` : c.n}
+                            </text>
+                        </g>
+                    );
+                })}
+            </svg>
+        </div>
     );
 }
 
@@ -355,15 +470,36 @@ function Readout({ r, t }: { r: Run; t: number }): React.JSX.Element {
 
 const DEFAULT: Inputs = { event: 'reroute', transport: 'UDP', service: 3 };
 
-export default function NetworkLab(): React.JSX.Element {
-    const [inputs, setInputs] = useState<Inputs>(DEFAULT);
+/** Learn shows the drop: the link fails, UDP does not send the lost datagrams again. */
+const LEARN_UDP: Inputs = { event: 'linkFail', transport: 'UDP', service: 3 };
+/** Same failure. TCP sends the dropped datagrams again after its timer. */
+const LEARN_TCP: Inputs = { event: 'linkFail', transport: 'TCP', service: 3 };
+
+export default function NetworkLab({
+    pane = 'lab',
+    watch = 'udp',
+}: {
+    pane?: 'learn' | 'lab';
+    watch?: 'udp' | 'tcp';
+}): React.JSX.Element {
+    const learnRun = watch === 'tcp' ? LEARN_TCP : LEARN_UDP;
+    const figId = pane === 'lab' ? 'fig3-h' : watch === 'tcp' ? 'fig-net-learn-tcp' : 'fig-net-learn';
+    const [inputs, setInputs] = useState<Inputs>(pane === 'learn' ? learnRun : DEFAULT);
     const [guess, setGuess] = useState<Category | null>(null);
-    const [run, setRun] = useState<{ inputs: Inputs; r: Run; guess: Category | null } | null>(null);
+    const [run, setRun] = useState<{ inputs: Inputs; r: Run; guess: Category | null } | null>(() =>
+        pane === 'learn' ? { inputs: learnRun, r: simulate(learnRun), guess: null } : null
+    );
     const result = useRef<HTMLDivElement>(null);
     const end = run?.r.end ?? 1;
     const marks = useMemo(() => Array.from({ length: Math.ceil(end) + 1 }, (_, i) => i), [end]);
     const figure = useRef<HTMLElement>(null);
     const clock = useClock({ marks, end, rate: 2.2, target: figure });
+    const { restart } = clock;
+    useEffect(() => {
+        if (pane !== 'learn') return undefined;
+        restart();
+        return undefined;
+    }, [pane, restart]);
     const [announce, setAnnounce] = useState('');
     const words = useMemo(() => (run ? eventsAt(run.r) : new Map<number, string[]>()), [run]);
     const tick = Math.max(0, clock.at);
@@ -397,54 +533,62 @@ export default function NetworkLab(): React.JSX.Element {
           ? 'The run is over.'
           : 'Packets in flight.';
     return (
-        <figure ref={figure} className="bp-sheet ln-fig" aria-labelledby="fig3-h">
+        <figure ref={figure} className="bp-sheet ln-fig" aria-labelledby={figId}>
             <div className="ln-fig-head">
-                <span id="fig3-h">Fig. 3 · Five datagrams through a network</span>
+                <span id={figId}>
+                    {pane === 'learn'
+                        ? watch === 'tcp'
+                            ? 'TCP sends them again'
+                            : 'A link fails'
+                        : 'Fig. 3 · Five datagrams through a network'}
+                </span>
                 <span>Teaching model in ticks, not a benchmark</span>
             </div>
-            <div className="ln-fig-grid">
-                <div className="ln-controls">
-                    <Choice
-                        legend="On the way"
-                        options={EVENTS}
-                        label={(e) => EVENT_LABEL[e]}
-                        value={inputs.event}
-                        onChange={(e) => set({ event: e })}
-                    />
-                    {inputs.event === 'congestion' ? (
+            <div className={pane === 'lab' ? 'ln-fig-grid' : 'ln-fig-grid ln-fig-grid-one'}>
+                {pane === 'lab' ? (
+                    <div className="ln-controls">
                         <Choice
-                            legend="R2–R4 needs, per packet (packets arrive every 2 ticks)"
-                            options={SERVICES}
-                            label={(s) => `${s} ${s === 1 ? 'tick' : 'ticks'}`}
-                            value={inputs.service}
-                            onChange={(s) => set({ service: s })}
+                            legend="On the way"
+                            options={EVENTS}
+                            label={(e) => EVENT_LABEL[e]}
+                            value={inputs.event}
+                            onChange={(e) => set({ event: e })}
                         />
-                    ) : null}
-                    <Choice
-                        legend="Transport"
-                        options={TRANSPORTS}
-                        label={(x) => x}
-                        value={inputs.transport}
-                        onChange={(x) => set({ transport: x })}
-                    />
-                    <div className="ln-predict">
+                        {inputs.event === 'congestion' ? (
+                            <Choice
+                                legend="R2–R4 needs, per packet (packets arrive every 2 ticks)"
+                                options={SERVICES}
+                                label={(s) => `${s} ${s === 1 ? 'tick' : 'ticks'}`}
+                                value={inputs.service}
+                                onChange={(s) => set({ service: s })}
+                            />
+                        ) : null}
                         <Choice
-                            legend="Predict first: what does the application read?"
-                            options={CATEGORIES}
-                            label={(c) => CATEGORY_LABEL[c]}
-                            value={guess}
-                            onChange={(c) => {
-                                setGuess(c);
-                                setRun(null);
-                                setAnnounce('');
-                                clock.reset();
-                            }}
+                            legend="Transport"
+                            options={TRANSPORTS}
+                            label={(x) => x}
+                            value={inputs.transport}
+                            onChange={(x) => set({ transport: x })}
                         />
+                        <div className="ln-predict">
+                            <Choice
+                                legend="Predict first: what does the application read?"
+                                options={CATEGORIES}
+                                label={(c) => CATEGORY_LABEL[c]}
+                                value={guess}
+                                onChange={(c) => {
+                                    setGuess(c);
+                                    setRun(null);
+                                    setAnnounce('');
+                                    clock.reset();
+                                }}
+                            />
+                        </div>
+                        <button type="button" className="ln-btn" onClick={go}>
+                            Run
+                        </button>
                     </div>
-                    <button type="button" className="ln-btn" onClick={go}>
-                        Run
-                    </button>
-                </div>
+                ) : null}
                 <div ref={result}>
                     <Network inputs={inputs} run={run?.r ?? null} t={clock.t} />
                     {run ? (
@@ -480,12 +624,11 @@ export default function NetworkLab(): React.JSX.Element {
                 </div>
             </div>
             <figcaption className="ln-label mt-4">
-                Key: numbers on links are delays in ticks (an assumed unit, not to scale); heavy line =
-                R1&rsquo;s route right now; dashed link with &ldquo;× failed&rdquo; = a failed link;
-                &ldquo;×2&rdquo; beside R2 = packet 2, dropped there; dashed tag = resent by TCP; &ldquo;queue
-                n&rdquo; = packets waiting at R2. The sender sends every 2 ticks. Routing reconverges in 3
-                ticks after the failure; TCP resends after a fixed 12 ticks (real TCP adapts its timer). No
-                other traffic; links never corrupt data.
+                {pane === 'learn'
+                    ? watch === 'tcp'
+                        ? 'Same link, TCP. The two datagrams that stopped are sent again after 12 ticks, and they take the path that still works. The application then reads 1 through 5. Ticks are the model’s clock, not milliseconds. The line under the drawing names the tick.'
+                        : 'UDP, and the link fails. A datagram that cannot be forwarded stays where it stopped. This run does not send it again. Ticks are the model’s clock, not milliseconds. The line under the drawing names the tick.'
+                    : 'Each body is one datagram. Its place is the model’s place at this tick. The sender sends every 2 ticks. Routing reconverges in 3 ticks after the failure; TCP resends after a fixed 12 ticks (real TCP adapts its timer). No other traffic; links never corrupt data.'}
             </figcaption>
         </figure>
     );

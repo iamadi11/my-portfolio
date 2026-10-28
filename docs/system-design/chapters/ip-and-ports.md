@@ -153,8 +153,8 @@ Objective coverage: 1 → A2 · 2 → A2 · 3 → A3 · 4 → A1
 - objective: 1, 2
 - type: simulation
 - pattern: predict, step, break, compare
-- learner sees: the packet box (protocol, 198.51.100.7:source port → destination address:port) with an arrow to the server or to another machine (192.0.2.20); the server with a firewall band when on, TCP and UDP lanes, its connection table (rows for 50001 and 50002), the listening socket on 443, the UDP socket on 8125, and "nobody" boxes for unused ports
-- animated: the packet (a black square, named in the caption's key) travels from stage to stage (600 ms of travel, then it rests at the part that stage reads, which is drawn heavy); any reply (answer, set-up, RST, ICMP) travels back to the sender as a dashed tag. The motion is the order the host checks the packet in, and where it stops
+- learner sees: a cutaway of this server. Wells are the address, the firewall when it is on, the TCP and UDP lanes, the socket rows (50001, 50002, 443, 8125) and the empty pins, plus another host. The packet the learner built is named above the machine
+- animated: one body. Its place is the well the current stage reads (address, firewall, protocol lane, socket table, then the matching pin). Travel between wells is pacing, not a model time. The well being read is drawn heavy. A reply body travels back to the sender. Deleting the body deletes the lesson
 - learner does: picks source port, destination address, protocol, port and firewall; predicts the outcome; runs; plays, pauses, steps forward and back, resets and replays
 - notice: the source port alone separates connections 1 and 2; a new connection goes to the listening socket; the protocol is checked before the port; a firewall stops a packet before any lookup, so no reply proves nothing
 - model: pure function `demux(packet) → { outcome, receiver, reply, steps }` over a fixed host: a TCP listening socket on 443 (web server), a UDP socket on 8125 (metrics collector), TCP connections 203.0.113.10:443 ↔ 198.51.100.7:50001 and :50002, a firewall rule (when on) allowing only TCP 443 and UDP 8125. Rules in order: address ≠ this host → never arrives here; firewall on and not allowed → dropped, nothing back; protocol field selects the transport; TCP: matching socket pair → that connection, else a listener and a packet that opens a connection → TCP sets it up, else reset (RST); UDP: a socket on the port → that program, whatever the source port (unconnected socket, a modelling choice), else ICMP Port Unreachable (a SHOULD). The drawing's tag positions are a function of the clock and the step list only
@@ -171,8 +171,8 @@ Objective coverage: 1 → A2 · 2 → A2 · 3 → A3 · 4 → A1
 - objective: 3
 - type: simulation
 - pattern: predict, break, compare, step
-- learner sees: sender, routers R1–R4 and host; upper path S–R1–R2–R4–H (link delays 1, 1, 1, 1: 4 ticks) and lower path R1–R3–R4 (3 and 2: 7 ticks in all), each link labelled with its delay; the heavy line is R1's current route; controls for the event, the service time when congested, the transport and the prediction
-- animated: numbered tags move along the links at the model's times (2.2 ticks per second, ease-in-out per hop); R1's heavy route moves at the route change or reconvergence; the failed link turns dashed and is labelled "× failed"; dropped tags become × and line up beside R2 for the rest of the run; a key in the caption names every mark; waiting tags line up beside R2 with "queue n"; resends are dashed tags. Every frame is `positionAt(copy, t)` of the model's run
+- learner sees: six machines (sender, R1–R4, host) as solids. Wires join them. Each wire is labelled with its delay in ticks. The heavy wire is R1's current route. Controls for the event, the service time when congested, the transport and the prediction
+- animated: each datagram is a body. Its place is `positionAt(copy, t)`: on a wire, in R2's queue (lined up beside R2), or dropped off the wire beside the router that could not forward it (marked ×n, and it stays). The failed wire is dashed and labelled "× failed". A resend is a second body with the same number. Every frame is that function of the model's run
 - learner does: picks the event (nothing, route change, link R2–R4 fails, R2–R4 congested with 1, 2 or 3 ticks per packet), the transport (UDP or TCP), predicts (all five in order, all five out of order, some missing), runs, plays, pauses, steps tick by tick, resets and replays
 - notice: a later packet on the short path overtakes an earlier one on the long path; a failed link drops what reaches it until R1 reroutes; a queue builds only when the link needs longer than the gap between packets; TCP reads every packet in order but holds those behind a gap
 - model: `simulate({ event, transport, service })` in `network-model.ts`, deterministic, ticks (an assumed unit). The sender sends packet n at 2(n−1). Each link adds its delay. R1 forwards on `routeAt(event, t)`: route change, lower until tick 3 then upper; link failure, upper until reconvergence at tick 7 then lower. R2 forwards one packet at a time on R2–R4, first in first out (departure_k = max(arrival_k, departure_k−1) + service); from tick 4 a failed R2–R4 makes R2 drop what reaches it. UDP hands each copy to the application on arrival. TCP keeps the first copy of each packet, reads in order, and resends a lost packet 12 ticks after sending it (a fixed timer, longer than any delay here). Quoted results: none → arrivals 4, 6, 8, 10, 12; route change, UDP → reads 2 1 3 4 5; link failure, UDP → 1 4 5 by tick 15, TCP → 1 2 3 4 5 by tick 23 with 2 and 3 resent at 14 and 16; congestion at 3 ticks → largest queue 2, reads at 6, 9, 12, 15, 18; at 1 or 2 ticks → no queue
@@ -228,8 +228,9 @@ a new host table and asks the learner to work through the same stages for three 
 Decision: three figures carry the chapter, each a different pattern: explore the parts (A1, no script), send a
 packet and watch it travel through the host's checks (A2), break a network and watch packets overtake, drop and
 queue (A3). Figs. 2 and 3 move because the mechanism happens in time; every frame is a function of one clock and
-the model, so pausing and stepping show real states. 2D only: the network and the host are graphs and boxes; 3D
-would hide labels, cost JavaScript and teach nothing more (rendering.md).
+the model, so pausing and stepping show real states. Each figure is an Anatomy isometric solid: the host is a
+cutaway, the packet is a body whose place is the current check, and each datagram is a body whose place is
+`positionAt`. A turning camera is not used. The wires are lines because a cable has no extra model field.
 
 ## Practice
 
@@ -383,6 +384,32 @@ gets this flow".
 - Every RFC's status is as of the doc-rfc package snapshot (January 2023); rfc-editor.org and Datatracker are
   unreachable from this container. Re-check before the chapter is released.
 
+## Tabs
+
+- Learn: the host, part by part. No packet run.
+- Lab: demux (predict, then Run) and the five-datagram network (drop, reroute, congest).
+- Quiz: the three check-yourself questions. Answers stay closed until opened.
+
+## Animation sense
+
+### A2. Animation sense
+
+- Mechanism: the host accepts a packet on the socket pair that matches, or stops it at the first check that fails.
+- Moving quantity: the packet's place in the host
+- Model field: the current `stage` from `demux().steps` (lookup is the socket table; result is the matching pin). The glide duration is pacing, not a model time
+- Learner predicts: which outcome the packet will get, before Run
+- If the moving part is deleted: the lesson is gone
+- Research (before drawing): RFC 9293 §3.4.1, via: read, before lookup and result were split onto different marks (2026-10-28)
+
+### A3. Animation sense
+
+- Mechanism: each IP datagram is forwarded on its own; a link can drop it, and a queue holds it until the link can send it
+- Moving quantity: the datagram's body
+- Model field: `positionAt(copy, t)` (on a wire, waiting at a node, or lost at the node that dropped it). The number on the body is the datagram's number
+- Learner predicts: what the application reads, before Run
+- If the moving part is deleted: the lesson is gone
+- Research (before drawing): RFC 791 §1.2 and §1.4, via: read (2026-10-28)
+
 ## Evidence
 
 All on the production build of the working tree after 589aa6d (the pilot with the fourth review's fixes,
@@ -403,6 +430,10 @@ committed with this evidence), 2026-10-28. Earlier rounds' evidence is in git hi
 - course checks: pass — course.mjs check ok (two legacy warnings: web-request, client-server); course.mjs skill ok; course.test.mjs 36/36, with new cases for review lines read per block and exception lines inside code fences (2026-10-28)
 
 ## Review findings
+
+Audit: author (mode D), 2026-10-28
+
+- [should-fix] Fig. 2 and Fig. 3 were flat boxes and tags. The model fields were already positions, so the pictures could be Anatomy solids → fixed (a body rests in the well the host is reading; each datagram's place is `positionAt`). Standard stays `visual-first`: A1 has no executable model, and `anatomy-3d` would require a test file for it. No `animation sense: pass` (reduced motion and the browser suite were not re-run this pass).
 
 The first three reviews below examined the design that faa5b85 replaced (Fig. 3 as a timeline with "lose 3",
 "delay 2" and "duplicate 4"; `DatagramLab`, `datagram-model.ts`): superseded, kept as history. The fourth reviews

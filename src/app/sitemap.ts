@@ -43,6 +43,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
             changeFrequency: 'weekly' as const,
             priority: 0.6,
         },
+        {
+            url: `${base}/learn/sources`,
+            lastModified: new Date('2026-10-28'),
+            changeFrequency: 'monthly' as const,
+            priority: 0.4,
+        },
         ...Object.values(CHAPTER_ROUTES).map((path) => ({
             url: `${base}${path}`,
             lastModified: new Date('2026-10-27'),

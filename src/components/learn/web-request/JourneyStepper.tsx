@@ -15,11 +15,11 @@ import {
     type VisitType,
 } from '@/lib/learn/web-request-model';
 
+import TimeRail from './TimeRail';
+
 /**
- * Fig. 1 of the web-request chapter: the page load as six frames, with the time to the HTML's first byte computed by
- * the teaching model (`@/lib/learn/web-request-model`). Every number shown comes from `summarize()`. All six steps
- * are always listed (the reduced-motion form is the same list); nothing animates except, when motion is allowed, the
- * bar widths.
+ * Fig. 1 of the web-request chapter. The rail's segment widths and the marker's position are the
+ * teaching model's milliseconds (`summarize`). Every number shown comes from that model.
  */
 
 type Frame = { id: 'url' | StepId | 'render'; title: string; who: 'none' | 'dns' | 'server'; text: string };
@@ -227,87 +227,14 @@ function Range({
     );
 }
 
-/** The drawing: browser, DNS name server and web server; the active frame's exchange is drawn heavy. */
-function Drawing({ frame, step }: { frame: Frame; step: Step | undefined }): React.JSX.Element {
-    const mid = useId().replace(/:/g, '');
-    const skipped = Boolean(step?.skipped);
-    const line = (on: boolean): string =>
-        ['thin', on && 'ln-active', on && skipped && 'ln-skip'].filter(Boolean).join(' ');
-    const dnsOn = frame.who === 'dns';
-    const srvOn = frame.who === 'server';
-    return (
-        <svg className="bp-svg ln-svg" viewBox="0 0 420 236" aria-hidden="true">
-            <defs>
-                <marker
-                    id={mid}
-                    viewBox="0 0 10 10"
-                    refX={10}
-                    refY={5}
-                    markerWidth={7}
-                    markerHeight={7}
-                    orient="auto"
-                >
-                    <path d="M0,1.7 L10,5 L0,8.3 z" className="arrow" />
-                </marker>
-            </defs>
-            <rect
-                x={4}
-                y={82}
-                width={128}
-                height={70}
-                rx={8}
-                className={['obj', frame.who === 'none' ? 'ln-node-on' : ''].join(' ')}
-            />
-            <text x={68} y={114} textAnchor="middle" className="vt">
-                Browser
-            </text>
-            <text x={68} y={134} textAnchor="middle" className="sl">
-                you
-            </text>
-            <rect
-                x={276}
-                y={4}
-                width={140}
-                height={62}
-                rx={8}
-                className={['obj', dnsOn ? 'ln-node-on' : ''].join(' ')}
-            />
-            <text x={346} y={32} textAnchor="middle" className="vt">
-                DNS
-            </text>
-            <text x={346} y={52} textAnchor="middle" className="sl">
-                name server
-            </text>
-            <rect
-                x={276}
-                y={164}
-                width={140}
-                height={62}
-                rx={8}
-                className={['obj', srvOn ? 'ln-node-on' : ''].join(' ')}
-            />
-            <text x={346} y={192} textAnchor="middle" className="vt">
-                Web server
-            </text>
-            <text x={346} y={212} textAnchor="middle" className="sl">
-                example.com
-            </text>
-            {/* Browser ↔ DNS: there and back. */}
-            <line x1={134} y1={98} x2={272} y2={28} className={line(dnsOn)} markerEnd={`url(#${mid})`} />
-            <line x1={272} y1={48} x2={136} y2={114} className={line(dnsOn)} markerEnd={`url(#${mid})`} />
-            {/* Browser ↔ web server: the connection. */}
-            <line x1={134} y1={124} x2={272} y2={186} className={line(srvOn)} markerEnd={`url(#${mid})`} />
-            <line x1={272} y1={206} x2={136} y2={140} className={line(srvOn)} markerEnd={`url(#${mid})`} />
-            {step?.skipped ? (
-                <text x={4} y={232} className="dts">
-                    skipped: {step.skipped}
-                </text>
-            ) : null}
-        </svg>
-    );
-}
-
-export default function JourneyStepper(): React.JSX.Element {
+export default function JourneyStepper({
+    pane = 'lab',
+}: {
+    /** Learn steps the rail. Lab changes the inputs and asks for a prediction. */
+    pane?: 'learn' | 'lab';
+}): React.JSX.Element {
+    const visitName = useId();
+    const figId = `fig-journey-${pane}`;
     const [inputs, setInputs] = useState<Inputs>(DEFAULTS);
     const [at, setAt] = useState(0);
     /** What the step announcer says; set only when the learner moves between steps, never on input changes. */
@@ -318,7 +245,6 @@ export default function JourneyStepper(): React.JSX.Element {
     const [revealed, setRevealed] = useState(false);
     const s = useMemo(() => summarize(inputs), [inputs]);
     const frame = FRAMES[at];
-    const step = stepFor(s.steps, frame.id);
     const max = Math.max(1, s.totalMs);
     const set = (patch: Partial<Inputs>): void => {
         setInputs((p) => ({ ...p, ...patch }));
@@ -361,104 +287,106 @@ export default function JourneyStepper(): React.JSX.Element {
         (revealed ? `, ${formatShare(s.networkShare)}${s.networkShare === null ? '' : ' network'}.` : '.');
 
     return (
-        <figure className="bp-sheet ln-fig" aria-labelledby="fig1-h">
+        <figure className="bp-sheet ln-fig" aria-labelledby={figId}>
             <div className="ln-fig-head">
-                <span id="fig1-h">Fig. 1 · Where the time goes before the first byte</span>
+                <span id={figId}>Fig. 1 · Where the time goes before the first byte</span>
                 <span>Teaching model, not a benchmark</span>
             </div>
-            <div className="ln-fig-grid">
-                <div>
-                    <fieldset className="ln-predict">
-                        <legend>Recall first</legend>
-                        <p className="m-0 mb-2">
-                            You have just read how a first visit adds up. Before using the controls, recall
-                            it: tick every part that is a message travelling there and back, and leave
-                            unticked anything that is not. (This model has no bandwidth control.)
-                        </p>
-                        {PREDICT.map((p) => (
-                            <label key={p.key} className="ln-check">
-                                <input
-                                    type="checkbox"
-                                    checked={Boolean(picked[p.key])}
-                                    onChange={(e) => {
-                                        setPicked((x) => ({ ...x, [p.key]: e.target.checked }));
-                                        setChecked(false);
+            <TimeRail steps={s.steps} frameId={frame.id} revealed={revealed} />
+            <div className={pane === 'lab' ? 'ln-fig-grid' : 'ln-fig-grid ln-fig-grid-one'}>
+                {pane === 'lab' ? (
+                    <div>
+                        <fieldset className="ln-predict">
+                            <legend>Recall first</legend>
+                            <p className="m-0 mb-2">
+                                You have not used the sliders yet. Tick every part that is a message
+                                travelling there and back, and leave unticked anything that is not. (This
+                                model has no bandwidth control.)
+                            </p>
+                            {PREDICT.map((p) => (
+                                <label key={p.key} className="ln-check">
+                                    <input
+                                        type="checkbox"
+                                        checked={Boolean(picked[p.key])}
+                                        onChange={(e) => {
+                                            setPicked((x) => ({ ...x, [p.key]: e.target.checked }));
+                                            setChecked(false);
+                                        }}
+                                    />
+                                    {p.label}
+                                </label>
+                            ))}
+                            <div className="ln-nav">
+                                <button
+                                    type="button"
+                                    className="ln-btn"
+                                    onClick={() => {
+                                        setChecked(true);
+                                        reveal();
                                     }}
-                                />
-                                {p.label}
-                            </label>
-                        ))}
-                        <div className="ln-nav">
-                            <button
-                                type="button"
-                                className="ln-btn"
-                                onClick={() => {
-                                    setChecked(true);
-                                    reveal();
-                                }}
-                            >
-                                Check
-                            </button>
-                            {/* Stays in place once used (aria-disabled), so keyboard focus is never dropped. */}
-                            <button
-                                type="button"
-                                className="ln-btn"
-                                aria-disabled={revealed}
-                                onClick={reveal}
-                            >
-                                Skip, show the labels
-                            </button>
-                        </div>
-                        <p role="status" className="mt-2">
-                            {checked ? predictFeedback(picked) : null}
-                        </p>
-                    </fieldset>
-
-                    <div className="ln-controls">
-                        <fieldset>
-                            <legend>Visit</legend>
-                            <div className="ln-seg">
-                                {VISITS.map((x) => (
-                                    <label key={x.v}>
-                                        <input
-                                            type="radio"
-                                            name="visit"
-                                            value={x.v}
-                                            checked={inputs.visit === x.v}
-                                            onChange={() => set({ visit: x.v })}
-                                        />
-                                        {x.label}
-                                    </label>
-                                ))}
+                                >
+                                    Check
+                                </button>
+                                {/* Stays in place once used (aria-disabled), so keyboard focus is never dropped. */}
+                                <button
+                                    type="button"
+                                    className="ln-btn"
+                                    aria-disabled={revealed}
+                                    onClick={reveal}
+                                >
+                                    Skip, show the labels
+                                </button>
                             </div>
+                            <p role="status" className="mt-2">
+                                {checked ? predictFeedback(picked) : null}
+                            </p>
                         </fieldset>
-                        <fieldset>
-                            <legend>Assumed values</legend>
-                            <Range
-                                label="Round-trip time"
-                                name="rttMs"
-                                value={inputs.rttMs}
-                                onChange={(v) => set({ rttMs: v })}
-                            />
-                            <Range
-                                label="DNS lookup time"
-                                name="dnsMs"
-                                value={inputs.dnsMs}
-                                onChange={(v) => set({ dnsMs: v })}
-                            />
-                            <Range
-                                label="Server processing time"
-                                name="serverMs"
-                                value={inputs.serverMs}
-                                onChange={(v) => set({ serverMs: v })}
-                            />
-                        </fieldset>
+
+                        <div className="ln-controls">
+                            <fieldset>
+                                <legend>Visit</legend>
+                                <div className="ln-seg">
+                                    {VISITS.map((x) => (
+                                        <label key={x.v}>
+                                            <input
+                                                type="radio"
+                                                name={visitName}
+                                                value={x.v}
+                                                checked={inputs.visit === x.v}
+                                                onChange={() => set({ visit: x.v })}
+                                            />
+                                            {x.label}
+                                        </label>
+                                    ))}
+                                </div>
+                            </fieldset>
+                            <fieldset>
+                                <legend>Assumed values</legend>
+                                <Range
+                                    label="Round-trip time"
+                                    name="rttMs"
+                                    value={inputs.rttMs}
+                                    onChange={(v) => set({ rttMs: v })}
+                                />
+                                <Range
+                                    label="DNS lookup time"
+                                    name="dnsMs"
+                                    value={inputs.dnsMs}
+                                    onChange={(v) => set({ dnsMs: v })}
+                                />
+                                <Range
+                                    label="Server processing time"
+                                    name="serverMs"
+                                    value={inputs.serverMs}
+                                    onChange={(v) => set({ serverMs: v })}
+                                />
+                            </fieldset>
+                        </div>
+                        <PredictRun inputs={inputs} revealed={revealed} onRun={set} />
                     </div>
-                    <PredictRun inputs={inputs} revealed={revealed} onRun={set} />
-                </div>
+                ) : null}
 
                 <div>
-                    <Drawing frame={frame} step={step} />
                     <ol className="ln-steps" aria-label="Steps of the page load">
                         {FRAMES.map((f, i) => {
                             const st = stepFor(s.steps, f.id);

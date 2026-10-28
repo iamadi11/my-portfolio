@@ -58,21 +58,21 @@ Chapters on all three paths form the shared core.
 
 | id | order | stage | title | prereqs | paths | status |
 | --- | --- | --- | --- | --- | --- | --- |
-| web-request | 1 | 1 | Map: what happens when you open a website |  | beginner interview production | verified |
-| client-server | 2 | 1 | Clients, servers and request–response | web-request | beginner interview production | verified |
-| ip-and-ports | 3 | 1 | Addresses, packets and ports | client-server | beginner interview production | reviewed |
-| dns | 4 | 1 | DNS: from names to addresses | ip-and-ports | beginner interview production | planned |
-| tcp | 5 | 1 | TCP: reliable streams over unreliable packets | ip-and-ports | beginner interview production | planned |
-| tls | 6 | 1 | TLS: encrypted, authenticated connections | tcp | beginner interview production | planned |
-| http | 7 | 1 | HTTP: methods, status codes and headers | tcp | beginner interview production | planned |
-| udp-quic | 8 | 1 | UDP and QUIC: when TCP is not the answer | tcp tls | beginner production | planned |
-| http-versions | 9 | 1 | HTTP/1.1, HTTP/2 and HTTP/3 | http udp-quic | beginner production | planned |
-| cloud-networking | 10 | 1 | Networks inside a cloud: VPCs, subnets and NAT | ip-and-ports | production | planned |
-| latency-throughput | 11 | 1 | Latency and throughput | web-request | beginner interview production | planned |
-| percentiles | 12 | 1 | Percentiles and tail latency | latency-throughput | beginner interview production | planned |
-| latency-numbers | 13 | 1 | Where time goes: memory, disk and network | latency-throughput | beginner interview production | planned |
-| estimation | 14 | 1 | Back-of-envelope estimation | latency-numbers | beginner interview production | planned |
-| utilisation-queueing | 15 | 1 | Utilisation, queues and Little's law | percentiles | beginner interview production | planned |
+| web-request | 1 | 1 | Map: what happens when you open a website |  | beginner interview production | implemented |
+| client-server | 2 | 1 | Clients, servers and request–response | web-request | beginner interview production | implemented |
+| ip-and-ports | 3 | 1 | Addresses, packets and ports | client-server | beginner interview production | implemented |
+| dns | 4 | 1 | DNS: from names to addresses | ip-and-ports | beginner interview production | implemented |
+| tcp | 5 | 1 | TCP: reliable streams over unreliable packets | ip-and-ports | beginner interview production | implemented |
+| tls | 6 | 1 | TLS: encrypted, authenticated connections | tcp | beginner interview production | implemented |
+| http | 7 | 1 | HTTP: methods, status codes and headers | tcp | beginner interview production | implemented |
+| udp-quic | 8 | 1 | UDP and QUIC: when TCP is not the answer | tcp tls | beginner production | implemented |
+| http-versions | 9 | 1 | HTTP/1.1, HTTP/2 and HTTP/3 | http udp-quic | beginner production | implemented |
+| cloud-networking | 10 | 1 | Networks inside a cloud: VPCs, subnets and NAT | ip-and-ports | production | implemented |
+| latency-throughput | 11 | 1 | Latency and throughput | web-request | beginner interview production | implemented |
+| percentiles | 12 | 1 | Percentiles and tail latency | latency-throughput | beginner interview production | implemented |
+| latency-numbers | 13 | 1 | Where time goes: memory, disk and network | latency-throughput | beginner interview production | implemented |
+| estimation | 14 | 1 | Back-of-envelope estimation | latency-numbers | beginner interview production | implemented |
+| utilisation-queueing | 15 | 1 | Utilisation, queues and Little's law | percentiles | beginner interview production | implemented |
 | api-design | 16 | 2 | API design: contracts between programs | http | beginner interview production | planned |
 | rest | 17 | 2 | Resource-oriented HTTP APIs (REST) | api-design | beginner interview production | planned |
 | rpc | 18 | 2 | RPC and gRPC | api-design | beginner interview production | planned |

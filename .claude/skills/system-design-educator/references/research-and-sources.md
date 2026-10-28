@@ -7,6 +7,7 @@
 - Research procedure per chapter
 - Checking claims and numbers
 - When you can't reach a source
+- Where the learner sees them
 - Oversimplification list
 
 ## Source hierarchy
@@ -77,6 +78,19 @@ Some environments block web fetches. Then: use search results to find the canoni
 "Open questions" for a later session that can read it. Say this in the report. The chapter can still reach
 `authored`; it cannot reach `implemented` until those claims rest on read sources. Never upgrade `via` because a
 snippet "looked complete".
+
+## Where the learner sees them
+
+The chapter spec keeps `## Sources`. That list is the author record, and `course.mjs` reads it. The learner does
+not get a bibliography at the bottom of a chapter. Every learner-facing list lives on `/learn/sources`, grouped
+by chapter, fed by `src/content/learn/source-catalog.ts`. A chapter ends with one link to its group
+(`/learn/sources#<chapter-id>`).
+
+Inline marks stay in the prose. Each mark is that chapter's number and links to
+`/learn/sources#src-<chapter-id>-<source-id>`. Numbers are per chapter, in order of first citation, so the same
+RFC can be [1] on one chapter and another number on the next. Do not put the list back on the chapter to keep
+citations nearby. A new chapter adds its records to the catalog in the same unit that first cites them. The
+page states how each source was read; it does not add sources the chapter spec does not have.
 
 ## Oversimplification list
 

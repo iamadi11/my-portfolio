@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useId, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import Arrowhead from '@/components/learn/kit/Arrowhead';
 import Choice from '@/components/learn/kit/Choice';
 import { revealAfterRender } from '@/components/learn/kit/reveal';
 import Transport from '@/components/learn/kit/Transport';
@@ -29,6 +28,8 @@ import {
     type Source,
     type Stage,
 } from '@/lib/learn/demux-model';
+
+import { block, corners, cylinder, fit, iso, Metal, place, type Plan, type Point3 } from '../anatomy/metal';
 
 /**
  * Fig. 2 of the ip-and-ports chapter (asset A2): build a packet, predict where it goes, run, then step through the
@@ -102,21 +103,43 @@ function focus(p: Packet, d: Delivery, stage: Stage | undefined): Set<string> {
     return new Set();
 }
 
-/** Where the packet tag sits when a stage has acted on it (drawing coordinates): beside each part's text, never on it. */
-const SPOT: Record<string, [number, number]> = {
-    origin: [292, 18],
-    addr: [246, 74],
-    other: [298, 389],
-    fw: [294, 105],
-    'lane-TCP': [56, 140],
-    'lane-UDP': [212, 140],
-    'conn-1': [174, 188],
-    'conn-2': [174, 216],
-    'listen-443': [180, 271],
-    'tcp-none': [150, 307],
-    'udp-8125': [282, 201],
-    'udp-none': [288, 312],
+/** A well in the cutaway. The packet rests on the well the current stage reads. */
+type Well = { key: string; plan: Plan; z: number; h: number; label: string };
+
+const CHASSIS: Well = {
+    key: 'chassis',
+    plan: { x: 0, y: -40, w: 168, d: 78, r: 4 },
+    z: 0,
+    h: 10,
+    label: '',
 };
+const WELLS: Well[] = [
+    { key: 'addr', plan: { x: 8, y: -34, w: 72, d: 12, r: 2 }, z: 10, h: 4, label: 'address' },
+    { key: 'fw', plan: { x: 8, y: -18, w: 152, d: 8, r: 1 }, z: 10, h: 3, label: 'firewall' },
+    { key: 'lane-TCP', plan: { x: 8, y: -6, w: 74, d: 40, r: 2 }, z: 10, h: 6, label: 'TCP' },
+    { key: 'table', plan: { x: 14, y: -2, w: 62, d: 14, r: 1 }, z: 16, h: 3, label: 'sockets' },
+    { key: 'conn-1', plan: { x: 16, y: -1, w: 58, d: 5, r: 1 }, z: 19, h: 3, label: '50001' },
+    { key: 'conn-2', plan: { x: 16, y: 5, w: 58, d: 5, r: 1 }, z: 19, h: 3, label: '50002' },
+    { key: 'listen-443', plan: { x: 14, y: 16, w: 62, d: 6, r: 1 }, z: 16, h: 4, label: '443' },
+    { key: 'tcp-none', plan: { x: 14, y: 26, w: 62, d: 6, r: 1 }, z: 16, h: 2, label: 'none' },
+    { key: 'lane-UDP', plan: { x: 90, y: -6, w: 70, d: 40, r: 2 }, z: 10, h: 6, label: 'UDP' },
+    { key: 'udp-8125', plan: { x: 96, y: -2, w: 58, d: 12, r: 1 }, z: 16, h: 5, label: '8125' },
+    { key: 'udp-none', plan: { x: 96, y: 18, w: 58, d: 10, r: 1 }, z: 16, h: 2, label: 'none' },
+    { key: 'other', plan: { x: 188, y: -28, w: 36, d: 44, r: 3 }, z: 0, h: 18, label: '' },
+];
+
+/** A pin stands in a socket a program already owns. An empty socket stays flat. */
+const PINS = ['conn-1', 'conn-2', 'listen-443', 'udp-8125'];
+const PACKET: Plan = { x: -7, y: -5, w: 14, d: 10, r: 1.5 };
+
+/** The packet's corner on that well. Lookup stops on the socket table; the result stops on the matching pin. */
+function seat(key: string): Point3 {
+    if (key === 'origin') return [-36, 0, 20];
+    const well = WELLS.find((w) => w.key === key);
+    if (!well) return [-36, 0, 20];
+    const pin = PINS.includes(key) ? 6 : 0;
+    return [well.plan.x + well.plan.w / 2 - 7, well.plan.y + well.plan.d / 2 - 5, well.z + well.h + pin];
+}
 /** What travels back to the sender, if anything. */
 const REPLY: Partial<Record<Outcome, string>> = {
     'connection 1': 'answer',
@@ -125,48 +148,70 @@ const REPLY: Partial<Record<Outcome, string>> = {
     'tcp reset': 'RST',
     'icmp unreachable': 'ICMP',
 };
-/** Share of each stage's time spent travelling to it; the rest the tag rests there. */
+/**
+ * Share of each stage spent moving to the next mark. Pacing only: `demux()` has no milliseconds,
+ * so this is not a round trip. Lookup stops on the socket table; the result stops on the matching pin.
+ */
 const TRAVEL = 0.6;
 const eio = (x: number): number => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
 
-/** The spot each stage moves the packet to, in order. */
-function route(p: Packet, d: Delivery): [number, number][] {
+/** The well each stage moves the packet to, in order. */
+function route(p: Packet, d: Delivery): Point3[] {
     return d.steps.map((s) => {
-        if (s.stage === 'address') return SPOT[p.dest === 'server' ? 'addr' : 'other'];
-        if (s.stage === 'firewall') return SPOT.fw;
-        if (s.stage === 'protocol') return SPOT[`lane-${p.proto}`];
-        return SPOT[TARGET[d.outcome]];
+        if (s.stage === 'address') return seat(p.dest === 'server' ? 'addr' : 'other');
+        if (s.stage === 'firewall') return seat('fw');
+        if (s.stage === 'protocol') return seat(`lane-${p.proto}`);
+        if (s.stage === 'lookup') return seat('table');
+        return seat(TARGET[d.outcome]);
     });
 }
 
-/** The packet tag at time t: it travels to stage k during [k, k + TRAVEL] and rests there until k + 1. */
-function packetAt(spots: [number, number][], t: number): [number, number] {
+const mix = (a: number, b: number, e: number): number => a + (b - a) * e;
+
+/** The packet at time t: it travels to stage k during [k, k + TRAVEL] and rests there until k + 1. */
+function packetAt(spots: Point3[], t: number): Point3 {
     const k = Math.min(spots.length - 1, Math.floor(t));
-    const from = k === 0 ? SPOT.origin : spots[k - 1];
+    const from = k === 0 ? seat('origin') : spots[k - 1];
     const f = Math.min(1, Math.max(0, (t - k) / TRAVEL));
     const e = t >= spots.length ? 1 : eio(f);
-    return [from[0] + (spots[k][0] - from[0]) * e, from[1] + (spots[k][1] - from[1]) * e];
+    const to = spots[k];
+    return [mix(from[0], to[0], e), mix(from[1], to[1], e), mix(from[2], to[2], e)];
 }
 
-/** The packet's tag moving through the host's stages, and the reply (if any) travelling back to the sender. */
-function Moving({ p, d, t }: { p: Packet; d: Delivery; t: number }): React.JSX.Element {
+/** The packet body on the well the current stage reads, and the reply travelling back to the sender. */
+function Moving({
+    p,
+    d,
+    t,
+    projection,
+    body,
+}: {
+    p: Packet;
+    d: Delivery;
+    t: number;
+    projection: ReturnType<typeof fit>;
+    body: ReturnType<typeof block>;
+}): React.JSX.Element {
     const spots = route(p, d);
-    const [x, y] = packetAt(spots, t);
+    const at = packetAt(spots, t);
     const n = spots.length;
     const reply = REPLY[d.outcome];
     const r = Math.min(1, Math.max(0, (t - n) / TRAVEL));
-    const [ex, ey] = spots[n - 1];
-    const ry = ey + (SPOT.origin[1] - ey) * eio(r);
-    const rx = ex + (SPOT.origin[0] - ex) * eio(r);
+    const last = spots[n - 1];
+    const home = seat('origin');
+    const e = eio(r);
+    const back: Point3 = [mix(last[0], home[0], e), mix(last[1], home[1], e), mix(last[2], home[2], e)];
+    const rest: Point3 = [PACKET.x, PACKET.y, 0];
+    const mark = iso([PACKET.x + PACKET.w / 2, PACKET.y + PACKET.d / 2, 6], projection);
     return (
         <g>
-            <g transform={`translate(${x} ${y})`}>
-                <rect x={-6} y={-6} width={12} height={12} rx={2} className="ln-pkt" />
+            <g transform={place(rest, at, projection)}>
+                <Metal paths={body} lit />
             </g>
             {reply && t > n ? (
-                <g transform={`translate(${rx} ${ry})`}>
-                    <rect x={-22} y={-9} width={44} height={18} rx={3} className="slot" />
-                    <text x={0} y={5} textAnchor="middle" className="dts">
+                <g transform={place(rest, back, projection)}>
+                    <Metal paths={body} lit />
+                    <text x={mark[0]} y={mark[1]} textAnchor="middle" className="iso-label">
                         {reply}
                     </text>
                 </g>
@@ -186,106 +231,110 @@ function Drawing({
     stage: Stage | undefined;
     t: number;
 }): React.JSX.Element {
-    const marker = useId().replace(/:/g, '');
     const on = d ? focus(p, d, stage) : new Set<string>();
-    const box = (key: string, base = 'obj'): string =>
-        [base, on.has(key) && 'ln-active', on.has(key) && 'ln-node-on'].filter(Boolean).join(' ');
     const fate = d && stage === 'result' ? FATE[d.outcome] : undefined;
+    const wells = useMemo(
+        () => [CHASSIS, ...WELLS.filter((w) => w.key !== 'fw' || p.firewall === 'on')],
+        [p.firewall]
+    );
+    const scene = useMemo(() => {
+        const feet = [
+            { x: 2, y: -38 },
+            { x: 150, y: -38 },
+            { x: 2, y: 24 },
+            { x: 150, y: 24 },
+        ].map((at) => ({ plan: { x: at.x, y: at.y, w: 10, d: 10, r: 1 }, z: -5, h: 5 }));
+        const pinBoxes = PINS.flatMap((key) => {
+            const well = WELLS.find((item) => item.key === key);
+            if (!well) return [];
+            return [
+                {
+                    plan: {
+                        x: well.plan.x + well.plan.w / 2 - 3,
+                        y: well.plan.y + well.plan.d / 2 - 3,
+                        w: 6,
+                        d: 6,
+                        r: 0,
+                    },
+                    z: well.z + well.h,
+                    h: 6,
+                },
+            ];
+        });
+        const projection = fit(
+            corners([
+                ...feet,
+                ...wells.map((w) => ({ plan: w.plan, z: w.z, h: w.h })),
+                ...pinBoxes,
+                { plan: { x: -40, y: -8, w: 12, d: 12, r: 1 }, z: 18, h: 6 },
+            ]),
+            720,
+            460
+        );
+        const pins = PINS.flatMap((key) => {
+            const well = WELLS.find((item) => item.key === key);
+            if (!well) return [];
+            return [
+                {
+                    key,
+                    paths: cylinder(
+                        well.plan.x + well.plan.w / 2,
+                        well.plan.y + well.plan.d / 2,
+                        2.4,
+                        well.z + well.h,
+                        6,
+                        projection,
+                        12,
+                        0.3
+                    ),
+                },
+            ];
+        });
+        return {
+            projection,
+            feet,
+            screws: feet.map((foot) =>
+                cylinder(foot.plan.x + 5, foot.plan.y + 5, 1.4, 6, 2.2, projection, 10, 0.3)
+            ),
+            parts: wells.map((w) => ({
+                key: w.key,
+                paths: block(w.plan, w.z, w.h, projection),
+            })),
+            pins,
+            body: block(PACKET, 0, 8, projection),
+        };
+    }, [wells]);
     return (
-        <svg className="bp-svg ln-svg" viewBox="0 0 340 412" aria-hidden="true">
-            <defs>
-                <Arrowhead id={marker} />
-            </defs>
-            {/* The packet: its five fields, and an arrow to the machine its destination address names. */}
-            <rect x={6} y={4} width={328} height={44} rx={4} className="nb" />
-            <text x={16} y={22} className="sl">
-                packet
-            </text>
-            <text x={16} y={40} className="dts">
-                {label(p)}
-            </text>
-            {p.dest === 'server' ? (
-                <line x1={170} y1={48} x2={170} y2={60} className="thin" markerEnd={`url(#${marker})`} />
-            ) : (
-                <path d="M 331 48 V 389 H 324" className="thin" fill="none" markerEnd={`url(#${marker})`} />
-            )}
-            {/* This server, with the firewall at its edge when on. */}
-            <rect x={6} y={74} width={316} height={266} rx={6} className="obj" />
-            <rect x={110} y={62} width={120} height={24} rx={3} className={box('addr', 'nb')} />
-            <text x={170} y={79} textAnchor="middle" className="dts">
-                {SERVER}
-            </text>
-            {p.firewall === 'on' ? (
-                <>
-                    <rect x={16} y={94} width={296} height={22} rx={3} className={box('fw', 'hug')} />
-                    <text x={150} y={110} textAnchor="middle" className="dts">
-                        firewall: allow TCP 443, UDP 8125
-                    </text>
-                </>
-            ) : null}
-            <rect x={16} y={124} width={170} height={206} rx={4} className={box('lane-TCP', 'well')} />
-            <text x={101} y={144} textAnchor="middle" className="vt">
-                TCP
-            </text>
-            <text x={24} y={164} className="sl">
-                open connections
-            </text>
-            <rect x={22} y={170} width={158} height={64} rx={3} className={box('table', 'thin')} />
-            <rect x={28} y={176} width={146} height={24} rx={3} className={box('conn-1')} />
-            <text x={36} y={193} className="dts">
-                1 · from :{SOURCE_PORT.conn1}
-            </text>
-            <rect x={28} y={204} width={146} height={24} rx={3} className={box('conn-2')} />
-            <text x={36} y={221} className="dts">
-                2 · from :{SOURCE_PORT.conn2}
-            </text>
-            <text x={24} y={252} className="sl">
-                listening
-            </text>
-            <rect x={22} y={258} width={158} height={26} rx={3} className={box('listen-443')} />
-            <text x={30} y={276} className="dts">
-                443 · web server
-            </text>
-            <rect x={22} y={290} width={158} height={34} rx={3} className={box('tcp-none', 'slot')} />
-            <text x={30} y={304} className="dts">
-                8125, 9000
-            </text>
-            <text x={30} y={319} className="sl">
-                nobody
-            </text>
-            <rect x={194} y={124} width={118} height={206} rx={4} className={box('lane-UDP', 'well')} />
-            <text x={253} y={144} textAnchor="middle" className="vt">
-                UDP
-            </text>
-            <rect x={200} y={170} width={106} height={62} rx={3} className={box('udp-8125')} />
-            <text x={210} y={188} className="dts">
-                8125
-            </text>
-            <text x={210} y={206} className="sl">
-                metrics
-            </text>
-            <text x={210} y={224} className="sl">
-                collector
-            </text>
-            <rect x={200} y={282} width={106} height={42} rx={3} className={box('udp-none', 'slot')} />
-            <text x={208} y={300} className="dts">
-                443, 9000
-            </text>
-            <text x={208} y={316} className="sl">
-                nobody
-            </text>
-            {fate ? (
-                <text x={164} y={360} textAnchor="middle" className="dts">
-                    {fate}
+        <div className="iso" data-theme="light">
+            <svg className="bp-svg ln-svg iso-svg" viewBox="0 0 720 460" aria-hidden="true">
+                {scene.feet.map((foot) => (
+                    <Metal
+                        key={`${foot.plan.x}-${foot.plan.y}`}
+                        paths={block(foot.plan, foot.z, foot.h, scene.projection)}
+                    />
+                ))}
+                {scene.screws.map((paths, i) => (
+                    <Metal key={`screw-${scene.feet[i].plan.x}`} paths={paths} />
+                ))}
+                {scene.parts.map((part) => (
+                    <g key={part.key}>
+                        <Metal paths={part.paths} part={part.key} lit={on.has(part.key)} />
+                    </g>
+                ))}
+                {scene.pins.map((pin) => (
+                    <Metal key={pin.key} paths={pin.paths} lit={on.has(pin.key)} />
+                ))}
+                <text x={24} y={28} className="iso-label">
+                    {label(p)}
                 </text>
-            ) : null}
-            {/* Another machine. */}
-            <rect x={6} y={372} width={316} height={34} rx={4} className={box('other')} />
-            <text x={164} y={394} textAnchor="middle" className="dts">
-                another machine · {OTHER}
-            </text>
-            {d ? <Moving p={p} d={d} t={t} /> : null}
-        </svg>
+                {fate ? (
+                    <text x={360} y={444} textAnchor="middle" className="iso-label">
+                        {fate}
+                    </text>
+                ) : null}
+                {d ? <Moving p={p} d={d} t={t} projection={scene.projection} body={scene.body} /> : null}
+            </svg>
+        </div>
     );
 }
 
@@ -364,11 +413,14 @@ function StepList({
     );
 }
 
-export default function DemuxLab(): React.JSX.Element {
+export default function DemuxLab({ pane = 'lab' }: { pane?: 'learn' | 'lab' }): React.JSX.Element {
+    const figId = pane === 'lab' ? 'fig2-h' : 'fig-demux-learn';
     const [p, setP] = useState<Packet>(DEFAULT);
     const [guess, setGuess] = useState<Outcome | null>(null);
     /** The last run, or null until the learner runs. Cleared when the packet or the prediction changes. */
-    const [run, setRun] = useState<{ p: Packet; d: Delivery; guess: Outcome | null } | null>(null);
+    const [run, setRun] = useState<{ p: Packet; d: Delivery; guess: Outcome | null } | null>(() =>
+        pane === 'learn' ? { p: DEFAULT, d: demux(DEFAULT), guess: null } : null
+    );
     const [announce, setAnnounce] = useState('');
     const stage = useRef<HTMLDivElement>(null);
     const steps = run?.d.steps ?? [];
@@ -377,6 +429,12 @@ export default function DemuxLab(): React.JSX.Element {
     const marks = useMemo(() => marksOf(steps.length, hasReply), [steps.length, hasReply]);
     const figure = useRef<HTMLElement>(null);
     const clock = useClock({ marks, end: marks.at(-1) ?? 1, target: figure });
+    const { restart } = clock;
+    useEffect(() => {
+        if (pane !== 'learn') return undefined;
+        restart();
+        return undefined;
+    }, [pane, restart]);
     const at = Math.min(steps.length - 1, Math.max(0, clock.at));
     const clear = (): void => {
         setRun(null);
@@ -407,64 +465,68 @@ export default function DemuxLab(): React.JSX.Element {
     const verdict = done ? judge(done.guess, done.d.outcome, OUTCOME_LABEL) : '';
     const replied = hasReply && clock.at >= steps.length;
     return (
-        <figure ref={figure} className="bp-sheet ln-fig" aria-labelledby="fig2-h">
+        <figure ref={figure} className="bp-sheet ln-fig" aria-labelledby={figId}>
             <div className="ln-fig-head">
-                <span id="fig2-h">Fig. 2 · Which program gets this packet?</span>
+                <span id={figId}>
+                    {pane === 'learn' ? 'Where one packet lands' : 'Fig. 2 · Which program gets this packet?'}
+                </span>
                 <span>Teaching model, not a benchmark</span>
             </div>
-            <div className="ln-fig-grid">
-                <div className="ln-controls">
-                    <Choice
-                        legend="From client 198.51.100.7, source port"
-                        options={SOURCES}
-                        label={(s) => SOURCE_LABEL[s]}
-                        value={p.source}
-                        onChange={(s) => set({ source: s })}
-                    />
-                    <Choice
-                        legend="To address"
-                        options={DESTS}
-                        label={(x) => DEST_LABEL[x]}
-                        value={p.dest}
-                        onChange={(x) => set({ dest: x })}
-                    />
-                    <Choice
-                        legend="Protocol"
-                        options={PROTOS}
-                        label={(x) => x}
-                        value={p.proto}
-                        onChange={(x) => set({ proto: x })}
-                    />
-                    <Choice
-                        legend="To port"
-                        options={PORTS}
-                        label={(x) => String(x)}
-                        value={p.port}
-                        onChange={(x) => set({ port: x })}
-                    />
-                    <Choice
-                        legend="Server firewall"
-                        options={FIREWALLS}
-                        label={(x) => FIREWALL_LABEL[x]}
-                        value={p.firewall}
-                        onChange={(x) => set({ firewall: x })}
-                    />
-                    <div className="ln-predict">
+            <div className={pane === 'lab' ? 'ln-fig-grid' : 'ln-fig-grid ln-fig-grid-one'}>
+                {pane === 'lab' ? (
+                    <div className="ln-controls">
                         <Choice
-                            legend="Predict first: where does it go?"
-                            options={OUTCOMES}
-                            label={(o) => OUTCOME_LABEL[o]}
-                            value={guess}
-                            onChange={(o) => {
-                                setGuess(o);
-                                clear();
-                            }}
+                            legend="From client 198.51.100.7, source port"
+                            options={SOURCES}
+                            label={(s) => SOURCE_LABEL[s]}
+                            value={p.source}
+                            onChange={(s) => set({ source: s })}
                         />
+                        <Choice
+                            legend="To address"
+                            options={DESTS}
+                            label={(x) => DEST_LABEL[x]}
+                            value={p.dest}
+                            onChange={(x) => set({ dest: x })}
+                        />
+                        <Choice
+                            legend="Protocol"
+                            options={PROTOS}
+                            label={(x) => x}
+                            value={p.proto}
+                            onChange={(x) => set({ proto: x })}
+                        />
+                        <Choice
+                            legend="To port"
+                            options={PORTS}
+                            label={(x) => String(x)}
+                            value={p.port}
+                            onChange={(x) => set({ port: x })}
+                        />
+                        <Choice
+                            legend="Server firewall"
+                            options={FIREWALLS}
+                            label={(x) => FIREWALL_LABEL[x]}
+                            value={p.firewall}
+                            onChange={(x) => set({ firewall: x })}
+                        />
+                        <div className="ln-predict">
+                            <Choice
+                                legend="Predict first: where does it go?"
+                                options={OUTCOMES}
+                                label={(o) => OUTCOME_LABEL[o]}
+                                value={guess}
+                                onChange={(o) => {
+                                    setGuess(o);
+                                    clear();
+                                }}
+                            />
+                        </div>
+                        <button type="button" className="ln-btn" onClick={go}>
+                            Run
+                        </button>
                     </div>
-                    <button type="button" className="ln-btn" onClick={go}>
-                        Run
-                    </button>
-                </div>
+                ) : null}
                 <div>
                     <div ref={stage}>
                         <Drawing p={p} d={run?.d ?? null} stage={current?.stage} t={clock.t} />
@@ -505,11 +567,13 @@ export default function DemuxLab(): React.JSX.Element {
                 </div>
             </div>
             <figcaption className="ln-label mt-4">
-                Key: the black square is the packet; a dashed tag is what comes back to the sender; the part
-                the current stage reads is drawn heavy. Assumes this server runs exactly these programs and
-                has one address, with no NAT, proxy or load balancer in between; source ports 50001 and 50002
-                each already have a TCP connection open to port 443. A firewall applies whatever rule it is
-                given, so a reply proves little and silence proves nothing.
+                The body is the packet. It rests in the well the current stage reads, and that well is drawn
+                heavy. The line under the drawing names the stage. A second body travelling back is the reply.
+                Assumes this server runs exactly these programs and has one address, with no NAT, proxy or
+                load balancer in between; source ports 50001 and 50002 each already have a TCP connection open
+                to port 443. A firewall applies whatever rule it is given, so a reply proves little and
+                silence proves nothing. The glide between stages is pacing, not a round trip: this model has
+                no milliseconds. Lookup stops on the socket table; the result stops on the pin that matched.
             </figcaption>
         </figure>
     );

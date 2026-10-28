@@ -46,7 +46,8 @@ export default function Page(): React.JSX.Element {
                 </p>
                 <p className="ln-lede">
                     {built} of {all.length} chapters can be read so far. Planned chapters are listed so you
-                    can see where the course is going.
+                    can see where the course is going. Sources for the chapters that exist are on one{' '}
+                    <Link href="/learn/sources">sources page</Link>.
                 </p>
             </header>
 

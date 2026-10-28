@@ -649,6 +649,23 @@ Spaced review:
   status could not be checked (Datatracker unreachable); the chapter presents it as a draft and only for the
   behaviour stated in that copy.
 
+## Tabs
+
+- Learn: one GET that arrives, stepped. No method picker and no prediction.
+- Lab: method, fault, and retry. Predict cases A–C before Run. The packet's position is the event.
+- Quiz: the retrieval questions. Answers stay closed until opened.
+
+## Animation sense
+
+### A1. Animation sense
+
+- Mechanism: a request either reaches the server or is lost on the way; a response either reaches the client or is lost on the way back.
+- Moving quantity: the packet's horizontal position between client and server
+- Model field: `events[at].kind` from `exchange()` (arrived at the server, lost at halfway, or back at the client)
+- Learner predicts: how many new orders cases A–C produce, before Run
+- If the moving part is deleted: the lesson is gone
+- Research (before drawing): RFC 9110 §9.2.2 and §9.3.3, via: read, before this packet replaced the highlight-only stepper (2026-10-28)
+
 ## Evidence
 
 Final evidence: every line below was run on the final code (6b5f8d5 plus the third review's note fixes, the commit that marks this chapter verified), 2026-10-27:

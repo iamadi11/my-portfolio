@@ -214,18 +214,21 @@ function visualErrors(c, text) {
     const errs = [];
     const standard = text.match(/^Standard:\s*(.*)$/m)?.[1].trim();
     if (rank(c.status) < rank('authored')) return errs;
-    if (!standard)
+        if (!standard)
         return [
-            `${c.id}: status ${c.status} needs a "Standard: visual-first" line (or "Standard: legacy — <why>")`,
+            `${c.id}: status ${c.status} needs a "Standard:" line (anatomy-3d, visual-first, or legacy — <why>)`,
         ];
     if (/^legacy\b/.test(standard) && !/^legacy\s*[—–-]+\s*\S/.test(standard))
         return [`${c.id}: "Standard: legacy" needs a reason ("Standard: legacy — <why>")`];
     if (/^legacy\b/.test(standard)) {
-        warnings.push(`${c.id}: spec predates the visual-first standard (${standard}): audit it in mode D`);
+        warnings.push(`${c.id}: spec predates the anatomy-3d standard (${standard}): audit it in mode D`);
         return errs;
     }
-    if (standard !== 'visual-first')
-        return [`${c.id}: unknown standard "${standard}" (visual-first, or legacy — <why>)`];
+    if (standard !== 'visual-first' && standard !== 'anatomy-3d')
+        return [`${c.id}: unknown standard "${standard}" (anatomy-3d, visual-first, or legacy — <why>)`];
+    if (standard === 'visual-first')
+        warnings.push(`${c.id}: spec predates the anatomy-3d standard (visual-first): audit it in mode D`);
+    const anatomy = standard === 'anatomy-3d';
     const filled = (h) => (section(text, h) ?? []).some((l) => !placeholder(l) && !/^```/.test(l));
     if (!filled('Storyboard'))
         errs.push(`${c.id}: status ${c.status} needs "## Storyboard" filled (owned by authored)`);
@@ -246,6 +249,20 @@ function visualErrors(c, text) {
         const type = a.fields.get('type');
         if (type && !ASSET_TYPES.includes(type))
             errs.push(`${at} has unknown type "${type}" (${ASSET_TYPES.join(', ')})`);
+        if (anatomy) {
+            for (const f of ['object', 'render', 'fidelity'])
+                if (placeholder(a.fields.get(f))) errs.push(`${at} needs "${f}:" filled`);
+            const render = a.fields.get('render');
+            if (render && !['anatomy-turn', 'anatomy-iso', 'flat-2d'].includes(render))
+                errs.push(`${at} has unknown render "${render}" (anatomy-turn, anatomy-iso, flat-2d)`);
+            if ((render === 'anatomy-iso' || render === 'anatomy-turn') && type && type !== '3d')
+                errs.push(`${at} render ${render} needs type 3d`);
+            if (render === 'anatomy-turn' && placeholder(a.fields.get('depth')))
+                errs.push(`${at} is anatomy-turn, so "depth:" must say why turning is the mechanism`);
+            const fid = a.fields.get('fidelity') ?? '';
+            if (fid && !placeholder(fid) && !/\b(computed|scaled|assumed|faked)\b/i.test(fid))
+                errs.push(`${at} fidelity must name computed, scaled, assumed or faked`);
+        }
         if (MODELLED.includes(type))
             for (const f of ['model', 'assumptions'])
                 if (/^(none|n\/a|conceptual\b)/i.test(a.fields.get(f) ?? ''))
@@ -305,6 +322,15 @@ function visualErrors(c, text) {
     // Exception lines count only outside code fences (a template or example in a fence is not a decision).
     const prose = text.replace(/^```[\s\S]*?^```/gm, '');
     if (
+        anatomy &&
+        list.length &&
+        !list.some((a) => ['anatomy-iso', 'anatomy-turn'].includes(a.fields.get('render'))) &&
+        !/^Flat exception:\s*\S/m.test(prose)
+    )
+        errs.push(
+            `${c.id}: no Anatomy machine; add anatomy-iso or anatomy-turn, or a "Flat exception:" line`
+        );
+    if (
         list.length &&
         !list.some((a) => !/^(none|n\/a)\b/i.test(a.fields.get('animated') ?? 'none')) &&
         !/^Motion exception:\s*\S/m.test(prose)
@@ -312,6 +338,41 @@ function visualErrors(c, text) {
         errs.push(
             `${c.id}: no asset animates anything; animate a mechanism or add a "Motion exception:" line`
         );
+    const animates = list.some((a) => !/^(none|n\/a)\b/i.test(a.fields.get('animated') ?? 'none'));
+    if (animates && rank(c.status) >= rank('implemented')) {
+        const sense = section(text, 'Animation sense');
+        const blob = (sense ?? []).join('\n');
+        const labels = [
+            'Mechanism:',
+            'Moving quantity:',
+            'Model field:',
+            'Learner predicts:',
+            'If the moving part is deleted:',
+            'Research (before drawing):',
+        ];
+        if (!sense)
+            (anatomy ? errs : warnings).push(
+                anatomy
+                    ? `${c.id}: "## Animation sense" is required before an animated figure is implemented`
+                    : `${c.id}: animated asset has no "## Animation sense" block`
+            );
+        else if (anatomy) {
+            for (const label of labels)
+                if (!blob.includes(label))
+                    errs.push(`${c.id}: "## Animation sense" needs a "${label}" line (before geometry)`);
+            if (!/the lesson is gone/i.test(blob))
+                errs.push(
+                    `${c.id}: "## Animation sense" must say the lesson is gone if the moving part is deleted`
+                );
+        }
+        if (anatomy && rank(c.status) >= rank('tested')) {
+            const ev = (section(text, 'Evidence') ?? []).filter((l) => l.startsWith('- '));
+            if (!ev.some((l) => /^- animation sense: pass\b/.test(l)))
+                errs.push(
+                    `${c.id}: status ${c.status} needs "- animation sense: pass — …" (Verify the animation)`
+                );
+        }
+    }
     if (
         list.length &&
         list.every((a) => ['text', 'illustration'].includes(a.fields.get('type'))) &&
@@ -448,6 +509,21 @@ function specErrors(c) {
                     errs.push(`${c.id}: verified with an open finding: "${l}"`);
     }
     errs.push(...visualErrors(c, text));
+    if (rank(c.status) >= rank('implemented')) {
+        const tabs = section(text, 'Tabs');
+        if (!tabs)
+            errs.push(`${c.id}: status ${c.status} needs "## Tabs" with Learn, Lab and Quiz (three-tabs.md)`);
+        else
+            for (const name of ['Learn', 'Lab', 'Quiz'])
+                if (!tabs.some((l) => new RegExp(`^- ${name}:\\s*\\S`).test(l)))
+                    errs.push(`${c.id}: "## Tabs" needs "- ${name}: <what this tab does>"`);
+    }
+    if (
+        rank(c.status) >= rank('implemented') &&
+        !section(text, 'Animation sense') &&
+        !/^anatomy-3d\b/.test(text.match(/^Standard:\s*(.*)$/m)?.[1]?.trim() ?? '')
+    )
+        warnings.push(`${c.id}: no "## Animation sense" block; motion has not been sense-checked`);
     return errs;
 }
 

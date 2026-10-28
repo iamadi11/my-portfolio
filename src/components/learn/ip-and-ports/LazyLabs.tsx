@@ -8,18 +8,32 @@ import NearViewport from '@/components/learn/kit/NearViewport';
 const Demux = lazy(() => import('./DemuxLab'));
 const Network = lazy(() => import('./NetworkLab'));
 
-export function DemuxLabLazy({ fallback }: { fallback: React.ReactNode }): React.JSX.Element {
+export function DemuxLabLazy({
+    fallback,
+    pane = 'lab',
+}: {
+    fallback: React.ReactNode;
+    pane?: 'learn' | 'lab';
+}): React.JSX.Element {
     return (
         <NearViewport fallback={fallback}>
-            <Demux />
+            <Demux pane={pane} />
         </NearViewport>
     );
 }
 
-export function NetworkLabLazy({ fallback }: { fallback: React.ReactNode }): React.JSX.Element {
+export function NetworkLabLazy({
+    fallback,
+    pane = 'lab',
+    watch = 'udp',
+}: {
+    fallback: React.ReactNode;
+    pane?: 'learn' | 'lab';
+    watch?: 'udp' | 'tcp';
+}): React.JSX.Element {
     return (
         <NearViewport fallback={fallback}>
-            <Network />
+            <Network pane={pane} watch={watch} />
         </NearViewport>
     );
 }

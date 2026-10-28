@@ -168,6 +168,37 @@ ran the same model as the author; no other model was tested.
   19 `no-console` (expected in a CLI) and 1 `no-use-before-define` (a hoisted function). The project lint scope is
   unchanged.
 
+## Anatomy 3D (2026-10-28)
+
+Why: the experience-first pass still produced articles with step lists and box diagrams. The owner asked for
+animated 3D a fresher can learn from, and for Anatomy to be the 3D path. Chapters are now planned as Anatomy
+machines. Isometric solids are the default 3D object. Anatomy's turn mode is preferred when a part must move in
+depth. Flat diagrams need a written exception. `course.mjs check` enforces `object`, `render` and `fidelity` on
+`Standard: anatomy-3d`, and warns on `visual-first`.
+
+Inputs actually inspected this session (facts taken, no instructions followed, nothing installed):
+
+- Vendored Anatomy `SKILL.md` and `references/3d.md` (already in the repo, MIT, @ 1482e84). Applied now, reversing
+  the 2026-10-28 note that refused "the object is the explanation": the object is the explanation when the mapping
+  is one-to-one and the fidelity ledger names every computed, scaled, assumed and faked quantity.
+- Learnscape isometric-explainer skill (github.com/LaurentiuGabriel/learnscape): README and `SKILL.md`,
+  `references/fidelity.md`, `references/pacing.md` fetched as text. Method only: the vehicle carries model state;
+  publish a fidelity ledger. Not installed. No prose copied into chapters.
+- RaftViz, Tom Van Cutsem, September 2026 (tvcutsem.github.io/raftviz-post): search snippet and page extract.
+  Method: every animated event is a step of the real algorithm, then a sandbox that breaks a part.
+- Explorable explanations: awesome-explorables README; Ciechanowski discussed on r/webdev (canvas and WebGL, not
+  a template). Method: one mechanism the reader manipulates.
+- algorithms.live, System Design Simulator, SystemDesigner (alibad), System Design Lab (Sumit6258), System Design
+  Visually (mallikarjunreddy.com): search snippets and page extracts. Taken: watch then predict; push a model
+  until it fails; start before "add a load balancer". Left: quiz-first lessons, Three.js box cities, tldraw as
+  the explanation, single-file spectacle.
+- Manim skill (awesome-skills/manim-skill): README. Left: video cannot be changed by the learner.
+- r/cscareerquestions threads on learning system design (2022–2026, search snippets): freshers do not learn this
+  from a memorised diagram; they learn by seeing a small system fail. Interview primers are a later format.
+
+Not done: the learning-science papers are still snippet-only. No learner tested the 900-word cap or the Anatomy
+default. Those stay hypotheses.
+
 ## Experience-first overhaul (2026-10-28)
 
 Why: chapters still read as articles with figures. Even the visual-first pilot had static drawings (nothing
@@ -188,9 +219,9 @@ Inputs actually inspected:
 - `wheresryan22/anatomy` (MIT, shared by the owner; cloned @ 1482e84): SKILL.md, `references/motion.md`,
   `references/craft.md`, `references/3d.md` read. Applied: the figure card with a live readout, one model driving
   motion, readouts and caption, time-based motion with clamped `dt` and offscreen stop, readout text written on
-  change, an idle tour that pauses on input, 3D only when motion is the explanation, the zoom-in critique and
-  "every line ends on something". Not applied: "the object is the explanation" as a default (a physical metaphor
-  can mislead in a course that must be scientifically exact).
+  change, an idle tour that pauses on input, the zoom-in critique and "every line ends on something". "The object
+  is the explanation" was not applied that day; the Anatomy 3D section above reverses that, with a fidelity ledger
+  so a metaphor cannot pretend to be a measurement.
 - `enesozturk/dimensional-drawing` and `dimensional-drawing-motion` (vendored): motion as a pure function of time,
   strokes before fills, one thing leads at a time.
 - Reference sites (bruno-simon.com, lusion.co, activetheory.net, 14islands.com, obys.agency, resn.co.nz): not

@@ -153,7 +153,9 @@ async function section3(browser) {
         const heavy = await fig(page, 1).evaluate(
             (f, part) =>
                 [...f.querySelectorAll(`[data-part="${part}"]`)].filter((el) => {
-                    const node = el.tagName === 'g' ? el.querySelector('rect') : el;
+                    const node =
+                        el.querySelector('.iso-edge') ||
+                        (el.tagName === 'g' ? el.querySelector('rect') : el);
                     return node && parseFloat(getComputedStyle(node).strokeWidth) >= 2.3;
                 }).length,
             label.toLowerCase()

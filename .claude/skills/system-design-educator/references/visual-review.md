@@ -59,12 +59,25 @@ Each is a blocking finding:
 - A text-heavy layout where a figure could teach the mechanism better.
 - A generic diagram with no explanatory purpose.
 - An animation that does not represent a real process or state transition.
-- A decorative 3D scene unrelated to the objective, or 3D without a written reason.
+- A metaphor machine: motion illustrates a story (a bench, drawers, a lock) instead of a step the model computes.
+- A caption that exists to translate shapes into the lesson. Cover it. If the lesson disappears, the figure fails.
+- A carriage, packet, or token that travels between captions without its position equaling a model field.
+- Something moves, and no model field or event owns that motion.
+- The figure only makes sense beside its paragraph. Hide the essay and the mechanism is unclear. The card's
+  readout may stay. A few slabs with the chapter's words painted on the faces is this reject.
+- Geometry or motion shipped before the mechanism's primary source was read (`via: read`).
+- An Anatomy scene built to hit a parts quota, or a turning part whose spin is not the mechanism.
+- A flat diagram with no `Flat exception:`.
+- A figure whose fidelity ledger hides a faked quantity, or whose moving part could be deleted without losing
+  the lesson.
 - A fake scientific graph or an unsupported number.
 - A control with no meaningful effect.
 - Repeated quiz cards presented as the interactivity.
 - A scene so complex that a beginner cannot find the point.
 - Prose that repeats what the figure already shows.
+- A bibliography at the end of a chapter page. The learner-facing list is `/learn/sources`. Inline marks stay.
+- A chapter page with no Learn, Interactive Lab, and Quiz tabs, or a tab that repeats another tab's paragraph.
+- A CSS bar, a circle on a line, or a stack of labelled boxes where an Anatomy solid can carry the same model field.
 
 ## Acceptance criteria
 

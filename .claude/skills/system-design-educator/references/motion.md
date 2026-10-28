@@ -5,8 +5,36 @@ which components are involved, what state each holds, what happens when an assum
 failure starts and how it spreads. Floating particles, pulses, spins, camera drifts and animated gradients that
 stand for nothing are rejected in review.
 
+## Animation sense
+
+Fill `## Animation sense` in the chapter spec **before any geometry or motion code**. One subsection per
+animated asset. Research the mechanism from a primary source first (`via: read` in Sources). A figure drawn
+first and justified afterwards fails review.
+
+Each subsection answers, in this order:
+
+1. **Mechanism:** one sentence naming the real process (a name becomes an address, a request arrives or is lost). Not a tour, a factory, or a bench.
+2. **Moving quantity:** the one mark that moves.
+3. **Model field:** the state it equals, with units. Position, width, count, or presence must be that field. A step index is not a field unless the model stores the index as the state.
+4. **Learner predicts:** what they commit before the move, checkable against the model afterwards.
+5. **If the moving part is deleted:** must say the lesson is gone. If the labels would still teach it, delete the motion or change the object.
+6. **Research (before drawing):** source id, `via: read`, date. No geometry until this line exists.
+
+Sense test, run with the paragraphs hidden. Any no fails the figure:
+
+1. You can point at what changed and say what it was before and after.
+2. A frame frozen halfway is a legal state of the mechanism.
+3. Changing one input changes the picture in a way you could have predicted.
+4. The obvious wrong input breaks the picture in a way you could have predicted.
+5. After one pass you can say the next event before it is drawn.
+
+Reject on sight: a metaphor machine (drawers, a post office, or a bench standing in for protocols); a carriage whose only degree of freedom is which caption it sits on; a CSS bar or a circle on a line standing in for a position the model already has (elapsed time, an event, a check); isometric parts that encode no model variable; motion the learner could have narrated from the labels; prose that repeats the figure. A ruled rail with a carriage is allowed when the carriage's position is elapsed time and each block's length is that step's milliseconds. A body on a wire is allowed when its position is the event.
+
+A still chart is enough when a still already shows the quantities. Add motion only for order, duration, or a cause a still hides. Sources for this gate, inspected 2026-10-28: Victor, Explorable Explanations and Ladder of Abstraction; Nicky Case on one mechanic at a time; Distill, Communicating with Interactive Articles; Van Cutsem, RaftViz; Red Blob Games on deleting marks that do not serve the diagram. Do not copy their pictures.
+
 ## Contents
 
+- Animation sense
 - What may move
 - The clock: time as model state
 - Controls and pacing
