@@ -121,7 +121,7 @@ function tcp(p: Packet, steps: Step[]): Delivery {
         steps.push({
             stage: 'result',
             text: `TCP on the server sets up a new connection for the ${listener.program}'s listening socket, with its own pair of sockets; the program gets it once it is set up (how: the TCP chapter).`,
-            source: 'rfc9293 §3.4.1',
+            source: 'rfc9293 §3.4.1 (pair of sockets); the set-up is the TCP chapter',
         });
         return {
             outcome: 'new connection',

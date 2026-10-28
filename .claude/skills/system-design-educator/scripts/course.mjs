@@ -10,7 +10,7 @@
 // Exit code 0 = ok, 1 = problems found, 2 = usage or missing files.
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, posix, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const STATUSES = ['planned', 'researched', 'authored', 'implemented', 'tested', 'reviewed', 'verified'];
@@ -74,15 +74,18 @@ function readGraph() {
 
 /** Lines of a `## heading` section (up to the next `## `), trimmed, blank lines dropped. */
 function section(text, heading) {
-    const lines = text.split('\n');
-    const at = lines.findIndex((l) => l.trim().toLowerCase() === `## ${heading}`.toLowerCase());
-    if (at < 0) return null;
+    // Every section with this heading counts, so a second "## Review findings" cannot hide lines.
+    const want = `## ${heading}`.toLowerCase();
+    let inside = false;
+    let found = false;
     const out = [];
-    for (const l of lines.slice(at + 1)) {
-        if (l.startsWith('## ')) break;
-        if (l.trim()) out.push(l.trim());
+    for (const l of text.split('\n')) {
+        if (l.startsWith('## ')) {
+            inside = l.trim().toLowerCase() === want;
+            found ||= inside;
+        } else if (inside && l.trim()) out.push(l.trim());
     }
-    return out;
+    return found ? out : null;
 }
 
 /** COURSE_STATE's `State:` line: true only when it exists and says initialized. */
@@ -101,6 +104,18 @@ function currentUnit() {
 
 /** Non-fatal findings `check` prints with `!` (e.g. a spec written before the visual-first standard). */
 const warnings = [];
+
+/** A blocking or should-fix finding line, however the tag is spelled or emphasised. */
+const SERIOUS = /^-\s*\**\s*\[(blocking|should[- ]?fix|must[- ]?fix)\]/i;
+
+/**
+ * A finding is closed when an arrow (→ or ->) leads to "fixed" or "accepted: <reason>", and no arrow leads to "open"
+ * and no "fixed?" casts doubt on it. Arrows inside the finding's own words ("A → B") don't count either way.
+ */
+const closed = (l) =>
+    /(→|->)\s*(fixed\b(?!\s*\?)|accepted:\s*\S)/i.test(l) &&
+    !/(→|->)\s*(still\s+)?open\b/i.test(l) &&
+    !/\bfixed\s*\?/i.test(l);
 
 /** Checks every chapter with a page must record from `tested` on (references/verification.md, "Required checks"). */
 const REQUIRED_EVIDENCE = [
@@ -166,6 +181,8 @@ function visualErrors(c, text) {
         return [
             `${c.id}: status ${c.status} needs a "Standard: visual-first" line (or "Standard: legacy — <why>")`,
         ];
+    if (/^legacy\b/.test(standard) && !/^legacy\s*[—–-]+\s*\S/.test(standard))
+        return [`${c.id}: "Standard: legacy" needs a reason ("Standard: legacy — <why>")`];
     if (/^legacy\b/.test(standard)) {
         warnings.push(`${c.id}: spec predates the visual-first standard (${standard}): audit it in mode D`);
         return errs;
@@ -202,7 +219,9 @@ function visualErrors(c, text) {
                 errs.push(`${at} needs "built:" paths (status ${c.status})`);
             // Code the learner runs: files under src/ or the product route, not a folder or a doc.
             for (const x of real)
-                if (!existsSync(join(root, x)) || !statSync(join(root, x)).isFile())
+                if (posix.normalize(x) !== x || x.split('/').includes('..') || x.startsWith('/'))
+                    errs.push(`${at} built path must be a plain relative path: ${x}`);
+                else if (!existsSync(join(root, x)) || !statSync(join(root, x)).isFile())
                     errs.push(`${at} built path is not an existing file: ${x}`);
                 else if (
                     !x.startsWith('src/') &&
@@ -301,7 +320,12 @@ function specErrors(c) {
                 );
             else if (/^- [^:]+: pass\b.*\b(not run|unavailable|skipped|n\/a|fail(ed|s)?)\b/i.test(l))
                 errs.push(`${c.id}: evidence line says pass but also skipped/unavailable/failed/n/a: "${l}"`);
+            else if (/^- [^:]+: n\/a\b/.test(l) && !/^- [^:]+: n\/a\s*[—–-]+\s*\S/.test(l))
+                errs.push(`${c.id}: evidence line is n/a without a reason: "${l}"`);
         const keys = ev.map((l) => l.slice(2, l.indexOf(':')).toLowerCase());
+        for (const k of keys)
+            if (REQUIRED_EVIDENCE.filter(([, re]) => re.test(k)).length > 1)
+                errs.push(`${c.id}: one required check per evidence line, not "${k}"`);
         for (const [name, re] of REQUIRED_EVIDENCE)
             if (!keys.some((k) => re.test(k)))
                 errs.push(
@@ -311,14 +335,19 @@ function specErrors(c) {
     if (rank(c.status) >= rank('reviewed')) {
         const rv = section(text, 'Review findings') ?? [];
         // A self-review is a note, never a "Reviewer:" line (references/verification.md).
-        if (!rv.some((l) => /^Reviewer:.*\b(fresh|independent|subagent)\b/i.test(l)))
+        if (
+            !rv.some(
+                (l) =>
+                    /^Reviewer:.*\b(fresh|independent|subagent)\b/i.test(l) &&
+                    !/\b(not (fresh|independent)|self|myself)\b/i.test(l)
+            )
+        )
             errs.push(
                 `${c.id}: status ${c.status} needs a "Reviewer:" line naming a fresh/independent reviewer under "## Review findings"`
             );
-        // The first "→" carries the outcome, so "→ open; … → fixed" stays open.
         if (c.status === 'verified')
             for (const l of rv)
-                if (/^- \[(blocking|should[- ]fix)\]/i.test(l) && !/^[^→]*→ (fixed\b|accepted: \S)/.test(l))
+                if (SERIOUS.test(l) && !closed(l))
                     errs.push(`${c.id}: verified with an open finding: "${l}"`);
     }
     errs.push(...visualErrors(c, text));

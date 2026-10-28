@@ -297,24 +297,39 @@ async function section5(browser) {
     );
     const ring = await page.evaluate(() => getComputedStyle(document.activeElement).outlineStyle);
     log('keyboard: the focused Run button shows a focus outline', ring !== 'none', ring);
-    // At 375 px the controls sit above the drawing: a run brings its result into view.
-    const inView = (n) =>
+    // At 375 px the controls sit above the drawing: a run brings its result fully into view.
+    const inView = (css) =>
         page
             .waitForFunction(
-                (k) => {
-                    const svg = document.querySelector(`figure[aria-labelledby="fig${k}-h"] svg`);
-                    const r = svg && svg.getBoundingClientRect();
-                    return r && r.top >= 0 && r.top < window.innerHeight - 100;
+                (sel) => {
+                    const el = document.querySelector(sel);
+                    const r = el && el.getBoundingClientRect();
+                    return r && r.top >= 0 && r.bottom <= window.innerHeight;
                 },
-                n,
+                css,
                 { timeout: 3000 }
             )
             .then(() => true)
             .catch(() => false);
-    log('375 px: after Run, the Fig. 2 drawing is in view', await inView(2));
+    log(
+        '375 px: after Run, the Fig. 2 drawing and its current step are fully in view',
+        (await inView('figure[aria-labelledby="fig2-h"] svg')) &&
+            (await inView('figure[aria-labelledby="fig2-h"] [data-current-step]'))
+    );
     await fig(page, 3).getByRole('button', { name: 'Run', exact: true }).focus();
     await page.keyboard.press('Enter');
-    log('375 px: after Run, the Fig. 3 timeline is in view', await inView(3));
+    log(
+        '375 px: after Run, the Fig. 3 timeline is fully in view',
+        await inView('figure[aria-labelledby="fig3-h"] svg')
+    );
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await fig(page, 3).getByRole('button', { name: 'Run', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    log(
+        '768 px: after Run, the Fig. 3 timeline is fully in view',
+        await inView('figure[aria-labelledby="fig3-h"] svg')
+    );
     await ctx.close();
 }
 

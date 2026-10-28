@@ -543,6 +543,39 @@ test('a spec needs a Standard line from authored on; legacy warns, a missing one
     );
 });
 
+test('evidence: one required check per line, n/a needs a reason; built paths cannot climb out of src', () => {
+    const tested = (ev) =>
+        run(
+            course({
+                rows: [row('a', 1, '', 'tested')],
+                product: 'src',
+                specs: { a: READ + '\n## Evidence\n\n' + ev },
+            }),
+            'check'
+        ).out;
+    assert.match(
+        tested('- typecheck lint model tests browser keyboard reduced motion: pass\n'),
+        /one required check per evidence line/
+    );
+    assert.match(tested('- typecheck: n/a\n'), /n\/a without a reason/);
+    const spec = visual(asset(1, 'precision-2d', { built: '`src/../docs/notes.md`' }) + asset(2, 'text'));
+    const out = run(
+        course({
+            rows: [row('a', 1, '', 'implemented')],
+            product: 'src',
+            files: { 'docs/notes.md': 'x' },
+            specs: { a: spec },
+        }),
+        'check'
+    ).out;
+    assert.match(out, /plain relative path: src\/\.\.\/docs\/notes\.md/);
+    const bare = READ.replace(LEGACY, 'Standard: legacy\n\n');
+    assert.match(
+        run(course({ rows: [row('a', 1, '', 'authored')], specs: { a: bare } }), 'check').out,
+        /needs a reason/
+    );
+});
+
 test('tested needs every required check recorded, not just any pass', () => {
     const r = run(
         course({
@@ -573,7 +606,25 @@ test('verified: open findings cannot hide behind spelling, case or a later arrow
         '- [should-fix] x → accepted:\n',
     ])
         assert.match(v(f).out, /verified with an open finding/, f);
+    for (const f of [
+        '- [blocking] wrong -> still open → fixed\n',
+        '- [should-fix] bad → fixed? no, open\n',
+        '- **[blocking]** wrong → open\n',
+        '- [must-fix] wrong → open\n',
+    ])
+        assert.match(v(f).out, /verified with an open finding/, f);
     assert.equal(v('- [should-fix] x → fixed (model.ts)\n- [note] y → open\n').code, 0);
+    // An arrow in the finding's own words is not an outcome.
+    assert.equal(v('- [blocking] "Two tabs → two connections" taught as fact → fixed (page.tsx)\n').code, 0);
+    // A second findings section is read too.
+    assert.match(
+        v('- [note] fine\n\n## Notes\n\nx\n\n## Review findings\n\n- [blocking] hidden → open\n').out,
+        /hidden/
+    );
+    assert.match(
+        v('', '\n## Review findings\n\nReviewer: me — not independent, not fresh\n').out,
+        /naming a fresh/
+    );
     assert.match(
         v('', '\n## Review findings\n\nReviewer: me, 2026-01-02\n').out,
         /naming a fresh\/independent reviewer/

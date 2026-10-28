@@ -126,7 +126,7 @@ function Drawing({
             {p.dest === 'server' ? (
                 <line x1={170} y1={48} x2={170} y2={60} className="thin" markerEnd={`url(#${marker})`} />
             ) : (
-                <line x1={331} y1={48} x2={331} y2={370} className="thin" markerEnd={`url(#${marker})`} />
+                <path d="M 331 48 V 389 H 324" className="thin" fill="none" markerEnd={`url(#${marker})`} />
             )}
             {/* This server, with the firewall at its edge when on. */}
             <rect x={6} y={74} width={316} height={266} rx={6} className="obj" />

@@ -128,13 +128,15 @@ function Timeline({ r }: { r: Run }): React.JSX.Element {
                         />
                     );
                 }
+                // A copy stacked under another at the same tick: end beside its tag, not on the one above.
+                const dy = arrivedDy.get(c) ?? 0;
                 return (
                     <line
                         key={`${c.n}-${c.sent}-${c.arrived}`}
                         x1={x(c.sent)}
                         y1={top}
-                        x2={x(c.arrived)}
-                        y2={bottom}
+                        x2={dy ? x(c.arrived) - 10 : x(c.arrived)}
+                        y2={dy ? ROW.arrived + dy : bottom}
                         className={c.resend ? 'thin ln-skip' : 'thin'}
                         markerEnd={`url(#${marker})`}
                     />

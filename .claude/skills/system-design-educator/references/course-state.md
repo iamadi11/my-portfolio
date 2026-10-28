@@ -14,15 +14,15 @@
 Statuses are ordered. A chapter holds the highest gate whose evidence exists **and** all lower gates. Gates are
 lowered when their evidence stops holding (a source turned out wrong, a test now fails).
 
-| Status        | Evidence required (✓ = enforced by `course.mjs check`)                                                                                                                                 |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `planned`     | Row in `CURRICULUM.md` with id, title, prerequisites, paths ✓                                                                                                                          |
-| `researched`  | `chapters/<id>.md` exists ✓ with source records ✓; every claim in the boundary has a record or is listed under open questions                                                          |
-| `authored`    | Full teaching design (14 questions, worked example, retrieval items, exercise) and the visual decision/spec                                                                            |
-| `implemented` | Content and any visualization/simulation exist in the host app at the paths the spec names; no source with `via: search` supports a claim ✓                                            |
-| `tested`      | Evidence has a line for each of typecheck, lint, model tests, browser (suite or sizes), keyboard and reduced motion ✓, each `pass` or `n/a — reason` ✓                                 |
-| `reviewed`    | An independent review (fresh agent, verification.md) ran on the implementation and its evidence: a `Reviewer:` line naming a fresh/independent reviewer or subagent ✓, findings listed |
-| `verified`    | No blocking or should-fix finding left open ✓ (the first `→` on the finding's line says `fixed` or `accepted: <reason>`); state updated                                                |
+| Status        | Evidence required (✓ = enforced by `course.mjs check`)                                                                                                                                  |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `planned`     | Row in `CURRICULUM.md` with id, title, prerequisites, paths ✓                                                                                                                           |
+| `researched`  | `chapters/<id>.md` exists ✓ with source records ✓; every claim in the boundary has a record or is listed under open questions                                                           |
+| `authored`    | Full teaching design (14 questions, worked example, retrieval items, exercise) and the visual decision/spec                                                                             |
+| `implemented` | Content and any visualization/simulation exist in the host app at the paths the spec names; no source with `via: search` supports a claim ✓                                             |
+| `tested`      | Evidence has its own line for each of typecheck, lint, model tests, browser (suite or sizes), keyboard and reduced motion ✓, each `pass` or `n/a — reason` ✓                            |
+| `reviewed`    | An independent review (fresh agent, verification.md) ran on the implementation and its evidence: a `Reviewer:` line naming a fresh/independent reviewer or subagent ✓, findings listed  |
+| `verified`    | No blocking or should-fix finding left open ✓: an arrow (`→`) leads to `fixed` or `accepted: <reason>`, none leads to `open`; every `## Review findings` section is read; state updated |
 
 From `authored` on, every spec has a `Standard:` line under its title ✓: `visual-first`, or `legacy — <why>` for a spec
 written before the standard. **Visual-first specs** also need, checked by `check` (✓):

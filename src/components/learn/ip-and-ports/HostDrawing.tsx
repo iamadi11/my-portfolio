@@ -20,10 +20,10 @@ export default function HostDrawing(): React.JSX.Element {
                 www.example.com
             </text>
             <line x1={170} y1={30} x2={170} y2={86} className="thin ln-skip" markerEnd="url(#fig1-arrow)" />
-            <text x={178} y={52} className="sl">
+            <text x={162} y={52} textAnchor="end" className="sl">
                 name → address
             </text>
-            <text x={178} y={68} className="sl">
+            <text x={162} y={68} textAnchor="end" className="sl">
                 (dns, chapter 4)
             </text>
             <rect x={14} y={100} width={312} height={250} rx={6} className="obj" />
@@ -32,11 +32,11 @@ export default function HostDrawing(): React.JSX.Element {
                 {SERVER}
             </text>
             {/* The address's size, beside its tab. */}
-            <text x={238} y={98} className="dts">
+            <text x={238} y={66} className="dts">
                 32 bits
             </text>
-            <text x={238} y={114} className="dts">
-                IPv6: 128
+            <text x={238} y={82} className="dts">
+                (IPv6: 128)
             </text>
             <text x={26} y={130} className="sl">
                 address: which machine

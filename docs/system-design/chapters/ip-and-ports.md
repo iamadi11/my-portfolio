@@ -341,13 +341,13 @@ gets this flow".
 
 ## Evidence
 
-All on the production build of the working tree after 91bea9c with the review fixes (committed with this
+All on the production build of the working tree after ea8f465 with the second-round fixes (committed with this
 evidence), 2026-10-28.
 
 - model tests: pass — npx vitest run: 194/194 (demux-model 16: 72 packets one outcome each, stage order, two connections by source port, new connection set up by TCP, UDP rule labelled a model choice, reset/ICMP, firewall at the edge before the protocol stage, sources or "model:" on every step, no users/requests/tabs; datagram-model 18: conservation, TCP in order, UDP = arrivals, a late segment never resent, a network duplicate not sent again, every number the page quotes) (2026-10-28)
 - typecheck: pass — npx tsc --noEmit (2026-10-28)
 - lint and format: pass — npm run lint; npx eslint tests/browser (0 errors); prettier --check src docs tests README.md .claude/skills (2026-10-28)
-- browser suite: pass — tests/browser/ip-and-ports.cjs 62/62: six sizes without horizontal scroll or console errors, axe WCAG 2.2 A/AA at 375 and 1280 on load and after runs, leak checks before Run and after a change, ten demux cases and seven datagram cases against the model, prediction verdicts, current step under the drawing, step announcements, firewall stages, duplicate drawn as a network copy, citations numbered top-down, the text's quoted numbers, keyboard, a run at 375 px brings each result into view, reduced motion, links from /learn and chapter 2, sitemap, / renders (2026-10-28)
+- browser suite: pass — tests/browser/ip-and-ports.cjs 63/63: six sizes without horizontal scroll or console errors, axe WCAG 2.2 A/AA at 375 and 1280 on load and after runs, leak checks before Run and after a change, ten demux cases and seven datagram cases against the model, prediction verdicts, current step under the drawing, step announcements, firewall stages, duplicate drawn as a network copy, citations numbered top-down, the text's quoted numbers, keyboard, after Run at 375 px the drawing, its current step and the timeline are fully in view, and at 768 px the timeline, reduced motion, links from /learn and chapter 2, sitemap, / renders (2026-10-28)
 - keyboard: pass — ip-and-ports.cjs: arrow keys move within radio groups, Enter on Run shows the result, focus outline on Run, Next keeps focus and is aria-disabled at the last step (2026-10-28)
 - reduced motion: pass — ip-and-ports.cjs with reducedMotion reduce: nothing in the figures transitions or animates; the post-Run scroll jumps instead of gliding; steps and readouts complete (2026-10-28)
 - regression suites: pass — web-request 69/69, client-server 48/48 (2026-10-28)
@@ -355,7 +355,7 @@ evidence), 2026-10-28.
 - lighthouse: pass — Lighthouse 12.2.1 on the final build: /learn/ip-and-ports mobile 100 and 99, desktop 100; accessibility, best practices and SEO 100; CLS 0. Before the review fixes: mobile 91 on the first run after a server start (TBT 310 ms), then 99 and 100 (2026-10-28)
 - screenshots read: pass — every figure at 375, 402, 768, 1280, 1440 and 1920 read by eye after the fixes; overlapping arrival tags (delay 2) and the hidden "IPv6: 128" label found and fixed this round (2026-10-28)
 - pre-commit audit: pass — npx fallow audit: no dead code, no complexity finding; one duplication warning (the cite helper shared by the three chapter pages) (2026-10-28)
-- course checks: pass — course.mjs check ok (two legacy warnings: web-request, client-server); course.mjs skill ok; course.test.mjs 32/32 (2026-10-28)
+- course checks: pass — course.mjs check ok (two legacy warnings: web-request, client-server); course.mjs skill ok; course.test.mjs 33/33 (2026-10-28)
 
 ## Review findings
 
@@ -381,3 +381,19 @@ Visual review: text-heavy=no · mechanism-via-visual=yes · every-visual-teaches
 - [note] "waited 1 ticks"; the "14" tick label clipped; spec promised a drawn client host; Evidence named the wrong commit → fixed (plural; axis shortened; spec matches the build; this Evidence names the right base)
 - [note] Fig. 2's step list is itself prose cards; the drawing changes only by a highlight → accepted: each step's text is one or two sentences tied to a highlighted element and the current step sits under the drawing; a packet animation would add motion without new information (visual-design.md, Motion)
 - [note] One asset can cover every objective in `check` → accepted: structure only; reviewers judge coverage (verification.md, five questions)
+
+Reviewer: second fresh subagent (check of the fixes 91bea9c..60b5713 on a production build of 60b5713: viewport screenshots at six sizes, every control, keyboard, reduced motion, every new citation in the doc-rfc texts, gaming fixtures for `check`), 2026-10-28
+Visual review: text-heavy=no · mechanism-via-visual=yes · every-visual-teaches=yes · claims-defensible=yes · interaction-helps=yes
+
+- [blocking] The new "first → decides" rule in `course.mjs` rejected this chapter's own blocking finding (its title contains "→") → fixed (a finding is closed when an arrow, → or ->, leads to "fixed" or "accepted: <reason>" and none leads to "open"; arrows in the finding's own words don't count; test with this exact finding)
+- [should-fix] `revealAfterRender` checked only the top of the result, so step text, readouts or the timeline could stay below the fold (375 px Fig. 2, 768 px Fig. 3) → fixed (reveal.ts scrolls when any part is off-screen; browser checks that the drawing, its current step and the timeline are fully in view at 375 px and the timeline at 768 px)
+- [should-fix] `check` still gameable: bare `Standard: legacy`, an ASCII `->` before "→ fixed", "fixed? no", `**[blocking]**` and `[must-fix]` tags, a second findings section, one combined evidence line, `n/a` without a reason, `src/..` paths, "Reviewer: me — not independent" → fixed (each case rejected; course.test.mjs cases and the reviewer's fixtures in review-c3b/game fail)
+- [note] Fig. 1: the host outline ran through the "32 bits" label → fixed (size labels above the host, name→address labels left of the arrow)
+- [note] Fig. 3: arrows for 2 and 4 both ended on the "2" tag at tick 5 → fixed (an arrow to a stacked tag ends beside it)
+- [note] Fig. 2: arrow to another machine ended beside its box → fixed (it turns into the box)
+- [note] New-connection result cited §3.4.1 for the set-up → fixed (source reads "§3.4.1 (pair of sockets); the set-up is the TCP chapter")
+- [note] Step text shown twice (current step and the full list) → accepted: the full list is the text alternative and lets a learner jump to any stage; the current step is what keeps the drawing and its explanation together
+- [note] Stage table in chapter-workflow.md runs A, B, D, C → accepted: it lists mode C steps in order; stage letters name the kind of work, and step 5 is labelled a draft revised in step 6
+- [note] Most course.test.mjs fixtures default to `Standard: legacy` → accepted: the visual-first rules have their own fixtures (seven tests); the legacy default keeps the older gate tests focused
+- [note] "Two tabs may well share one connection" has no browser-behaviour source → accepted: it is worded as a possibility that follows from RFC 9112 §9.3 and RFC 9114 §3.3, not as a claim about any browser
+
