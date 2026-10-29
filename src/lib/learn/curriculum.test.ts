@@ -21,6 +21,7 @@ describe('parseCurriculum', () => {
             [1, 'Foundations', ['a', 'b']],
             [2, 'Later', ['c']],
         ]);
+        expect(stages[0].chapters[1].prerequisites).toEqual(['a']);
         expect(stages[0].chapters[0]).toEqual({
             id: 'a',
             order: 1,
@@ -28,6 +29,7 @@ describe('parseCurriculum', () => {
             title: 'First',
             paths: ['beginner', 'interview'],
             status: 'authored',
+            prerequisites: [],
         });
     });
 

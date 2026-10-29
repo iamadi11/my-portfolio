@@ -384,6 +384,7 @@ export default function Results(): React.JSX.Element | null {
                 lead={0.7}
                 cam={keys(1.85, true)}
                 camSm={keys(2, false)}
+                camStill={[W / 2, H / 2, 1]}
                 stageClassName="rs-stage"
             >
                 <SheetFrame

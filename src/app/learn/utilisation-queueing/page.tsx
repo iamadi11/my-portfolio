@@ -44,7 +44,7 @@ const high = station(HIGH_ARRIVAL_PER_S);
 
 export default function Page(): React.JSX.Element {
     return (
-        <CourseShell crumbs={[{ label: 'Chapter 15' }]}>
+        <CourseShell chapterId="utilisation-queueing" crumbs={[{ label: 'Chapter 15' }]}>
             <article aria-labelledby="ch-h">
                 <ChapterHeader
                     kicker="Chapter 15 · Stage 1, Foundations"

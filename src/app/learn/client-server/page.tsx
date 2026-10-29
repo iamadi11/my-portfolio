@@ -32,7 +32,7 @@ const C = citeFor('client-server', SOURCES, SOURCE_NUMBER);
 
 export default function Page(): React.JSX.Element {
     return (
-        <CourseShell crumbs={[{ label: 'Chapter 2' }]}>
+        <CourseShell chapterId="client-server" crumbs={[{ label: 'Chapter 2' }]}>
             <article aria-labelledby="ch-h">
                 <header className="bp-sheet ln-head">
                     <p className="ln-kicker">Chapter 2 · Stage 1, Foundations</p>

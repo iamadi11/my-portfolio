@@ -24,7 +24,7 @@
 .nav-name {
     display: inline-flex;
     align-items: center;
-    min-height: 32px;
+    min-height: 44px;
     font-size: 13px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -44,7 +44,9 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    min-height: 32px;
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
     color: var(--ink);
     text-decoration: none;
 }
@@ -184,4 +186,23 @@
 }
 .nav-readers-sheet {
     color: var(--ink-3);
+}
+
+/* Seven 44px hit areas fit the 320px layout without shrinking the sheet controls. */
+@media (max-width: 480px) {
+    .nav-in {
+        padding: 0 6px;
+        gap: 0;
+    }
+    .nav-list {
+        gap: 0;
+    }
+    .nav-name {
+        width: 44px;
+        min-width: 44px;
+        white-space: normal;
+        font-size: 12px;
+        line-height: 1.2;
+        letter-spacing: 0;
+    }
 }

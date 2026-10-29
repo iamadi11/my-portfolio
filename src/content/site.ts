@@ -50,7 +50,7 @@ export const SITE: SiteContent = {
             id: 'spatial',
             title: 'Spatial',
             summary:
-                'Detects UI performance anti-patterns in a running app from render counts, layout shifts, FPS and memory.',
+                'Detects UI performance anti-patterns during development using render counts, layout shifts, frame drops and available browser memory data.',
             stack: ['TypeScript', 'React', 'Vitest'],
             links: [
                 { label: 'Code', href: 'https://github.com/iamadi11/spatial' },
@@ -62,7 +62,7 @@ export const SITE: SiteContent = {
             id: 'sidecar',
             title: 'Sidecar',
             summary:
-                'Progressive image loading: a build step emits a tiny binary sidecar per image, and a runtime targeting under 1 KB loads it in phases.',
+                'A progressive-image-loading prototype with a browser runtime that parses binary sidecars, shows intermediate image previews and falls back to the full image.',
             stack: ['TypeScript', 'Node.js', 'React'],
             links: [{ label: 'Code', href: 'https://github.com/iamadi11/progressive-image' }],
             hue: 'ink',

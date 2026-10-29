@@ -1,3 +1,5 @@
+import academyLessons from './academy-lessons.json';
+
 /**
  * Chapters that have a page. Titles, order and status come from `docs/system-design/CURRICULUM.md`
  * (`@/lib/learn/curriculum`); this only says which ids are built, so the course index links them and lists the rest
@@ -24,4 +26,5 @@ export const CHAPTER_ROUTES: Readonly<Record<string, string>> = {
     'udp-quic': '/learn/udp-quic',
     'http-versions': '/learn/http-versions',
     'cloud-networking': '/learn/cloud-networking',
+    ...Object.fromEntries(academyLessons.map((lesson) => [lesson.id, `/learn/${lesson.id}`])),
 };

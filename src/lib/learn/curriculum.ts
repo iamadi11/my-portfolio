@@ -13,6 +13,7 @@ export type Chapter = {
     stage: number;
     title: string;
     paths: string[];
+    prerequisites?: string[];
     status: string;
 };
 export type Stage = { n: number; name: string; chapters: Chapter[] };
@@ -35,6 +36,7 @@ export function parseCurriculum(text: string): Stage[] {
         order: Number(c[1]),
         stage: Number(c[2]),
         title: c[3],
+        prerequisites: c[4] ? c[4].split(/\s+/) : [],
         paths: c[5] ? c[5].split(/\s+/) : [],
         status: c[6],
     }));

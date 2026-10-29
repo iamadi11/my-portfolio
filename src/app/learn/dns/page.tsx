@@ -30,7 +30,7 @@ const C = citeFor('dns', SOURCES, SOURCE_NUMBER);
 
 export default function Page(): React.JSX.Element {
     return (
-        <CourseShell crumbs={[{ label: 'Chapter 4' }]}>
+        <CourseShell chapterId="dns" crumbs={[{ label: 'Chapter 4' }]}>
             <article aria-labelledby="ch-h">
                 <ChapterHeader
                     kicker="Chapter 4 · Stage 1, Foundations"

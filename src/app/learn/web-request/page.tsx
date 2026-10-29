@@ -29,7 +29,7 @@ const C = citeFor('web-request', SOURCES, SOURCE_NUMBER);
 
 export default function Page(): React.JSX.Element {
     return (
-        <CourseShell crumbs={[{ label: 'Chapter 1' }]}>
+        <CourseShell chapterId="web-request" crumbs={[{ label: 'Chapter 1' }]}>
             <article aria-labelledby="ch-h">
                 <header className="bp-sheet ln-head">
                     <p className="ln-kicker">Chapter 1 · Stage 1, Foundations · Map chapter</p>

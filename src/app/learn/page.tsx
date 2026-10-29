@@ -18,7 +18,6 @@ export const metadata: Metadata = {
 };
 export default function Page(): React.JSX.Element {
     const stages = readCurriculum();
-    const total = stages.reduce((sum, s) => sum + s.chapters.length, 0);
     const built = Object.keys(CHAPTER_ROUTES).length;
     return (
         <CourseShell>
@@ -52,7 +51,7 @@ export default function Page(): React.JSX.Element {
                             <span>
                                 visual lessons available
                                 <br />
-                                of {total} on the roadmap
+                                across {stages.length} learning stages
                             </span>
                         </div>
                         <p>
@@ -81,7 +80,7 @@ export default function Page(): React.JSX.Element {
             </div>
             <CourseCatalog stages={stages} routes={CHAPTER_ROUTES} />
             <footer className="lc-footer">
-                <span>A course in progress. Depth grows with the roadmap.</span>
+                <span>Learn one mechanism. Test it. Connect it to a complete design.</span>
                 <Link href="/learn/sources">Primary sources & teaching assumptions ↗</Link>
             </footer>
         </CourseShell>

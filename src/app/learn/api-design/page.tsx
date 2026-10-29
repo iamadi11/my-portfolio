@@ -40,7 +40,7 @@ const C = citeFor('api-design', SOURCES, SOURCE_NUMBER);
 
 export default function Page(): React.JSX.Element {
     return (
-        <CourseShell crumbs={[{ label: 'Chapter 16' }]}>
+        <CourseShell chapterId="api-design" crumbs={[{ label: 'Chapter 16' }]}>
             <article aria-labelledby="ch-h">
                 <ChapterHeader
                     kicker="Chapter 16 · Stage 2, APIs and data modelling"

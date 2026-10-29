@@ -86,7 +86,7 @@ const ROLES: Record<Part, React.ReactNode> = {
 
 export default function Page(): React.JSX.Element {
     return (
-        <CourseShell crumbs={[{ label: 'Chapter 3' }]}>
+        <CourseShell chapterId="ip-and-ports" crumbs={[{ label: 'Chapter 3' }]}>
             <article aria-labelledby="ch-h">
                 <ChapterHeader
                     kicker="Chapter 3 · Stage 1, Foundations"

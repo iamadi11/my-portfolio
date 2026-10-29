@@ -33,7 +33,7 @@ const C = citeFor('http-versions', SOURCES, SOURCE_NUMBER);
 
 export default function Page(): React.JSX.Element {
     return (
-        <CourseShell crumbs={[{ label: 'Chapter 9' }]}>
+        <CourseShell chapterId="http-versions" crumbs={[{ label: 'Chapter 9' }]}>
             <article aria-labelledby="ch-h">
                 <ChapterHeader
                     kicker="Chapter 9 · Stage 1, Foundations"

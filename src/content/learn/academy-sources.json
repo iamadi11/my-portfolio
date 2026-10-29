@@ -1,0 +1,466 @@
+{
+    "stripe": {
+        "id": "stripe",
+        "title": "Stripe idempotent requests",
+        "publisher": "docs.stripe.com",
+        "url": "https://docs.stripe.com/api/idempotent_requests",
+        "read": "Opened 2026-10-29; relevant material: API v1 replay, key reuse, retention and matching parameters.",
+        "scope": "API v1 replay, key reuse, retention and matching parameters"
+    },
+    "pagination": {
+        "id": "pagination",
+        "title": "Google AIP-158 pagination",
+        "publisher": "google.aip.dev",
+        "url": "https://google.aip.dev/158",
+        "read": "Opened 2026-10-29; relevant material: Page tokens, collection pagination and compatibility.",
+        "scope": "Page tokens, collection pagination and compatibility"
+    },
+    "protobuf": {
+        "id": "protobuf",
+        "title": "Protocol Buffers proto3 guide",
+        "publisher": "protobuf.dev",
+        "url": "https://protobuf.dev/programming-guides/proto3/",
+        "read": "Opened 2026-10-29; relevant material: Updating message types and field-number compatibility.",
+        "scope": "Updating message types and field-number compatibility"
+    },
+    "tokens": {
+        "id": "tokens",
+        "title": "RFC 3290 Diffserv management model",
+        "publisher": "www.rfc-editor.org",
+        "url": "https://www.rfc-editor.org/rfc/rfc3290",
+        "read": "Opened 2026-10-29; relevant material: Appendix A, token/leaky bucket models; informational RFC.",
+        "scope": "Appendix A, token/leaky bucket models; informational RFC"
+    },
+    "pg-model": {
+        "id": "pg-model",
+        "title": "PostgreSQL 18 constraints",
+        "publisher": "www.postgresql.org",
+        "url": "https://www.postgresql.org/docs/18/ddl-constraints.html",
+        "read": "Opened 2026-10-29; relevant material: Primary, unique, check and foreign-key constraints.",
+        "scope": "Primary, unique, check and foreign-key constraints"
+    },
+    "pg-index": {
+        "id": "pg-index",
+        "title": "PostgreSQL 18 index types",
+        "publisher": "www.postgresql.org",
+        "url": "https://www.postgresql.org/docs/18/indexes-types.html",
+        "read": "Opened 2026-10-29; relevant material: B-tree access and supported comparisons.",
+        "scope": "B-tree access and supported comparisons"
+    },
+    "pg-explain": {
+        "id": "pg-explain",
+        "title": "PostgreSQL 18 EXPLAIN",
+        "publisher": "www.postgresql.org",
+        "url": "https://www.postgresql.org/docs/18/using-explain.html",
+        "read": "Opened 2026-10-29; relevant material: Planner estimates, access paths and costs.",
+        "scope": "Planner estimates, access paths and costs"
+    },
+    "pg-tx": {
+        "id": "pg-tx",
+        "title": "PostgreSQL 18 transaction tutorial",
+        "publisher": "www.postgresql.org",
+        "url": "https://www.postgresql.org/docs/18/tutorial-transactions.html",
+        "read": "Opened 2026-10-29; relevant material: Atomic grouped changes, commit and rollback.",
+        "scope": "Atomic grouped changes, commit and rollback"
+    },
+    "pg-isolation": {
+        "id": "pg-isolation",
+        "title": "PostgreSQL 18 isolation",
+        "publisher": "www.postgresql.org",
+        "url": "https://www.postgresql.org/docs/18/transaction-iso.html",
+        "read": "Opened 2026-10-29; relevant material: Isolation phenomena and serializable retries.",
+        "scope": "Isolation phenomena and serializable retries"
+    },
+    "pg-mvcc": {
+        "id": "pg-mvcc",
+        "title": "PostgreSQL 18 MVCC",
+        "publisher": "www.postgresql.org",
+        "url": "https://www.postgresql.org/docs/18/mvcc-intro.html",
+        "read": "Opened 2026-10-29; relevant material: Snapshots and concurrency control introduction.",
+        "scope": "Snapshots and concurrency control introduction"
+    },
+    "pg-storage": {
+        "id": "pg-storage",
+        "title": "PostgreSQL 18 page layout",
+        "publisher": "www.postgresql.org",
+        "url": "https://www.postgresql.org/docs/18/storage-page-layout.html",
+        "read": "Opened 2026-10-29; relevant material: Pages, item pointers and stored tuples.",
+        "scope": "Pages, item pointers and stored tuples"
+    },
+    "pg-wal": {
+        "id": "pg-wal",
+        "title": "PostgreSQL 18 write-ahead logging",
+        "publisher": "www.postgresql.org",
+        "url": "https://www.postgresql.org/docs/18/wal-intro.html",
+        "read": "Opened 2026-10-29; relevant material: Log-before-page durability and crash recovery.",
+        "scope": "Log-before-page durability and crash recovery"
+    },
+    "pg-bloom": {
+        "id": "pg-bloom",
+        "title": "PostgreSQL 18 Bloom indexes",
+        "publisher": "www.postgresql.org",
+        "url": "https://www.postgresql.org/docs/18/bloom.html",
+        "read": "Opened 2026-10-29; relevant material: Signature matching and false-positive rechecks.",
+        "scope": "Signature matching and false-positive rechecks"
+    },
+    "pg-search": {
+        "id": "pg-search",
+        "title": "PostgreSQL 18 text-search indexes",
+        "publisher": "www.postgresql.org",
+        "url": "https://www.postgresql.org/docs/18/textsearch-indexes.html",
+        "read": "Opened 2026-10-29; relevant material: Inverted index entries, candidate locations and rechecks.",
+        "scope": "Inverted index entries, candidate locations and rechecks"
+    },
+    "pg-partition": {
+        "id": "pg-partition",
+        "title": "PostgreSQL 18 partitioning",
+        "publisher": "www.postgresql.org",
+        "url": "https://www.postgresql.org/docs/18/ddl-partitioning.html",
+        "read": "Opened 2026-10-29; relevant material: Partition assignment, range/list/hash and pruning.",
+        "scope": "Partition assignment, range/list/hash and pruning"
+    },
+    "pg-replication": {
+        "id": "pg-replication",
+        "title": "PostgreSQL 18 standby replication",
+        "publisher": "www.postgresql.org",
+        "url": "https://www.postgresql.org/docs/18/warm-standby.html",
+        "read": "Opened 2026-10-29; relevant material: Streaming, asynchronous and synchronous replication.",
+        "scope": "Streaming, asynchronous and synchronous replication"
+    },
+    "pg-logical": {
+        "id": "pg-logical",
+        "title": "PostgreSQL 18 logical replication",
+        "publisher": "www.postgresql.org",
+        "url": "https://www.postgresql.org/docs/18/logical-replication.html",
+        "read": "Opened 2026-10-29; relevant material: Publishing changes and replication identity.",
+        "scope": "Publishing changes and replication identity"
+    },
+    "mongo": {
+        "id": "mongo",
+        "title": "MongoDB data modelling",
+        "publisher": "www.mongodb.com",
+        "url": "https://www.mongodb.com/docs/manual/data-modeling/",
+        "read": "Opened 2026-10-29; relevant material: Embedding, references and access patterns.",
+        "scope": "Embedding, references and access patterns"
+    },
+    "postgis": {
+        "id": "postgis",
+        "title": "PostGIS spatial data and indexes",
+        "publisher": "postgis.net",
+        "url": "https://postgis.net/docs/using_postgis_dbmanagement.html",
+        "read": "Opened 2026-10-29; relevant material: Coordinate systems and spatial index candidate filtering.",
+        "scope": "Coordinate systems and spatial index candidate filtering"
+    },
+    "s3": {
+        "id": "s3",
+        "title": "Amazon S3 overview",
+        "publisher": "docs.aws.amazon.com",
+        "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html",
+        "read": "Opened 2026-10-29; relevant material: Object keys, object data and storage boundaries.",
+        "scope": "Object keys, object data and storage boundaries"
+    },
+    "bigquery": {
+        "id": "bigquery",
+        "title": "BigQuery storage overview",
+        "publisher": "cloud.google.com",
+        "url": "https://cloud.google.com/bigquery/docs/storage_overview",
+        "read": "Opened 2026-10-29; relevant material: Column-oriented storage and analytical access.",
+        "scope": "Column-oriented storage and analytical access"
+    },
+    "sre-lb": {
+        "id": "sre-lb",
+        "title": "Google SRE load balancing",
+        "publisher": "sre.google",
+        "url": "https://sre.google/sre-book/load-balancing-datacenter/",
+        "read": "Opened 2026-10-29; relevant material: Backend selection, interchangeable processes and routing.",
+        "scope": "Backend selection, interchangeable processes and routing"
+    },
+    "sre-overload": {
+        "id": "sre-overload",
+        "title": "Google SRE handling overload",
+        "publisher": "sre.google",
+        "url": "https://sre.google/sre-book/handling-overload/",
+        "read": "Opened 2026-10-29; relevant material: Admission control, queues and capacity.",
+        "scope": "Admission control, queues and capacity"
+    },
+    "sre-cascade": {
+        "id": "sre-cascade",
+        "title": "Google SRE cascading failures",
+        "publisher": "sre.google",
+        "url": "https://sre.google/sre-book/addressing-cascading-failures/",
+        "read": "Opened 2026-10-29; relevant material: Resource exhaustion, dependencies and failure propagation.",
+        "scope": "Resource exhaustion, dependencies and failure propagation"
+    },
+    "sre-slo": {
+        "id": "sre-slo",
+        "title": "Google SRE service objectives",
+        "publisher": "sre.google",
+        "url": "https://sre.google/sre-book/service-level-objectives/",
+        "read": "Opened 2026-10-29; relevant material: SLI, SLO, measurement windows and objectives.",
+        "scope": "SLI, SLO, measurement windows and objectives"
+    },
+    "sre-monitor": {
+        "id": "sre-monitor",
+        "title": "Google SRE monitoring",
+        "publisher": "sre.google",
+        "url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+        "read": "Opened 2026-10-29; relevant material: Signals, symptoms and diagnosis.",
+        "scope": "Signals, symptoms and diagnosis"
+    },
+    "sre-incident": {
+        "id": "sre-incident",
+        "title": "Google SRE incident management",
+        "publisher": "sre.google",
+        "url": "https://sre.google/sre-book/managing-incidents/",
+        "read": "Opened 2026-10-29; relevant material: Roles, communication and incident response.",
+        "scope": "Roles, communication and incident response"
+    },
+    "k8s-deploy": {
+        "id": "k8s-deploy",
+        "title": "Kubernetes deployments",
+        "publisher": "kubernetes.io",
+        "url": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/",
+        "read": "Opened 2026-10-29; relevant material: Desired replicas, rolling updates and reconciliation.",
+        "scope": "Desired replicas, rolling updates and reconciliation"
+    },
+    "k8s-scale": {
+        "id": "k8s-scale",
+        "title": "Kubernetes horizontal autoscaling",
+        "publisher": "kubernetes.io",
+        "url": "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/",
+        "read": "Opened 2026-10-29; relevant material: Observed metrics and scaling control loop.",
+        "scope": "Observed metrics and scaling control loop"
+    },
+    "k8s-probe": {
+        "id": "k8s-probe",
+        "title": "Kubernetes health probes",
+        "publisher": "kubernetes.io",
+        "url": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+        "read": "Opened 2026-10-29; relevant material: Readiness, liveness and startup distinctions.",
+        "scope": "Readiness, liveness and startup distinctions"
+    },
+    "http-cache": {
+        "id": "http-cache",
+        "title": "RFC 9111 HTTP caching",
+        "publisher": "www.rfc-editor.org",
+        "url": "https://www.rfc-editor.org/rfc/rfc9111.html",
+        "read": "Opened 2026-10-29; relevant material: Freshness, validation and invalidation.",
+        "scope": "Freshness, validation and invalidation"
+    },
+    "redis-evict": {
+        "id": "redis-evict",
+        "title": "Redis key eviction",
+        "publisher": "redis.io",
+        "url": "https://redis.io/docs/latest/develop/reference/eviction/",
+        "read": "Opened 2026-10-29; relevant material: Memory limit, LRU/LFU and cache copies.",
+        "scope": "Memory limit, LRU/LFU and cache copies"
+    },
+    "rabbit": {
+        "id": "rabbit",
+        "title": "RabbitMQ confirms and acknowledgments",
+        "publisher": "www.rabbitmq.com",
+        "url": "https://www.rabbitmq.com/docs/confirms",
+        "read": "Opened 2026-10-29; relevant material: Publisher confirms, consumer acknowledgments and redelivery.",
+        "scope": "Publisher confirms, consumer acknowledgments and redelivery"
+    },
+    "kafka": {
+        "id": "kafka",
+        "title": "Apache Kafka 4.1 design",
+        "publisher": "kafka.apache.org",
+        "url": "https://kafka.apache.org/41/design/design/",
+        "read": "Opened 2026-10-29; relevant material: Partition logs, consumer position and delivery semantics.",
+        "scope": "Partition logs, consumer position and delivery semantics"
+    },
+    "raft": {
+        "id": "raft",
+        "title": "Raft extended paper",
+        "publisher": "raft.github.io",
+        "url": "https://raft.github.io/raft.pdf",
+        "read": "Opened 2026-10-29; relevant material: Election terms, log replication and safety; not a mere voting counter.",
+        "scope": "Election terms, log replication and safety; not a mere voting counter"
+    },
+    "dynamo": {
+        "id": "dynamo",
+        "title": "Dynamo original paper",
+        "publisher": "www.allthingsdistributed.com",
+        "url": "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf",
+        "read": "Opened 2026-10-29; relevant material: Consistent hashing, replication and versioned reconciliation.",
+        "scope": "Consistent hashing, replication and versioned reconciliation"
+    },
+    "clocks": {
+        "id": "clocks",
+        "title": "Lamport Time Clocks and Ordering",
+        "publisher": "www.microsoft.com",
+        "url": "https://www.microsoft.com/en-us/research/publication/time-clocks-ordering-events-distributed-system/",
+        "read": "Opened 2026-10-29; relevant material: Happens-before and logical clocks.",
+        "scope": "Happens-before and logical clocks"
+    },
+    "uuid": {
+        "id": "uuid",
+        "title": "RFC 9562 UUIDs",
+        "publisher": "www.rfc-editor.org",
+        "url": "https://www.rfc-editor.org/rfc/rfc9562.html",
+        "read": "Opened 2026-10-29; relevant material: Identifier layouts and generation considerations.",
+        "scope": "Identifier layouts and generation considerations"
+    },
+    "cap": {
+        "id": "cap",
+        "title": "Gilbert and Lynch CAP proof",
+        "publisher": "www.comp.nus.edu.sg",
+        "url": "https://www.comp.nus.edu.sg/~gilbert/pubs/BrewersConjecture-SigAct.pdf",
+        "read": "Opened 2026-10-29; relevant material: Consistency and availability under partition assumptions.",
+        "scope": "Consistency and availability under partition assumptions"
+    },
+    "pacelc": {
+        "id": "pacelc",
+        "title": "Abadi consistency tradeoffs",
+        "publisher": "www.cs.umd.edu",
+        "url": "https://www.cs.umd.edu/~abadi/papers/abadi-pacelc.pdf",
+        "read": "Opened 2026-10-29; relevant material: Partition tradeoff and otherwise latency/consistency.",
+        "scope": "Partition tradeoff and otherwise latency/consistency"
+    },
+    "crdt": {
+        "id": "crdt",
+        "title": "Preguica Baquero Shapiro CRDT survey",
+        "publisher": "arxiv.org",
+        "url": "https://arxiv.org/html/1805.06358",
+        "read": "Opened 2026-10-29; relevant material: State convergence, idempotent merge and data-type restrictions.",
+        "scope": "State convergence, idempotent merge and data-type restrictions"
+    },
+    "retry": {
+        "id": "retry",
+        "title": "AWS timeouts retries and jitter",
+        "publisher": "aws.amazon.com",
+        "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/",
+        "read": "Opened 2026-10-29; relevant material: Bounded waiting, side-effect uncertainty and retry amplification.",
+        "scope": "Bounded waiting, side-effect uncertainty and retry amplification"
+    },
+    "outbox": {
+        "id": "outbox",
+        "title": "AWS transactional outbox",
+        "publisher": "docs.aws.amazon.com",
+        "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html",
+        "read": "Opened 2026-10-29; relevant material: Atomic state/outbox commit, relay and duplicate events.",
+        "scope": "Atomic state/outbox commit, relay and duplicate events"
+    },
+    "canary": {
+        "id": "canary",
+        "title": "Google SRE canary releases",
+        "publisher": "sre.google",
+        "url": "https://sre.google/workbook/canarying-releases/",
+        "read": "Opened 2026-10-29; relevant material: Limited exposure, signal comparison and rollback.",
+        "scope": "Limited exposure, signal comparison and rollback"
+    },
+    "alerts": {
+        "id": "alerts",
+        "title": "Google SRE alerting on SLOs",
+        "publisher": "sre.google",
+        "url": "https://sre.google/workbook/alerting-on-slos/",
+        "read": "Opened 2026-10-29; relevant material: Error budgets and burn-rate context.",
+        "scope": "Error budgets and burn-rate context"
+    },
+    "cost": {
+        "id": "cost",
+        "title": "AWS cost optimization pillar",
+        "publisher": "docs.aws.amazon.com",
+        "url": "https://docs.aws.amazon.com/wellarchitected/latest/cost-optimization-pillar/welcome.html",
+        "read": "Opened 2026-10-29; relevant material: Cost drivers, requirements and total workload cost.",
+        "scope": "Cost drivers, requirements and total workload cost"
+    },
+    "trace": {
+        "id": "trace",
+        "title": "OpenTelemetry trace concepts",
+        "publisher": "opentelemetry.io",
+        "url": "https://opentelemetry.io/docs/concepts/signals/traces/",
+        "read": "Opened 2026-10-29; relevant material: Trace context, spans and parent relationships.",
+        "scope": "Trace context, spans and parent relationships"
+    },
+    "authn": {
+        "id": "authn",
+        "title": "OWASP authentication guidance",
+        "publisher": "cheatsheetseries.owasp.org",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html",
+        "read": "Opened 2026-10-29; relevant material: Identity, credentials and validation boundaries.",
+        "scope": "Identity, credentials and validation boundaries"
+    },
+    "authz": {
+        "id": "authz",
+        "title": "OWASP authorization guidance",
+        "publisher": "cheatsheetseries.owasp.org",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+        "read": "Opened 2026-10-29; relevant material: Least privilege, deny by default and per-request resource checks.",
+        "scope": "Least privilege, deny by default and per-request resource checks"
+    },
+    "secrets": {
+        "id": "secrets",
+        "title": "OWASP secrets management",
+        "publisher": "cheatsheetseries.owasp.org",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html",
+        "read": "Opened 2026-10-29; relevant material: Access, storage, rotation and secret lifecycle.",
+        "scope": "Access, storage, rotation and secret lifecycle"
+    },
+    "injection": {
+        "id": "injection",
+        "title": "OWASP SQL injection prevention",
+        "publisher": "cheatsheetseries.owasp.org",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+        "read": "Opened 2026-10-29; relevant material: Parameterized statements and separation of code/data.",
+        "scope": "Parameterized statements and separation of code/data"
+    },
+    "privacy": {
+        "id": "privacy",
+        "title": "W3C Privacy Principles",
+        "publisher": "www.w3.org",
+        "url": "https://www.w3.org/TR/privacy-principles/",
+        "read": "Opened 2026-10-29; relevant material: Data minimisation and purpose limitation; engineering principles, not legal advice.",
+        "scope": "Data minimisation and purpose limitation; engineering principles, not legal advice"
+    },
+    "robots": {
+        "id": "robots",
+        "title": "RFC 9309 Robots Exclusion Protocol",
+        "publisher": "www.rfc-editor.org",
+        "url": "https://www.rfc-editor.org/rfc/rfc9309.html",
+        "read": "Opened 2026-10-29; relevant material: Crawler allow/disallow rules and security limitations.",
+        "scope": "Crawler allow/disallow rules and security limitations"
+    },
+    "mapreduce": {
+        "id": "mapreduce",
+        "title": "Dean and Ghemawat MapReduce",
+        "publisher": "research.google",
+        "url": "https://research.google/pubs/mapreduce-simplified-data-processing-on-large-clusters/",
+        "read": "Opened 2026-10-29; relevant material: Map/reduce programming model and parallel processing.",
+        "scope": "Map/reduce programming model and parallel processing"
+    },
+    "adr": {
+        "id": "adr",
+        "title": "Nygard architecture decision records",
+        "publisher": "www.cognitect.com",
+        "url": "https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions",
+        "read": "Opened 2026-10-29; relevant material: Context, decisions and consequences.",
+        "scope": "Context, decisions and consequences"
+    },
+    "boundaries": {
+        "id": "boundaries",
+        "title": "Fowler Monolith First",
+        "publisher": "martinfowler.com",
+        "url": "https://martinfowler.com/bliki/MonolithFirst.html",
+        "read": "Opened 2026-10-29; relevant material: Boundary discovery and service separation; design opinion, not universal evidence.",
+        "scope": "Boundary discovery and service separation; design opinion, not universal evidence"
+    },
+    "beam": {
+        "id": "beam",
+        "title": "Apache Beam programming guide \u00a78.4: watermarks and late data",
+        "publisher": "beam.apache.org",
+        "url": "https://beam.apache.org/documentation/programming-guide/#watermarks-and-late-data",
+        "read": "Opened 2026-10-29; relevant material: event time, watermark estimates, late elements and allowed lateness.",
+        "scope": "Watermarks, late data and correction policy"
+    },
+    "rabbit-fanout": {
+        "id": "rabbit-fanout",
+        "title": "RabbitMQ publish/subscribe tutorial",
+        "publisher": "rabbitmq.com",
+        "url": "https://www.rabbitmq.com/tutorials/tutorial-three-javascript",
+        "read": "Opened 2026-10-29; relevant material: independent consumers, fanout exchanges and delivery to each bound queue.",
+        "scope": "Independent subscription delivery"
+    }
+}

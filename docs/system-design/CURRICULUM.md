@@ -78,105 +78,105 @@ Chapters on all three paths form the shared core.
 | rpc | 18 | 2 | RPC and gRPC | api-design | beginner interview production | implemented |
 | graphql | 19 | 2 | GraphQL and client-shaped queries | api-design | interview production | implemented |
 | realtime | 20 | 2 | Pushing to clients: polling, SSE and WebSockets | http | beginner interview production | implemented |
-| idempotency | 21 | 2 | Idempotency and safe retries | api-design | beginner interview production | planned |
-| pagination | 22 | 2 | Pagination and large results | rest | interview production | planned |
-| encoding-evolution | 23 | 2 | Encoding data and evolving schemas | api-design | interview production | planned |
-| rate-limiting | 24 | 2 | Rate limiting: token and leaky buckets | api-design | beginner interview production | planned |
-| data-modelling | 25 | 2 | Data modelling: entities, relationships and access patterns | api-design | beginner interview production | planned |
-| relational-model | 26 | 2 | The relational model and SQL | data-modelling | beginner interview production | planned |
-| normalisation | 27 | 2 | Normalisation and denormalisation | relational-model | beginner interview production | planned |
-| document-model | 28 | 2 | Document, key-value, wide-column and graph models | relational-model | beginner interview production | planned |
-| storage-engines | 29 | 3 | How databases store data: pages, logs, B-trees and LSM-trees | relational-model latency-numbers | beginner interview production | planned |
-| indexes | 30 | 3 | Indexes: making reads fast | storage-engines | beginner interview production | planned |
-| query-planning | 31 | 3 | Query plans and slow queries | indexes | production | planned |
-| transactions | 32 | 3 | Transactions and ACID | relational-model | beginner interview production | planned |
-| isolation | 33 | 3 | Isolation levels and anomalies | transactions | interview production | planned |
-| concurrency-control | 34 | 3 | Concurrency control: locks and MVCC | isolation storage-engines | production | planned |
-| probabilistic-structures | 35 | 3 | Probabilistic structures: Bloom filters and sketches | storage-engines | interview production | planned |
-| search-indexes | 36 | 3 | Full-text search and inverted indexes | indexes | interview production | planned |
-| geospatial-indexes | 37 | 3 | Geospatial indexes | indexes | interview production | planned |
-| analytics-storage | 38 | 3 | Analytics storage: column stores and data warehouses | storage-engines indexes | interview production | planned |
-| object-storage | 39 | 3 | Blob and object storage | storage-engines | beginner interview production | planned |
-| choosing-a-database | 40 | 3 | Choosing a database | document-model indexes transactions | beginner interview production | planned |
-| vertical-horizontal | 41 | 4 | Vertical and horizontal scaling | utilisation-queueing | beginner interview production | planned |
-| stateless-services | 42 | 4 | Stateless services and where state goes | vertical-horizontal | beginner interview production | planned |
-| load-balancing | 43 | 4 | Load balancing: layer 4, layer 7 and algorithms | stateless-services tcp http | beginner interview production | planned |
-| reverse-proxies | 44 | 4 | Reverse proxies and API gateways | load-balancing | beginner interview production | planned |
-| health-checks | 45 | 4 | Health checks and failover | load-balancing | beginner interview production | planned |
-| compute-platforms | 46 | 4 | Compute platforms: VMs, containers and orchestration | stateless-services | production | planned |
-| autoscaling | 47 | 4 | Autoscaling and capacity planning | vertical-horizontal estimation | interview production | planned |
-| caching-basics | 48 | 5 | Caching: hits, misses and why it works | latency-numbers | beginner interview production | planned |
-| http-caching | 49 | 5 | HTTP caching: Cache-Control and validation | caching-basics http | beginner interview production | planned |
-| cdn | 50 | 5 | CDNs and the edge | http-caching dns | beginner interview production | planned |
-| app-caching | 51 | 5 | Application caches: cache-aside, write-through and write-back | caching-basics stateless-services | beginner interview production | planned |
-| eviction | 52 | 5 | Eviction: LRU, LFU and TTL | caching-basics | beginner interview production | planned |
-| cache-invalidation | 53 | 5 | Invalidation and staleness | app-caching | beginner interview production | planned |
-| cache-failure-modes | 54 | 5 | Stampedes, hot keys and cache failure | cache-invalidation load-balancing | interview production | planned |
-| async-work | 55 | 6 | Synchronous and asynchronous work | utilisation-queueing stateless-services | beginner interview production | planned |
-| message-queues | 56 | 6 | Message queues and workers | async-work | beginner interview production | planned |
-| delivery-semantics | 57 | 6 | Delivery guarantees: at-most-once, at-least-once, effectively-once | message-queues idempotency | beginner interview production | planned |
-| pub-sub | 58 | 6 | Publish/subscribe and fan-out | message-queues | beginner interview production | planned |
-| backpressure | 59 | 6 | Backpressure and load shedding | message-queues | interview production | planned |
-| logs-streams | 60 | 6 | Logs and event streams | pub-sub storage-engines | interview production | planned |
-| stream-processing | 61 | 6 | Stream processing: windows and state | logs-streams | interview production | planned |
-| batch-processing | 62 | 6 | Batch processing and MapReduce | storage-engines estimation | interview production | planned |
-| event-driven | 63 | 6 | Event-driven architecture: outbox and change data capture | logs-streams transactions | interview production | planned |
-| review-foundations | 64 | 6 | Review: mixed practice on stages 1–6 | event-driven cache-failure-modes choosing-a-database | interview production | planned |
-| distributed-trouble | 65 | 7 | Map: what breaks in distributed systems | tcp health-checks | beginner interview production | planned |
-| replication | 66 | 7 | Replication: leaders and followers | distributed-trouble transactions | beginner interview production | planned |
-| replication-lag | 67 | 7 | Replication lag and read-your-writes | replication | beginner interview production | planned |
-| multi-leader-leaderless | 68 | 7 | Multi-leader and leaderless replication, quorums | replication-lag | interview production | planned |
-| conflict-resolution | 69 | 7 | Conflict resolution and CRDTs | multi-leader-leaderless | interview production | planned |
-| consistency-models | 70 | 7 | Consistency models: from linearizable to eventual | replication-lag isolation | interview production | planned |
-| cap-pacelc | 71 | 7 | CAP and PACELC, read carefully | consistency-models | interview production | planned |
-| partitioning | 72 | 7 | Partitioning (sharding) | replication indexes | beginner interview production | planned |
-| consistent-hashing | 73 | 7 | Consistent hashing and rebalancing | partitioning | interview production | planned |
-| hot-partitions | 74 | 7 | Hot keys and skew | consistent-hashing | interview production | planned |
-| distributed-transactions | 75 | 7 | Distributed transactions: two-phase commit and sagas | partitioning event-driven | interview production | planned |
-| time-clocks | 76 | 8 | Time, clocks and ordering | distributed-trouble | interview production | planned |
-| unique-ids | 77 | 8 | Generating unique IDs | time-clocks partitioning | interview production | planned |
-| leader-election | 78 | 8 | Leader election, leases and fencing | time-clocks health-checks | interview production | planned |
-| distributed-locks | 79 | 8 | Distributed locks and their limits | leader-election | interview production | planned |
-| consensus | 80 | 8 | Consensus and Raft | leader-election replication | interview production | planned |
-| membership-gossip | 81 | 8 | Membership and gossip | distributed-trouble | production | planned |
-| coordination-services | 82 | 8 | Coordination services and service discovery | consensus load-balancing | interview production | planned |
-| failure-modes | 83 | 9 | Failure modes and blast radius | distributed-trouble | beginner interview production | planned |
-| timeouts-retries | 84 | 9 | Timeouts, retries, backoff and jitter | failure-modes idempotency | beginner interview production | planned |
-| circuit-breakers | 85 | 9 | Circuit breakers and bulkheads | timeouts-retries | interview production | planned |
-| cascading-failures | 86 | 9 | Overload and cascading failures | circuit-breakers backpressure | interview production | planned |
-| slos | 87 | 9 | SLIs, SLOs and error budgets | percentiles failure-modes | beginner interview production | planned |
-| observability | 88 | 9 | Observability: metrics, logs and traces | slos | beginner interview production | planned |
-| distributed-tracing | 89 | 9 | Distributed tracing | observability | production | planned |
-| alerting-incidents | 90 | 9 | Alerting, on-call and incident response | observability | production | planned |
-| deployments | 91 | 9 | Safe deployments: canaries, feature flags and rollbacks | health-checks observability | interview production | planned |
-| zero-downtime-migrations | 92 | 9 | Schema and data migrations without downtime | encoding-evolution deployments replication | production | planned |
-| multi-region | 93 | 9 | Multi-region and disaster recovery | replication-lag cdn failure-modes cap-pacelc | interview production | planned |
-| fault-injection | 94 | 9 | Testing distributed systems: fault injection and chaos | failure-modes observability | production | planned |
-| security-map | 95 | 10 | Map: security in system design | api-design tls | beginner interview production | planned |
-| authentication | 96 | 10 | Authentication: sessions, tokens, OAuth and OpenID Connect | security-map | beginner interview production | planned |
-| authorization | 97 | 10 | Authorization and access control | authentication | beginner interview production | planned |
-| encryption-secrets | 98 | 10 | Encryption at rest, in transit, and secrets management | security-map | interview production | planned |
-| web-vulnerabilities | 99 | 10 | Common web vulnerabilities (OWASP Top 10) | authorization | beginner interview production | planned |
-| abuse-protection | 100 | 10 | Abuse protection: DDoS, bots and quotas | rate-limiting cdn security-map | interview production | planned |
-| privacy-retention | 101 | 10 | Privacy, data minimisation and retention | security-map | production | planned |
-| service-boundaries | 102 | 11 | Monoliths, modular monoliths and microservices | stateless-services api-design | beginner interview production | planned |
-| service-communication | 103 | 11 | Service-to-service communication | service-boundaries rpc message-queues | interview production | planned |
-| cost | 104 | 11 | Cost as a design constraint | estimation autoscaling | production | planned |
-| decision-records | 105 | 11 | Making and recording trade-off decisions | service-boundaries | interview production | planned |
-| review-distributed | 106 | 11 | Review: mixed practice on stages 7–11 | consensus multi-region service-communication cascading-failures | interview production | planned |
-| interview-method | 107 | 12 | The system design interview method | estimation api-design data-modelling | interview | planned |
-| case-url-shortener | 108 | 12 | Case: URL shortener | interview-method unique-ids app-caching choosing-a-database | interview | planned |
-| case-rate-limiter | 109 | 12 | Case: distributed rate limiter | interview-method rate-limiting app-caching consistency-models | interview | planned |
-| case-news-feed | 110 | 12 | Case: news feed | interview-method pub-sub app-caching partitioning | interview | planned |
-| case-chat | 111 | 12 | Case: chat system | interview-method realtime message-queues partitioning | interview | planned |
-| case-notifications | 112 | 12 | Case: notification system | interview-method delivery-semantics rate-limiting | interview | planned |
-| case-web-crawler | 113 | 12 | Case: web crawler | interview-method dns message-queues probabilistic-structures | interview | planned |
-| case-search-autocomplete | 114 | 12 | Case: search autocomplete | interview-method search-indexes app-caching | interview | planned |
-| case-file-storage | 115 | 12 | Case: file storage and sync | interview-method object-storage cdn conflict-resolution | interview | planned |
-| case-video-streaming | 116 | 12 | Case: video streaming | interview-method object-storage cdn batch-processing | interview | planned |
-| case-proximity | 117 | 12 | Case: nearby places | interview-method geospatial-indexes app-caching | interview | planned |
-| case-payments | 118 | 12 | Case: payments and ledgers | interview-method idempotency distributed-transactions isolation | interview | planned |
-| capstone | 119 | 12 | Capstone: design, estimate and defend a system end to end | decision-records review-distributed case-payments | interview | planned |
+| idempotency | 21 | 2 | Idempotency and safe retries | api-design | beginner interview production | implemented |
+| pagination | 22 | 2 | Pagination and large results | rest | interview production | implemented |
+| encoding-evolution | 23 | 2 | Encoding data and evolving schemas | api-design | interview production | implemented |
+| rate-limiting | 24 | 2 | Rate limiting: token and leaky buckets | api-design | beginner interview production | implemented |
+| data-modelling | 25 | 2 | Data modelling: entities, relationships and access patterns | api-design | beginner interview production | implemented |
+| relational-model | 26 | 2 | The relational model and SQL | data-modelling | beginner interview production | implemented |
+| normalisation | 27 | 2 | Normalisation and denormalisation | relational-model | beginner interview production | implemented |
+| document-model | 28 | 2 | Document, key-value, wide-column and graph models | relational-model | beginner interview production | implemented |
+| storage-engines | 29 | 3 | How databases store data: pages, logs, B-trees and LSM-trees | relational-model latency-numbers | beginner interview production | implemented |
+| indexes | 30 | 3 | Indexes: making reads fast | storage-engines | beginner interview production | implemented |
+| query-planning | 31 | 3 | Query plans and slow queries | indexes | production | implemented |
+| transactions | 32 | 3 | Transactions and ACID | relational-model | beginner interview production | implemented |
+| isolation | 33 | 3 | Isolation levels and anomalies | transactions | interview production | implemented |
+| concurrency-control | 34 | 3 | Concurrency control: locks and MVCC | isolation storage-engines | production | implemented |
+| probabilistic-structures | 35 | 3 | Probabilistic structures: Bloom filters and sketches | storage-engines | interview production | implemented |
+| search-indexes | 36 | 3 | Full-text search and inverted indexes | indexes | interview production | implemented |
+| geospatial-indexes | 37 | 3 | Geospatial indexes | indexes | interview production | implemented |
+| analytics-storage | 38 | 3 | Analytics storage: column stores and data warehouses | storage-engines indexes | interview production | implemented |
+| object-storage | 39 | 3 | Blob and object storage | storage-engines | beginner interview production | implemented |
+| choosing-a-database | 40 | 3 | Choosing a database | document-model indexes transactions | beginner interview production | implemented |
+| vertical-horizontal | 41 | 4 | Vertical and horizontal scaling | utilisation-queueing | beginner interview production | implemented |
+| stateless-services | 42 | 4 | Stateless services and where state goes | vertical-horizontal | beginner interview production | implemented |
+| load-balancing | 43 | 4 | Load balancing: layer 4, layer 7 and algorithms | stateless-services tcp http | beginner interview production | implemented |
+| reverse-proxies | 44 | 4 | Reverse proxies and API gateways | load-balancing | beginner interview production | implemented |
+| health-checks | 45 | 4 | Health checks and failover | load-balancing | beginner interview production | implemented |
+| compute-platforms | 46 | 4 | Compute platforms: VMs, containers and orchestration | stateless-services | production | implemented |
+| autoscaling | 47 | 4 | Autoscaling and capacity planning | vertical-horizontal estimation | interview production | implemented |
+| caching-basics | 48 | 5 | Caching: hits, misses and why it works | latency-numbers | beginner interview production | implemented |
+| http-caching | 49 | 5 | HTTP caching: Cache-Control and validation | caching-basics http | beginner interview production | implemented |
+| cdn | 50 | 5 | CDNs and the edge | http-caching dns | beginner interview production | implemented |
+| app-caching | 51 | 5 | Application caches: cache-aside, write-through and write-back | caching-basics stateless-services | beginner interview production | implemented |
+| eviction | 52 | 5 | Eviction: LRU, LFU and TTL | caching-basics | beginner interview production | implemented |
+| cache-invalidation | 53 | 5 | Invalidation and staleness | app-caching | beginner interview production | implemented |
+| cache-failure-modes | 54 | 5 | Stampedes, hot keys and cache failure | cache-invalidation load-balancing | interview production | implemented |
+| async-work | 55 | 6 | Synchronous and asynchronous work | utilisation-queueing stateless-services | beginner interview production | implemented |
+| message-queues | 56 | 6 | Message queues and workers | async-work | beginner interview production | implemented |
+| delivery-semantics | 57 | 6 | Delivery guarantees: at-most-once, at-least-once, effectively-once | message-queues idempotency | beginner interview production | implemented |
+| pub-sub | 58 | 6 | Publish/subscribe and fan-out | message-queues | beginner interview production | implemented |
+| backpressure | 59 | 6 | Backpressure and load shedding | message-queues | interview production | implemented |
+| logs-streams | 60 | 6 | Logs and event streams | pub-sub storage-engines | interview production | implemented |
+| stream-processing | 61 | 6 | Stream processing: windows and state | logs-streams | interview production | implemented |
+| batch-processing | 62 | 6 | Batch processing and MapReduce | storage-engines estimation | interview production | implemented |
+| event-driven | 63 | 6 | Event-driven architecture: outbox and change data capture | logs-streams transactions | interview production | implemented |
+| review-foundations | 64 | 6 | Review: mixed practice on stages 1–6 | event-driven cache-failure-modes choosing-a-database | interview production | implemented |
+| distributed-trouble | 65 | 7 | Map: what breaks in distributed systems | tcp health-checks | beginner interview production | implemented |
+| replication | 66 | 7 | Replication: leaders and followers | distributed-trouble transactions | beginner interview production | implemented |
+| replication-lag | 67 | 7 | Replication lag and read-your-writes | replication | beginner interview production | implemented |
+| multi-leader-leaderless | 68 | 7 | Multi-leader and leaderless replication, quorums | replication-lag | interview production | implemented |
+| conflict-resolution | 69 | 7 | Conflict resolution and CRDTs | multi-leader-leaderless | interview production | implemented |
+| consistency-models | 70 | 7 | Consistency models: from linearizable to eventual | replication-lag isolation | interview production | implemented |
+| cap-pacelc | 71 | 7 | CAP and PACELC, read carefully | consistency-models | interview production | implemented |
+| partitioning | 72 | 7 | Partitioning (sharding) | replication indexes | beginner interview production | implemented |
+| consistent-hashing | 73 | 7 | Consistent hashing and rebalancing | partitioning | interview production | implemented |
+| hot-partitions | 74 | 7 | Hot keys and skew | consistent-hashing | interview production | implemented |
+| distributed-transactions | 75 | 7 | Distributed transactions: two-phase commit and sagas | partitioning event-driven | interview production | implemented |
+| time-clocks | 76 | 8 | Time, clocks and ordering | distributed-trouble | interview production | implemented |
+| unique-ids | 77 | 8 | Generating unique IDs | time-clocks partitioning | interview production | implemented |
+| leader-election | 78 | 8 | Leader election, leases and fencing | time-clocks health-checks | interview production | implemented |
+| distributed-locks | 79 | 8 | Distributed locks and their limits | leader-election | interview production | implemented |
+| consensus | 80 | 8 | Consensus and Raft | leader-election replication | interview production | implemented |
+| membership-gossip | 81 | 8 | Membership and gossip | distributed-trouble | production | implemented |
+| coordination-services | 82 | 8 | Coordination services and service discovery | consensus load-balancing | interview production | implemented |
+| failure-modes | 83 | 9 | Failure modes and blast radius | distributed-trouble | beginner interview production | implemented |
+| timeouts-retries | 84 | 9 | Timeouts, retries, backoff and jitter | failure-modes idempotency | beginner interview production | implemented |
+| circuit-breakers | 85 | 9 | Circuit breakers and bulkheads | timeouts-retries | interview production | implemented |
+| cascading-failures | 86 | 9 | Overload and cascading failures | circuit-breakers backpressure | interview production | implemented |
+| slos | 87 | 9 | SLIs, SLOs and error budgets | percentiles failure-modes | beginner interview production | implemented |
+| observability | 88 | 9 | Observability: metrics, logs and traces | slos | beginner interview production | implemented |
+| distributed-tracing | 89 | 9 | Distributed tracing | observability | production | implemented |
+| alerting-incidents | 90 | 9 | Alerting, on-call and incident response | observability | production | implemented |
+| deployments | 91 | 9 | Safe deployments: canaries, feature flags and rollbacks | health-checks observability | interview production | implemented |
+| zero-downtime-migrations | 92 | 9 | Schema and data migrations without downtime | encoding-evolution deployments replication | production | implemented |
+| multi-region | 93 | 9 | Multi-region and disaster recovery | replication-lag cdn failure-modes cap-pacelc | interview production | implemented |
+| fault-injection | 94 | 9 | Testing distributed systems: fault injection and chaos | failure-modes observability | production | implemented |
+| security-map | 95 | 10 | Map: security in system design | api-design tls | beginner interview production | implemented |
+| authentication | 96 | 10 | Authentication: sessions, tokens, OAuth and OpenID Connect | security-map | beginner interview production | implemented |
+| authorization | 97 | 10 | Authorization and access control | authentication | beginner interview production | implemented |
+| encryption-secrets | 98 | 10 | Encryption at rest, in transit, and secrets management | security-map | interview production | implemented |
+| web-vulnerabilities | 99 | 10 | Common web vulnerabilities (OWASP Top 10) | authorization | beginner interview production | implemented |
+| abuse-protection | 100 | 10 | Abuse protection: DDoS, bots and quotas | rate-limiting cdn security-map | interview production | implemented |
+| privacy-retention | 101 | 10 | Privacy, data minimisation and retention | security-map | production | implemented |
+| service-boundaries | 102 | 11 | Monoliths, modular monoliths and microservices | stateless-services api-design | beginner interview production | implemented |
+| service-communication | 103 | 11 | Service-to-service communication | service-boundaries rpc message-queues | interview production | implemented |
+| cost | 104 | 11 | Cost as a design constraint | estimation autoscaling | production | implemented |
+| decision-records | 105 | 11 | Making and recording trade-off decisions | service-boundaries | interview production | implemented |
+| review-distributed | 106 | 11 | Review: mixed practice on stages 7–11 | consensus multi-region service-communication cascading-failures | interview production | implemented |
+| interview-method | 107 | 12 | The system design interview method | estimation api-design data-modelling | interview | implemented |
+| case-url-shortener | 108 | 12 | Case: URL shortener | interview-method unique-ids app-caching choosing-a-database | interview | implemented |
+| case-rate-limiter | 109 | 12 | Case: distributed rate limiter | interview-method rate-limiting app-caching consistency-models | interview | implemented |
+| case-news-feed | 110 | 12 | Case: news feed | interview-method pub-sub app-caching partitioning | interview | implemented |
+| case-chat | 111 | 12 | Case: chat system | interview-method realtime message-queues partitioning | interview | implemented |
+| case-notifications | 112 | 12 | Case: notification system | interview-method delivery-semantics rate-limiting | interview | implemented |
+| case-web-crawler | 113 | 12 | Case: web crawler | interview-method dns message-queues probabilistic-structures | interview | implemented |
+| case-search-autocomplete | 114 | 12 | Case: search autocomplete | interview-method search-indexes app-caching | interview | implemented |
+| case-file-storage | 115 | 12 | Case: file storage and sync | interview-method object-storage cdn conflict-resolution | interview | implemented |
+| case-video-streaming | 116 | 12 | Case: video streaming | interview-method object-storage cdn batch-processing | interview | implemented |
+| case-proximity | 117 | 12 | Case: nearby places | interview-method geospatial-indexes app-caching | interview | implemented |
+| case-payments | 118 | 12 | Case: payments and ledgers | interview-method idempotency distributed-transactions isolation | interview | implemented |
+| capstone | 119 | 12 | Capstone: design, estimate and defend a system end to end | decision-records review-distributed case-payments | interview | implemented |
 
 <!-- graph:end -->
 

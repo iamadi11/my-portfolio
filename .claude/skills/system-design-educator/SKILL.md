@@ -5,7 +5,7 @@ description: Build, improve or audit this repo’s beginner-to-advanced system d
 
 # System design educator
 
-Outcome: a college fresher can predict a system’s next event, explain why it happened, and make a design choice. Rich 3D supports that outcome; decorative motion does not. Follow the user’s requested scope, including several chapters in one session.
+Outcome: a college fresher can predict a system’s next event, explain why it happened, and make a design choice. Rich 3D supports that outcome; decorative motion does not. A film is an introduction, not a completed lesson. Follow the user’s requested scope, including several chapters in one session.
 
 ## Cheap context, persistent work
 
@@ -14,6 +14,14 @@ Outcome: a college fresher can predict a system’s next event, explain why it h
 3. Select references below by the unresolved decision. Do not load the reference library or prerequisite essays. Reuse recorded primary sources when the same claim is already supported; browse authoritative sources for new claims and inspect relevant sections, not full manuals.
 4. Plan a batch as chapter ids + objective + mechanism + misconception + evidence needed. Finish each chapter’s source/storyboard/model before its UI. Batch independent checks; fix causes before repeating. Log paths, checks and unfinished work once in COURSE_STATE, with chapter status only in CURRICULUM.
 5. Keep progress and handoff concise. Do not print checklists, giant diffs, source dumps or repeated plans. Token saving comes from reusable code and selective context, never missing explanations or fabricated verification.
+
+## Learning and animation gates
+
+Before authoring, use [learning-and-motion.md](references/learning-and-motion.md): record the beginner’s question, misconception, observable state, counterexample and transfer task. One model must generate the visible messages, quantities and experiment verdict. Generic packet movement cannot stand in for quorum, cache freshness, transaction atomicity or query planning. Reuse geometry; vary the actual mechanism.
+
+Treat three outcomes separately: viewed, experimented, recalled. Seeking to the final frame does not demonstrate learning. Include a worked example with assumptions, a changed-input prediction, explanatory feedback and a later prerequisite recap. Cases/capstone need requirements, estimates, read/write paths, failure and a defended tradeoff.
+
+Check all curriculum ids, not just built pages: routes, prerequisites, sources, meaningful experiment variation and navigation to the final chapter. Keep implementation coverage separate from review quality. Review representative mechanisms independently and carry unreviewed chapters honestly.
 
 ## Lesson contract
 
@@ -43,7 +51,7 @@ A request for the whole course authorizes batch implementation. Choose coherent 
 
 `init`: audit actual files and establish state. `curriculum`: update the learning graph. `next`: resume incomplete work or take the next ready chapter. `chapter <id>`: develop that chapter. `batch <ids>`: repeat the chapter contract for the requested set. `audit <id>`: repair the observed failure and rerun affected checks.
 
-Commands from repo root: `node .claude/skills/system-design-educator/scripts/course.mjs next|check|show <id>|skill`; skill tests: `node --test .claude/skills/system-design-educator/scripts/course.test.mjs`. Context helper accepts only existing chapter ids; no mutations.
+Commands from repo root: `node .claude/skills/system-design-educator/scripts/course.mjs next|check|show <id>|skill`; skill tests: `node --test .claude/skills/system-design-educator/scripts/*.test.mjs`. Context helper accepts only existing chapter ids; no mutations.
 
 ## On-demand reference map
 

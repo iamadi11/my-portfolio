@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 
 type Theme = 'system' | 'light' | 'dark';
-export default function CourseTheme(): React.JSX.Element {
+export default function CourseTheme({ chapterId }: { chapterId?: string }): React.JSX.Element {
     const [theme, setTheme] = useState<Theme>('system');
     useEffect(() => {
         try {
@@ -13,6 +13,14 @@ export default function CourseTheme(): React.JSX.Element {
             /* Optional preference storage. */
         }
     }, []);
+    useEffect(() => {
+        if (!chapterId) return;
+        try {
+            localStorage.setItem('learn-last-chapter', chapterId);
+        } catch {
+            /* Optional resume. */
+        }
+    }, [chapterId]);
     const change = (value: Theme) => {
         setTheme(value);
         document.documentElement.dataset.courseTheme = value;

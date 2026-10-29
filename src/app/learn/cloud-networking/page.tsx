@@ -39,7 +39,7 @@ const C = citeFor('cloud-networking', SOURCES, SOURCE_NUMBER);
 
 export default function Page(): React.JSX.Element {
     return (
-        <CourseShell crumbs={[{ label: 'Chapter 10' }]}>
+        <CourseShell chapterId="cloud-networking" crumbs={[{ label: 'Chapter 10' }]}>
             <article aria-labelledby="ch-h">
                 <ChapterHeader
                     kicker="Chapter 10 · Stage 1, Foundations"

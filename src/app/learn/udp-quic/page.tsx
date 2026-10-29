@@ -34,7 +34,7 @@ const C = citeFor('udp-quic', SOURCES, SOURCE_NUMBER);
 
 export default function Page(): React.JSX.Element {
     return (
-        <CourseShell crumbs={[{ label: 'Chapter 8' }]}>
+        <CourseShell chapterId="udp-quic" crumbs={[{ label: 'Chapter 8' }]}>
             <article aria-labelledby="ch-h">
                 <ChapterHeader
                     kicker="Chapter 8 · Stage 1, Foundations"

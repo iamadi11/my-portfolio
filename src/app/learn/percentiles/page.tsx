@@ -45,7 +45,7 @@ const added = gauge({ p: 0.99, extra: true });
 
 export default function Page(): React.JSX.Element {
     return (
-        <CourseShell crumbs={[{ label: 'Chapter 12' }]}>
+        <CourseShell chapterId="percentiles" crumbs={[{ label: 'Chapter 12' }]}>
             <article aria-labelledby="ch-h">
                 <ChapterHeader
                     kicker="Chapter 12 · Stage 1, Foundations"

@@ -32,7 +32,7 @@ const C = citeFor('latency-throughput', SOURCES, SOURCE_NUMBER);
 
 export default function Page(): React.JSX.Element {
     return (
-        <CourseShell crumbs={[{ label: 'Chapter 11' }]}>
+        <CourseShell chapterId="latency-throughput" crumbs={[{ label: 'Chapter 11' }]}>
             <article aria-labelledby="ch-h">
                 <ChapterHeader
                     kicker="Chapter 11 · Stage 1, Foundations"

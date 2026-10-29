@@ -29,7 +29,7 @@ function Ref({ stats, title }: { stats: ProjectStats; title: string }): React.JS
     return (
         <dl className="asm-ref" {...win(1.4, 2.3)}>
             <dt className="asm-ref-h">
-                Ref<span className="sr-only"> · live figures for {title}</span>
+                Ref<span className="sr-only"> · public source snapshot for {title}</span>
             </dt>
             {repo ? (
                 <dd>

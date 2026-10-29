@@ -53,7 +53,7 @@ const closeGap = pairOf('ssd', 'net');
 
 export default function Page(): React.JSX.Element {
     return (
-        <CourseShell crumbs={[{ label: 'Chapter 13' }]}>
+        <CourseShell chapterId="latency-numbers" crumbs={[{ label: 'Chapter 13' }]}>
             <article aria-labelledby="ch-h">
                 <ChapterHeader
                     kicker="Chapter 13 · Stage 1, Foundations"

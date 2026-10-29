@@ -2,6 +2,7 @@ import React from 'react';
 
 import Link from 'next/link';
 
+import CourseChapterNav from './CourseChapterNav';
 import CourseTheme from './CourseTheme';
 
 import './learn.css';
@@ -12,10 +13,12 @@ import './learn.css';
  */
 export default function CourseShell({
     crumbs,
+    chapterId,
     children,
 }: {
     /** Trail after "System design", e.g. [{ label: 'Chapter 1' }]. The last one is the current page. */
     crumbs?: { label: string; href?: string }[];
+    chapterId?: string;
     children: React.ReactNode;
 }): React.JSX.Element {
     return (
@@ -52,7 +55,7 @@ export default function CourseShell({
                     </ol>
                 </nav>
                 <div className="ln-bar-tools">
-                    <CourseTheme />
+                    <CourseTheme chapterId={chapterId} />
                     {crumbs?.some((c) => c.label === 'Sources') ? (
                         <span className="ln-note" aria-current="page">
                             Sources
@@ -67,6 +70,7 @@ export default function CourseShell({
             <main id="main-content" tabIndex={-1}>
                 {children}
             </main>
+            {chapterId && <CourseChapterNav id={chapterId} />}
         </div>
     );
 }

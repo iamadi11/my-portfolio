@@ -31,7 +31,7 @@ const C = citeFor('tls', SOURCES, SOURCE_NUMBER);
 
 export default function Page(): React.JSX.Element {
     return (
-        <CourseShell crumbs={[{ label: 'Chapter 6' }]}>
+        <CourseShell chapterId="tls" crumbs={[{ label: 'Chapter 6' }]}>
             <article aria-labelledby="ch-h">
                 <ChapterHeader
                     kicker="Chapter 6 · Stage 1, Foundations"

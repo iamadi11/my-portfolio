@@ -43,7 +43,7 @@ const size = estimate(SIZE_ASSUMPTIONS);
 
 export default function Page(): React.JSX.Element {
     return (
-        <CourseShell crumbs={[{ label: 'Chapter 14' }]}>
+        <CourseShell chapterId="estimation" crumbs={[{ label: 'Chapter 14' }]}>
             <article aria-labelledby="ch-h">
                 <ChapterHeader
                     kicker="Chapter 14 · Stage 1, Foundations"

@@ -1,3 +1,4 @@
+import { BLUEPRINTS, getAcademyLesson } from './academy';
 import { API_DESIGN_SOURCE_NUMBER, API_DESIGN_SOURCES } from './api-design-sources';
 import { API_LESSONS } from './api-lessons';
 import { CLIENT_SERVER_SOURCE_NUMBER, CLIENT_SERVER_SOURCES } from './client-server-sources';
@@ -172,6 +173,17 @@ export const SOURCE_CHAPTERS: readonly SourceChapter[] = [
         sources: lesson.sources,
         numbers: Object.fromEntries(lesson.sources.map((source, i) => [source.id, i + 1])),
     })),
+    ...BLUEPRINTS.map((blueprint) => {
+        const lesson = getAcademyLesson(blueprint.id)!;
+        return {
+            id: lesson.id,
+            title: lesson.chapter.title,
+            href: `/learn/${lesson.id}`,
+            note: 'Primary material inspected 2026-10-29. Numeric examples and finite models are illustrative; these sources support the stated rules, not production performance or automatic mastery claims.',
+            sources: lesson.sourceRecords,
+            numbers: Object.fromEntries(lesson.sourceRecords.map((source, index) => [source.id, index + 1])),
+        };
+    }),
 ];
 
 /** Anchor for one source on `/learn/sources`. Unique across chapters: the same RFC is listed once per chapter. */

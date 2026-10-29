@@ -19,6 +19,8 @@ type SceneProps = {
     /** Camera keys for the `.bp-cam` group inside (see `Pen.render({ cam: true })`); `camSm` for ≤ 640 px. */
     cam?: CamKey[];
     camSm?: CamKey[];
+    /** Whole-sheet camera used for reduced motion and print: cx, cy, zoom. */
+    camStill?: [number, number, number];
     className?: string;
     stageClassName?: string;
     id?: string;
@@ -34,6 +36,7 @@ export function Scene({
     lead,
     cam,
     camSm,
+    camStill,
     className,
     stageClassName,
     children,
@@ -45,6 +48,7 @@ export function Scene({
         'data-t': T,
         'data-lead': lead,
         'data-cam': cam ? JSON.stringify(cam) : undefined,
+        'data-cam-still': camStill ? JSON.stringify(camStill) : undefined,
         'data-cam-sm': camSm ? JSON.stringify(camSm) : undefined,
     };
     if (mode === 'pin')

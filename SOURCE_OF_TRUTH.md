@@ -1,6 +1,6 @@
 # Source of truth — Aditya Raj portfolio
 
-**Last reviewed:** 2026-10-19 (owner: the live site is the correct state)  
+**Last reviewed:** 2026-10-29 (public project source audit; owner-confirmed career facts preserved)
 **Canonical data:** `src/content/site.ts` (`SITE`). The owner confirmed on 2026-10-19 that the site's data is more current than the resume PDF: it already merges the resume, the LinkedIn export (2026-10-17), GitHub and the owner's own word. This file mirrors it.  
 **Source PDF:** `Aditya_Raj_SDE.pdf` (June 2026; git-ignored, older than the site).  
 **Hierarchy (strict):** `src/content/site.ts` → resume → LinkedIn → GitHub. A new fact enters `site.ts` only from the owner, the resume, LinkedIn or GitHub; never invent one.
@@ -150,8 +150,8 @@ Role-level bullets now come from the LinkedIn export (`Profile.pdf`, 2026-10-17)
 
 - **Eidos** — https://github.com/sweidos/eidos (moved from `iamadi11/eidos`; owner is the main author) — docs https://sweidos.vercel.app — npm `@sweidos/eidos` — "Never lose a write": durable client-mutation queue (IndexedDB replay, idempotency keys).
 - **MCP UI studio** — https://github.com/iamadi11/mcp-ui-poc — https://mcp-ui-poc.vercel.app/ — chat turn → versioned, publishable widget.
-- **Spatial** — https://github.com/iamadi11/spatial — https://spatial-zeta.vercel.app — real-time UI performance anti-pattern detector.
-- **Sidecar** — https://github.com/iamadi11/progressive-image — progressive image loading (binary sidecar per image, runtime targeting < 1 KB).
+- **Spatial** — https://github.com/iamadi11/spatial — https://spatial-zeta.vercel.app — development-time UI performance anti-pattern detector (render counts, layout shifts, frame drops and browser memory when available).
+- **Sidecar** — https://github.com/iamadi11/progressive-image — progressive-image-loading prototype: browser runtime parses binary sidecars, displays intermediate previews and falls back to the full image. The public generator package was missing from the inspected checkout; no achieved size is claimed.
 - **Video Light Sync** — https://github.com/iamadi11/video-light-sync — screen colours → Yeelight/WLED lights via a local Electron hub.
 - Not featured (thin or early): mouse-follow, noesis, interview-lab, gpt-ui (SourceLens), stacks, frontend-master, task-management.
 
@@ -185,3 +185,7 @@ Ship only if:
 **(credibility OR first-impression OR conversion)** AND **verified data** AND **simple implementation**.
 
 Otherwise skip.
+
+## Public source audit — 2026-10-29
+
+See [the evidence ledger](docs/portfolio-audit-2026-10-29.md) for pinned revisions and source paths for all five featured projects. Corrected Spatial’s FPS label to frame drops and qualified browser memory. Replaced Sidecar’s advertised build/size claim with source-supported runtime-prototype behavior. Career facts remain owner-confirmed; public repos do not independently validate private employment metrics.

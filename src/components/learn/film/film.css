@@ -435,3 +435,40 @@ html[data-course-theme='dark'] .al-result-scene {
 .lf-lock circle {
     fill: var(--ink);
 }
+.lf-state-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    padding: 12px 26px;
+    border-top: 1px solid var(--rule);
+    font-size: 13px;
+}
+.lf-state-summary:empty {
+    display: none;
+}
+.lf-state-summary dt {
+    color: var(--ink-3);
+    font-size: 11px;
+}
+.lf-state-summary dd {
+    margin: 3px 0 0;
+    font-variant-numeric: tabular-nums;
+}
+.lf-count-label text {
+    fill: var(--ink);
+    font:
+        14px var(--font-arimo),
+        Arial,
+        sans-serif;
+    paint-order: stroke;
+    stroke: var(--paper);
+    stroke-width: 5px;
+}
+.lf-footnote .lf-step-mode {
+    min-height: 44px;
+    padding: 0 12px;
+    font-size: 12px;
+}
+.lf-step-mode[aria-pressed='true'] {
+    border-color: var(--ink);
+}

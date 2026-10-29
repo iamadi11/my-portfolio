@@ -5,7 +5,7 @@
 - Graph/status authority: `docs/system-design/CURRICULUM.md`; routes: `src/content/learn/chapters.ts`.
 - Short films: `src/content/learn/films.ts` (serializable topic-specific nodes, links, event beats).
 - Pure event sampling: `src/lib/learn/film-model.ts`; geometry: `src/components/learn/film/Scene.tsx`; player: `LessonFilm.tsx`.
-- Existing pages use `ChapterTabs chapterId="id"`; film leads Learn; original explanation is a closed disclosure. Keep original labs/quiz usable.
+- Existing pages server-select `LessonFilm` and pass it as `ChapterTabs film={...}`; film leads Learn; original explanation is a closed disclosure. Keep original labs/quiz usable.
 - New chapter content: `src/content/learn/api-lessons.ts`; `src/app/learn/[chapter]/page.tsx` renders only explicitly registered lessons, with static params and real 404s.
 - Course-only appearance: `CourseTheme.tsx`, `learn.css`, `film/film.css`. Arimo already loaded: no extra font request.
 
@@ -22,3 +22,9 @@ For a new lab, write a pure function returning the outcome from inputs. Test the
 Keep a small batch manifest in COURSE_STATE (ids + actual state). Research new claims together, then implement each chapter’s data. Reuse source records without claiming newly read material. Validate graph, skill, deterministic model, typecheck and browser behavior once after the coherent batch. Keep chapters `implemented` until all tests and review evidence required by their next status are available. Never weaken validators to hide missing evidence.
 
 Token accounting: compare UTF-8 byte/word counts as a proxy, not invented model-token measurements. Prefer context helper output + a targeted source read over loading every reference. Do not duplicate the curriculum or place all lesson data in a client bundle: server-select one film and pass only its data to the client player.
+
+## Full-curriculum production
+
+`academy-lessons.json` contains authored chapter blueprints, not status or duplicated curriculum titles. `academy-sources.json` holds shared primary source records. `academy.ts` joins those with the curriculum on the server. The browser receives only its own lesson, film and prerequisite recap; shared experiment functions form a bounded lazy client chunk. `design-guides.ts` adds authored complete cases with computed workload arithmetic and explicit faults. `experiment-model.ts` and `topic-models.ts` implement small, explicit models; `makeExperimentFilm` converts their event traces into the same player. Do not paint results unrelated to those traces.
+
+Use the coverage tests to reject missing/duplicate ids, dangling routes, unsupported source ids, answer leakage, inert controls and broken next/previous links. Author chapters as compact records, but never infer the mechanism from a title or generate a quiz by repeating its summary. New numerical examples are labelled assumptions and tested. Existing specialized labs remain available.

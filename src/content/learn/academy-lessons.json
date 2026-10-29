@@ -1,0 +1,893 @@
+[
+    {
+        "id": "idempotency",
+        "model": "dedup",
+        "sources": ["stripe"],
+        "question": "Can you retry a payment after losing its reply?",
+        "rule": "Reuse the operation key so a retry can return the earlier result instead of applying the effect again.",
+        "limit": "Keys need retention, payload matching and atomic coordination with the effect.",
+        "misconception": "A timeout proves the first payment never happened."
+    },
+    {
+        "id": "pagination",
+        "model": "pagination",
+        "sources": ["pagination"],
+        "question": "Why did an item disappear between pages?",
+        "rule": "A cursor continues from a stable ordering key; an offset counts positions that can move after changes.",
+        "limit": "A cursor is not automatically a snapshot of a changing collection.",
+        "misconception": "An offset always identifies the same next item."
+    },
+    {
+        "id": "encoding-evolution",
+        "model": "version",
+        "sources": ["protobuf"],
+        "question": "Can an old reader understand a new message?",
+        "rule": "Adding compatible fields can preserve old meanings; reusing a field number for another meaning can break readers.",
+        "limit": "Wire compatibility does not guarantee that business semantics remain compatible.",
+        "misconception": "A field number can be reused safely after deleting its old name."
+    },
+    {
+        "id": "rate-limiting",
+        "model": "bucket",
+        "sources": ["tokens"],
+        "question": "How do you allow a short burst without unlimited traffic?",
+        "rule": "A token bucket spends a token per admitted request and refills up to a fixed capacity.",
+        "limit": "A local bucket cannot enforce a global quota across independent servers.",
+        "misconception": "Every server can independently grant the full global quota."
+    },
+    {
+        "id": "data-modelling",
+        "model": "embedding",
+        "sources": ["pg-model", "mongo"],
+        "question": "What should an order store and what should it reference?",
+        "rule": "Model entities and relationships around the reads, writes and invariants the application needs.",
+        "limit": "Duplicated data reduces some reads but creates update coordination work.",
+        "misconception": "The prettiest schema is always the fastest and safest."
+    },
+    {
+        "id": "relational-model",
+        "model": "foreignKey",
+        "sources": ["pg-model"],
+        "question": "How can a database reject an order for a nonexistent customer?",
+        "rule": "Keys identify rows and foreign keys constrain references between related tables.",
+        "limit": "Constraints protect declared rules, not every possible business rule.",
+        "misconception": "Application code alone is sufficient to protect every concurrent write."
+    },
+    {
+        "id": "normalisation",
+        "model": "copies",
+        "sources": ["pg-model", "mongo"],
+        "question": "Why did changing one address leave another copy behind?",
+        "rule": "Keeping one authoritative fact avoids inconsistent copies; deliberate duplication needs an update strategy.",
+        "limit": "Normalisation can require joins; denormalisation trades read convenience for write complexity.",
+        "misconception": "Duplicating a fact never changes the difficulty of updating it."
+    },
+    {
+        "id": "document-model",
+        "model": "embedding",
+        "sources": ["mongo"],
+        "question": "Should related information live together or in separate records?",
+        "rule": "Embedding data read together can simplify retrieval; references support separately changing or unbounded relationships.",
+        "limit": "Document databases still need schema decisions, validation and capacity planning.",
+        "misconception": "A flexible schema means no data modelling is necessary."
+    },
+    {
+        "id": "storage-engines",
+        "model": "log",
+        "sources": ["pg-storage", "pg-wal"],
+        "question": "How does a write survive before its data page is updated?",
+        "rule": "Write-ahead logging records a change durably before the corresponding page update is considered durable.",
+        "limit": "This log-and-page model omits real buffering, checksums, compaction and hardware failures.",
+        "misconception": "Acknowledging a change in RAM alone proves it survives a crash."
+    },
+    {
+        "id": "indexes",
+        "model": "index",
+        "sources": ["pg-index"],
+        "question": "How can you find one row without inspecting every row?",
+        "rule": "An index maintains a searchable access path so suitable queries can narrow the candidate rows.",
+        "limit": "Indexes consume space and add maintenance to writes; the example uses binary search as a teaching proxy.",
+        "misconception": "Every additional index makes all operations faster."
+    },
+    {
+        "id": "query-planning",
+        "model": "planner",
+        "sources": ["pg-explain"],
+        "question": "Why did a database ignore an available index?",
+        "rule": "A planner compares estimated access costs; a scan can be sensible when much of the table is needed.",
+        "limit": "The example compares invented access-work costs, not PostgreSQL cost estimates or a complete optimizer.",
+        "misconception": "An index scan must always be better than a sequential scan."
+    },
+    {
+        "id": "transactions",
+        "model": "transaction",
+        "sources": ["pg-tx"],
+        "question": "What if a transfer crashes after subtracting the money?",
+        "rule": "An atomic transaction commits its grouped changes together or rolls them back together.",
+        "limit": "Atomicity alone does not define the isolation seen by concurrent transactions.",
+        "misconception": "Atomicity and serializable isolation mean the same thing."
+    },
+    {
+        "id": "isolation",
+        "model": "isolation",
+        "sources": ["pg-isolation"],
+        "question": "Can two individually correct updates lose one increment?",
+        "rule": "Concurrent read-modify-write operations can overwrite one another unless the chosen coordination prevents that anomaly.",
+        "limit": "Isolation guarantees are engine-specific; serializable transactions may need retries.",
+        "misconception": "A transaction boundary alone prevents every concurrency anomaly."
+    },
+    {
+        "id": "concurrency-control",
+        "model": "mvcc",
+        "sources": ["pg-mvcc", "pg-isolation"],
+        "question": "How can readers continue while another transaction writes?",
+        "rule": "Versioned reads and locks coordinate competing access without requiring every reader to see an unfinished write.",
+        "limit": "MVCC does not remove write conflicts or guarantee serializability by itself.",
+        "misconception": "MVCC means writes can never block or conflict."
+    },
+    {
+        "id": "probabilistic-structures",
+        "model": "bloom",
+        "sources": ["pg-bloom"],
+        "question": "Can a tiny filter avoid a disk lookup without storing every key?",
+        "rule": "A Bloom filter can rule out absent keys; a positive result still needs an authoritative membership check.",
+        "limit": "The guarantee assumes correct construction and maintenance; this deterministic example is not a measured false-positive rate.",
+        "misconception": "A positive filter result proves the key exists."
+    },
+    {
+        "id": "search-indexes",
+        "model": "inverted",
+        "sources": ["pg-search"],
+        "question": "How can a word lead directly to matching documents?",
+        "rule": "An inverted index maps a searchable term to candidate document locations.",
+        "limit": "Retrieval is not relevance ranking; stemming and tokenisation change what a term means.",
+        "misconception": "An inverted index automatically knows which result a user wants first."
+    },
+    {
+        "id": "geospatial-indexes",
+        "model": "spatial",
+        "sources": ["postgis"],
+        "question": "How can you find nearby places without checking every coordinate?",
+        "rule": "A spatial index narrows candidates, then an exact geometric predicate verifies the actual relationship.",
+        "limit": "Coordinate system, distance units and boundary conditions must be explicit.",
+        "misconception": "Sharing a bounding box proves two places are within the required distance."
+    },
+    {
+        "id": "analytics-storage",
+        "model": "columns",
+        "sources": ["bigquery"],
+        "question": "Why read entire customer records to sum one numeric field?",
+        "rule": "Column-oriented storage can avoid reading unrelated columns for analytical scans.",
+        "limit": "Row layout can be preferable for retrieving or updating complete individual records.",
+        "misconception": "Column stores are universally faster for every database operation."
+    },
+    {
+        "id": "object-storage",
+        "model": "upload",
+        "sources": ["s3"],
+        "question": "Where should an application put a large uploaded file?",
+        "rule": "Store object bytes under a key and keep application metadata and access rules separately coordinated.",
+        "limit": "A durable object does not make metadata updates and object writes one atomic transaction.",
+        "misconception": "A successful metadata write proves the file upload also completed."
+    },
+    {
+        "id": "choosing-a-database",
+        "model": "storageChoice",
+        "sources": ["pg-tx", "mongo", "s3"],
+        "question": "How do you choose storage before choosing a brand?",
+        "rule": "Start with access patterns, constraints and failure requirements, then compare storage models against them.",
+        "limit": "One product label cannot determine consistency, cost and operational behavior for every deployment.",
+        "misconception": "The database with the most features is always the right choice."
+    },
+    {
+        "id": "vertical-horizontal",
+        "model": "queue",
+        "sources": ["sre-overload"],
+        "question": "Do you need a larger machine or more machines?",
+        "rule": "More independent workers can increase service capacity when the work can actually be divided.",
+        "limit": "Shared state, coordination and serial work can remain bottlenecks.",
+        "misconception": "Doubling servers always halves request latency."
+    },
+    {
+        "id": "stateless-services",
+        "model": "session",
+        "sources": ["sre-lb"],
+        "question": "What happens if the next request reaches another server?",
+        "rule": "Put durable session or application state behind an explicit shared or replicated boundary so interchangeable workers can serve requests.",
+        "limit": "Stateless workers still depend on stateful storage and valid authentication.",
+        "misconception": "A stateless service means the application stores no state anywhere."
+    },
+    {
+        "id": "load-balancing",
+        "model": "partition",
+        "sources": ["sre-lb"],
+        "question": "Why is one server busy while the others are idle?",
+        "rule": "A balancing policy chooses a healthy backend using a defined routing rule rather than assuming arrivals distribute themselves.",
+        "limit": "Even request counts can hide unequal request cost and long-lived connections.",
+        "misconception": "Round robin guarantees equal CPU usage on every backend."
+    },
+    {
+        "id": "reverse-proxies",
+        "model": "proxy",
+        "sources": ["sre-lb"],
+        "question": "What belongs between public clients and private services?",
+        "rule": "A reverse proxy accepts requests and forwards them under routing and policy rules, creating an explicit entry boundary.",
+        "limit": "Centralising routing also creates a capacity and availability responsibility.",
+        "misconception": "Putting a proxy in front automatically makes every backend secure."
+    },
+    {
+        "id": "health-checks",
+        "model": "health",
+        "sources": ["k8s-probe"],
+        "question": "Should a process receive traffic merely because it is running?",
+        "rule": "Readiness decides whether to send traffic; liveness detects a condition that may justify restarting the process.",
+        "limit": "A shallow probe can miss dependency or data failures and an aggressive probe can amplify an outage.",
+        "misconception": "A responding process is always ready to serve correct user results."
+    },
+    {
+        "id": "compute-platforms",
+        "model": "replacement",
+        "sources": ["k8s-deploy"],
+        "question": "What does an orchestrator do after a worker disappears?",
+        "rule": "A controller reconciles observed replicas toward desired replicas; recovery needs scheduling and startup time.",
+        "limit": "A desired count is an intention, not a guarantee of available compute capacity.",
+        "misconception": "Declaring three replicas instantly creates three healthy workers."
+    },
+    {
+        "id": "autoscaling",
+        "model": "scaleLag",
+        "sources": ["k8s-scale"],
+        "question": "Why does a traffic spike hurt before extra servers help?",
+        "rule": "Autoscaling observes demand and changes capacity after detection, scheduling and startup delays.",
+        "limit": "A shared database or quota can limit useful scale-out; warm capacity costs money.",
+        "misconception": "Autoscaling removes the need for capacity headroom."
+    },
+    {
+        "id": "caching-basics",
+        "model": "cache",
+        "sources": ["http-cache", "redis-evict"],
+        "question": "Why is the second read often cheaper than the first?",
+        "rule": "A cache reuses a stored result while its freshness policy permits, avoiding some origin work.",
+        "limit": "A hit can be stale if invalidation and freshness rules do not match the application.",
+        "misconception": "A cache hit must be the newest possible value."
+    },
+    {
+        "id": "http-caching",
+        "model": "cache",
+        "sources": ["http-cache"],
+        "question": "When can a browser reuse a response without downloading it again?",
+        "rule": "Freshness rules govern reuse; validation can confirm a stored representation without retransmitting the whole body.",
+        "limit": "A validation response still requires communication; cache policy is not an authorization mechanism.",
+        "misconception": "A 304 response contains a complete replacement representation."
+    },
+    {
+        "id": "cdn",
+        "model": "cache",
+        "sources": ["http-cache", "sre-lb"],
+        "question": "How can a distant user avoid fetching every byte from one origin?",
+        "rule": "An edge cache serves reusable content near clients and forwards misses or required validations to the origin.",
+        "limit": "Private content, invalidation and cache keys need explicit policies.",
+        "misconception": "Moving content to an edge cache makes origin correctness irrelevant."
+    },
+    {
+        "id": "app-caching",
+        "model": "cache",
+        "sources": ["redis-evict"],
+        "question": "Who updates the cache after the database changes?",
+        "rule": "Cache-aside loads on a miss; write-through and write-back put different steps on the write path.",
+        "limit": "Write-back needs durable pending work and recovery; a volatile cache is not automatically authoritative storage.",
+        "misconception": "Updating the database and cache separately is an atomic operation."
+    },
+    {
+        "id": "eviction",
+        "model": "eviction",
+        "sources": ["redis-evict"],
+        "question": "Which item should leave when the cache is full?",
+        "rule": "Eviction chooses a victim under a memory policy; recency, frequency and expiration answer different questions.",
+        "limit": "Redis approximates some policies; the lab is an exact small LRU teaching example.",
+        "misconception": "Evicting the least recently used item is the same as expiring the oldest item."
+    },
+    {
+        "id": "cache-invalidation",
+        "model": "cache",
+        "sources": ["http-cache", "redis-evict"],
+        "question": "Why did a successful update still return the old profile?",
+        "rule": "A cached copy must be invalidated, updated or allowed to expire under an explicit freshness policy.",
+        "limit": "Races between a stale load and invalidation can repopulate old data.",
+        "misconception": "Invalidating once prevents every later stale-cache race."
+    },
+    {
+        "id": "cache-failure-modes",
+        "model": "coalesce",
+        "sources": ["sre-overload", "redis-evict"],
+        "question": "What happens when many requests miss the same key together?",
+        "rule": "Coalescing concurrent fills can protect the origin from a cache stampede.",
+        "limit": "A hot key and a failed cache can still overload a remaining dependency.",
+        "misconception": "Every cache miss should independently launch another expensive rebuild."
+    },
+    {
+        "id": "async-work",
+        "model": "queue",
+        "sources": ["sre-overload", "rabbit"],
+        "question": "When should a request wait for work and when should it enqueue it?",
+        "rule": "Asynchronous acceptance separates receiving a task from completing its effect.",
+        "limit": "Accepted is not completed; callers need status, error handling and bounded backlog.",
+        "misconception": "A 202-style acceptance means the requested work already succeeded."
+    },
+    {
+        "id": "message-queues",
+        "model": "redelivery",
+        "sources": ["rabbit"],
+        "question": "What happens to work when a worker crashes before acknowledging it?",
+        "rule": "A broker can keep work pending until acknowledgment and redeliver under the selected policy.",
+        "limit": "Redelivery can repeat an effect; acknowledgments and side effects need coordinated design.",
+        "misconception": "Receiving a message once guarantees its effect executes exactly once."
+    },
+    {
+        "id": "delivery-semantics",
+        "model": "dedup",
+        "sources": ["rabbit", "stripe"],
+        "question": "Can redelivery be safe without pretending messages arrive once?",
+        "rule": "At-least-once delivery can combine with durable deduplication to suppress repeated application effects.",
+        "limit": "The guarantee is scoped to the deduplication boundary and retention period.",
+        "misconception": "A broker acknowledgment alone makes an external payment exactly-once."
+    },
+    {
+        "id": "pub-sub",
+        "model": "fanout",
+        "sources": ["rabbit", "kafka", "rabbit-fanout"],
+        "question": "How does one event reach several independent consumers?",
+        "rule": "Publish-subscribe distributes an event to independently interested subscribers rather than assigning one shared job to only one worker.",
+        "limit": "Subscription durability and replay depend on the chosen broker and configuration.",
+        "misconception": "A work queue and a broadcast topic have identical delivery behavior."
+    },
+    {
+        "id": "backpressure",
+        "model": "flow",
+        "sources": ["sre-overload", "rabbit"],
+        "question": "What should a fast producer do when consumers fall behind?",
+        "rule": "Backpressure reduces admission or production when bounded downstream capacity is exhausted.",
+        "limit": "Buffering buys time but cannot absorb sustained overload forever.",
+        "misconception": "An unbounded queue solves a sustained capacity deficit."
+    },
+    {
+        "id": "logs-streams",
+        "model": "offsets",
+        "sources": ["kafka"],
+        "question": "Why can two consumers read the same event at different times?",
+        "rule": "A retained append log lets consumers track their own positions independently.",
+        "limit": "Ordering is normally scoped to a partition; retention eventually removes old history.",
+        "misconception": "A topic provides one total order across every partition by default."
+    },
+    {
+        "id": "stream-processing",
+        "model": "window",
+        "sources": ["kafka", "beam"],
+        "question": "When is a time window finished if an event arrives late?",
+        "rule": "Windowing and event-time policies decide how to aggregate data that can arrive out of order.",
+        "limit": "A watermark is a policy about completeness, not proof that no late event can ever arrive.",
+        "misconception": "Arrival time and the event's original timestamp always agree."
+    },
+    {
+        "id": "batch-processing",
+        "model": "mapReduce",
+        "sources": ["mapreduce"],
+        "question": "How can a large bounded dataset be processed in parallel?",
+        "rule": "Map work partitions input and reduce work combines grouped intermediate results.",
+        "limit": "Skew, failed tasks and shuffle cost can dominate a parallel batch.",
+        "misconception": "Adding map workers eliminates every serial or skewed stage."
+    },
+    {
+        "id": "event-driven",
+        "model": "outbox",
+        "sources": ["outbox", "pg-logical"],
+        "question": "How can a committed database update reliably cause an event?",
+        "rule": "A transactional outbox stores the state change and pending event in one transaction; a relay publishes the pending event later.",
+        "limit": "The relay can duplicate publication, so consumers still need idempotent handling.",
+        "misconception": "A database commit and an unrelated broker publish are automatically atomic."
+    },
+    {
+        "id": "review-foundations",
+        "model": "architecture",
+        "sources": ["sre-overload", "pg-tx"],
+        "question": "Can you explain a slow checkout without guessing a technology?",
+        "rule": "Trace a request through its API, storage, cache and queue, then identify the resource that limits completion.",
+        "limit": "A toy capacity estimate is a hypothesis to validate against measurements.",
+        "misconception": "A fast cache can compensate for any database or queue failure."
+    },
+    {
+        "id": "distributed-trouble",
+        "model": "uncertain",
+        "sources": ["retry"],
+        "question": "What can you conclude when another machine stops answering?",
+        "rule": "Delay, loss and partial failure make a missing response ambiguous; remote state may already have changed.",
+        "limit": "A timeout is a waiting policy, not a perfect failure detector.",
+        "misconception": "No reply means the remote process is certainly dead."
+    },
+    {
+        "id": "replication",
+        "model": "replication",
+        "sources": ["pg-replication"],
+        "question": "How does another machine acquire a copy of a committed write?",
+        "rule": "A leader propagates changes to followers, with acknowledgments and visibility determined by the replication policy.",
+        "limit": "A copy can lag; redundancy alone does not define read freshness or failover safety.",
+        "misconception": "Any replica immediately contains every acknowledged leader write."
+    },
+    {
+        "id": "replication-lag",
+        "model": "replication",
+        "sources": ["pg-replication"],
+        "question": "Why did a user fail to read the update they just saved?",
+        "rule": "An asynchronous follower may not have applied the leader's latest committed change yet.",
+        "limit": "Read-your-writes needs a routing, version-waiting or consistency strategy.",
+        "misconception": "Reading a random follower always preserves read-your-writes."
+    },
+    {
+        "id": "multi-leader-leaderless",
+        "model": "readQuorum",
+        "sources": ["dynamo"],
+        "question": "How many copies need to answer before a read or write completes?",
+        "rule": "Read and write acknowledgment sets can overlap when their chosen sizes exceed the replica count in sum.",
+        "limit": "Overlap alone does not establish linearizability; failures, versions and concurrent writes still matter.",
+        "misconception": "R plus W greater than N is sufficient to guarantee linearizability in every quorum system."
+    },
+    {
+        "id": "conflict-resolution",
+        "model": "merge",
+        "sources": ["crdt"],
+        "question": "Can two offline counters merge without counting a replay twice?",
+        "rule": "A state-based grow-only counter merges each replica component with maximum, making duplicate merges harmless.",
+        "limit": "This counter rule cannot be applied blindly to arbitrary deletes or business invariants.",
+        "misconception": "Adding replica totals is always safe when merge messages repeat."
+    },
+    {
+        "id": "consistency-models",
+        "model": "replication",
+        "sources": ["cap"],
+        "question": "What does a reader get to assume about other clients' writes?",
+        "rule": "A consistency model defines allowed observations; linearizability respects a single real-time-compatible order of operations.",
+        "limit": "Eventual convergence alone does not guarantee immediate freshness or read-your-writes.",
+        "misconception": "Eventual consistency means every read is random forever."
+    },
+    {
+        "id": "cap-pacelc",
+        "model": "partitionChoice",
+        "sources": ["cap", "pacelc"],
+        "question": "What does a partition force you to give up?",
+        "rule": "During a partition, a system cannot guarantee both linearizable consistency and a response for every eligible request; normal operation can trade latency for coordination.",
+        "limit": "CAP's availability is a formal condition, not a dashboard uptime percentage.",
+        "misconception": "CAP means you can always choose any two properties independently."
+    },
+    {
+        "id": "partitioning",
+        "model": "partition",
+        "sources": ["pg-partition", "dynamo"],
+        "question": "How do you split data without duplicating the entire dataset everywhere?",
+        "rule": "A partition rule assigns data to subsets; routing must use a rule compatible with the access pattern.",
+        "limit": "A partition is not a replica, and cross-partition operations can require coordination.",
+        "misconception": "Sharding and replication solve the same problem."
+    },
+    {
+        "id": "consistent-hashing",
+        "model": "hashring",
+        "sources": ["dynamo"],
+        "question": "Can you add a node without moving every key?",
+        "rule": "A hash ring assigns keys to successor tokens so adding one token changes only the affected ownership range.",
+        "limit": "Virtual nodes, replication and load skew require further policy; the lab shows one simple ring.",
+        "misconception": "Consistent hashing guarantees equal load even with a very popular key."
+    },
+    {
+        "id": "hot-partitions",
+        "model": "partition",
+        "sources": ["dynamo"],
+        "question": "Why is one shard overloaded when the dataset is evenly split?",
+        "rule": "Unequal key popularity can concentrate traffic even when key counts are balanced.",
+        "limit": "Salting can spread writes but complicate ordered or grouped reads.",
+        "misconception": "Equal key counts imply equal request load."
+    },
+    {
+        "id": "distributed-transactions",
+        "model": "saga",
+        "sources": ["outbox", "pg-tx"],
+        "question": "How do you coordinate changes owned by different services?",
+        "rule": "Two-phase coordination and compensating workflows place different responsibilities on participants and failure recovery.",
+        "limit": "A saga compensation is a new action and may not perfectly erase an external effect.",
+        "misconception": "A compensation always rewinds the world exactly as if nothing happened."
+    },
+    {
+        "id": "time-clocks",
+        "model": "clock",
+        "sources": ["clocks"],
+        "question": "Can timestamps prove which distributed event caused another?",
+        "rule": "Logical clocks preserve a happens-before implication, while physical clocks can skew.",
+        "limit": "A smaller Lamport timestamp alone does not prove that event caused the larger one.",
+        "misconception": "Comparing wall clocks always reveals distributed causal order."
+    },
+    {
+        "id": "unique-ids",
+        "model": "unique",
+        "sources": ["uuid"],
+        "question": "Can several machines create identifiers without calling one counter?",
+        "rule": "UUID variants use defined bit layouts and generation rules to reduce coordination needs.",
+        "limit": "Uniqueness assumptions and information leakage depend on the chosen variant and implementation.",
+        "misconception": "An identifier that sorts by time automatically proves causal order."
+    },
+    {
+        "id": "leader-election",
+        "model": "election",
+        "sources": ["raft"],
+        "question": "How do you stop two isolated candidates from both acting as leader?",
+        "rule": "An election requires the configured voting rule; terms and log rules constrain legitimate leadership.",
+        "limit": "Being elected is not sufficient without safe state replication and stale-leader protection.",
+        "misconception": "Any machine that stops hearing the leader can safely declare itself the only leader."
+    },
+    {
+        "id": "distributed-locks",
+        "model": "lease",
+        "sources": ["raft"],
+        "question": "What stops a paused old lock holder from writing after its lease expires?",
+        "rule": "A fencing token lets the protected resource reject stale operations even if an old holder resumes.",
+        "limit": "A lease timer alone cannot stop a paused process from executing later.",
+        "misconception": "Expiring a lock key physically prevents the old holder from making writes."
+    },
+    {
+        "id": "consensus",
+        "model": "consensusLog",
+        "sources": ["raft"],
+        "question": "How do several machines agree which command is committed?",
+        "rule": "Raft combines terms, election rules and replicated logs; a committed command is more than an arbitrary vote count.",
+        "limit": "The lab isolates quorum formation, not the complete Raft protocol or its safety proof.",
+        "misconception": "A majority of any unrelated responses proves a log entry committed safely."
+    },
+    {
+        "id": "membership-gossip",
+        "model": "gossip",
+        "sources": ["dynamo"],
+        "question": "How can nodes learn about membership without one central announcer?",
+        "rule": "Nodes can exchange membership information incrementally, spreading knowledge through repeated communication.",
+        "limit": "A suspected failure is not certain death, and convergence takes time.",
+        "misconception": "Every member instantly knows exactly which peers are alive."
+    },
+    {
+        "id": "coordination-services",
+        "model": "lease",
+        "sources": ["raft"],
+        "question": "Where should services publish names and coordinate ownership?",
+        "rule": "A coordination service offers shared, ordered state primitives under a defined failure and consistency model.",
+        "limit": "Cached discovery results and leases can outlive a disconnected client.",
+        "misconception": "A service-discovery lookup guarantees the chosen backend stays healthy afterward."
+    },
+    {
+        "id": "failure-modes",
+        "model": "bulkhead",
+        "sources": ["sre-cascade"],
+        "question": "How do you keep one broken dependency from affecting every feature?",
+        "rule": "Separate failure domains and bound dependency work so a local failure has a limited blast radius.",
+        "limit": "Shared databases, credentials or capacity can reconnect supposedly isolated domains.",
+        "misconception": "Separate process names guarantee separate failure domains."
+    },
+    {
+        "id": "timeouts-retries",
+        "model": "retry",
+        "sources": ["retry"],
+        "question": "When does retrying help and when does it amplify an outage?",
+        "rule": "Bound attempts and use backoff with jitter; make repeated side effects safe through explicit idempotency.",
+        "limit": "Retrying at several stack layers can multiply attempts and overload a struggling dependency.",
+        "misconception": "Every timeout should immediately trigger unlimited retries."
+    },
+    {
+        "id": "circuit-breakers",
+        "model": "breaker",
+        "sources": ["sre-cascade"],
+        "question": "When should a caller stop repeatedly hitting a failing service?",
+        "rule": "A breaker can temporarily reject calls after evidence of failure, while bulkheads bound resource sharing.",
+        "limit": "Recovery probes and thresholds require tuning; a breaker is not a repair for the dependency.",
+        "misconception": "An open circuit breaker fixes the remote service."
+    },
+    {
+        "id": "cascading-failures",
+        "model": "bulkhead",
+        "sources": ["sre-cascade"],
+        "question": "Why did retrying one slow service take down healthy services?",
+        "rule": "Growing queues, exhausted worker pools and extra retries can propagate overload through dependencies.",
+        "limit": "Capacity limits and admission policy matter more than merely increasing timeouts.",
+        "misconception": "Longer timeouts always improve availability during overload."
+    },
+    {
+        "id": "slos",
+        "model": "budget",
+        "sources": ["sre-slo"],
+        "question": "How much failure is compatible with the promised service target?",
+        "rule": "An error budget converts a defined objective and measurement window into an allowed amount of bad service.",
+        "limit": "An average over a broad window can hide a severe short outage.",
+        "misconception": "An SLO is the same as a legal SLA and a raw server-uptime counter."
+    },
+    {
+        "id": "observability",
+        "model": "signals",
+        "sources": ["sre-monitor"],
+        "question": "Which signal helps explain what a user experienced?",
+        "rule": "Metrics summarize, logs describe events and traces connect work across a request path.",
+        "limit": "Telemetry needs meaningful context and sampling; collecting more data is not automatically diagnosis.",
+        "misconception": "A green CPU chart proves that all user requests succeeded."
+    },
+    {
+        "id": "distributed-tracing",
+        "model": "trace",
+        "sources": ["trace"],
+        "question": "Where did time go across one request's dependencies?",
+        "rule": "Trace context connects spans so a request's causal work can be followed across service boundaries.",
+        "limit": "Summing overlapping span durations can exceed wall-clock request duration.",
+        "misconception": "Adding all span durations always gives the request latency."
+    },
+    {
+        "id": "alerting-incidents",
+        "model": "budget",
+        "sources": ["alerts", "sre-incident"],
+        "question": "What should wake someone when users are being harmed?",
+        "rule": "Actionable symptom-based alerts and burn-rate context help prioritize response before the budget is exhausted.",
+        "limit": "An alert needs an owner and a response path; noise can hide the next real incident.",
+        "misconception": "Every individual error should page every engineer."
+    },
+    {
+        "id": "deployments",
+        "model": "canary",
+        "sources": ["canary", "k8s-deploy"],
+        "question": "How can a bad release hurt fewer users before you stop it?",
+        "rule": "Expose a limited population, compare meaningful signals, then expand or roll back under explicit criteria.",
+        "limit": "A canary with unrepresentative traffic can miss a failure affecting the wider population.",
+        "misconception": "A release that starts successfully is proven safe for all users."
+    },
+    {
+        "id": "zero-downtime-migrations",
+        "model": "migration",
+        "sources": ["protobuf", "pg-logical"],
+        "question": "How can old and new application versions coexist during a data change?",
+        "rule": "Expand compatible schema first, migrate or backfill carefully, then remove old paths after consumers have moved.",
+        "limit": "Large backfills can load storage and replication; rollback needs data compatibility too.",
+        "misconception": "Dropping the old field first is a safe way to start every migration."
+    },
+    {
+        "id": "multi-region",
+        "model": "recovery",
+        "sources": ["pg-replication", "pacelc"],
+        "question": "What survives when a whole region becomes unavailable?",
+        "rule": "Replication and recovery plans define where writes are acknowledged and what data loss or delay is acceptable.",
+        "limit": "Failover requires tested routing, capacity and split-brain policies; distance adds coordination cost.",
+        "misconception": "A second region guarantees zero lost data and instant recovery."
+    },
+    {
+        "id": "fault-injection",
+        "model": "injection",
+        "sources": ["sre-cascade"],
+        "question": "How can you test a resilience claim before a real outage?",
+        "rule": "State a hypothesis, bound the experiment and observe a controlled fault against explicit abort criteria.",
+        "limit": "A passing small fault experiment is not proof against every failure combination.",
+        "misconception": "Randomly breaking production without limits is sufficient resilience testing."
+    },
+    {
+        "id": "security-map",
+        "model": "gate",
+        "sources": ["authn", "authz", "secrets"],
+        "question": "Which boundary decides who may do what to which data?",
+        "rule": "Authentication establishes an identity claim; authorization evaluates permitted actions on resources; encryption protects data under defined keys.",
+        "limit": "No single control removes the need for the others or for secure defaults.",
+        "misconception": "Encrypting a connection automatically authorizes every request carried by it."
+    },
+    {
+        "id": "authentication",
+        "model": "identity",
+        "sources": ["authn"],
+        "question": "What does the service actually know about the caller?",
+        "rule": "Authentication verifies an identity claim using a defined credential and validation flow.",
+        "limit": "A valid identity does not imply permission for every resource; tokens need correct issuer and audience checks.",
+        "misconception": "Possessing any token string is sufficient proof of identity."
+    },
+    {
+        "id": "authorization",
+        "model": "gate",
+        "sources": ["authz"],
+        "question": "Can a signed-in user read another user's private note?",
+        "rule": "Check the caller's permission for the specific action and resource on every relevant request.",
+        "limit": "Client-side hiding is not an authorization boundary.",
+        "misconception": "If the UI hides the button, the server does not need an access check."
+    },
+    {
+        "id": "encryption-secrets",
+        "model": "rotation",
+        "sources": ["secrets"],
+        "question": "Where should keys live and what happens when one leaks?",
+        "rule": "Keep secrets outside published application content, limit access and support rotation under an explicit lifecycle.",
+        "limit": "Encrypted bytes remain exposed if the attacker can use the same decryption key.",
+        "misconception": "Encoding a secret in Base64 protects it from disclosure."
+    },
+    {
+        "id": "web-vulnerabilities",
+        "model": "sql",
+        "sources": ["injection", "authz"],
+        "question": "How can untrusted text become an unintended database command?",
+        "rule": "Parameterized statements keep data separate from query structure; output handling and authorization protect other boundaries.",
+        "limit": "A SQL-injection defense is not a complete defense against XSS, CSRF or access-control failures.",
+        "misconception": "Escaping one dangerous substring solves every injection problem."
+    },
+    {
+        "id": "abuse-protection",
+        "model": "bucket",
+        "sources": ["tokens", "authz"],
+        "question": "How do you protect useful traffic without trusting every client?",
+        "rule": "Layer quotas, admission controls and identity-aware policies around costly resources.",
+        "limit": "A per-IP rule can punish shared networks and miss distributed abuse.",
+        "misconception": "A single per-IP limit can distinguish all abusive users from legitimate users."
+    },
+    {
+        "id": "privacy-retention",
+        "model": "retention",
+        "sources": ["privacy"],
+        "question": "Why keep personal data after its purpose has ended?",
+        "rule": "Collect only needed data and define deletion and retention behavior across copies and backups.",
+        "limit": "Deletion must account for replicas, derived data and retention obligations; this is engineering guidance, not legal advice.",
+        "misconception": "Deleting the primary row guarantees every retained copy is gone."
+    },
+    {
+        "id": "service-boundaries",
+        "model": "boundaries",
+        "sources": ["boundaries"],
+        "question": "When should one application become several services?",
+        "rule": "Choose boundaries around ownership and change needs; separate deployment introduces network and operational costs.",
+        "limit": "A modular monolith can preserve boundaries without distributed deployment.",
+        "misconception": "More microservices automatically create better modularity."
+    },
+    {
+        "id": "service-communication",
+        "model": "communication",
+        "sources": ["rabbit", "retry"],
+        "question": "Should one service call synchronously or publish work for later?",
+        "rule": "A synchronous call couples immediate completion; a message separates timing but adds delivery and coordination responsibilities.",
+        "limit": "Async work still needs a contract, observability and explicit failure handling.",
+        "misconception": "Using a broker eliminates service coupling and failure handling."
+    },
+    {
+        "id": "cost",
+        "model": "cost",
+        "sources": ["cost"],
+        "question": "Which design meets requirements without spending on unused work?",
+        "rule": "Compare compute, storage, transfer and operational costs using the actual workload and constraints.",
+        "limit": "A cheaper unit price can lose to overprovisioning, transfer volume or operational burden.",
+        "misconception": "The lowest instance price guarantees the lowest total system cost."
+    },
+    {
+        "id": "decision-records",
+        "model": "decision",
+        "sources": ["adr"],
+        "question": "How will the next engineer know why this tradeoff was chosen?",
+        "rule": "Record context, alternatives, the decision and its consequences so future changes can challenge the original assumptions.",
+        "limit": "A decision record is revisable evidence of reasoning, not a permanent ban on alternatives.",
+        "misconception": "A decision's technology name is enough to explain its rationale."
+    },
+    {
+        "id": "review-distributed",
+        "model": "quorum",
+        "sources": ["raft", "sre-cascade"],
+        "question": "Can your design explain an unavailable read during a partition?",
+        "rule": "Connect consistency, replication, coordination and failure budgets before choosing a recovery action.",
+        "limit": "A single successful scenario does not establish a complete distributed safety argument.",
+        "misconception": "A quorum count replaces the need to reason about versions and concurrent operations."
+    },
+    {
+        "id": "interview-method",
+        "model": "architecture",
+        "sources": ["sre-overload", "adr"],
+        "question": "How do you turn a vague product prompt into a defensible design?",
+        "rule": "Clarify requirements, estimate a workload, sketch data and request paths, then challenge the bottleneck and failure assumptions.",
+        "limit": "Interview estimates are stated assumptions, not measured production facts.",
+        "misconception": "Naming fashionable components is sufficient without connecting them to requirements."
+    },
+    {
+        "id": "case-url-shortener",
+        "model": "cache",
+        "sources": ["http-cache", "uuid"],
+        "question": "How would a short link stay fast and resolve to the right target?",
+        "rule": "Keep a durable key-to-target mapping, then cache safe lookups while enforcing creation and abuse policies.",
+        "limit": "Key collisions, hot links and malicious destinations need policies beyond a fast cache.",
+        "misconception": "A cache alone is sufficient durable storage for every short-link mapping."
+    },
+    {
+        "id": "case-rate-limiter",
+        "model": "sharedQuota",
+        "sources": ["tokens"],
+        "question": "How do several servers share a single admission budget?",
+        "rule": "Coordinate an appropriate shared quota state or explicitly partition the allowance and bound approximation error.",
+        "limit": "Availability during a partition can conflict with enforcing a strict global quota.",
+        "misconception": "Every server can grant the entire budget and still preserve the global cap."
+    },
+    {
+        "id": "case-news-feed",
+        "model": "feed",
+        "sources": ["rabbit", "pg-partition"],
+        "question": "Should a post be copied to every follower or assembled when read?",
+        "rule": "Fan-out-on-write spends work when publishing; fan-out-on-read spends work when a reader opens the feed.",
+        "limit": "Large audiences, privacy changes and freshness requirements can favor a hybrid.",
+        "misconception": "One fan-out strategy is optimal for every account and audience size."
+    },
+    {
+        "id": "case-chat",
+        "model": "chat",
+        "sources": ["kafka", "rabbit"],
+        "question": "What does sent mean when a chat recipient is offline?",
+        "rule": "Persist accepted messages, track delivery progress and distinguish server acceptance from recipient receipt or read state.",
+        "limit": "Ordering needs a scope; reconnect, duplicate delivery and device sync require explicit policies.",
+        "misconception": "A successful socket send proves the recipient has read the message."
+    },
+    {
+        "id": "case-notifications",
+        "model": "dedup",
+        "sources": ["rabbit", "stripe"],
+        "question": "How do you retry a notification without sending it forever?",
+        "rule": "Persist delivery work, bound retries and use channel-specific deduplication and status transitions.",
+        "limit": "A provider acknowledgment does not establish that a person saw a notification.",
+        "misconception": "A broker acknowledgment proves the user read the message."
+    },
+    {
+        "id": "case-web-crawler",
+        "model": "crawler",
+        "sources": ["robots"],
+        "question": "How does a crawler explore many sites without overwhelming one host?",
+        "rule": "Use a durable frontier, URL deduplication, per-host scheduling and robots policy before fetching and indexing.",
+        "limit": "Robots rules are requests to crawlers, not an authorization or security control.",
+        "misconception": "A robots.txt allow rule grants access to private information."
+    },
+    {
+        "id": "case-search-autocomplete",
+        "model": "prefix",
+        "sources": ["pg-search"],
+        "question": "How can a partial query quickly produce useful suggestions?",
+        "rule": "Index prefixes or equivalent searchable structures, then apply ranking and policy to retrieved candidates.",
+        "limit": "Popularity, freshness and privacy require explicit data and update decisions.",
+        "misconception": "Finding a prefix match automatically determines the best suggestion."
+    },
+    {
+        "id": "case-file-storage",
+        "model": "fileVersions",
+        "sources": ["s3", "crdt"],
+        "question": "What happens when two devices edit the same offline file?",
+        "rule": "Separate durable file objects from version metadata and choose an explicit conflict and synchronization policy.",
+        "limit": "Keeping divergent file versions exposes conflicts; it does not automatically merge text or binary edits.",
+        "misconception": "Last-write-wins can preserve every concurrent edit without conflicts."
+    },
+    {
+        "id": "case-video-streaming",
+        "model": "segments",
+        "sources": ["s3", "http-cache"],
+        "question": "How can many viewers play one video without one origin sending every byte?",
+        "rule": "Prepare streamable variants, store media objects and deliver reusable segments through an edge cache.",
+        "limit": "Encoding cost, startup delay, bitrate adaptation and content rights remain distinct design responsibilities.",
+        "misconception": "A CDN alone creates every required encoding and playback variant."
+    },
+    {
+        "id": "case-proximity",
+        "model": "spatial",
+        "sources": ["postgis"],
+        "question": "How can a nearby search narrow candidates and still get distance right?",
+        "rule": "Use a spatial access path to narrow candidates, then calculate distance in the appropriate coordinate system.",
+        "limit": "A rectangular prefilter is not an exact circular-distance test.",
+        "misconception": "A spatial index removes the need to calculate the requested distance."
+    },
+    {
+        "id": "case-payments",
+        "model": "dedup",
+        "sources": ["stripe", "pg-tx", "outbox"],
+        "question": "How can a checkout retry without charging twice or losing its ledger record?",
+        "rule": "Use a stable operation identity, durable ledger invariants and an explicit workflow for external-provider uncertainty.",
+        "limit": "A local database transaction cannot atomically commit an unrelated provider's side effect.",
+        "misconception": "A database commit proves every external payment action committed with it."
+    },
+    {
+        "id": "capstone",
+        "model": "architecture",
+        "sources": ["adr", "sre-overload", "pg-tx"],
+        "question": "Can you defend a complete design when a core assumption fails?",
+        "rule": "Connect requirements, capacity estimates, read and write paths, data invariants and recovery before defending a tradeoff.",
+        "limit": "This course's small models support reasoning; a production design needs workload measurement and deeper validation.",
+        "misconception": "A diagram containing all common components proves a system meets its requirements."
+    }
+]

@@ -14,11 +14,13 @@ export function useClock({
     end,
     rate = 1.2,
     target,
+    stepMode = false,
 }: {
     marks: number[];
     end: number;
     rate?: number;
     target?: RefObject<Element | null>;
+    stepMode?: boolean;
 }): {
     t: number;
     playing: boolean;
@@ -35,7 +37,8 @@ export function useClock({
 } {
     const [t, setT] = useState(0);
     const [playing, setPlaying] = useState(false);
-    const [reduced, setReduced] = useState(false);
+    const [systemReduced, setReduced] = useState(false);
+    const reduced = systemReduced || stepMode;
     const [onScreen, setOnScreen] = useState(true);
     const tRef = useRef(0);
     tRef.current = t;

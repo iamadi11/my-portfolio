@@ -8,15 +8,24 @@ import { BEAT_SECONDS, filmDuration, type LessonFilmData, sampleFilm } from '@/l
 import Scene from './Scene';
 import './film.css';
 
-export default function LessonFilm({ film }: { film: LessonFilmData }): React.JSX.Element {
+export default function LessonFilm({
+    film,
+    autoPlay = false,
+    trackProgress = true,
+}: {
+    film: LessonFilmData;
+    autoPlay?: boolean;
+    trackProgress?: boolean;
+}): React.JSX.Element {
     const target = useRef<HTMLElement>(null);
     const [speed, setSpeed] = useState(1);
-    const [completed, setCompleted] = useState(false);
+    const [reviewed, setReviewed] = useState(false);
+    const [stepMode, setStepMode] = useState(false);
     const marks = useMemo(
-        () => film.beats.map((_, i) => i * BEAT_SECONDS).concat(filmDuration(film)),
+        () => film.beats.map((_, i) => (i + 0.8) * BEAT_SECONDS).concat(filmDuration(film)),
         [film]
     );
-    const clock = useClock({ marks, end: filmDuration(film), rate: speed, target });
+    const clock = useClock({ marks, end: filmDuration(film), rate: speed, target, stepMode });
     const { index, beat } = sampleFilm(film, clock.t);
     const pause = clock.pause;
     useEffect(() => {
@@ -26,16 +35,40 @@ export default function LessonFilm({ film }: { film: LessonFilmData }): React.JS
         document.addEventListener('visibilitychange', hidden);
         return () => document.removeEventListener('visibilitychange', hidden);
     }, [pause]);
+    const restart = clock.restart;
     useEffect(() => {
-        if (clock.t < filmDuration(film)) return;
-        setCompleted(true);
+        if (autoPlay) restart();
+    }, [autoPlay, restart]);
+    const recordView = (): void => {
+        setReviewed(true);
         try {
             localStorage.setItem(`learn-watched:${film.id}`, '1');
             window.dispatchEvent(new Event('learn-progress'));
         } catch {
-            /* Reading still works without storage. */
+            /* Optional local progress. */
         }
-    }, [clock.t, film]);
+    };
+    const latestTime = useRef(clock.t);
+    latestTime.current = clock.t;
+    const seek = clock.seek;
+    useEffect(() => {
+        if (clock.reduced)
+            seek(
+                Math.min(
+                    filmDuration(film),
+                    (Math.floor(latestTime.current / BEAT_SECONDS) + 0.8) * BEAT_SECONDS
+                )
+            );
+    }, [clock.reduced, seek, film]);
+    const scene = (i: number): void =>
+        seek(
+            Math.min(
+                filmDuration(film),
+                (Math.max(0, Math.min(film.beats.length - 1, i)) + 0.8) * BEAT_SECONDS
+            )
+        );
+    const stateTime = clock.t;
+    const state = sampleFilm(film, stateTime);
     return (
         <section
             ref={target}
@@ -49,12 +82,7 @@ export default function LessonFilm({ film }: { film: LessonFilmData }): React.JS
             </div>
             <h2 className="lf-question">{film.question}</h2>
             <div className="lf-stage">
-                <Scene
-                    film={film}
-                    time={
-                        clock.reduced ? Math.min(filmDuration(film), clock.t + BEAT_SECONDS * 0.8) : clock.t
-                    }
-                />
+                <Scene film={film} time={stateTime} />
                 <span className="lf-projection">ISOMETRIC · TEACHING MODEL</span>
             </div>
             <div className="lf-caption" aria-live="polite" aria-atomic="true">
@@ -78,7 +106,14 @@ export default function LessonFilm({ film }: { film: LessonFilmData }): React.JS
                     max={filmDuration(film)}
                     step="0.1"
                     value={clock.t}
-                    onChange={(e) => clock.seek(Number(e.target.value))}
+                    onChange={(e) => {
+                        const to = Number(e.target.value);
+                        clock.seek(
+                            clock.reduced && to < filmDuration(film)
+                                ? (Math.floor(to / BEAT_SECONDS) + 0.8) * BEAT_SECONDS
+                                : to
+                        );
+                    }}
                     aria-valuetext={`Scene ${index + 1}: ${beat.title}`}
                 />
             </div>
@@ -91,13 +126,25 @@ export default function LessonFilm({ film }: { film: LessonFilmData }): React.JS
                     >
                         {clock.playing ? 'Ⅱ Pause' : clock.t >= filmDuration(film) ? '↻ Replay' : '▶ Play'}
                     </button>
-                    <button type="button" aria-label="Previous scene" onClick={clock.prev}>
+                    <button type="button" aria-label="Previous scene" onClick={() => scene(index - 1)}>
                         ←
                     </button>
-                    <button type="button" aria-label="Next scene" onClick={clock.next}>
+                    <button
+                        type="button"
+                        aria-label="Next scene"
+                        onClick={() =>
+                            index === film.beats.length - 1
+                                ? clock.seek(filmDuration(film))
+                                : scene(index + 1)
+                        }
+                    >
                         →
                     </button>
-                    <button type="button" aria-label="Restart lesson" onClick={clock.reset}>
+                    <button
+                        type="button"
+                        aria-label="Restart lesson"
+                        onClick={() => clock.seek(clock.reduced ? BEAT_SECONDS * 0.8 : 0)}
+                    >
                         ↺
                     </button>
                 </div>
@@ -117,19 +164,45 @@ export default function LessonFilm({ film }: { film: LessonFilmData }): React.JS
                         key={b.title}
                         type="button"
                         aria-current={i === index ? 'step' : undefined}
-                        onClick={() => clock.seek(i * BEAT_SECONDS)}
+                        onClick={() => scene(i)}
                     >
                         <span>{String(i + 1).padStart(2, '0')}</span>
                         {b.title}
                     </button>
                 ))}
             </nav>
-            {completed && (
+            {trackProgress && clock.t >= filmDuration(film) && (
                 <p className="lf-complete" role="status">
-                    Film complete. Try the Interactive Lab to test your understanding.
+                    Final frame reached. Watching is separate from practice.{' '}
+                    <button type="button" onClick={recordView} disabled={reviewed}>
+                        {reviewed ? 'Example marked viewed' : 'Mark this example viewed'}
+                    </button>
                 </p>
             )}
+            <dl className="lf-state-summary" aria-label="Current model state">
+                {film.nodes
+                    .filter(
+                        (node) => state.values[node.id] !== undefined || state.counts[node.id] !== undefined
+                    )
+                    .map((node) => (
+                        <div key={node.id}>
+                            <dt>{node.label}</dt>
+                            <dd>{state.values[node.id] ?? `${state.counts[node.id]} model units`}</dd>
+                        </div>
+                    ))}
+            </dl>
             <div className="lf-footnote">
+                <button
+                    type="button"
+                    className="lf-step-mode"
+                    aria-pressed={stepMode}
+                    onClick={() => {
+                        clock.pause();
+                        setStepMode(!stepMode);
+                    }}
+                >
+                    {stepMode ? 'Step mode on' : 'Use static step mode'}
+                </button>
                 <span>
                     {clock.reduced ? 'Reduced motion · static scene steps. ' : ' '}Illustrative geometry and
                     playback timing.

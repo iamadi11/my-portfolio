@@ -200,8 +200,7 @@ const mcpUi: Assembly = {
 };
 
 // ---------------------------------------------------------------------------------------------------------------
-// Spatial: 'Detects UI performance anti-patterns in a running app from render counts, layout shifts, FPS and
-// memory.'
+// Spatial: development-time render counts, layout shifts, frame drops and available browser memory.
 // ---------------------------------------------------------------------------------------------------------------
 const spatial: Assembly = {
     rows: [
@@ -216,11 +215,11 @@ const spatial: Assembly = {
             boxes: [
                 { l: 'Render', sub: 'Counts' }, // 'render counts'
                 { l: 'Layout', sub: 'Shifts' }, // 'layout shifts'
-                { l: 'FPS' }, // 'FPS'
-                { l: 'Memory' }, // 'memory'
+                { l: 'Frame drops' }, // 'Frame drops'
+                { l: 'Memory', sub: 'If available' }, // optional browser memory instrumentation
             ],
             layer: 'Signals',
-            layerSub: 'Renders · shifts · FPS · memory', // 'render counts, layout shifts, FPS and memory'
+            layerSub: 'Renders · shifts · drops · memory', // 'render counts, layout shifts, Frame drops and memory'
             note: 2,
         },
         {
@@ -241,14 +240,14 @@ const spatial: Assembly = {
     focus: 1,
     notes: [
         { n: 1, t: 'In a running app' }, // 'in a running app'
-        { n: 2, t: 'Render counts, layout shifts, FPS, memory' }, // 'render counts, layout shifts, FPS and memory'
+        { n: 2, t: 'Render counts, layout shifts, Frame drops, memory' }, // 'render counts, layout shifts, Frame drops and memory'
         { n: 3, t: 'Detects UI performance anti-patterns' }, // 'Detects UI performance anti-patterns'
     ],
     detail: {
         row: 1,
-        title: 'Signals', // the four things it reads: 'render counts, layout shifts, FPS and memory'
+        title: 'Signals', // the four things it reads: 'render counts, layout shifts, Frame drops and memory'
         draw(p, t) {
-            const sig = ['Render counts', 'Layout shifts', 'FPS', 'Memory'];
+            const sig = ['Render counts', 'Layout shifts', 'Frame drops', 'Memory'];
             // The running app.
             p.at(t, 0.1, 0.6);
             p.xbox(440, 500, 110, 80);
@@ -275,8 +274,8 @@ const spatial: Assembly = {
 };
 
 // ---------------------------------------------------------------------------------------------------------------
-// Sidecar: 'Progressive image loading: a build step emits a tiny binary sidecar per image, and a runtime
-// targeting under 1 KB loads it in phases.'
+// Sidecar: public runtime prototype; the generator package is absent from the inspected public tree.
+// Show supported loading boundaries, not an achieved size or guaranteed sequential load phases.
 // ---------------------------------------------------------------------------------------------------------------
 const sidecar: Assembly = {
     rows: [
@@ -287,33 +286,33 @@ const sidecar: Assembly = {
             layerSub: 'Progressive loading', // 'Progressive image loading'
         },
         {
-            // 'a build step emits'
-            boxes: [{ l: 'Build step', k: 'well' }],
-            layer: 'Build step',
-            layerSub: 'Emits per image', // 'emits … per image'
+            // Runtime input already exists as a binary sidecar.
+            boxes: [{ l: 'Binary input', k: 'well' }],
+            layer: 'Binary input',
+            layerSub: 'Prototype format', // public runtime input
         },
         {
             // 'a tiny binary sidecar per image'
             boxes: [{ l: 'Sidecar', sub: 'Tiny · binary', k: 'hug' }],
-            edge: 'Emits', // 'emits'
+            edge: 'Parses', // parser input
             layer: 'Sidecar',
             layerSub: 'Tiny · binary', // 'tiny binary sidecar'
             note: 1,
         },
         {
-            // 'a runtime targeting under 1 KB'
-            boxes: [{ l: 'Runtime', sub: 'Under 1 KB', k: 'well' }],
-            edge: 'In phases', // 'loads it in phases'
+            // Browser runtime supports intermediate previews and a full-image fallback.
+            boxes: [{ l: 'Runtime', sub: 'Prototype', k: 'well' }],
+            edge: 'Preview / full', // fallback capability
             layer: 'Runtime',
-            layerSub: 'Under 1 KB · phases', // 'targeting under 1 KB loads it in phases'
+            layerSub: 'Preview / full fallback', // supported fallback behavior
             note: 2,
         },
     ],
     focus: 2,
     notes: [
         { n: 1, t: 'Tiny binary sidecar per image' }, // 'a tiny binary sidecar per image'
-        { n: 2, t: 'Runtime targets under 1 KB' }, // 'a runtime targeting under 1 KB'
-        { t: 'Loads in phases' }, // 'loads it in phases'
+        { n: 2, t: 'Browser runtime · prototype' }, // Browser runtime supports intermediate previews and a full-image fallback.
+        { t: 'Preview or full-image fallback' }, // fallback capability
     ],
     detail: {
         row: 2,
@@ -326,23 +325,22 @@ const sidecar: Assembly = {
             p.at(t + 0.6, 0.06, 0.35);
             p.tx(500, 598, 'Image', 'dts', { 'text-anchor': 'middle' });
             p.callout(574, 562, 604, 506, 'Sidecar · tiny · binary');
-            // The runtime that loads it, with its size target ('under 1 KB').
+            // Runtime capability; no measured distribution-size claim.
             p.at(t + 0.6, 0.12, 0.5);
             p.flow(586, 572, 696, 568);
             p.rr(700, 552, 110, 34, 4, 'well');
             p.at(t + 1.0, 0.05, 0.4);
             p.slotLabel(700, 552, 110, 34, 'Runtime');
-            p.dimH(700, 810, 538, 552, 552, '< 1 KB · target');
-            p.tx(755, 600, 'Loads in phases', 'dts', { 'text-anchor': 'middle' });
+            p.dimH(700, 810, 538, 552, 552, 'Prototype');
+            p.tx(755, 600, 'Preview / full fallback', 'dts', { 'text-anchor': 'middle' });
         },
     },
-    // Cut through the left column: the image, the build step (seen, not cut: it emits, it is not shipped), its
-    // tiny sidecar and the runtime. Only the sidecar's thinness is a claim ('tiny'); thicknesses are schematic.
+    // Schematic section through runtime inputs and browser loading. Only the sidecar's thinness is a claim ('tiny'); thicknesses are schematic.
     section: [
         { l: 'Image', t: 24, f: 'cut' }, // 'per image'
-        { l: 'Build step · emits', t: 12, f: 'seen' }, // 'a build step emits'
+        { l: 'Binary input', t: 12, f: 'seen' }, // Runtime input already exists as a binary sidecar.
         { l: 'Sidecar · tiny · binary', t: 4, f: 'solid' }, // 'a tiny binary sidecar'
-        { l: 'Runtime · under 1 KB', t: 8, f: 'cut2' }, // 'a runtime targeting under 1 KB'
+        { l: 'Browser runtime · prototype', t: 8, f: 'cut2' }, // Browser runtime supports intermediate previews and a full-image fallback.
     ],
 };
 

@@ -13,7 +13,7 @@
  * the section's top has passed 90 % of the viewport, in section heights: an element at fraction f of the
  * section draws around f), `clock` (seconds since the scene first came into view).
  *
- * Reduced motion: every scene is set to its end state once and nothing listens to scroll.
+ * Reduced motion: finish scenes with a whole-sheet camera; react to preference, viewport and print changes.
  */
 
 type Mat = [number, number, number, number, number, number];
@@ -38,7 +38,15 @@ type Scene = {
     /** Pin: viewport heights of lead-in before the stage pins (progress starts while it scrolls in). */
     lead: number;
     regs: Reg[];
-    cam?: { el: SVGGElement; keys: Key[]; keysSm?: Key[]; w: number; h: number; last: string };
+    cam?: {
+        el: SVGGElement;
+        keys: Key[];
+        keysSm?: Key[];
+        keysStill?: Key[];
+        w: number;
+        h: number;
+        last: string;
+    };
     t0?: number;
     on: boolean;
     /** Smoothed scene time (scroll scenes ease toward their target; -1 = not yet seen, jump straight there). */
@@ -97,6 +105,9 @@ function build(root: HTMLElement): Scene {
             keysSm: root.hasAttribute('data-cam-sm')
                 ? JSON.parse(root.getAttribute('data-cam-sm')!)
                 : undefined,
+            keysStill: root.hasAttribute('data-cam-still')
+                ? ([[0, ...JSON.parse(root.getAttribute('data-cam-still')!)]] as Key[])
+                : undefined,
             w: vb?.width ?? 0,
             h: vb?.height ?? 0,
             last: '',
@@ -105,8 +116,8 @@ function build(root: HTMLElement): Scene {
     return s;
 }
 
-function camera(c: NonNullable<Scene['cam']>, t: number, small: boolean): void {
-    const keys = (small && c.keysSm) || c.keys;
+function camera(c: NonNullable<Scene['cam']>, t: number, small: boolean, still: boolean): void {
+    const keys = still ? (c.keysStill ?? c.keys) : (small && c.keysSm) || c.keys;
     let i = 0;
     while (i < keys.length - 2 && t > keys[i + 1][0]) i++;
     const [t0, x0, y0, z0] = keys[i];
@@ -121,7 +132,9 @@ function camera(c: NonNullable<Scene['cam']>, t: number, small: boolean): void {
     c.el.setAttribute('transform', tr);
 }
 
-function apply(s: Scene, t: number, small: boolean): void {
+function apply(s: Scene, t: number, small: boolean, still = false): void {
+    // Camera composition depends on viewport/mode even when scene time is unchanged.
+    if (s.cam) camera(s.cam, t, small, still);
     if (t === s.lastT) return;
     s.lastT = t;
     s.root.style.setProperty('--p', String(q(t / s.T)));
@@ -161,7 +174,6 @@ function apply(s: Scene, t: number, small: boolean): void {
                 st.opacity = String(eo(p));
         }
     }
-    if (s.cam) camera(s.cam, t, small);
 }
 
 function progress(s: Scene, vh: number, atEnd: boolean, now: number): number {
@@ -232,16 +244,13 @@ export function drive(): () => void {
     const scenes = Array.from(document.querySelectorAll<HTMLElement>('[data-sheet]')).map(build);
     const smq = window.matchMedia('(max-width: 640px)');
     const unmeasure = measure();
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        scenes.forEach((s) => apply(s, s.T, smq.matches));
-        document.documentElement.classList.add('bp-still');
-        return unmeasure;
-    }
-
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let printing = false;
     let raf = 0;
     let last = 0;
     const tick = (now: number): void => {
         raf = 0;
+        if (motion.matches || printing) return;
         const dt = last ? Math.min(64, now - last) : 16;
         last = now;
         const k = 1 - Math.exp(-dt / TAU);
@@ -252,7 +261,17 @@ export function drive(): () => void {
         if (running) raf = requestAnimationFrame(tick);
         else last = 0;
     };
+    const still = (): void => {
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+        last = 0;
+        scenes.forEach((s) => apply(s, s.T, smq.matches, true));
+    };
     const schedule = (): void => {
+        if (motion.matches || printing) {
+            still();
+            return;
+        }
         if (!raf) raf = requestAnimationFrame(tick);
     };
     const resize = (): void => {
@@ -263,6 +282,15 @@ export function drive(): () => void {
         schedule();
     };
 
+    const preference = (): void => {
+        document.documentElement.classList.toggle('bp-still', motion.matches);
+        document.documentElement.classList.toggle('bp-live', !motion.matches);
+        scenes.forEach((s) => {
+            s.cur = -1;
+            s.lastT = -1;
+        });
+        resize();
+    };
     const io = new IntersectionObserver(
         (entries) => {
             for (const e of entries) {
@@ -275,21 +303,31 @@ export function drive(): () => void {
     );
     scenes.forEach((s) => io.observe(s.root));
     // Printing (or "Save as PDF") shows every sheet finished, cameras on their final frame; back to scroll after.
-    const toEnd = (): void => scenes.forEach((s) => apply(s, s.T, false));
+    const toEnd = (): void => {
+        printing = true;
+        still();
+    };
+    const afterPrint = (): void => {
+        printing = false;
+        resize();
+    };
     window.addEventListener('beforeprint', toEnd);
-    window.addEventListener('afterprint', resize);
+    window.addEventListener('afterprint', afterPrint);
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', resize);
     smq.addEventListener('change', resize);
-    document.documentElement.classList.add('bp-live');
+    motion.addEventListener('change', preference);
+    preference();
 
     return () => {
         io.disconnect();
         window.removeEventListener('beforeprint', toEnd);
-        window.removeEventListener('afterprint', resize);
+        window.removeEventListener('afterprint', afterPrint);
         window.removeEventListener('scroll', schedule);
         window.removeEventListener('resize', resize);
         smq.removeEventListener('change', resize);
+        motion.removeEventListener('change', preference);
+        document.documentElement.classList.remove('bp-live', 'bp-still');
         unmeasure();
         if (raf) cancelAnimationFrame(raf);
     };
