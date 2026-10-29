@@ -207,3 +207,18 @@ Spaced review: load-balancing can ask which of these two machines a street clien
 ## Review findings
 
 - spec review: not run — an independent reviewer was outside this unit
+
+
+## Film upgrade · 2026-10-29
+
+Objective: Routing chooses a next hop; NAT rewrites addresses. Neither replaces security policy.
+
+Topology: Private app, NAT gateway, Public service.
+
+1. Start inside a private network — A private address belongs inside the network. This example app has no public address.
+2. Follow the route — The subnet route sends outbound traffic toward a NAT gateway.
+3. Translate the source — NAT substitutes a public source address and tracks the mapping.
+4. Map the reply back — The gateway uses its mapping to send the returning reply to the private app.
+5. Keep policies separate — A valid route and NAT mapping do not guarantee that firewall rules allow the traffic.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

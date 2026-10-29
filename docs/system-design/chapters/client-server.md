@@ -735,3 +735,18 @@ Reviewer: fresh subagent (final check of 607f1d5..6b5f8d5, production build of 6
 - [note] "order 43" in the late start text is a literal with no test tying it to the late reply's Location → fixed (unit test for POST and POST with key, with and without retry)
 - [note] Evidence did not say which build each line covers; JS budget and Lighthouse not re-run on 6b5f8d5 → fixed (all re-run on the final code; Evidence names it)
 
+
+
+## Film upgrade · 2026-10-29
+
+Objective: A missing reply does not prove the operation failed.
+
+Topology: Your browser, App server, Data store.
+
+1. Two separate programs — A client asks for work. A server receives the request and runs it.
+2. Create an order — The client sends a request that asks the server to create an order.
+3. Save the result — The server saves the new order. That change exists even before the client sees a reply.
+4. Lose the reply — The response disappears in transit. The saved order stays in the data store.
+5. Uncertainty is real — The client cannot distinguish a lost request from a lost reply. A safe retry needs an explicit design.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

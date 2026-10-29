@@ -194,3 +194,18 @@ Spaced review: estimation re-asks these durations as inputs to a larger product.
 Reviewer: not run. No fresh reviewer in this unit.
 
 - [note] The rendered page was not opened. Reduced motion, keyboard stops, and the carriage's screen position were not watched. → open
+
+
+## Film upgrade · 2026-10-29
+
+Objective: Work includes access, transfer and waiting. Distance and bytes can matter as much as CPU work.
+
+Topology: Your browser, Memory, Disk, Remote host.
+
+1. Choose where the data lives — A read can hit local memory, local storage or a remote machine.
+2. Local memory — A local memory access avoids a network round trip. Exact costs depend on hardware.
+3. Local storage — Storage access introduces different access and transfer costs. Caching can change the path.
+4. Across the network — A remote read also pays for the network path and the remote work.
+5. Use measured inputs — The animation timing is illustrative. Use measured access delay, bandwidth and size for a real estimate.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

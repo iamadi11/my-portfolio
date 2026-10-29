@@ -7,12 +7,14 @@ import ChapterTabs from '@/components/learn/ChapterTabs';
 import { citeFor } from '@/components/learn/Cite';
 import CourseShell from '@/components/learn/CourseShell';
 import EstimateStack from '@/components/learn/estimation/EstimateStack';
+import LessonFilm from '@/components/learn/film/LessonFilm';
 import ChapterHeader from '@/components/learn/kit/ChapterHeader';
 import Question from '@/components/learn/kit/Question';
 import {
     ESTIMATION_SOURCE_NUMBER as SOURCE_NUMBER,
     ESTIMATION_SOURCES as SOURCES,
 } from '@/content/learn/estimation-sources';
+import { LESSON_FILMS } from '@/content/learn/films';
 import {
     LEARN_ASSUMPTIONS,
     LEARN_ESTIMATE,
@@ -50,6 +52,7 @@ export default function Page(): React.JSX.Element {
                 />
 
                 <ChapterTabs
+                    film={<LessonFilm film={LESSON_FILMS['estimation']} />}
                     learn={
                         <>
                             <div className="ln-prose">

@@ -17,17 +17,33 @@ type TabId = (typeof TABS)[number]['id'];
 
 export default function ChapterTabs({
     learn,
+    film,
     lab,
     quiz,
 }: {
     learn: React.ReactNode;
+    film?: React.ReactNode;
     lab: React.ReactNode;
     quiz: React.ReactNode;
 }): React.JSX.Element {
     const [tab, setTab] = useState<TabId>('learn');
     const base = useId();
     const buttons = useRef<(HTMLButtonElement | null)[]>([]);
-    const panels = { learn, lab, quiz };
+    const panels = {
+        learn: film ? (
+            <>
+                {film}
+                <details className="ln-watch-depth">
+                    <summary>Go deeper · explanation, worked examples & original visual</summary>
+                    {learn}
+                </details>
+            </>
+        ) : (
+            learn
+        ),
+        lab,
+        quiz,
+    };
 
     const select = (index: number): void => {
         const next = (index + TABS.length) % TABS.length;

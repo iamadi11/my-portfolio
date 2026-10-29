@@ -7,12 +7,14 @@ import ChapterTabs from '@/components/learn/ChapterTabs';
 import { citeFor } from '@/components/learn/Cite';
 import SubnetGate from '@/components/learn/cloud-networking/SubnetGate';
 import CourseShell from '@/components/learn/CourseShell';
+import LessonFilm from '@/components/learn/film/LessonFilm';
 import ChapterHeader from '@/components/learn/kit/ChapterHeader';
 import Question from '@/components/learn/kit/Question';
 import {
     CLOUD_NETWORKING_SOURCE_NUMBER as SOURCE_NUMBER,
     CLOUD_NETWORKING_SOURCES as SOURCES,
 } from '@/content/learn/cloud-networking-sources';
+import { LESSON_FILMS } from '@/content/learn/films';
 import {
     HOP,
     NAT_ADDRESS,
@@ -46,6 +48,7 @@ export default function Page(): React.JSX.Element {
                 />
 
                 <ChapterTabs
+                    film={<LessonFilm film={LESSON_FILMS['cloud-networking']} />}
                     learn={
                         <>
                             <div className="ln-prose">

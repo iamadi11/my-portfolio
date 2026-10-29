@@ -8,10 +8,12 @@ import { citeFor } from '@/components/learn/Cite';
 import ExchangeStepper from '@/components/learn/client-server/ExchangeStepper';
 import ClientServerQuiz from '@/components/learn/client-server/Quiz';
 import CourseShell from '@/components/learn/CourseShell';
+import LessonFilm from '@/components/learn/film/LessonFilm';
 import {
     CLIENT_SERVER_SOURCE_NUMBER as SOURCE_NUMBER,
     CLIENT_SERVER_SOURCES as SOURCES,
 } from '@/content/learn/client-server-sources';
+import { LESSON_FILMS } from '@/content/learn/films';
 
 /**
  * Chapter 2, client-server: the two roles, what one request and one response contain, statelessness, and what a
@@ -45,6 +47,7 @@ export default function Page(): React.JSX.Element {
                 </header>
 
                 <ChapterTabs
+                    film={<LessonFilm film={LESSON_FILMS['client-server']} />}
                     learn={
                         <>
                             <div className="ln-prose">

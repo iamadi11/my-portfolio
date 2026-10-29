@@ -1,4 +1,5 @@
 import { API_DESIGN_SOURCE_NUMBER, API_DESIGN_SOURCES } from './api-design-sources';
+import { API_LESSONS } from './api-lessons';
 import { CLIENT_SERVER_SOURCE_NUMBER, CLIENT_SERVER_SOURCES } from './client-server-sources';
 import { CLOUD_NETWORKING_SOURCE_NUMBER, CLOUD_NETWORKING_SOURCES } from './cloud-networking-sources';
 import { DNS_SOURCE_NUMBER, DNS_SOURCES } from './dns-sources';
@@ -163,6 +164,14 @@ export const SOURCE_CHAPTERS: readonly SourceChapter[] = [
         sources: API_DESIGN_SOURCES,
         numbers: API_DESIGN_SOURCE_NUMBER,
     },
+    ...Object.values(API_LESSONS).map((lesson) => ({
+        id: lesson.id,
+        title: lesson.title,
+        href: `/learn/${lesson.id}`,
+        note: 'Primary sources and relevant sections read on 2026-10-29. Film timing, geometry and lab workloads are illustrative teaching assumptions.',
+        sources: lesson.sources,
+        numbers: Object.fromEntries(lesson.sources.map((source, i) => [source.id, i + 1])),
+    })),
 ];
 
 /** Anchor for one source on `/learn/sources`. Unique across chapters: the same RFC is listed once per chapter. */

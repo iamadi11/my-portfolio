@@ -1,0 +1,437 @@
+.al-result-scene {
+    --lf-top: #f0f0f0;
+    --lf-left: #d4d4d4;
+    --lf-right: #bcbcbc;
+    --lf-edge: #686868;
+    --lf-data: #282828;
+}
+.lf-player {
+    --lf-top: #f0f0f0;
+    --lf-left: #d4d4d4;
+    --lf-right: #bcbcbc;
+    --lf-edge: #686868;
+    --lf-data: #282828;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--rule);
+    border-radius: 18px;
+    background: var(--paper);
+}
+.lf-topline {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 23px 26px 0;
+    color: var(--ink-3);
+    font-size: 12px;
+}
+.lf-eyebrow {
+    letter-spacing: 0.14em;
+    font-size: 10px;
+    font-weight: 700;
+}
+.lf-question {
+    margin: 12px 26px 0;
+    max-width: 36ch;
+    color: var(--ink);
+    font-size: clamp(19px, 2.6vw, 28px);
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.035em;
+}
+.lf-stage {
+    position: relative;
+    background: radial-gradient(ellipse at 50% 60%, var(--fill-2), transparent 65%);
+}
+.lf-scene.lf-scene-mobile {
+    display: none;
+}
+.lf-scene {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 240px;
+    overflow: visible;
+}
+.lf-projection {
+    position: absolute;
+    left: 26px;
+    bottom: 12px;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+}
+.lf-grid path {
+    stroke: var(--rule);
+    stroke-width: 0.6;
+    fill: none;
+    opacity: 0.7;
+}
+.lf-solid path {
+    stroke: var(--lf-edge);
+    stroke-width: 0.75;
+    stroke-linejoin: round;
+}
+.lf-face-top {
+    fill: var(--lf-top);
+}
+.lf-face-left {
+    fill: var(--lf-left);
+}
+.lf-face-right {
+    fill: var(--lf-right);
+}
+.lf-plinth .lf-face-top {
+    fill: var(--fill-1);
+}
+.lf-plinth path {
+    stroke: var(--rule);
+}
+.lf-detail path {
+    fill: var(--ink-3);
+    stroke: none;
+}
+.lf-screen .lf-face-left,
+.lf-rack .lf-face-left {
+    fill: var(--lf-data);
+}
+.lf-vent .lf-face-top {
+    fill: var(--lf-left);
+}
+.lf-shadow {
+    fill: var(--ink);
+    opacity: 0.07;
+}
+.lf-node-label text {
+    fill: var(--ink);
+    font-family: var(--font-arimo), Arial, sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    paint-order: stroke;
+    stroke: var(--paper);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+}
+.lf-node-label .lf-value {
+    fill: var(--ink-2);
+    font-size: 14px;
+    font-weight: 400;
+}
+.lf-cable path {
+    fill: none;
+    stroke: var(--line-3);
+    stroke-width: 2;
+}
+.lf-cable .lf-cable-bed {
+    stroke: var(--paper);
+    stroke-width: 9;
+}
+.lf-cable-active path:not(.lf-cable-bed) {
+    stroke: var(--ink);
+    stroke-width: 3;
+}
+.lf-data .lf-face-top {
+    fill: var(--ink);
+}
+.lf-data .lf-face-left {
+    fill: var(--ink-2);
+}
+.lf-data .lf-face-right {
+    fill: var(--ink-3);
+}
+.lf-packet rect {
+    fill: var(--ink);
+}
+.lf-packet text {
+    fill: var(--paper);
+    font-family: var(--font-arimo), Arial, sans-serif;
+    font-size: 14px;
+}
+.lf-packet-lost .lf-solid path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-dasharray: 3 2;
+}
+.lf-device[data-state='active'] .lf-plinth path,
+.lf-device[data-state='done'] .lf-plinth path {
+    stroke: var(--ink);
+    stroke-width: 1.8;
+}
+.lf-device[data-state='failed'] .lf-solid path {
+    stroke-dasharray: 3 2;
+}
+.lf-device[data-state='locked'] .lf-plinth path {
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+.lf-caption {
+    min-height: 112px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin: 0 26px;
+    padding: 22px 0 12px;
+    border-top: 1px solid var(--rule);
+}
+.lf-beat-number {
+    font-size: 22px;
+    line-height: 1.35;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.05em;
+    white-space: nowrap;
+}
+.lf-beat-number > span {
+    font-size: 12px;
+    color: var(--ink-3);
+}
+.lf-caption h3 {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0 0 5px;
+}
+.lf-caption p {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 16px;
+    line-height: 1.6;
+    max-width: 66ch;
+}
+.lf-timeline {
+    margin: 0 26px;
+}
+.lf-timeline input {
+    display: block;
+    width: 100%;
+    height: 36px;
+    accent-color: var(--ink);
+    cursor: pointer;
+}
+.lf-transport {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    padding: 4px 26px 18px;
+    align-items: center;
+}
+.lf-main-controls {
+    display: flex;
+    gap: 8px;
+}
+.lf-player button,
+.lf-player select,
+.ln-theme-select,
+.lc-filter button,
+.al-lab button,
+.al-lab select {
+    min-height: 44px;
+    min-width: 44px;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    color: var(--ink);
+    background: var(--paper);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+.lf-player button:hover {
+    background: var(--fill-1);
+}
+.lf-player .lf-play {
+    min-width: 102px;
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+    font-weight: 600;
+}
+.lf-speed select {
+    padding: 0 8px;
+}
+.lf-beats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--rule);
+}
+.lf-beats button {
+    border: 0;
+    border-radius: 0;
+    border-right: 1px solid var(--rule);
+    text-align: left;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--ink-2);
+}
+.lf-beats button:last-child {
+    border-right: 0;
+}
+.lf-beats button span {
+    font-size: 10px;
+    color: var(--ink-3);
+}
+.lf-beats button[aria-current] {
+    background: var(--fill-2);
+    color: var(--ink);
+    box-shadow: inset 0 2px var(--ink);
+}
+.lf-footnote {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--ink-3);
+    padding: 14px 26px;
+    border-top: 1px solid var(--rule);
+}
+.lf-footnote a {
+    color: inherit;
+}
+.lf-transcript {
+    padding: 16px 26px;
+    border-top: 1px solid var(--rule);
+    font-size: 14px;
+    line-height: 1.7;
+}
+.lf-transcript summary {
+    min-height: 30px;
+    cursor: pointer;
+    color: var(--ink-2);
+}
+.lf-transcript ol {
+    padding-left: 20px;
+}
+.lf-transcript li {
+    padding: 6px 0;
+}
+.lf-complete {
+    padding: 12px 26px;
+    font-size: 14px;
+    border-top: 1px solid var(--rule);
+}
+.ln-watch-depth {
+    margin: 24px 0;
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 18px 22px;
+}
+.ln-watch-depth > summary {
+    cursor: pointer;
+    font-size: 15px;
+    padding: 4px 0;
+    min-height: 28px;
+}
+.ln-watch-depth[open] > summary {
+    margin-bottom: 24px;
+}
+html[data-course-theme='dark'] .lf-player,
+html[data-course-theme='dark'] .al-result-scene {
+    --lf-top: #353535;
+    --lf-left: #262626;
+    --lf-right: #1d1d1d;
+    --lf-edge: #929292;
+    --lf-data: #111111;
+}
+@media (prefers-color-scheme: dark) {
+    html:not([data-course-theme='light']) .lf-player,
+    html:not([data-course-theme='light']) .al-result-scene {
+        --lf-top: #353535;
+        --lf-left: #262626;
+        --lf-right: #1d1d1d;
+        --lf-edge: #929292;
+        --lf-data: #111111;
+    }
+}
+@media (max-width: 600px) {
+    .lf-topline {
+        padding: 18px 16px 0;
+        font-size: 10px;
+    }
+    .lf-question {
+        margin: 12px 16px 0;
+        font-size: 21px;
+    }
+    .lf-stage {
+        overflow: hidden;
+    }
+    .lf-scene.lf-scene-desktop {
+        display: none;
+    }
+    .lf-scene.lf-scene-mobile {
+        display: block;
+        width: 100%;
+        min-height: 280px;
+    }
+    .lf-projection {
+        left: 16px;
+        bottom: 6px;
+        font-size: 8px;
+    }
+    .lf-caption {
+        margin: 0 16px;
+        gap: 12px;
+        min-height: 147px;
+    }
+    .lf-caption p {
+        font-size: 16px;
+    }
+    .lf-beat-number {
+        font-size: 17px;
+    }
+    .lf-beat-number > span {
+        display: block;
+    }
+    .lf-timeline {
+        margin: 0 16px;
+    }
+    .lf-transport {
+        padding: 4px 16px 16px;
+        gap: 6px;
+    }
+    .lf-main-controls {
+        gap: 6px;
+    }
+    .lf-player .lf-play {
+        min-width: 84px;
+    }
+    .lf-speed select {
+        max-width: 76px;
+        padding: 0 2px;
+    }
+    .lf-beats {
+        display: flex;
+        overflow-x: auto;
+    }
+    .lf-beats button {
+        min-width: 120px;
+    }
+    .lf-footnote,
+    .lf-transcript {
+        padding: 14px 16px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .lf-player * {
+        scroll-behavior: auto;
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+.lf-lock path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+.lf-lock rect {
+    fill: var(--paper);
+    stroke: var(--ink);
+    stroke-width: 1.5;
+}
+.lf-lock circle {
+    fill: var(--ink);
+}

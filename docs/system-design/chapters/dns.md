@@ -128,3 +128,18 @@ Exercise: trace www.example.com with nothing stored, then with the address store
   supports: [the user asks a resolver, which sends queries and handles referrals and errors (§3.7); a name server answers from local data with the answer or a referral to closer servers (§4.1); the resolver returns local information if it has it, otherwise follows a better delegation until an answer or a name error, and caches that (§5.3.3 steps 1 and 4)]
   note: >-
     Published text fetched from rfc-editor.org on 2026-10-28 (rfc1034.txt). Section numbers are from that text.
+
+
+## Film upgrade · 2026-10-29
+
+Objective: DNS follows a hierarchy; cached answers can shorten later lookups.
+
+Topology: Your browser, Resolver, DNS hierarchy, Authoritative DNS.
+
+1. Ask a resolver — The browser needs an address for a name. A resolver works out the answer.
+2. Find who knows — When the answer is not cached, the resolver follows referrals through the DNS hierarchy.
+3. Reach the authority — The authoritative server provides records for its zone.
+4. Return the record — The resolver returns the answer and may cache it for its permitted lifetime.
+5. Use the cache — A later lookup can use an unexpired cached record without repeating the full walk.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

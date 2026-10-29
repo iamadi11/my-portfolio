@@ -74,10 +74,10 @@ Chapters on all three paths form the shared core.
 | estimation | 14 | 1 | Back-of-envelope estimation | latency-numbers | beginner interview production | implemented |
 | utilisation-queueing | 15 | 1 | Utilisation, queues and Little's law | percentiles | beginner interview production | implemented |
 | api-design | 16 | 2 | API design: contracts between programs | http | beginner interview production | implemented |
-| rest | 17 | 2 | Resource-oriented HTTP APIs (REST) | api-design | beginner interview production | planned |
-| rpc | 18 | 2 | RPC and gRPC | api-design | beginner interview production | planned |
-| graphql | 19 | 2 | GraphQL and client-shaped queries | api-design | interview production | planned |
-| realtime | 20 | 2 | Pushing to clients: polling, SSE and WebSockets | http | beginner interview production | planned |
+| rest | 17 | 2 | Resource-oriented HTTP APIs (REST) | api-design | beginner interview production | implemented |
+| rpc | 18 | 2 | RPC and gRPC | api-design | beginner interview production | implemented |
+| graphql | 19 | 2 | GraphQL and client-shaped queries | api-design | interview production | implemented |
+| realtime | 20 | 2 | Pushing to clients: polling, SSE and WebSockets | http | beginner interview production | implemented |
 | idempotency | 21 | 2 | Idempotency and safe retries | api-design | beginner interview production | planned |
 | pagination | 22 | 2 | Pagination and large results | rest | interview production | planned |
 | encoding-evolution | 23 | 2 | Encoding data and evolving schemas | api-design | interview production | planned |

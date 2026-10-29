@@ -1,7 +1,7 @@
 # Course state
 
 State: initialized
-Updated: 2026-10-28
+Updated: 2026-10-29
 
 The system design course is built only through the `system-design-educator` skill
 (`.claude/skills/system-design-educator/`). This file and `CURRICULUM.md` are its memory; see the skill's
@@ -9,14 +9,18 @@ The system design course is built only through the `system-design-educator` skil
 
 ## Current unit
 
-dns step 6. Query walk is on /learn/dns. Not verified. No animation sense pass. tcp, tls, http, udp-quic, http-versions, cloud-networking, latency-throughput, percentiles, latency-numbers, estimation, utilisation-queueing, and api-design are implemented and not verified.
+none
 
 ## Next action
 
-Do not call the course world class. dns is implemented and not verified. No `animation sense: pass`.
-tcp, tls, http, udp-quic, http-versions, cloud-networking, latency-throughput, percentiles, latency-numbers, estimation, utilisation-queueing, and api-design are implemented and not verified. Do not mark a chapter verified because its files landed. The chapter loop stops here. REST stays planned.
+Visual-course batch implemented: 16 existing films upgraded, REST/RPC/GraphQL/realtime added (20/119 available). Review the changed teaching sequences and existing legacy labs before raising statuses. Next authoring topic: idempotency; preserve prerequisite evidence. The full course remains in progress. See VISUAL_COURSE_QA.md for actual checks and limits.
 
 ## Decisions
+
+- 2026-10-29 Owner requests a batch, beginner-first 3D explainers, little text, readable font, dark mode and token savings. This supersedes the earlier one-unit-per-invocation limit. Skill entry shortened, reference loading selective, read-only context helper added. No token-usage percentage is claimed; entry size is measured in bytes.
+- 2026-10-29 Reuse one isometric 3D scene/player and server-selected film records for all 20 available chapters. Five-second beats are playback timing, never network measurements. New semantic labs use tested pure functions. Preserve existing Learn details/labs/quizzes; primary sources live on /learn/sources. No new runtime dependencies or font requests.
+- 2026-10-29 Preserve Arimo with readable sentence-case course typography. Course-only light/dark/system preference and watched-film progress use localStorage with graceful storage failure. Portfolio theme remains unchanged.
+- 2026-10-29 Built 20/119 chapters; all remain implemented. Production build, 377 model/content tests and 39 helper tests pass; browser evidence and remaining accessibility/review checks are recorded separately. No independent review or world-class certification claimed.
 
 - 2026-10-27 The course is authored one unit per skill invocation; chapter status lives only in `CURRICULUM.md` —
   avoids two status lists drifting apart.
@@ -75,6 +79,8 @@ tcp, tls, http, udp-quic, http-versions, cloud-networking, latency-throughput, p
   model events, a ten-item model document, and the visual review rubric. Its "2D by default" line is withdrawn
   by the Anatomy decision above. `ip-and-ports` was lowered to `researched` under that pass and later reviewed.
 ## Open issues
+
+- 2026-10-29 Current batch: independent rendered-page review, manual screen-reader verification, system reduced-motion emulation, automated axe, Lighthouse and legacy browser suites remain not run. The production browser smoke checks do not substitute for these. Three historical spec-standard warnings remain (web-request, client-server, ip-and-ports). See VISUAL_COURSE_QA.md.
 
 - `client-server`: implemented in `/learn` on the owner's authorization (2026-10-27); two independent reviews ran
   (implementation, then a check of its fixes). No real screen reader was used (DOM/ARIA only); a manual checklist
@@ -213,3 +219,5 @@ tcp, tls, http, udp-quic, http-versions, cloud-networking, latency-throughput, p
   Browser: repeat visit on the rail is 90 ms and the marker ends at 100%; a lost GET sits at x 150; TCP to
   port 9000 ends as "Nobody receives it" with a reset. Quiz answers stay closed until opened. Reduced motion,
   Lighthouse, and a fresh review were not run. No new chapter.
+
+- 2026-10-29 Visual-course batch: optimized educator skill first, then 20 chapter-specific films, four new source-backed API lessons, shared player/experiments, course theme and catalog filters. Passed build/type/lint, 377 unit tests, 39 helper tests, graph/skill validators and recorded production UI checks. All statuses implemented; follow-up review still needed.

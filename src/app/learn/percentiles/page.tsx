@@ -6,9 +6,11 @@ import Link from 'next/link';
 import ChapterTabs from '@/components/learn/ChapterTabs';
 import { citeFor } from '@/components/learn/Cite';
 import CourseShell from '@/components/learn/CourseShell';
+import LessonFilm from '@/components/learn/film/LessonFilm';
 import ChapterHeader from '@/components/learn/kit/ChapterHeader';
 import Question from '@/components/learn/kit/Question';
 import PercentileRow from '@/components/learn/percentiles/PercentileRow';
+import { LESSON_FILMS } from '@/content/learn/films';
 import {
     PERCENTILE_SOURCE_NUMBER as SOURCE_NUMBER,
     PERCENTILE_SOURCES as SOURCES,
@@ -52,6 +54,7 @@ export default function Page(): React.JSX.Element {
                 />
 
                 <ChapterTabs
+                    film={<LessonFilm film={LESSON_FILMS['percentiles']} />}
                     learn={
                         <>
                             <div className="ln-prose">

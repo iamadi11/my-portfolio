@@ -193,3 +193,18 @@ Spaced review: vertical scaling and horizontal scaling re-ask what to do when on
 Reviewer: not run. No fresh reviewer in this unit.
 
 - [note] The rendered page was not opened. Reduced motion, keyboard stops, and the row's screen position were not watched. → open
+
+
+## Film upgrade · 2026-10-29
+
+Objective: As arrivals approach service capacity, waiting can dominate.
+
+Topology: Your browser, Queue, One worker.
+
+1. A worker has a limit — This teaching example has one worker and a finite service rate.
+2. Work starts to collect — When arrivals temporarily exceed departures, waiting work accumulates.
+3. Use spare capacity — The worker drains work when service can keep up.
+4. Do not confuse busy with stable — Sustained arrivals above capacity keep growing this unbounded teaching queue.
+5. Apply the right assumptions — Little’s law relates long-run averages in a stable system: work in system equals arrival rate times time in system.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

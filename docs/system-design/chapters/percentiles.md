@@ -187,3 +187,18 @@ Spaced review: utilisation-queueing re-asks a request that has to wait, which th
 Reviewer: not run. No fresh reviewer in this unit.
 
 - [note] The rendered page was not opened. Reduced motion, keyboard stops, and the finger's screen position were not watched. → open
+
+
+## Film upgrade · 2026-10-29
+
+Objective: A percentile describes a position in a sorted set; the slow tail still represents real requests.
+
+Topology: Requests, Sorted durations, Slowest request.
+
+1. Collect individual times — Each request has its own duration. Keep the individual measurements.
+2. Sort the sample — Order the observed durations from fastest to slowest.
+3. Find the middle — In this illustrative sample the median is 10 ms. It says little about the slowest request.
+4. Inspect the tail — One request took 90 ms. An average of 26 ms hides how different that experience was.
+5. State the convention — Percentile estimators differ. This course names its rank convention before computing a percentile.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

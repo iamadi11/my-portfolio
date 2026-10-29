@@ -196,3 +196,18 @@ Reviewer: not run — no fresh reviewer was started, and the browser was not ope
 
 - [note] animation check in the browser was not run → open
 - [note] the sources catalog was not updated, so `/learn/sources#http-versions` has no section yet → open
+
+
+## Film upgrade · 2026-10-29
+
+Objective: HTTP/2 multiplexes over one TCP stream; HTTP/3 uses QUIC streams.
+
+Topology: Your browser, HTTP/2 · TCP, HTTP/3 · QUIC.
+
+1. Multiple responses — A browser often fetches several resources. How they share a connection matters.
+2. HTTP/1.1 tradeoff — HTTP/1.1 responses on one connection keep their order. Browsers may use several connections.
+3. HTTP/2 multiplexes — HTTP/2 interleaves frames, but a gap in the underlying TCP byte stream can hold up delivery.
+4. HTTP/3 separates streams — QUIC can deliver another stream while one stream waits for missing bytes.
+5. Choose the right claim — HTTP/3 reduces this transport-level blocking; it cannot remove all delay or shared network limits.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

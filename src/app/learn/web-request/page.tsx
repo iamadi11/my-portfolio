@@ -6,8 +6,10 @@ import Link from 'next/link';
 import ChapterTabs from '@/components/learn/ChapterTabs';
 import { citeFor } from '@/components/learn/Cite';
 import CourseShell from '@/components/learn/CourseShell';
+import LessonFilm from '@/components/learn/film/LessonFilm';
 import JourneyStepper from '@/components/learn/web-request/JourneyStepper';
 import WebRequestQuiz from '@/components/learn/web-request/Quiz';
+import { LESSON_FILMS } from '@/content/learn/films';
 import { SOURCE_NUMBER, SOURCES } from '@/content/learn/web-request-sources';
 
 /**
@@ -42,6 +44,7 @@ export default function Page(): React.JSX.Element {
                 </header>
 
                 <ChapterTabs
+                    film={<LessonFilm film={LESSON_FILMS['web-request']} />}
                     learn={
                         <>
                             <div className="ln-prose">

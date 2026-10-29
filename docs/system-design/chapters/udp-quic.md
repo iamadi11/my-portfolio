@@ -181,3 +181,18 @@ Reviewer: not run — no fresh reviewer was started, and the browser was not ope
 
 - [note] animation check in the browser was not run → open
 - [note] the sources catalog was not updated, so `/learn/sources#udp-quic` has no section yet → open
+
+
+## Film upgrade · 2026-10-29
+
+Objective: QUIC has reliable streams over UDP; loss in one stream need not block ordered delivery in another.
+
+Topology: Your browser, QUIC stream A, QUIC stream B.
+
+1. Separate streams — QUIC carries distinct reliable byte streams inside a connection.
+2. Lose bytes from A — A packet carrying some of stream A is lost. Those missing bytes need recovery.
+3. B still arrives — Data for stream B can be delivered when its own ordered bytes are available.
+4. Repair A — Recovery supplies missing data for A. Reliability has not been removed.
+5. Share the network — Streams still share connection-level resources and congestion control. Independence does not mean unlimited bandwidth.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

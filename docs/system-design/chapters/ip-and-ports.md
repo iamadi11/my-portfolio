@@ -510,3 +510,18 @@ Rejects: none
 - [note] Stale references to `visual-science.md`, `visualization-and-simulation.md`, "Nine reference files" → fixed (renamed or annotated; twelve)
 - [note] `check` found exception lines inside code fences → fixed (fences stripped first; test)
 - [note] The skill's description did not mention visual-first or interactive work → fixed (description names manipulable figures, animation from tested models, and making a chapter more visual or interactive)
+
+
+## Film upgrade · 2026-10-29
+
+Objective: The address identifies the destination host; transport and port help select its receiving endpoint.
+
+Topology: Your browser, Network router, TCP port 443, UDP port 8125.
+
+1. An envelope with fields — A packet carries a destination address. Transport headers also carry ports.
+2. Route to the host — The network uses the destination IP address to forward the packet toward its host.
+3. Choose an endpoint — This example uses TCP and destination port 443. It does not go to the UDP endpoint.
+4. A different transport — A UDP datagram for port 8125 selects a different endpoint. A port number alone is not the complete address.
+5. Nobody listening — A host can receive a packet even when no program is listening on the requested port.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

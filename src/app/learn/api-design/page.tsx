@@ -7,12 +7,14 @@ import ContractPlate from '@/components/learn/api-design/ContractPlate';
 import ChapterTabs from '@/components/learn/ChapterTabs';
 import { citeFor } from '@/components/learn/Cite';
 import CourseShell from '@/components/learn/CourseShell';
+import LessonFilm from '@/components/learn/film/LessonFilm';
 import ChapterHeader from '@/components/learn/kit/ChapterHeader';
 import Question from '@/components/learn/kit/Question';
 import {
     API_DESIGN_SOURCE_NUMBER as SOURCE_NUMBER,
     API_DESIGN_SOURCES as SOURCES,
 } from '@/content/learn/api-design-sources';
+import { LESSON_FILMS } from '@/content/learn/films';
 import {
     CONTRACT_METHOD,
     CONTRACT_TARGET,
@@ -47,6 +49,7 @@ export default function Page(): React.JSX.Element {
                 />
 
                 <ChapterTabs
+                    film={<LessonFilm film={LESSON_FILMS['api-design']} />}
                     learn={
                         <>
                             <div className="ln-prose">

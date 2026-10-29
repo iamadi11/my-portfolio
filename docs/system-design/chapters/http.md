@@ -164,3 +164,18 @@ Spaced review: http-versions can ask what this chapter already fixed about one m
 ## Review findings
 
 - spec review: not run — browser check and an independent reviewer were outside this unit
+
+
+## Film upgrade · 2026-10-29
+
+Objective: Method, target, headers and status make the exchange meaningful.
+
+Topology: Your browser, App server, Resource /notes/7.
+
+1. Name an action and target — The method tells the intended operation. The target identifies the resource.
+2. Read the representation — A successful GET retrieves a representation; it is not a command to create another note.
+3. Respond with meaning — The response includes a status and may include headers and a body.
+4. A missing resource — This example assigns 404 when the target cannot be found. That differs from a broken server.
+5. A disallowed method — For a known resource, a method that is not allowed receives 405 and an Allow header.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

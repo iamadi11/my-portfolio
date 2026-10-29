@@ -144,3 +144,18 @@ Spaced review: percentiles re-asks what one service time hides; utilisation-queu
   note: >-
     Published text fetched from rfc-editor.org on 2026-10-28 (rfc5136.txt). Section numbers are from that text.
     The tray in this chapter counts jobs. It is not a link capacity and not a bandwidth figure.
+
+
+## Film upgrade · 2026-10-29
+
+Objective: Latency measures time per operation; throughput measures completed operations per unit time.
+
+Topology: Your browser, Waiting requests, Worker.
+
+1. Time one request — Latency asks how long this request takes from start to finish.
+2. Count completions — Throughput asks how many requests finish in a time window.
+3. Add more arrivals — More incoming work can accumulate in a queue without increasing completions.
+4. Queueing adds delay — A request waits before service begins. That wait contributes to its latency.
+5. Measure both — A system can have high throughput while some requests wait a long time.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

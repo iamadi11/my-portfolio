@@ -2,6 +2,8 @@ import React from 'react';
 
 import Link from 'next/link';
 
+import CourseTheme from './CourseTheme';
+
 import './learn.css';
 
 /**
@@ -18,6 +20,11 @@ export default function CourseShell({
 }): React.JSX.Element {
     return (
         <div className="ln">
+            <script
+                dangerouslySetInnerHTML={{
+                    __html: `(function(){try{var t=localStorage.getItem('learn-theme');document.documentElement.dataset.courseTheme=(t==='light'||t==='dark')?t:'system'}catch(e){}})()`,
+                }}
+            />
             <header className="ln-bar">
                 <nav aria-label="Breadcrumb">
                     <ol className="ln-crumbs">
@@ -44,15 +51,18 @@ export default function CourseShell({
                         ))}
                     </ol>
                 </nav>
-                {crumbs?.some((c) => c.label === 'Sources') ? (
-                    <span className="ln-note" aria-current="page">
-                        Sources
-                    </span>
-                ) : (
-                    <Link href="/learn/sources" className="ln-note">
-                        Sources
-                    </Link>
-                )}
+                <div className="ln-bar-tools">
+                    <CourseTheme />
+                    {crumbs?.some((c) => c.label === 'Sources') ? (
+                        <span className="ln-note" aria-current="page">
+                            Sources
+                        </span>
+                    ) : (
+                        <Link href="/learn/sources" className="ln-note">
+                            Sources
+                        </Link>
+                    )}
+                </div>
             </header>
             <main id="main-content" tabIndex={-1}>
                 {children}

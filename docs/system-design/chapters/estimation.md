@@ -179,3 +179,18 @@ Spaced review: autoscaling and cost re-ask a rate times a size. utilisation-queu
 Reviewer: not run. No fresh reviewer in this unit.
 
 - [note] The rendered page was not opened. Reduced motion, keyboard steps, and the pan heights were not watched. → open
+
+
+## Film upgrade · 2026-10-29
+
+Objective: Keep units visible and separate an average from a peak.
+
+Topology: Your browser, Requests per second, Capacity estimate.
+
+1. Start with an assumption — Assume one million requests per day. This is an example workload, not a production measurement.
+2. Convert the time unit — One day has 86,400 seconds. Divide requests per day by seconds per day.
+3. Find the average — The average is about 11.6 requests per second. Keep the unit in the answer.
+4. Allow for peaks — Assume a peak ten times the average. The corresponding peak is about 116 requests per second.
+5. Ask what is missing — Real sizing also needs request cost, bytes, storage, availability requirements and measured headroom.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

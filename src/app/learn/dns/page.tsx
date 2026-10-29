@@ -7,9 +7,11 @@ import ChapterTabs from '@/components/learn/ChapterTabs';
 import { citeFor } from '@/components/learn/Cite';
 import CourseShell from '@/components/learn/CourseShell';
 import DnsWalk from '@/components/learn/dns/DnsWalk';
+import LessonFilm from '@/components/learn/film/LessonFilm';
 import ChapterHeader from '@/components/learn/kit/ChapterHeader';
 import Question from '@/components/learn/kit/Question';
 import { DNS_SOURCE_NUMBER as SOURCE_NUMBER, DNS_SOURCES as SOURCES } from '@/content/learn/dns-sources';
+import { LESSON_FILMS } from '@/content/learn/films';
 
 /**
  * Chapter 4, dns: a name is not an address. The resolver returns a stored answer, or walks
@@ -37,6 +39,7 @@ export default function Page(): React.JSX.Element {
                 />
 
                 <ChapterTabs
+                    film={<LessonFilm film={LESSON_FILMS['dns']} />}
                     learn={
                         <>
                             <div className="ln-prose">

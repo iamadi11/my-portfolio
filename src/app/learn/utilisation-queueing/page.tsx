@@ -6,9 +6,11 @@ import Link from 'next/link';
 import ChapterTabs from '@/components/learn/ChapterTabs';
 import { citeFor } from '@/components/learn/Cite';
 import CourseShell from '@/components/learn/CourseShell';
+import LessonFilm from '@/components/learn/film/LessonFilm';
 import ChapterHeader from '@/components/learn/kit/ChapterHeader';
 import Question from '@/components/learn/kit/Question';
 import QueueRow from '@/components/learn/utilisation-queueing/QueueRow';
+import { LESSON_FILMS } from '@/content/learn/films';
 import {
     UTILISATION_QUEUEING_SOURCE_NUMBER as SOURCE_NUMBER,
     UTILISATION_QUEUEING_SOURCES as SOURCES,
@@ -51,6 +53,7 @@ export default function Page(): React.JSX.Element {
                 />
 
                 <ChapterTabs
+                    film={<LessonFilm film={LESSON_FILMS['utilisation-queueing']} />}
                     learn={
                         <>
                             <div className="ln-prose">

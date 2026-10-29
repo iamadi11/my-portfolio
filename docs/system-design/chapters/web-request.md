@@ -921,3 +921,18 @@ Reviewer: fresh subagent (review of the predict-then-run fix, 7ebbf34..f441d44, 
   "(after any redirects)" and the clamp open question faithful to fetch.bs; npm test, tsc. Not checked: a real
   screen reader, Lighthouse, other sizes, the deployed URL
 
+
+
+## Film upgrade · 2026-10-29
+
+Objective: A page load is a chain of work. Reusing earlier work can shorten the chain.
+
+Topology: Your browser, DNS resolver, App server.
+
+1. Start with a name — Your browser has a website name. It needs a destination before it can send the request.
+2. Find the address — DNS looks up an address for the name. Watch the query visit the resolver.
+3. Connect securely — A new HTTPS connection needs transport and security setup. These are separate from asking for the page.
+4. Ask for the page — The request reaches the server. The server prepares a response.
+5. Receive the page — The response returns. Cached DNS information and a reusable connection can avoid some earlier work.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

@@ -166,3 +166,18 @@ Spaced review: rest can ask which part of this contract a resource-oriented inte
 ## Review findings
 
 - spec review: not run — browser check and an independent reviewer were outside this unit
+
+
+## Film upgrade · 2026-10-29
+
+Objective: An API is a contract: callers rely on documented inputs, outputs and errors.
+
+Topology: Your browser, API contract, App server.
+
+1. Agree before calling — An application programming interface, or API, specifies how one program can use another.
+2. Send a matching call — The client supplies the promised method and target.
+3. Execute the operation — The service handles the call according to its contract.
+4. Return a documented result — The caller can distinguish success from a documented error.
+5. Reject a mismatched method — A disallowed method does not silently become a successful read.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

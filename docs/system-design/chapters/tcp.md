@@ -163,3 +163,18 @@ Spaced review: tls can ask what is already true of the byte stream before anythi
 ## Review findings
 
 - spec review: not run — browser check and an independent reviewer were outside this unit
+
+
+## Film upgrade · 2026-10-29
+
+Objective: TCP exposes an ordered byte stream; later bytes wait behind missing bytes.
+
+Topology: Your browser, Receive buffer, App server.
+
+1. Split the stream — TCP carries bytes in segments. Sequence numbers identify their place in the byte stream.
+2. Receive later bytes — A later segment arrives before the missing one. The receiver can buffer it.
+3. Hold the gap — The application does not receive later bytes as if the missing bytes had arrived.
+4. Retransmit missing bytes — A retransmission fills the gap. The receiver can now assemble a continuous prefix.
+5. Deliver in order — The application receives the ordered bytes. Arrival order and delivery order can differ.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

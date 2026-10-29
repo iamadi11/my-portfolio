@@ -176,3 +176,18 @@ Spaced review: http can ask where the request byte is while the handshake cartri
 ## Review findings
 
 - spec review: not run — browser check and an independent reviewer were outside this unit
+
+
+## Film upgrade · 2026-10-29
+
+Objective: TLS authenticates the peer and protects application data; it does not make the application itself trustworthy.
+
+Topology: Your browser, Network observer, App server.
+
+1. Agree on protection — The client begins a handshake, offering supported parameters and key exchange information.
+2. Prove the server identity — The server sends authentication information. The browser checks the certificate and handshake proof.
+3. Derive traffic keys — Both ends derive keys. These keys protect the following application data.
+4. Send encrypted data — An observer on the network sees encrypted traffic rather than the plaintext application message.
+5. Know the boundary — A secure channel to a malicious service is still a secure channel to a malicious service.
+
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

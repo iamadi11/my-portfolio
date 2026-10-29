@@ -120,11 +120,11 @@ Examples:
 
 ---
 
-## 11. SYSTEM DESIGN COURSE (PLANNED)
+## 11. SYSTEM DESIGN COURSE
 
-A system design course (zero → advanced) is planned for this site; it does not exist yet. It teaches general engineering, so §0's "facts about the owner come from `site.ts`" does not apply to its content.
+A system design course (zero → advanced) lives at `/learn`. It teaches general engineering, so §0's "facts about the owner come from `site.ts`" does not apply to its content.
 
-1. **Only through the skill:** all course work (initialize, curriculum, next chapter, chapter audit) goes through `.claude/skills/system-design-educator` (`/system-design-educator [init | curriculum | next | chapter <id> | audit <id>]`), one unit per invocation.
+1. **Only through the skill:** all course work (initialize, curriculum, next chapter, chapter audit) goes through `.claude/skills/system-design-educator` (`/system-design-educator [init | curriculum | next | chapter <id> | audit <id>]`), coherent batches when requested; follow the skill’s compact production workflow.
 2. **State:** `docs/system-design/COURSE_STATE.md` (where it is, what's next) and `docs/system-design/CURRICULUM.md` (learning graph; the only place chapter status lives). Read them first, update them last.
 3. **Truth:** every technical claim traces to a recorded source (primary first) with honest `via: read | search`; example numbers are labelled assumptions; simulations are labelled teaching models and every number they show comes from tested model state.
-4. **Look and performance:** the drawing-set language of `/` (monochrome; states by line/fill + text, never colour), WCAG 2.2 AA, reduced motion, and `/` must stay unaffected; budgets are set in mode A and recorded in `COURSE_STATE.md`.
+4. **Look and performance:** the drawing-set language of `/` (monochrome; states by line/fill + text, never colour), course-only light/dark/system themes and readable sentence-case type, WCAG 2.2 AA, reduced motion, and `/` must stay unaffected; budgets are set in mode A and recorded in `COURSE_STATE.md`.
