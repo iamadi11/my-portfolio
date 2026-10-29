@@ -28,3 +28,11 @@ Token accounting: compare UTF-8 byte/word counts as a proxy, not invented model-
 `academy-lessons.json` contains authored chapter blueprints, not status or duplicated curriculum titles. `academy-sources.json` holds shared primary source records. `academy.ts` joins those with the curriculum on the server. The browser receives only its own lesson, film and prerequisite recap; shared experiment functions form a bounded lazy client chunk. `design-guides.ts` adds authored complete cases with computed workload arithmetic and explicit faults. `experiment-model.ts` and `topic-models.ts` implement small, explicit models; `makeExperimentFilm` converts their event traces into the same player. Do not paint results unrelated to those traces.
 
 Use the coverage tests to reject missing/duplicate ids, dangling routes, unsupported source ids, answer leakage, inert controls and broken next/previous links. Author chapters as compact records, but never infer the mechanism from a title or generate a quiz by repeating its summary. New numerical examples are labelled assumptions and tested. Existing specialized labs remain available.
+
+## Anatomy/GSAP refinement (2026-10-30)
+
+Shared anatomy parts and explicit port routes replace bespoke device paths. `paceFilm` assigns caption-dependent playback durations; all scene seeks use cumulative starts. `useClock` owns a scoped GSAP timeline or duration-aware static steps. Portfolio drawing time uses a disposable GSAP context and ScrollTrigger; native sticky layout stays server-rendered. Portfolio preference is independent of course appearance.
+
+`COMPANION_MODELS` in academy.ts adds tested comparisons and labs when a broad objective needs more than its primary model. Do not copy a chapter component. `anatomy-refinement.test.ts` checks published films, companions, portfolio tours, part mounts, routes and pacing together. Preserve source/model limitations; an SVG geometry invariant is not a rendered acceptance result.
+
+Owner-approved ceilings are 180,000 bytes first-load JS for `/`, 200,000 for course routes and 600,000 additional on demand. Compare measured compressed assets after a production build; do not increase a ceiling merely to hide a regression. The font remains the bundled Arimo variable font.

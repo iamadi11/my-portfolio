@@ -449,7 +449,7 @@
     },
     "beam": {
         "id": "beam",
-        "title": "Apache Beam programming guide \u00a78.4: watermarks and late data",
+        "title": "Apache Beam programming guide §8.4: watermarks and late data",
         "publisher": "beam.apache.org",
         "url": "https://beam.apache.org/documentation/programming-guide/#watermarks-and-late-data",
         "read": "Opened 2026-10-29; relevant material: event time, watermark estimates, late elements and allowed lateness.",
@@ -462,5 +462,53 @@
         "url": "https://www.rabbitmq.com/tutorials/tutorial-three-javascript",
         "read": "Opened 2026-10-29; relevant material: independent consumers, fanout exchanges and delivery to each bound queue.",
         "scope": "Independent subscription delivery"
+    },
+    "cache-aside": {
+        "id": "cache-aside",
+        "title": "Microsoft cache-aside pattern",
+        "publisher": "learn.microsoft.com",
+        "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside",
+        "read": "Opened 2026-10-30; solution and staleness-after-writes sections.",
+        "scope": "Read miss ordering, datastore-first invalidation, write-through distinction and failure boundaries"
+    },
+    "consistency-levels": {
+        "id": "consistency-levels",
+        "title": "Azure Cosmos DB consistency levels",
+        "publisher": "learn.microsoft.com",
+        "url": "https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels",
+        "read": "Opened 2026-10-30; guarantees, strong and eventual consistency sections.",
+        "scope": "Linearizable reads versus eventual convergence; product-specific coordination is not generalized"
+    },
+    "rocks-layout": {
+        "id": "rocks-layout",
+        "title": "RocksDB overview",
+        "url": "https://github.com/meta/rocksdb/wiki/RocksDB-Overview",
+        "publisher": "github.com",
+        "read": "Opened 2026-10-30; Memtables, immutable sorted files, flush and compaction.",
+        "scope": "Memtables, immutable sorted files, flush and compaction"
+    },
+    "pg-join": {
+        "id": "pg-join",
+        "title": "PostgreSQL 18 joins",
+        "url": "https://www.postgresql.org/docs/18/tutorial-join.html",
+        "publisher": "www.postgresql.org",
+        "read": "Opened 2026-10-30; Inner and left outer join result rows.",
+        "scope": "Inner and left outer join result rows"
+    },
+    "pg-sets": {
+        "id": "pg-sets",
+        "title": "PostgreSQL 18 combining queries",
+        "url": "https://www.postgresql.org/docs/18/queries-union.html",
+        "publisher": "www.postgresql.org",
+        "read": "Opened 2026-10-30; UNION ALL, UNION, INTERSECT and EXCEPT.",
+        "scope": "UNION ALL, UNION, INTERSECT and EXCEPT"
+    },
+    "pg-prepare": {
+        "id": "pg-prepare",
+        "title": "PostgreSQL 18 prepared transactions",
+        "url": "https://www.postgresql.org/docs/18/sql-prepare-transaction.html",
+        "publisher": "www.postgresql.org",
+        "read": "Opened 2026-10-30; Durable preparation, external coordinator, retained locks and resolution.",
+        "scope": "Durable preparation, external coordinator, retained locks and resolution"
     }
 }

@@ -16,6 +16,7 @@ function remember(kind: string, id: string): void {
     }
 }
 export function AcademyLab({ lesson }: { lesson: Blueprint }): React.JSX.Element {
+    const titleId = `academy-lab-${lesson.id}-${lesson.model}`;
     const spec = MECHANISMS[lesson.model];
     const [amount, setAmount] = useState(spec.initial),
         [alternative, setAlternative] = useState(false),
@@ -30,17 +31,26 @@ export function AcademyLab({ lesson }: { lesson: Blueprint }): React.JSX.Element
     const film = useMemo(
         () =>
             run
-                ? makeExperimentFilm(`${lesson.id}-experiment`, lesson.question, lesson.rule, lesson.model, {
-                      amount: run.amount,
-                      alternative: run.alternative,
-                  })
+                ? {
+                      ...makeExperimentFilm(
+                          `${lesson.id}-experiment`,
+                          lesson.question,
+                          lesson.rule,
+                          lesson.model,
+                          {
+                              amount: run.amount,
+                              alternative: run.alternative,
+                          }
+                      ),
+                      id: `${lesson.id}-${lesson.model}-experiment`,
+                  }
                 : null,
         [lesson, run]
     );
     return (
-        <section className="al-lab" aria-labelledby="academy-lab-title">
+        <section className="al-lab" aria-labelledby={titleId}>
             <p className="ln-kicker">Predict → run → explain</p>
-            <h2 id="academy-lab-title">Change the mechanism</h2>
+            <h2 id={titleId}>Change the mechanism</h2>
             <p>{lesson.question}</p>
             <div className="al-inputs">
                 <label>
@@ -80,7 +90,7 @@ export function AcademyLab({ lesson }: { lesson: Blueprint }): React.JSX.Element
                     <label key={prediction}>
                         <input
                             type="radio"
-                            name={`predict-${lesson.id}`}
+                            name={`predict-${lesson.id}-${lesson.model}`}
                             checked={guess === prediction}
                             onChange={() => {
                                 setGuess(prediction);

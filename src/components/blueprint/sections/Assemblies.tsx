@@ -2,10 +2,12 @@ import React from 'react';
 
 import { Scene, SheetFrame, win } from '@/components/blueprint/scene';
 import { SHEET_COUNT, sheet } from '@/components/blueprint/sheets';
+import { PROJECT_FILMS } from '@/content/project-films';
 import { SITE } from '@/content/site';
 import type { Project } from '@/content/types';
 import { projectStats, type ProjectStats } from '@/lib/live';
 
+import ProjectTour from '../ProjectTour';
 import { ASSEMBLIES, generic } from './assemblies/configs';
 import { drawAssembly } from './assemblies/drawing';
 import './assemblies.css';
@@ -125,6 +127,10 @@ function Assembly({
                             ))}
                         </ul>
                     ) : null}
+                    {PROJECT_FILMS[project.id] && (
+                        <ProjectTour title={project.title} film={PROJECT_FILMS[project.id]} />
+                    )}
+                    <p className="asm-schematic">Conceptual software assembly · spacing is schematic</p>
                     <Ref stats={stats} title={project.title} />
                     <p className="asm-cta" {...win(1.6, 2.4)}>
                         <a

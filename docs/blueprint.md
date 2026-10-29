@@ -83,3 +83,7 @@ Three server features need a Redis connected to the Vercel project. Without one,
 ## PWA
 
 `src/app/manifest.ts` (standalone, maskable icon) and `public/sw.js` (which also `importScripts` Eidos' worker, copied from `node_modules` by `npm run eidos-sw` before `dev`/`build`; `/api/` is never cached): navigations network-first with the last good `/` as the offline fallback, `/_next/static` cache-first, everything else stale-while-revalidate. Bump `VERSION` in `sw.js` when its rules change. Icons (`public/icon*.png`, `icon.svg`, favicons) are the monochrome title-block mark.
+
+## Owner refinement · 2026-10-30
+
+Portfolio appearance supports independent light/dark/system selection with a pre-hydration preference script; print composes on light paper. GSAP/ScrollTrigger owns disposable drawing timing and scroll smoothing. Featured projects have lazy, source-backed workflow films using shared anatomy solids and exact connector endpoints. Exploded software layers are conceptual, not literal stacked hardware. The first-load portfolio ceiling is 180 kB; course routes are 200 kB plus 600 kB on demand. Source and validation evidence: `system-design/ANATOMY_GSAP_QA.md`.

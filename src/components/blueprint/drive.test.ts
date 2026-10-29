@@ -1,9 +1,96 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+type Timeline = {
+    options: { onUpdate: () => void };
+    playing: boolean;
+    cursor: { time: number };
+    values: { time: number };
+    to: (cursor: { time: number }, values: { time: number }) => Timeline;
+    play: () => Timeline;
+    pause: () => Timeline;
+};
+type Trigger = {
+    animation?: Timeline;
+    start: () => number;
+    end: () => number;
+    onToggle: (self: { isActive: boolean }) => void;
+};
+type Owner = { timelines: Timeline[]; triggers: Trigger[] };
+// Exercise our lifecycle and frame projection with a deterministic GSAP/ScrollTrigger boundary.
+// Actual scroll/plugin integration is checked in the browser.
+const engine = vi.hoisted(() => ({
+    owners: new Set<Owner>(),
+    current: null as Owner | null,
+}));
+vi.mock('gsap', () => ({
+    gsap: {
+        registerPlugin: () => {},
+        context: (fn: () => void) => {
+            const owner = { timelines: [] as Timeline[], triggers: [] as Trigger[] };
+            engine.current = owner;
+            engine.owners.add(owner);
+            fn();
+            engine.current = null;
+            return { revert: () => engine.owners.delete(owner) };
+        },
+        timeline: (options: Timeline['options']) => {
+            const timeline: Timeline = {
+                cursor: { time: 0 },
+                values: { time: 0 },
+                options,
+                playing: false,
+                to(cursor: { time: number }, values: { time: number }) {
+                    this.cursor = cursor;
+                    this.values = values;
+                    return this;
+                },
+                play() {
+                    this.playing = true;
+                    return this;
+                },
+                pause() {
+                    this.playing = false;
+                    return this;
+                },
+            };
+            engine.current!.timelines.push(timeline);
+            return timeline;
+        },
+    },
+}));
+vi.mock('gsap/ScrollTrigger', () => ({
+    ScrollTrigger: {
+        create: (options: Trigger) => {
+            engine.current!.triggers.push(options);
+        },
+        maxScroll: () => 1200,
+        refresh: () => {
+            for (const owner of engine.owners)
+                for (const trigger of owner.triggers) {
+                    if (trigger.animation) {
+                        const timeline = trigger.animation;
+                        const progress = Math.max(
+                            0,
+                            Math.min(
+                                1,
+                                (window.scrollY - trigger.start()) / (trigger.end() - trigger.start())
+                            )
+                        );
+                        timeline.cursor.time = timeline.values.time * progress;
+                        timeline.options.onUpdate();
+                    } else trigger.onToggle({ isActive: true });
+                }
+        },
+    },
+}));
+
 import { drive } from './drive';
 
-afterEach(() => vi.unstubAllGlobals());
-function harness(reduced: boolean) {
+afterEach(() => {
+    vi.unstubAllGlobals();
+    engine.owners.clear();
+});
+function harness(reduced: boolean, mode = 'pin') {
     const events = new Map<string, Set<() => void>>();
     const emit = (key: string): void => events.get(key)?.forEach((fn) => fn());
     const on = (key: string, fn: () => void): void => {
@@ -30,7 +117,7 @@ function harness(reduced: boolean) {
     };
     const attrs: Record<string, string> = {
         'data-t': '1',
-        'data-mode': 'pin',
+        'data-mode': mode,
         'data-cam': '[[0,500,500,1],[1,500,500,1]]',
         'data-cam-sm': '[[0,250,250,2],[1,250,250,2]]',
         'data-cam-still': '[500,500,1]',
@@ -54,6 +141,9 @@ function harness(reduced: boolean) {
     const frames = new Map<number, FrameRequestCallback>();
     let next = 0;
     const doc = {
+        hidden: false,
+        addEventListener: on,
+        removeEventListener: off,
         querySelectorAll: (query: string) => (query === '[data-sheet]' ? [root] : []),
         documentElement: {
             classList: {
@@ -92,7 +182,7 @@ function harness(reduced: boolean) {
         frames.clear();
         work.forEach((fn) => fn(100));
     };
-    return { motion, small, emit, classes, frames, flush, reg, getTransform: () => transform, events };
+    return { motion, small, emit, classes, frames, flush, reg, doc, getTransform: () => transform, events };
 }
 describe('portfolio motion lifecycle', () => {
     it('responds to preference changes, finishes still drawings and cleans up listeners/classes', () => {
@@ -115,6 +205,7 @@ describe('portfolio motion lifecycle', () => {
         expect(h.getTransform()).toContain('scale(2.0000)');
         stop();
         expect(h.classes.size).toBe(0);
+        expect(engine.owners.size).toBe(0);
         expect(h.frames.size).toBe(0);
         expect([...h.events.values()].every((listeners) => listeners.size === 0)).toBe(true);
     });
@@ -143,4 +234,24 @@ describe('portfolio motion lifecycle', () => {
         expect(h.getTransform()).toContain('scale(1.0000)');
         stop();
     });
+});
+
+it('pauses offscreen/hidden clock scenes and releases only its own context', () => {
+    const h = harness(false, 'clock');
+    const stop = drive();
+    const owner = [...engine.owners][0];
+    const timeline = owner.timelines[0];
+    expect(timeline.playing).toBe(true);
+    h.doc.hidden = true;
+    h.emit('visibilitychange');
+    expect(timeline.playing).toBe(false);
+    h.doc.hidden = false;
+    h.emit('visibilitychange');
+    expect(timeline.playing).toBe(true);
+    owner.triggers[0].onToggle({ isActive: false });
+    expect(timeline.playing).toBe(false);
+    h.emit('visibilitychange');
+    expect(timeline.playing).toBe(false);
+    stop();
+    expect(engine.owners.size).toBe(0);
 });

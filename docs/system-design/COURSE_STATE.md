@@ -1,7 +1,7 @@
 # Course state
 
 State: initialized
-Updated: 2026-10-29
+Updated: 2026-10-30
 
 The system design course is built only through the `system-design-educator` skill
 (`.claude/skills/system-design-educator/`). This file and `CURRICULUM.md` are its memory; see the skill's
@@ -13,9 +13,14 @@ none
 
 ## Next action
 
-Full-curriculum expansion implemented: 119 routes, including the original 20 specialized lessons and 99 new compact chapters. Next quality work is independent chapter-by-chapter teaching review, accessibility/Lighthouse and learner testing; no next chapter is missing. See EXPANSION_QA.md for actual validation and limits, INDEPENDENT_LEARNING_REVIEW.md for focused model-review dispositions, and the portfolio audit for pinned repo evidence. Keep statuses implemented until the remaining evidence exists.
+All 119 routes are implemented through capstone. Anatomy/GSAP refinement adds audited shared hardware, duration-aware films, scoped clocks, comparison and companion models, portfolio walkthroughs and independent dark mode. See ANATOMY_GSAP_QA.md and ANATOMY_INDEPENDENT_REVIEW.md for checks and limits. Next quality work is manual accessibility, learner testing and independent rendered chapter review; do not promote statuses from implemented without the required evidence.
 
 ## Decisions
+
+- 2026-10-30 Skill improved first: map broad objectives to observable mechanisms and companion models; derive verdicts from state, label bundled interventions, preserve actual counts and use bounded context/source reads. Default context remains tested below 4,000 characters; bytes are a proxy, not measured model tokens.
+- 2026-10-30 Anatomy hardware has static SVG symbols, mounted ports and sampled depth-solved drawing order. Conservative routes avoid hardware silhouettes. Desktop uses horizontal flows; phones retain two rows with larger labels. GSAP drives disposable clocks/scroll timelines; pure models retain state. Actual-GSAP cleanup regression prevents rewind on pause/speed changes; reduced/static Play honors duration and rate.
+- 2026-10-30 Added eight bounded mechanisms (85 total) and corrected FK verdicts/async mapping. New visual cases teach cache write ordering, register histories, SQL joins/set combination, B-tree/LSM layout, HTTP validation, 2PC uncertainty and UUID layouts. Companion labs have independent groups/IDs and matching prompts. All 119 statuses remain implemented; review scope and unmodeled extensions are explicit.
+- 2026-10-30 Rechecked five featured public repos; added lazy source-backed project films, physical light devices and portfolio light/dark/system appearance independent of the course. Kept private employment facts owner-confirmed. Owner-approved budgets: 180,000 bytes portfolio, 200,000 course first-load, 600,000 additional; no new font or measured hardware/benchmark claim. Lint scripts now call ESLint directly because Next 15 no longer provides next lint.
 
 - 2026-10-29 Follow-up: improve the entire learning journey and audit portfolio claims against all five featured public repos. Strengthened the educator skill first with mechanism correspondence, legal frozen frames, prediction/transfer, terms, exact quantities, fault semantics and review gates. The context helper now prints bounded summaries instead of every implemented row; its regression tests cover that token-saving behavior. Bytes are a proxy, not measured model tokens.
 - 2026-10-29 All 119 curriculum ids have routes and previous/next/prerequisite links. New blueprints are server-selected; 77 reusable bounded mechanism models generate event traces, film state and lab verdicts. Eleven case studies plus capstone include authored read/write paths, explicit workload arithmetic, concrete faults and a self-assessed design challenge. Source records live in academy-sources.json; no company workload or benchmark is invented.
@@ -85,6 +90,8 @@ Full-curriculum expansion implemented: 119 routes, including the original 20 spe
   model events, a ten-item model document, and the visual review rubric. Its "2D by default" line is withdrawn
   by the Anatomy decision above. `ip-and-ports` was lowered to `researched` under that pass and later reviewed.
 ## Open issues
+
+- 2026-10-30 No open blocking/should-fix findings from the bounded independent source/model review. Remaining evidence: independent rendered acceptance across the course, screen reader, axe, Lighthouse, OS reduced-motion emulation, physical devices, full anatomy moving/clearance audits and learner studies. Some advanced extensions (write-back failure, separate causal history, range-allocated IDs) remain outside the executable examples. See ANATOMY_GSAP_QA.md; historical entries below are retained, not new acceptance claims.
 
 - 2026-10-29 Current batch: independent rendered-page review, manual screen-reader verification, system reduced-motion emulation, automated axe, Lighthouse and legacy browser suites remain not run. The production browser smoke checks do not substitute for these. Three historical spec-standard warnings remain (web-request, client-server, ip-and-ports). See VISUAL_COURSE_QA.md.
 

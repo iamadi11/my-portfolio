@@ -2,6 +2,38 @@ import type { Mechanism } from '@/lib/learn/experiment-model';
 
 /** Short definitions beside the first use, not a prerequisite textbook. */
 export const MECHANISM_TERMS: Record<Mechanism, [string, string]> = {
+    sqlJoin: [
+        'Join',
+        'Pairing rows from tables according to a predicate such as matching customer identifiers.',
+    ],
+    sqlSets: [
+        'UNION',
+        'Combining compatible query rows with duplicate elimination, unless ALL is specified.',
+    ],
+    storageLayout: [
+        'LSM',
+        'Log-structured merge: buffer updates, flush sorted immutable runs, then merge runs through compaction.',
+    ],
+    httpValidation: [
+        'Validator',
+        'Response metadata such as an ETag that lets an origin check whether a stored representation still matches.',
+    ],
+    twoPhase: [
+        'Prepared',
+        'A participant has durably promised to await the coordinator decision before resolving its transaction.',
+    ],
+    uuidLayout: [
+        'UUID version',
+        'A generation/layout scheme identified by fixed version bits within a 128-bit identifier.',
+    ],
+    cacheWrite: [
+        'Write-through',
+        'A write path that updates the cache and backing store before acknowledging success.',
+    ],
+    consistencyHistory: [
+        'Linearizability',
+        'Operations behave as if they occurred in one order that respects completed operations before later invocations.',
+    ],
     dedup: [
         'Idempotency',
         'Repeating an operation with the same identity has the same intended effect as applying it once.',

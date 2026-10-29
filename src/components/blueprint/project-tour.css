@@ -1,0 +1,55 @@
+.project-tour-open {
+    margin-top: 12px;
+    min-height: 44px;
+}
+.project-tour-dialog {
+    width: min(1040px, calc(100vw - 32px));
+    max-width: none;
+    max-height: 92svh;
+    margin: auto;
+    padding: 20px;
+    overflow: auto;
+    border: 1px solid var(--rule);
+    border-radius: 20px;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.6;
+}
+.project-tour-dialog::backdrop {
+    background: #000b;
+}
+.project-tour-dialog header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.project-tour-dialog header p {
+    margin: 0;
+}
+.project-tour-dialog header button {
+    min-width: 80px;
+    min-height: 44px;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 0 12px;
+}
+.project-tour-note {
+    color: var(--ink-2);
+    margin-top: 16px;
+    max-width: 75ch;
+}
+@media (max-width: 600px) {
+    .project-tour-dialog {
+        padding: 12px;
+        width: calc(100vw - 16px);
+    }
+}
+@media print {
+    .project-tour-open,
+    .project-tour-dialog {
+        display: none;
+    }
+}

@@ -47,7 +47,7 @@
     {
         "id": "relational-model",
         "model": "foreignKey",
-        "sources": ["pg-model"],
+        "sources": ["pg-model", "pg-join", "pg-sets"],
         "question": "How can a database reject an order for a nonexistent customer?",
         "rule": "Keys identify rows and foreign keys constrain references between related tables.",
         "limit": "Constraints protect declared rules, not every possible business rule.",
@@ -73,8 +73,8 @@
     },
     {
         "id": "storage-engines",
-        "model": "log",
-        "sources": ["pg-storage", "pg-wal"],
+        "model": "storageLayout",
+        "sources": ["pg-storage", "pg-wal", "rocks-layout", "pg-index"],
         "question": "How does a write survive before its data page is updated?",
         "rule": "Write-ahead logging records a change durably before the corresponding page update is considered durable.",
         "limit": "This log-and-page model omits real buffering, checksums, compaction and hardware failures.",
@@ -253,7 +253,7 @@
     },
     {
         "id": "http-caching",
-        "model": "cache",
+        "model": "httpValidation",
         "sources": ["http-cache"],
         "question": "When can a browser reuse a response without downloading it again?",
         "rule": "Freshness rules govern reuse; validation can confirm a stored representation without retransmitting the whole body.",
@@ -271,8 +271,8 @@
     },
     {
         "id": "app-caching",
-        "model": "cache",
-        "sources": ["redis-evict"],
+        "model": "cacheWrite",
+        "sources": ["redis-evict", "cache-aside"],
         "question": "Who updates the cache after the database changes?",
         "rule": "Cache-aside loads on a miss; write-through and write-back put different steps on the write path.",
         "limit": "Write-back needs durable pending work and recovery; a volatile cache is not automatically authoritative storage.",
@@ -307,7 +307,7 @@
     },
     {
         "id": "async-work",
-        "model": "queue",
+        "model": "communication",
         "sources": ["sre-overload", "rabbit"],
         "question": "When should a request wait for work and when should it enqueue it?",
         "rule": "Asynchronous acceptance separates receiving a task from completing its effect.",
@@ -442,8 +442,8 @@
     },
     {
         "id": "consistency-models",
-        "model": "replication",
-        "sources": ["cap"],
+        "model": "consistencyHistory",
+        "sources": ["cap", "consistency-levels"],
         "question": "What does a reader get to assume about other clients' writes?",
         "rule": "A consistency model defines allowed observations; linearizability respects a single real-time-compatible order of operations.",
         "limit": "Eventual convergence alone does not guarantee immediate freshness or read-your-writes.",
@@ -488,7 +488,7 @@
     {
         "id": "distributed-transactions",
         "model": "saga",
-        "sources": ["outbox", "pg-tx"],
+        "sources": ["outbox", "pg-tx", "pg-prepare"],
         "question": "How do you coordinate changes owned by different services?",
         "rule": "Two-phase coordination and compensating workflows place different responsibilities on participants and failure recovery.",
         "limit": "A saga compensation is a new action and may not perfectly erase an external effect.",
@@ -505,7 +505,7 @@
     },
     {
         "id": "unique-ids",
-        "model": "unique",
+        "model": "uuidLayout",
         "sources": ["uuid"],
         "question": "Can several machines create identifiers without calling one counter?",
         "rule": "UUID variants use defined bit layouts and generation rules to reduce coordination needs.",

@@ -1,5 +1,7 @@
 import React from 'react';
 
+import Link from 'next/link';
+
 import { Pen } from '@/components/blueprint/pen';
 import { Scene, win } from '@/components/blueprint/scene';
 import { SHEET_COUNT, sheet } from '@/components/blueprint/sheets';
@@ -329,6 +331,11 @@ export default function Title(): React.JSX.Element {
                                     <a href={`mailto:${email}`} className="title-btn title-btn-1">
                                         Email <Arrow />
                                     </a>
+                                </li>
+                                <li>
+                                    <Link href="/learn" prefetch={false} className="title-btn">
+                                        System design course <Arrow />
+                                    </Link>
                                 </li>
                                 {links.map((l) => (
                                     <li key={l.href}>

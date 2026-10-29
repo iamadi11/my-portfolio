@@ -1,0 +1,84 @@
+.an-hardware {
+    --anatomy-hi: var(--ink);
+    --anatomy-mid: var(--ink-2);
+    --anatomy-lo: var(--ink-3);
+    --anatomy-faint: var(--line-3);
+}
+.an-hardware .iso-fill {
+    fill: color-mix(in srgb, var(--paper), var(--ink) 13%);
+}
+.an-hardware .iso-top {
+    fill: color-mix(in srgb, var(--paper), var(--ink) 7%);
+}
+.an-hardware .iso-shade {
+    fill: var(--ink);
+    opacity: 0.055;
+}
+.an-hardware .iso-shade[data-shade='1'] {
+    opacity: 0.1;
+}
+.an-hardware .iso-shade[data-shade='2'] {
+    opacity: 0.16;
+}
+.an-hardware .iso-shade[data-shade='3'] {
+    opacity: 0.22;
+}
+.an-hardware .iso-line[data-tone] {
+    fill: none;
+    stroke: var(--hardware-edge, var(--ink-3));
+    stroke-width: 0.8;
+    stroke-linejoin: round;
+}
+.an-hardware .iso-crease,
+.an-hardware .iso-bevel {
+    stroke: var(--line-3);
+    opacity: 0.6;
+}
+.an-hardware .iso-dots {
+    fill: var(--ink-2);
+}
+.an-hardware [data-hardware-part^='screen-line'] .iso-top,
+.an-hardware [data-hardware-part^='indicator'] .iso-top {
+    fill: var(--ink-3);
+}
+.lf-device[data-focused='true'] .an-hardware [data-hardware-part='connector-contact'] .iso-fill,
+.lf-device[data-focused='true'] .an-hardware [data-hardware-part^='indicator'] .iso-fill {
+    fill: var(--ink);
+}
+.lf-device[data-focused='true'] .an-hardware .iso-edge {
+    stroke: var(--ink-2);
+}
+.lf-grid-tile {
+    fill: none;
+    stroke: var(--rule);
+    stroke-width: 0.5;
+}
+.lf-message-body,
+.lf-quantity-mark {
+    fill: var(--ink);
+    stroke: var(--paper);
+    stroke-width: 0.8;
+}
+.lf-message-edge {
+    fill: none;
+    stroke: var(--paper);
+    stroke-width: 0.65;
+}
+.lf-status-icon circle {
+    fill: var(--paper);
+    stroke: var(--ink);
+}
+.lf-status-icon path {
+    stroke: var(--ink);
+    stroke-width: 1.5;
+}
+
+.lf-assets {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+.lf-device[data-focused='true'] {
+    --hardware-edge: var(--ink);
+}

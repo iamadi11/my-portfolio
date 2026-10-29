@@ -2,7 +2,7 @@ import React from 'react';
 
 import Link from 'next/link';
 
-import { recallFor, type AcademyLesson } from '@/content/learn/academy';
+import { COMPANION_MODELS, recallFor, type AcademyLesson } from '@/content/learn/academy';
 import { DESIGN_GUIDES, designFilm } from '@/content/learn/design-guides';
 import { MECHANISM_TERMS } from '@/content/learn/mechanism-terms';
 import { makeExperimentFilm, MECHANISMS, simulateMechanism } from '@/lib/learn/experiment-model';
@@ -11,16 +11,28 @@ import ChapterTabs from './ChapterTabs';
 import DesignWorksheet from './DesignWorksheet';
 import { AcademyLab, AcademyQuiz } from './film/AcademyPractice';
 import LessonFilm from './film/LessonFilm';
+import MechanismCompare from './film/MechanismCompare';
 
 export default function AcademyChapter({ lesson }: { lesson: AcademyLesson }): React.JSX.Element {
     const spec = MECHANISMS[lesson.model],
         input = { amount: spec.initial, alternative: false };
     const film = makeExperimentFilm(lesson.id, lesson.question, lesson.rule, lesson.model, input);
     const example = simulateMechanism(lesson.model, input);
+    const alternative = simulateMechanism(lesson.model, { ...input, alternative: true });
+    const alternativeFilm = makeExperimentFilm(lesson.id, lesson.question, lesson.rule, lesson.model, {
+        ...input,
+        alternative: true,
+    });
     const isDesign =
         lesson.id.startsWith('case-') ||
         ['capstone', 'interview-method', 'decision-records'].includes(lesson.id);
     const guide = DESIGN_GUIDES[lesson.id];
+    const companions = (COMPANION_MODELS[lesson.id] ?? []).map((model) => ({
+        ...lesson,
+        model,
+        question: `What changes between “${MECHANISMS[model].modes[0]}” and “${MECHANISMS[model].modes[1]}”?`,
+        rule: MECHANISM_TERMS[model][1],
+    }));
     return (
         <article aria-labelledby="ch-h">
             <header className="ln-head">
@@ -80,7 +92,50 @@ export default function AcademyChapter({ lesson }: { lesson: AcademyLesson }): R
                                 <h2 className="ac-experiment-heading">Zoom into one design decision</h2>
                             </>
                         )}
-                        <LessonFilm film={film} />
+                        <MechanismCompare
+                            bundled={lesson.model === 'architecture'}
+                            modes={spec.modes}
+                            examples={[
+                                { film, ...example },
+                                { film: alternativeFilm, ...alternative },
+                            ]}
+                        />
+                        {companions.map((companion) => {
+                            const definition = MECHANISMS[companion.model];
+                            return (
+                                <section key={companion.model} className="ac-companion">
+                                    <h2>
+                                        {MECHANISM_TERMS[companion.model][0]} · another view of this chapter
+                                    </h2>
+                                    <p>{MECHANISM_TERMS[companion.model][1]}</p>
+                                    <MechanismCompare
+                                        modes={definition.modes}
+                                        examples={(() => {
+                                            const run = (comparedPolicy: boolean) => {
+                                                const comparedInput = {
+                                                    amount: definition.initial,
+                                                    alternative: comparedPolicy,
+                                                };
+                                                return {
+                                                    film: {
+                                                        ...makeExperimentFilm(
+                                                            lesson.id,
+                                                            companion.question,
+                                                            companion.rule,
+                                                            companion.model,
+                                                            comparedInput
+                                                        ),
+                                                        id: `${lesson.id}-${companion.model}`,
+                                                    },
+                                                    ...simulateMechanism(companion.model, comparedInput),
+                                                };
+                                            };
+                                            return [run(false), run(true)];
+                                        })()}
+                                    />
+                                </section>
+                            );
+                        })}
                         <div className="ac-rule">
                             <h2>The idea to keep</h2>
                             <p>{lesson.rule}</p>
@@ -117,7 +172,17 @@ export default function AcademyChapter({ lesson }: { lesson: AcademyLesson }): R
                         )}
                     </>
                 }
-                lab={<AcademyLab lesson={lesson} />}
+                lab={
+                    <>
+                        <AcademyLab lesson={lesson} />
+                        {companions.map((companion) => (
+                            <details className="ln-watch-depth" key={companion.model}>
+                                <summary>Experiment with {MECHANISM_TERMS[companion.model][0]}</summary>
+                                <AcademyLab lesson={companion} />
+                            </details>
+                        ))}
+                    </>
+                }
                 quiz={<AcademyQuiz id={lesson.id} questions={recallFor(lesson)} />}
             />
         </article>

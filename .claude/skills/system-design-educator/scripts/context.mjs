@@ -34,7 +34,15 @@ if (!ids.length) {
     for (const id of ids) {
         console.log(rows.find((l) => l.split('|')[1].trim() === id));
         const lesson = lessons.find((l) => l.id === id);
-        if (lesson) console.log(JSON.stringify(lesson));
+        if (lesson) {
+            console.log(JSON.stringify(lesson));
+            const sources = JSON.parse(read('src/content/learn/academy-sources.json'));
+            for (const key of lesson.sources) console.log(`Source ${key}: ${sources[key]?.url ?? 'MISSING'}`);
+            const companion = read('src/content/learn/academy.ts').match(
+                new RegExp(`'${id}': \\[([^\\]]+)\\]`)
+            );
+            if (companion) console.log(`Companion models: ${companion[1].trim()}`);
+        }
         const p = `docs/system-design/chapters/${id}.md`;
         console.log(`${p} (${existsSync(p) ? 'exists' : 'not authored'})`);
         if (!lesson && existsSync(p))
@@ -48,5 +56,5 @@ if (!ids.length) {
     }
 }
 console.log(
-    'Shared implementation: references/production.md. Review evidence: docs/system-design/EXPANSION_QA.md. Read only relevant files.'
+    'Shared implementation: references/production.md. Review evidence: docs/system-design/ANATOMY_GSAP_QA.md. Read only relevant files.'
 );

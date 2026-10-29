@@ -5,7 +5,7 @@
 /*
  * Blueprint: black line on white paper, grays only (house rules of enesozturk/dimensional-drawing, MIT).
  * Things are told apart by line weight, dash pattern, hatch and light gray fill, never by colour.
- * Single light theme by design.
+ * Independent light/dark/system portfolio preference; print always uses paper.
  */
 :root {
     color-scheme: light;
@@ -303,4 +303,65 @@ main[tabindex='-1']:focus {
     max-width: 100%;
     height: auto;
     overflow: visible;
+}
+
+/* Portfolio appearance: source SVG uses the same ink/paper tokens as HTML. */
+html[data-portfolio-theme='dark']:not(:has(.ln)) {
+    color-scheme: dark;
+    --paper: #111214;
+    --ink: #f1f2f3;
+    --ink-2: #c3c6ca;
+    --ink-3: #a2a7ad;
+    --line-3: #737a83;
+    --rule: #383d44;
+    --fill-1: #1b1e23;
+    --fill-2: #272c33;
+}
+@media (prefers-color-scheme: dark) {
+    html:not([data-portfolio-theme='light']):not([data-portfolio-theme='dark']):not(:has(.ln)) {
+        color-scheme: dark;
+        --paper: #111214;
+        --ink: #f1f2f3;
+        --ink-2: #c3c6ca;
+        --ink-3: #a2a7ad;
+        --line-3: #737a83;
+        --rule: #383d44;
+        --fill-1: #1b1e23;
+        --fill-2: #272c33;
+    }
+}
+.portfolio-theme {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 110;
+}
+.portfolio-theme select {
+    min-height: 44px;
+    min-width: 104px;
+    padding: 8px 12px;
+    border: 1px solid var(--ink-3);
+    border-radius: 6px;
+    color: var(--ink);
+    background: var(--paper);
+    font: inherit;
+    font-size: 13px;
+    box-shadow: 0 3px 18px #0002;
+}
+@media print {
+    html[data-portfolio-theme],
+    html:not([data-portfolio-theme]) {
+        color-scheme: light !important;
+        --paper: #fff !important;
+        --ink: #111 !important;
+        --ink-2: #4a4a4a !important;
+        --ink-3: #6b6b6b !important;
+        --line-3: #8c8c8c !important;
+        --rule: #d6d6d6 !important;
+        --fill-1: #f5f5f5 !important;
+        --fill-2: #ebebeb !important;
+    }
+    .portfolio-theme {
+        display: none !important;
+    }
 }

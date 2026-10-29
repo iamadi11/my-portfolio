@@ -189,3 +189,7 @@ Otherwise skip.
 ## Public source audit — 2026-10-29
 
 See [the evidence ledger](docs/portfolio-audit-2026-10-29.md) for pinned revisions and source paths for all five featured projects. Corrected Spatial’s FPS label to frame drops and qualified browser memory. Replaced Sidecar’s advertised build/size claim with source-supported runtime-prototype behavior. Career facts remain owner-confirmed; public repos do not independently validate private employment metrics.
+
+## Public workflow recheck — 2026-10-30
+
+All five featured public revisions were rechecked; behavior boundaries and the new source-backed walkthroughs are recorded in [the animation audit](docs/portfolio-animation-audit-2026-10-30.md). Portfolio dark mode, GSAP timing and conceptual geometry change presentation; they introduce no new personal facts or measured outcomes.

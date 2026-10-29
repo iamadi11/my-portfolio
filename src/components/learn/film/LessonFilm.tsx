@@ -3,13 +3,20 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useClock } from '@/components/learn/kit/useClock';
-import { BEAT_SECONDS, filmDuration, type LessonFilmData, sampleFilm } from '@/lib/learn/film-model';
+import {
+    filmDuration,
+    beatDuration,
+    type LessonFilmData,
+    sampleFilm,
+    paceFilm,
+    settledSceneTime,
+} from '@/lib/learn/film-model';
 
 import Scene from './Scene';
 import './film.css';
 
 export default function LessonFilm({
-    film,
+    film: sourceFilm,
     autoPlay = false,
     trackProgress = true,
 }: {
@@ -17,15 +24,17 @@ export default function LessonFilm({
     autoPlay?: boolean;
     trackProgress?: boolean;
 }): React.JSX.Element {
+    const film = useMemo(() => paceFilm(sourceFilm), [sourceFilm]);
     const target = useRef<HTMLElement>(null);
     const [speed, setSpeed] = useState(1);
     const [reviewed, setReviewed] = useState(false);
     const [stepMode, setStepMode] = useState(false);
     const marks = useMemo(
-        () => film.beats.map((_, i) => (i + 0.8) * BEAT_SECONDS).concat(filmDuration(film)),
+        () => film.beats.map((_, i) => settledSceneTime(film, i)).concat(filmDuration(film)),
         [film]
     );
-    const clock = useClock({ marks, end: filmDuration(film), rate: speed, target, stepMode });
+    const stepDurations = useMemo(() => film.beats.map(beatDuration), [film]);
+    const clock = useClock({ marks, end: filmDuration(film), rate: speed, target, stepMode, stepDurations });
     const { index, beat } = sampleFilm(film, clock.t);
     const pause = clock.pause;
     useEffect(() => {
@@ -52,21 +61,9 @@ export default function LessonFilm({
     latestTime.current = clock.t;
     const seek = clock.seek;
     useEffect(() => {
-        if (clock.reduced)
-            seek(
-                Math.min(
-                    filmDuration(film),
-                    (Math.floor(latestTime.current / BEAT_SECONDS) + 0.8) * BEAT_SECONDS
-                )
-            );
+        if (clock.reduced) seek(settledSceneTime(film, sampleFilm(film, latestTime.current).index));
     }, [clock.reduced, seek, film]);
-    const scene = (i: number): void =>
-        seek(
-            Math.min(
-                filmDuration(film),
-                (Math.max(0, Math.min(film.beats.length - 1, i)) + 0.8) * BEAT_SECONDS
-            )
-        );
+    const scene = (i: number): void => seek(settledSceneTime(film, i));
     const stateTime = clock.t;
     const state = sampleFilm(film, stateTime);
     return (
@@ -110,7 +107,7 @@ export default function LessonFilm({
                         const to = Number(e.target.value);
                         clock.seek(
                             clock.reduced && to < filmDuration(film)
-                                ? (Math.floor(to / BEAT_SECONDS) + 0.8) * BEAT_SECONDS
+                                ? settledSceneTime(film, sampleFilm(film, to).index)
                                 : to
                         );
                     }}
@@ -143,7 +140,7 @@ export default function LessonFilm({
                     <button
                         type="button"
                         aria-label="Restart lesson"
-                        onClick={() => clock.seek(clock.reduced ? BEAT_SECONDS * 0.8 : 0)}
+                        onClick={() => clock.seek(clock.reduced ? settledSceneTime(film, 0) : 0)}
                     >
                         ↺
                     </button>
@@ -187,7 +184,12 @@ export default function LessonFilm({
                     .map((node) => (
                         <div key={node.id}>
                             <dt>{node.label}</dt>
-                            <dd>{state.values[node.id] ?? `${state.counts[node.id]} model units`}</dd>
+                            <dd>
+                                {state.values[node.id] ?? String(state.counts[node.id])}
+                                {state.values[node.id] !== undefined && state.counts[node.id] !== undefined
+                                    ? ` · ${state.counts[node.id]} total`
+                                    : ''}
+                            </dd>
                         </div>
                     ))}
             </dl>

@@ -20,6 +20,10 @@ export type AcademyLesson = Blueprint & {
     prerequisites: Chapter[];
     sourceRecords: { id: string; title: string; publisher: string; url: string; read: string }[];
 };
+export const COMPANION_MODELS: Record<string, Mechanism[]> = {
+    'relational-model': ['sqlJoin', 'sqlSets'],
+    'distributed-transactions': ['twoPhase'],
+};
 export const BLUEPRINTS = lessons as Blueprint[];
 export const ACADEMY_IDS = new Set(BLUEPRINTS.map((item) => item.id));
 export function getAcademyLesson(id: string): AcademyLesson | undefined {

@@ -15,6 +15,16 @@ Outcome: a college fresher can predict a system’s next event, explain why it h
 4. Plan a batch as chapter ids + objective + mechanism + misconception + evidence needed. Finish each chapter’s source/storyboard/model before its UI. Batch independent checks; fix causes before repeating. Log paths, checks and unfinished work once in COURSE_STATE, with chapter status only in CURRICULUM.
 5. Keep progress and handoff concise. Do not print checklists, giant diffs, source dumps or repeated plans. Token saving comes from reusable code and selective context, never missing explanations or fabricated verification.
 
+## Anatomy and GSAP
+
+For this owner-requested refinement use [anatomy-gsap.md](references/anatomy-gsap.md) before changes: detailed shared anatomy geometry, explicit ports/depth, GSAP-owned disposable timing, readable beat lengths and meaningful before/after comparisons. Audit all 119 ids compactly; report representative review as representative. Owner authorizes portfolio dark mode, GSAP and documented budget increases.
+
+## Objective coverage before polish
+
+Split a broad chapter objective into observable claims. Map each claim to a model event, comparison, exercise or explicitly justified static explanation. A foreign-key check does not cover joins; WAL does not cover LSM layout; replica lag does not prove a consistency history. If one model cannot teach the objective, add a small companion model through `COMPANION_MODELS` and reuse the same renderer and lab. Never fill the gap by renaming a device.
+
+Compare minimum, boundary and maximum inputs under both policies. Derive the verdict from the resulting state, not the selected mode: a valid foreign key must be accepted under either policy. Declare bundled changes (capacity plus idempotency, for example) and attribute their effects separately. Preserve counterexamples in invariant tests. Run the compact `anatomy-refinement.test.ts` and finite model suites; inspect only failures, then review representative rendered states.
+
 ## Learning and animation gates
 
 Before authoring, use [learning-and-motion.md](references/learning-and-motion.md): record the beginner’s question, misconception, observable state, counterexample and transfer task. One model must generate the visible messages, quantities and experiment verdict. Generic packet movement cannot stand in for quorum, cache freshness, transaction atomicity or query planning. Reuse geometry; vary the actual mechanism.
@@ -37,7 +47,7 @@ Use the host’s monochrome precision with depth, recognizable devices, cables, 
 
 Player: play/pause, replay, previous/next beat, scrub, speed, short captions, optional transcript. Start paused; stop at the end, offscreen and in a hidden tab. Reduced motion offers static event steps. Keyboard reaches all controls; touch targets ≥44px. Labels must remain readable on phones. A frame is a pure function of time and inputs; seeking cannot change the outcome.
 
-Typography: readable sentence-case Arimo/system sans, body ≥16px, line height 1.5–1.75, comfortable measure. Monospace for code only. Support persistent light/dark/system choice within the course, without changing the portfolio. Theme every surface, diagram and focus state; never invert the whole page as a theme shortcut.
+Typography: readable sentence-case Arimo/system sans, body ≥16px, line height 1.5–1.75, comfortable measure. Monospace for code only. Support persistent light/dark/system choice within the course, independently of the portfolio preference. Theme every surface, diagram and focus state; never invert the whole page as a theme shortcut.
 
 ## Evidence and scope
 

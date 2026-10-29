@@ -28,10 +28,80 @@ export const TOPIC_MODELS = {
         ['Several record fetches', 'One record fetch'],
         ['Order record', 'Item records', 'Fetched records']
     ),
+    sqlJoin: define(
+        'Orders belonging to customer 1',
+        ['INNER JOIN customers to orders', 'LEFT JOIN customers to orders'],
+        ['Only matching customers returned', 'Unmatched customer retained with NULL'],
+        ['Customers table', 'Orders table', 'Query result'],
+        3,
+        1,
+        6
+    ),
+    sqlSets: define(
+        'Copies of row 1 in first query',
+        ['UNION ALL', 'UNION'],
+        ['Duplicate rows retained', 'Duplicate rows removed'],
+        ['Query A result', 'Query B result', 'Combined result'],
+        3,
+        1,
+        6
+    ),
+    storageLayout: define(
+        'Key to update',
+        ['B-tree leaf update', 'LSM buffer and flush'],
+        ['Leaf page updated', 'Sorted run written'],
+        ['WAL', 'Mutable structure', 'Durable pages / runs'],
+        6,
+        1,
+        8
+    ),
+    httpValidation: define(
+        'Origin representation version',
+        ['Stored validator still matches', 'Stored validator differs'],
+        ['304 reuses stored body', '200 replaces stored body'],
+        ['Browser cache', 'Origin', 'Rendered representation'],
+        6,
+        2,
+        8
+    ),
+    twoPhase: define(
+        'Units reserved by participant A',
+        ['Coordinator unavailable after prepare', 'Coordinator recovers durable commit decision'],
+        ['Prepared participants remain waiting', 'Both participants commit'],
+        ['Coordinator log', 'Participant A', 'Participant B'],
+        4,
+        1,
+        8
+    ),
+    uuidLayout: define(
+        'Clock rollback between generations (ms)',
+        ['UUID version 4 layout', 'UUID version 7 layout'],
+        ['No timestamp prefix', 'Timestamp prefix visible'],
+        ['Generator', 'First identifier', 'Later identifier'],
+        3,
+        1,
+        8
+    ),
+    cacheWrite: define(
+        'New profile version',
+        ['Cache-aside without invalidation', 'Write through database then cache'],
+        ['Stale cached version returned', 'Updated cached version returned'],
+        ['Application', 'Database', 'Cache'],
+        6,
+        2
+    ),
+    consistencyHistory: define(
+        'Version acknowledged by writer',
+        ['Read lagging replica', 'Coordinate read with completed write'],
+        ['History violates linearizability', 'History respects completed write'],
+        ['Writer', 'Replica group', 'Later reader'],
+        6,
+        2
+    ),
     foreignKey: define(
         'Customer id on new order',
         ['No reference constraint', 'Enforce customer foreign key'],
-        ['Orphan accepted', 'Reference protected'],
+        ['Order accepted', 'Order rejected'],
         ['Customers: 1, 2, 3', 'New order', 'Validation'],
         5
     ),
@@ -346,6 +416,14 @@ export const TOPIC_MODELS = {
 export type TopicMechanism = keyof typeof TOPIC_MODELS;
 const TOPIC_DEVICES: Record<TopicMechanism, MechanismDefinition['kinds']> = {
     embedding: ['store', 'store', 'queue'],
+    sqlJoin: ['store', 'store', 'queue'],
+    sqlSets: ['queue', 'queue', 'queue'],
+    storageLayout: ['store', 'server', 'store'],
+    httpValidation: ['store', 'server', 'computer'],
+    twoPhase: ['store', 'store', 'store'],
+    uuidLayout: ['server', 'store', 'store'],
+    cacheWrite: ['server', 'store', 'store'],
+    consistencyHistory: ['computer', 'store', 'computer'],
     foreignKey: ['store', 'store', 'server'],
     planner: ['server', 'store', 'store'],
     mvcc: ['server', 'store', 'computer'],
@@ -452,6 +530,328 @@ export function simulateTopic(kind: TopicMechanism, input: ExperimentInput): Tra
                 'Embedding fits this bounded, co-read example. Shared independently changing entities or unbounded arrays may need references; batching can also avoid N+1 fetches.';
             break;
         }
+        case 'sqlJoin': {
+            add(
+                'Define rows',
+                `Customers: 1=Ada, 2=Ben. Orders: ${n} rows reference customer 1; none reference customer 2.`,
+                { a: '1 Ada; 2 Ben', b: `${n} orders for customer 1` },
+                { a: 2, b: n }
+            );
+            add(
+                'Match join key',
+                'Compare customers.id with orders.customer_id. Each matching order creates a result row.',
+                {},
+                {},
+                'a',
+                'b'
+            );
+            add(
+                'Collect matches',
+                `Customer 1 appears ${n} times, once per order. SQL does not implicitly remove these rows.`,
+                { d: `${n} Ada + order rows` },
+                { d: n },
+                'b',
+                'd'
+            );
+            add(
+                'Handle unmatched row',
+                alt
+                    ? 'LEFT JOIN retains Ben with NULL order columns.'
+                    : 'INNER JOIN excludes Ben because no order matches.',
+                { d: `${n} matched${alt ? ' + Ben/NULL' : ''}` },
+                { d: n + (alt ? 1 : 0) }
+            );
+            result = alt;
+            metric('Result rows', n + (alt ? 1 : 0));
+            explanation =
+                'A join pairs rows by a predicate; a key constraint restricts stored data. They are different operations. This example uses one-to-many matches. NULL on the unmatched side is not an empty order row in the base table.';
+            break;
+        }
+        case 'sqlSets': {
+            add(
+                'Two compatible queries',
+                `Query A returns ${n} copies of 1. Query B returns rows 1 and 2. Both have one integer column.`,
+                { a: Array(n).fill('1').join(', '), b: '1, 2' },
+                { a: n, b: 2 }
+            );
+            add(
+                'Append compatible rows',
+                `There are ${n + 2} rows before any duplicate elimination.`,
+                {},
+                { d: n + 2 },
+                'a',
+                'd'
+            );
+            add(
+                'Apply set policy',
+                alt
+                    ? 'UNION eliminates duplicate rows: values 1 and 2 remain.'
+                    : 'UNION ALL keeps every occurrence, including repeated 1.',
+                { d: alt ? '1, 2' : `${n + 1} copies of 1; one 2` },
+                { d: alt ? 2 : n + 2 },
+                'b',
+                'd'
+            );
+            result = alt;
+            metric('Result rows', alt ? 2 : n + 2);
+            explanation =
+                'Output order is unspecified without ORDER BY. UNION combines rows; a JOIN combines matching columns/rows. On these inputs INTERSECT returns 1, and A EXCEPT B returns no rows (without ALL).';
+            break;
+        }
+        case 'storageLayout': {
+            const page = n <= 4 ? 'leaf [1..4]' : 'leaf [5..8]';
+            add(
+                'Record recoverable update',
+                `Illustrative key ${n} receives a new value. Assume its write-ahead record is durable before acknowledgment.`,
+                { a: `put ${n}=new` },
+                { a: 1 }
+            );
+            add(
+                'Update mutable structure',
+                alt
+                    ? 'Buffer the new version in an ordered memtable; existing sorted files remain immutable.'
+                    : `Locate ${page} through the B-tree and change that leaf page in memory.`,
+                { b: alt ? `memtable: ${n}=new` : page },
+                {},
+                'a',
+                'b'
+            );
+            add(
+                'Persist data structure',
+                alt
+                    ? 'Flush the frozen memtable into a new sorted run. Later compaction merges runs and removes obsolete versions.'
+                    : 'Write the dirty leaf page to durable storage under the recovery protocol.',
+                { d: alt ? `new SST run: key ${n}` : `persist ${page}` },
+                { d: 1 },
+                'b',
+                'd'
+            );
+            add(
+                'Locate a later read',
+                alt
+                    ? 'Check the memtable and candidate sorted runs for the newest visible version. Filters and indexes can skip work.'
+                    : 'Follow tree separators to the leaf containing the key.',
+                { b: alt ? 'read across candidate runs' : 'root → leaf' }
+            );
+            result = alt;
+            metric('Illustrated data writes', 1);
+            explanation =
+                'This is a layout/ordering example, not an I/O benchmark. B-trees can split pages; LSM designs trade buffering and sequential flushes against compaction and multiple read candidates. Both may use WAL and caches. Workload, tuning and implementation determine amplification.';
+            break;
+        }
+        case 'httpValidation': {
+            const cached = alt ? n - 1 : n;
+            add(
+                'Stored response needs validation',
+                `Cache holds body v${cached}, ETag "v${cached}", and Cache-Control: no-cache. no-cache permits storage but requires validation before reuse.`,
+                { a: `body v${cached}; ETag v${cached}`, b: `current v${n}` }
+            );
+            add(
+                'Send conditional request',
+                `Browser sends If-None-Match: "v${cached}". Validation requires a network exchange.`,
+                {},
+                {},
+                'a',
+                'b'
+            );
+            add(
+                'Compare validator',
+                alt
+                    ? `The current ETag v${n} differs; return 200 with the replacement body.`
+                    : 'The validator matches; return 304 with metadata and no response body.',
+                { b: alt ? `200 + body v${n}` : '304; no body' },
+                {},
+                'b',
+                'a'
+            );
+            add(
+                'Render representation',
+                alt
+                    ? 'Replace the cached body and render the new version.'
+                    : 'Update applicable cache metadata and render the body already stored.',
+                { a: `body v${n}`, d: `render v${n}` },
+                { d: 1 },
+                'a',
+                'd'
+            );
+            result = alt;
+            metric('Representation bodies downloaded during validation', alt ? 1 : 0);
+            explanation =
+                'A 304 response is not a replacement body. no-store prohibits storage, whereas no-cache requires successful validation for reuse. This example omits intermediary caches, Vary and authorization-specific reuse rules.';
+            break;
+        }
+        case 'twoPhase': {
+            add(
+                'Prepare participants',
+                `A reserves ${n} units; B reserves 1. Both promise to retain prepared state pending the global decision.`,
+                { b: 'prepared; locks held', d: 'prepared; locks held' },
+                { b: n, d: 1 },
+                'a',
+                'b'
+            );
+            add(
+                'Collect second vote',
+                'B also votes prepared. Preparing is not committing either business effect.',
+                { a: 'both votes yes' },
+                {},
+                'd',
+                'a'
+            );
+            add(
+                'Durable decision, then crash',
+                'Assume the coordinator records COMMIT durably, then becomes unreachable before delivering that decision.',
+                { a: 'COMMIT durable; unreachable' }
+            );
+            beats[beats.length - 1].states = { a: 'failed' };
+            if (alt) {
+                add(
+                    'Recover coordinator',
+                    'Recovery reads the durable decision and resends COMMIT. Participants can now finalize their prepared work.',
+                    { a: 'recovered; COMMIT' },
+                    {},
+                    'a',
+                    'b'
+                );
+                beats[beats.length - 1].states = { a: 'done' };
+                add(
+                    'Resolve both participants',
+                    'Both participants commit and release their locks after learning the decision.',
+                    { b: 'committed; locks released', d: 'committed; locks released' },
+                    {},
+                    'a',
+                    'd'
+                );
+            } else
+                add(
+                    'Remain in doubt',
+                    'A timeout alone cannot safely tell either prepared participant to abort: the durable global decision may be COMMIT.',
+                    { b: 'waiting; locks held', d: 'waiting; locks held' }
+                );
+            result = alt;
+            metric('Participants still prepared', alt ? 0 : 2);
+            explanation =
+                'This bounded two-phase-commit failure shows blocking when the decision cannot be learned. Recovery and decision delivery resolve it. A saga uses local commits plus compensating actions instead; compensation is not the same atomic rollback.';
+            break;
+        }
+        case 'uuidLayout': {
+            const uuid7 = (ms: number, suffix: string) => {
+                const hex = ms.toString(16).padStart(12, '0');
+                return `${hex.slice(0, 8)}-${hex.slice(8)}-7000-8000-${suffix}`;
+            };
+            const first = alt ? uuid7(1000, '000000000001') : 'ffffffff-ffff-4fff-8fff-ffffffffffff';
+            const second = alt ? uuid7(1000 - n, '000000000002') : '00000000-0000-4000-8000-000000000001';
+            add(
+                'Declare illustrative fields',
+                'These fixed example bits illustrate layout, not a secure UUID generator or a measured collision rate.',
+                { a: alt ? 'v7: 48-bit Unix ms prefix' : 'v4: random/pseudorandom payload' }
+            );
+            add('Create first identifier', first, { b: first }, {}, 'a', 'b');
+            add(
+                'Clock moves backwards',
+                `The observed clock moves from 1000 ms to ${1000 - n} ms before the next generation. No monotonic correction is assumed.`,
+                { a: `clock ${1000 - n} ms` }
+            );
+            add('Create later identifier', second, { d: second }, {}, 'a', 'd');
+            add(
+                'Inspect sorting',
+                alt
+                    ? 'The later v7 identifier sorts first because its time prefix is smaller. Time-based layout does not establish causality.'
+                    : 'v4 has no time prefix. Lexical sorting does not recover generation order.',
+                { a: 'lexical order ≠ generation order' }
+            );
+            result = alt;
+            metric('Timestamp bits in layout', alt ? 48 : 0);
+            explanation =
+                'Version and variant bits have fixed positions. UUIDv4 uses 122 random/pseudorandom payload bits; UUIDv7 has a 48-bit millisecond timestamp and other generation fields. Real generators need entropy and clock/monotonicity handling. Neither scheme replaces authorization or causal clocks.';
+            break;
+        }
+        case 'cacheWrite': {
+            add('Warm cache', `Database and cache both hold version ${n - 1}.`, {
+                b: `v${n - 1}`,
+                d: `v${n - 1}`,
+            });
+            add(
+                'Write database',
+                `Application commits version ${n} to the database.`,
+                { b: `v${n}` },
+                {},
+                'a',
+                'b'
+            );
+            if (alt)
+                add(
+                    'Write cache before acknowledging',
+                    'The application updates the cache before reporting success. This is a coordinated sequence, not an atomic database/cache transaction.',
+                    { d: `v${n}` },
+                    {},
+                    'a',
+                    'd'
+                );
+            else
+                add(
+                    'Missing invalidation',
+                    'The database changed but this cache-aside implementation neither deletes nor updates the old cache entry.',
+                    { d: `v${n - 1}` }
+                );
+            add(
+                'Read cache hit',
+                `A later read hits version ${alt ? n : n - 1}; it does not fetch the database on a hit.`,
+                { a: `read v${alt ? n : n - 1}` },
+                {},
+                'd',
+                'a'
+            );
+            result = alt;
+            metric('Read version', alt ? n : n - 1);
+            metric('Database version', n);
+            explanation =
+                'Cache-aside needs explicit invalidation or expiry after a write. The write-through sequence shown waits for both writes; failure between them still needs recovery. Write-back acknowledges cache-first and delays durable storage, a different policy with loss risk unless pending writes are durable.';
+            break;
+        }
+        case 'consistencyHistory': {
+            add(
+                'Initial state',
+                `Both replicas start at version ${n - 1}. The network may delay replication.`,
+                { b: `leader v${n - 1} · follower v${n - 1}` }
+            );
+            add(
+                'Write completes',
+                `Writer receives success for version ${n} before the other client invokes its read.`,
+                { a: `write v${n} completed`, b: `leader v${n} · follower v${n - 1}` },
+                {},
+                'a',
+                'b'
+            );
+            add(
+                'Later read invoked',
+                'This read begins after the successful write response: these operations do not overlap.',
+                { d: 'read invoked after write' },
+                {},
+                'd',
+                'b'
+            );
+            add(
+                'Read response',
+                alt
+                    ? `Coordination returns v${n}. The read respects the completed write.`
+                    : `The lagging follower returns v${n - 1}. No real-time-compatible order can put this read before the completed write.`,
+                { d: `read v${alt ? n : n - 1}` },
+                {},
+                'b',
+                'd'
+            );
+            add(
+                'Replica catches up',
+                `The follower eventually receives v${n}. Later convergence does not change the earlier read history.`,
+                { b: `both v${n}` }
+            );
+            result = alt;
+            metric('Observed read version', alt ? n : n - 1);
+            metric('Completed write version', n);
+            explanation =
+                'A linearizable register must respect nonoverlapping operation order. This bounded history distinguishes that property from eventual convergence; it does not prove a full implementation linearizable. Causal consistency preserves causal dependencies, but does not impose this global real-time order on independent clients.';
+            break;
+        }
         case 'foreignKey': {
             const exists = n <= 3;
             add('Declared rows', 'Customer ids 1, 2 and 3 exist. A new order carries a customer_id.', {
@@ -466,7 +866,7 @@ export function simulateTopic(kind: TopicMechanism, input: ExperimentInput): Tra
                 'b',
                 'a'
             );
-            result = alt;
+            result = alt && !exists;
             add(
                 'Constraint decision',
                 alt && !exists

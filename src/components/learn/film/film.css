@@ -454,7 +454,7 @@ html[data-course-theme='dark'] .al-result-scene {
     margin: 3px 0 0;
     font-variant-numeric: tabular-nums;
 }
-.lf-count-label text {
+.lf-count-label {
     fill: var(--ink);
     font:
         14px var(--font-arimo),
@@ -471,4 +471,14 @@ html[data-course-theme='dark'] .al-result-scene {
 }
 .lf-step-mode[aria-pressed='true'] {
     border-color: var(--ink);
+}
+
+.lf-scene-mobile .lf-node-label text {
+    font-size: 19px;
+}
+.lf-scene-mobile .lf-node-label .lf-value {
+    font-size: 16px;
+}
+.lf-scene-mobile .lf-count-label {
+    font-size: 17px;
 }

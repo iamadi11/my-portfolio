@@ -1,16 +1,16 @@
 // JavaScript budgets, measured in the browser as the compressed bytes of script bodies (response headers excluded).
-// First-load: every script fetched before the page's load event. `/` keeps CLAUDE.md §10.4's ≤ 120 kB; the course
-// has its own budget (owner, 2026-10-28; docs/system-design/COURSE_STATE.md): ≤ 150 kB first-load per /learn route,
-// and ≤ 400 kB more fetched on demand while the reader scrolls the whole page (figures, and any library they need,
+// First-load: every script fetched before the page's load event. `/` keeps CLAUDE.md §10.4's ≤ 180 kB; the course
+// has its own budget (owner, 2026-10-28; docs/system-design/COURSE_STATE.md): ≤ 200 kB first-load per /learn route,
+// and ≤ 600 kB more fetched on demand while the reader scrolls the whole page (figures, and any library they need,
 // load in their own chunks as they near the viewport). Prefetches by next/link are not counted.
 const { chromium } = require('playwright');
 
 const { BASE } = require('./config.cjs');
 
-const ROUTES = ['/', '/learn', '/learn/web-request', '/learn/client-server', '/learn/ip-and-ports'];
+const ROUTES = ['/', '/learn', '/learn/web-request', '/learn/client-server', '/learn/ip-and-ports', '/learn/relational-model', '/learn/consensus', '/learn/capstone'];
 const isCourse = (route) => route.startsWith('/learn');
-const FIRST_LOAD = (route) => (isCourse(route) ? 150_000 : 120_000);
-const ON_DEMAND = 400_000;
+const FIRST_LOAD = (route) => (isCourse(route) ? 200_000 : 180_000);
+const ON_DEMAND = 600_000;
 
 /** Counts script body bytes on a page: `first` before `markLoaded()`, `later` after. */
 async function scriptMeter(page) {

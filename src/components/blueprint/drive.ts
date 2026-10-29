@@ -1,3 +1,8 @@
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
 /**
  * Runs every `[data-sheet]` scene on the page. A scene maps scroll (or, for `clock`, time since load) to scene time
  * `t ∈ [0, T]`, then sets each registered element from `t` alone, never from the previous frame, so jumping
@@ -47,8 +52,6 @@ type Scene = {
         h: number;
         last: string;
     };
-    t0?: number;
-    on: boolean;
     /** Smoothed scene time (scroll scenes ease toward their target; -1 = not yet seen, jump straight there). */
     cur: number;
     lastT: number;
@@ -91,7 +94,6 @@ function build(root: HTMLElement): Scene {
         T: Number(root.getAttribute('data-t') ?? 1),
         lead: Number(root.getAttribute('data-lead') ?? 0),
         regs,
-        on: false,
         cur: -1,
         lastT: -1,
     };
@@ -176,20 +178,6 @@ function apply(s: Scene, t: number, small: boolean, still = false): void {
     }
 }
 
-function progress(s: Scene, vh: number, atEnd: boolean, now: number): number {
-    if (s.mode === 'clock') {
-        if (s.t0 == null) return 0;
-        return Math.min(s.T, (now - s.t0) / 1000);
-    }
-    const r = s.root.getBoundingClientRect();
-    if (s.mode === 'pin') {
-        const pre = s.lead * vh;
-        return s.T * clamp01((pre - r.top) / Math.max(1, r.height - vh + pre));
-    }
-    if (atEnd && r.top < vh) return s.T;
-    return s.T * clamp01((0.9 * vh - r.top) / Math.max(1, r.height));
-}
-
 /**
  * Live measurements: an SVG <text data-measure="w|h" data-label="W"> inside a drawing shows the drawing's real
  * size in CSS pixels ("W = 1238 PX") and follows it on resize. The server renders the bare label.
@@ -211,124 +199,130 @@ function measure(): () => void {
     return () => ro.disconnect();
 }
 
-/** Advance one scene by a frame. Returns whether it is still moving (eased scroll or a running clock). */
-function step(s: Scene, f: { vh: number; atEnd: boolean; now: number; k: number; small: boolean }): boolean {
-    if (!s.on) {
-        // Leaving view mid-ease: settle on where the scroll actually is, so nothing stays half-drawn off screen.
-        if (s.cur >= 0) apply(s, progress(s, f.vh, f.atEnd, f.now), f.small);
-        s.cur = -1;
-        return false;
-    }
-    if (s.mode === 'clock' && s.t0 == null) {
-        // A clock plays once its top is well inside the viewport, not when it enters the look-ahead margin.
-        if (s.root.getBoundingClientRect().top > f.vh * 0.95) return false;
-        s.t0 = f.now;
-    }
-    const target = progress(s, f.vh, f.atEnd, f.now);
-    let moving = false;
-    if (s.mode === 'clock' || s.cur < 0) s.cur = target;
-    else {
-        s.cur += (target - s.cur) * f.k;
-        if (Math.abs(target - s.cur) < s.T * 0.0005) s.cur = target;
-        else moving = true;
-    }
-    apply(s, s.cur, f.small);
-    return moving || (s.mode === 'clock' && s.cur < s.T);
-}
-
-/** Scroll time constant: scenes ease toward the scroll position over ~0.1 s instead of stepping with the wheel. */
-const TAU = 90;
-
-/** Start every scene on the page. Returns a cleanup. */
+/** GSAP owns time and scroll smoothing; apply() alone owns the drawing at that time. */
 export function drive(): () => void {
     const scenes = Array.from(document.querySelectorAll<HTMLElement>('[data-sheet]')).map(build);
-    const smq = window.matchMedia('(max-width: 640px)');
-    const unmeasure = measure();
+    const small = window.matchMedia('(max-width: 640px)');
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const unmeasure = measure();
+    let context: gsap.Context | undefined;
     let printing = false;
-    let raf = 0;
-    let last = 0;
-    const tick = (now: number): void => {
-        raf = 0;
-        if (motion.matches || printing) return;
-        const dt = last ? Math.min(64, now - last) : 16;
-        last = now;
-        const k = 1 - Math.exp(-dt / TAU);
-        const vh = window.innerHeight;
-        const atEnd = window.scrollY + vh >= document.documentElement.scrollHeight - 2;
-        let running = false;
-        for (const s of scenes) running = step(s, { vh, atEnd, now, k, small: smq.matches }) || running;
-        if (running) raf = requestAnimationFrame(tick);
-        else last = 0;
-    };
-    const still = (): void => {
-        if (raf) cancelAnimationFrame(raf);
-        raf = 0;
-        last = 0;
-        scenes.forEach((s) => apply(s, s.T, smq.matches, true));
-    };
-    const schedule = (): void => {
+    const clocks: { scene: Scene; timeline: gsap.core.Timeline; visible: boolean }[] = [];
+    const still = (): void => scenes.forEach((scene) => apply(scene, scene.T, small.matches, true));
+    const create = (): void => {
+        context?.revert();
+        clocks.length = 0;
+        document.documentElement.classList.toggle('bp-still', motion.matches);
+        document.documentElement.classList.toggle('bp-live', !motion.matches);
+        scenes.forEach((scene) => {
+            scene.cur = 0;
+            scene.lastT = -1;
+            if (scene.cam) scene.cam.last = '';
+        });
         if (motion.matches || printing) {
             still();
             return;
         }
-        if (!raf) raf = requestAnimationFrame(tick);
+        context = gsap.context(() => {
+            for (const scene of scenes) {
+                const cursor = { time: 0 };
+                const timeline = gsap.timeline({
+                    paused: true,
+                    onUpdate: () => {
+                        scene.cur = cursor.time;
+                        apply(scene, cursor.time, small.matches);
+                    },
+                });
+                timeline.to(cursor, { time: scene.T, duration: scene.T, ease: 'none' });
+                if (scene.mode === 'clock') {
+                    const clock = { scene, timeline, visible: false };
+                    clocks.push(clock);
+                    ScrollTrigger.create({
+                        trigger: scene.root,
+                        start: 'top 95%',
+                        end: 'bottom top',
+                        onToggle: (self) => {
+                            clock.visible = self.isActive;
+                            if (self.isActive && !document.hidden && !printing) timeline.play();
+                            else timeline.pause();
+                        },
+                    });
+                } else {
+                    const start = (): number =>
+                        window.scrollY +
+                        scene.root.getBoundingClientRect().top -
+                        (scene.mode === 'pin' ? scene.lead * window.innerHeight : 0.9 * window.innerHeight);
+                    const end = (): number => {
+                        const height = scene.root.getBoundingClientRect().height;
+                        const natural =
+                            start() +
+                            Math.max(
+                                1,
+                                scene.mode === 'pin'
+                                    ? height - window.innerHeight + scene.lead * window.innerHeight
+                                    : height
+                            );
+                        return Math.max(start() + 1, Math.min(natural, ScrollTrigger.maxScroll(window)));
+                    };
+                    ScrollTrigger.create({
+                        trigger: scene.root,
+                        animation: timeline,
+                        start,
+                        end,
+                        scrub: 0.16,
+                        invalidateOnRefresh: true,
+                    });
+                }
+            }
+        });
+        ScrollTrigger.refresh();
     };
     const resize = (): void => {
-        scenes.forEach((s) => {
-            s.lastT = -1;
-            if (s.cam) s.cam.last = '';
-        });
-        schedule();
-    };
-
-    const preference = (): void => {
-        document.documentElement.classList.toggle('bp-still', motion.matches);
-        document.documentElement.classList.toggle('bp-live', !motion.matches);
-        scenes.forEach((s) => {
-            s.cur = -1;
-            s.lastT = -1;
-        });
-        resize();
-    };
-    const io = new IntersectionObserver(
-        (entries) => {
-            for (const e of entries) {
-                const s = scenes.find((x) => x.root === e.target);
-                if (s) s.on = e.isIntersecting;
+        if (motion.matches || printing) {
+            still();
+            return;
+        }
+        scenes.forEach((scene) => {
+            if (scene.cam) {
+                scene.cam.last = '';
+                apply(scene, Math.max(0, scene.cur), small.matches);
             }
-            schedule();
-        },
-        { rootMargin: '25% 0px' }
-    );
-    scenes.forEach((s) => io.observe(s.root));
-    // Printing (or "Save as PDF") shows every sheet finished, cameras on their final frame; back to scroll after.
-    const toEnd = (): void => {
+        });
+        ScrollTrigger.refresh();
+    };
+    const beforePrint = (): void => {
         printing = true;
+        context?.revert();
+        clocks.length = 0;
         still();
     };
     const afterPrint = (): void => {
         printing = false;
-        resize();
+        create();
     };
-    window.addEventListener('beforeprint', toEnd);
+    const visibility = (): void => {
+        for (const clock of clocks) {
+            if (document.hidden || printing) clock.timeline.pause();
+            else if (clock.visible) clock.timeline.play();
+        }
+    };
+    window.addEventListener('beforeprint', beforePrint);
     window.addEventListener('afterprint', afterPrint);
-    window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', resize);
-    smq.addEventListener('change', resize);
-    motion.addEventListener('change', preference);
-    preference();
-
+    document.addEventListener('visibilitychange', visibility);
+    small.addEventListener('change', resize);
+    motion.addEventListener('change', create);
+    create();
     return () => {
-        io.disconnect();
-        window.removeEventListener('beforeprint', toEnd);
-        window.removeEventListener('afterprint', afterPrint);
-        window.removeEventListener('scroll', schedule);
-        window.removeEventListener('resize', resize);
-        smq.removeEventListener('change', resize);
-        motion.removeEventListener('change', preference);
-        document.documentElement.classList.remove('bp-live', 'bp-still');
+        context?.revert();
         unmeasure();
-        if (raf) cancelAnimationFrame(raf);
+        clocks.length = 0;
+        window.removeEventListener('beforeprint', beforePrint);
+        window.removeEventListener('afterprint', afterPrint);
+        window.removeEventListener('resize', resize);
+        document.removeEventListener('visibilitychange', visibility);
+        small.removeEventListener('change', resize);
+        motion.removeEventListener('change', create);
+        document.documentElement.classList.remove('bp-live', 'bp-still');
     };
 }

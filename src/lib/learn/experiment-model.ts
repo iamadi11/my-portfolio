@@ -352,14 +352,14 @@ export function simulateMechanism(kind: Mechanism, input: ExperimentInput): Trac
         values: Record<string, string> = {},
         from?: string,
         to?: string,
-        lost = false
+        outcomeNote = false
     ): void => {
         beats.push({
             title,
             caption,
             counts,
             values,
-            ...(from && to ? { from, to, packet: lost ? `${title} · see outcome` : title } : {}),
+            ...(from && to ? { from, to, packet: outcomeNote ? `${title} · see outcome` : title } : {}),
         });
     };
     let outcome = '',

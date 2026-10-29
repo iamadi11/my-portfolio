@@ -1,227 +1,78 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useId, useMemo } from 'react';
 
-import { type FilmNode, type LessonFilmData, sampleFilm } from '@/lib/learn/film-model';
+import { HARDWARE } from '@/components/anatomy/hardware';
+import { sampleFilm, type FilmNode, type LessonFilmData } from '@/lib/learn/film-model';
+import { scenePoint, signalRoute, routePoint, responsiveFilm } from '@/lib/learn/scene-layout';
+import '@/components/anatomy/hardware.css';
 
-type Point = [number, number, number];
-// Fixed isometric projection: geometry is a teaching model, not measured infrastructure.
-const project = ([x, y, z]: Point): [number, number] => [460 + (x - y) * 0.91, 267 + (x + y) * 0.36 - z];
-const path = (points: Point[]): string =>
-    points.map((p, i) => `${i ? 'L' : 'M'}${project(p).join(',')}`).join(' ') + 'Z';
-function Block({
-    x,
-    y,
-    z = 0,
-    w,
-    d,
-    h,
-    tone = '',
-}: {
-    x: number;
-    y: number;
-    z?: number;
-    w: number;
-    d: number;
-    h: number;
-    tone?: string;
-}) {
-    return (
-        <g className={`lf-solid ${tone}`}>
-            <path
-                className="lf-face-left"
-                d={path([
-                    [x, y + d, z],
-                    [x + w, y + d, z],
-                    [x + w, y + d, z + h],
-                    [x, y + d, z + h],
-                ])}
-            />
-            <path
-                className="lf-face-right"
-                d={path([
-                    [x + w, y, z],
-                    [x + w, y + d, z],
-                    [x + w, y + d, z + h],
-                    [x + w, y, z + h],
-                ])}
-            />
-            <path
-                className="lf-face-top"
-                d={path([
-                    [x, y, z + h],
-                    [x + w, y, z + h],
-                    [x + w, y + d, z + h],
-                    [x, y + d, z + h],
-                ])}
-            />
-        </g>
-    );
-}
 const Device = React.memo(
-    ({ node, state, value, count }: { node: FilmNode; state: string; value?: string; count?: number }) => {
-        const { x, y, kind } = node;
-        const [lx, ly] = project([x, y, 0]);
+    ({
+        node,
+        state,
+        value,
+        count,
+        focused,
+        asset,
+    }: {
+        node: FilmNode;
+        state: string;
+        value?: string;
+        count?: number;
+        focused: boolean;
+        asset: string;
+    }) => {
+        const [x, y] = scenePoint(node.x, node.y);
+        const markLimit = node.kind === 'queue' ? 8 : 5;
         return (
-            <g data-device={node.id} data-state={state} className="lf-device">
-                <ellipse cx={lx} cy={ly + 15} rx="79" ry="22" className="lf-shadow" />
-                <Block x={x - 55} y={y - 41} z={0} w={110} d={82} h={8} tone="lf-plinth" />
-                {kind === 'computer' ? (
-                    <>
-                        <Block x={x - 34} y={y - 19} z={9} w={68} d={42} h={5} />
-                        <Block x={x - 5} y={y - 8} z={14} w={10} d={9} h={20} />
-                        <Block x={x - 40} y={y - 18} z={34} w={80} d={9} h={58} tone="lf-screen" />
-                        {[0, 1, 2].map((row) => (
-                            <Block
-                                key={row}
-                                x={x - 30}
-                                y={y - 8}
-                                z={49 + row * 10}
-                                w={row === 2 ? 34 : 58}
-                                d={1}
-                                h={3}
-                                tone="lf-detail"
+            <g
+                data-device={node.id}
+                data-state={state}
+                data-focused={focused}
+                className="lf-device"
+                transform={`translate(${x} ${y})`}
+            >
+                <ellipse cx="0" cy="18" rx="80" ry="22" className="lf-shadow" />
+                <use href={`#${asset}`} className="an-instance" />
+                {count !== undefined &&
+                    node.kind === 'queue' &&
+                    Array.from({ length: Math.min(markLimit, count) }, (_, i) => {
+                        const p = scenePoint(-29 + (i % 4) * 18, -9 + Math.floor(i / 4) * 23, 29);
+                        return (
+                            <rect
+                                key={i}
+                                x={p[0] - 460 - 5}
+                                y={p[1] - 267 - 7}
+                                width="11"
+                                height="11"
+                                rx="2"
+                                className="lf-quantity-mark"
                             />
-                        ))}
-                        <Block x={x - 33} y={y + 11} z={14} w={65} d={14} h={3} />
-                        {[0, 1, 2, 3, 4, 5, 6].map((k) => (
-                            <Block
-                                key={k}
-                                x={x - 27 + k * 8}
-                                y={y + 14}
-                                z={17}
-                                w={4}
-                                d={7}
-                                h={1}
-                                tone="lf-detail"
-                            />
-                        ))}
-                    </>
-                ) : kind === 'store' ? (
-                    <>
-                        {[0, 1, 2].map((k) => (
-                            <g key={k}>
-                                <Block x={x - 30} y={y - 27} z={12 + k * 22} w={60} d={54} h={18} />
-                                <Block
-                                    x={x - 22}
-                                    y={y + 27}
-                                    z={17 + k * 22}
-                                    w={44}
-                                    d={1}
-                                    h={3}
-                                    tone="lf-detail"
-                                />
-                            </g>
-                        ))}
-                    </>
-                ) : kind === 'queue' ? (
-                    <>
-                        <Block x={x - 43} y={y - 21} z={12} w={86} d={42} h={9} />
-                        <Block x={x - 45} y={y - 24} z={12} w={4} d={48} h={25} />
-                        <Block x={x + 41} y={y - 24} z={12} w={4} d={48} h={25} />
-                        {Array.from({ length: Math.min(8, count ?? 0) }, (_, k) => (
-                            <Block
-                                key={k}
-                                x={x - 34 + (k % 4) * 18}
-                                y={y - 12 + Math.floor(k / 4) * 21}
-                                z={23}
-                                w={13}
-                                d={14}
-                                h={14}
-                                tone="lf-data"
-                            />
-                        ))}
-                    </>
-                ) : kind === 'router' ? (
-                    <>
-                        <Block x={x - 34} y={y - 25} z={11} w={68} d={50} h={26} />
-                        {[0, 1, 2, 3].map((k) => (
-                            <Block
-                                key={k}
-                                x={x - 25 + k * 14}
-                                y={y + 25}
-                                z={20}
-                                w={8}
-                                d={2}
-                                h={7}
-                                tone="lf-detail"
-                            />
-                        ))}
-                        <Block x={x - 28} y={y - 20} z={37} w={3} d={3} h={26} />
-                        <Block x={x + 23} y={y - 20} z={37} w={3} d={3} h={26} />
-                    </>
-                ) : (
-                    <>
-                        <Block x={x - 29} y={y - 26} z={10} w={58} d={52} h={89} />
-                        {[0, 1, 2, 3].map((k) => (
-                            <g key={k}>
-                                <Block
-                                    x={x - 24}
-                                    y={y + 26}
-                                    z={20 + k * 18}
-                                    w={48}
-                                    d={2}
-                                    h={12}
-                                    tone="lf-rack"
-                                />
-                                <Block
-                                    x={x + 14}
-                                    y={y + 29}
-                                    z={24 + k * 18}
-                                    w={4}
-                                    d={1}
-                                    h={3}
-                                    tone="lf-detail"
-                                />
-                            </g>
-                        ))}
-                        <Block x={x - 22} y={y - 20} z={99} w={44} d={36} h={2} tone="lf-vent" />
-                    </>
-                )}
-                {kind === 'store' &&
-                    count !== undefined &&
-                    Array.from({ length: Math.min(5, count) }, (_, i) => (
-                        <Block
-                            key={`record-${i}`}
-                            x={x - 26 + i * 10}
-                            y={y - 9}
-                            z={81}
-                            w={7}
-                            d={19}
-                            h={12}
-                            tone="lf-data"
-                        />
-                    ))}
-                {state === 'locked' && (
-                    <g transform={`translate(${lx + 44} ${ly - 62})`} className="lf-lock">
-                        <path d="M-5 0v-5a5 5 0 0 1 10 0v5" />
-                        <rect x="-8" y="0" width="16" height="12" rx="2" />
-                        <circle cx="0" cy="5" r="1" />
-                    </g>
-                )}
+                        );
+                    })}
                 {count !== undefined && (
-                    <g className="lf-count-label" transform={`translate(${lx} ${ly - 115})`}>
-                        <text textAnchor="middle">
-                            {count}
-                            {count > (kind === 'queue' ? 8 : 5) ? ' total · abbreviated' : ''}
-                        </text>
+                    <text y="-137" textAnchor="middle" className="lf-count-label">
+                        {count}
+                        {count > markLimit ? ' total · abbreviated' : ''}
+                    </text>
+                )}
+                {state === 'failed' && (
+                    <g className="lf-status-icon">
+                        <circle cx="61" cy="-54" r="11" />
+                        <path d="m56-59 10 10m0-10-10 10" />
                     </g>
                 )}
-                <g className="lf-node-label" transform={`translate(${lx} ${ly + 49})`}>
+                <g className="lf-node-label" transform="translate(0 75)">
                     <text textAnchor="middle">{node.label}</text>
                     {value && (
-                        <text textAnchor="middle" y="22" className="lf-value">
-                            {value}
+                        <text textAnchor="middle" y="21" className="lf-value">
+                            {value.length > 31 ? `${value.slice(0, 28)}…` : value}
                         </text>
                     )}
-                    {state === 'failed' && (
-                        <text textAnchor="middle" y={value ? 44 : 22} className="lf-value">
-                            × interrupted
-                        </text>
-                    )}
-                    {state === 'locked' && (
-                        <text textAnchor="middle" y={value ? 44 : 22} className="lf-value">
-                            protected channel
+                    {(state === 'failed' || state === 'locked') && (
+                        <text textAnchor="middle" y={value ? 41 : 21} className="lf-value">
+                            {state === 'failed' ? '× interrupted' : 'protected channel'}
                         </text>
                     )}
                 </g>
@@ -229,59 +80,97 @@ const Device = React.memo(
         );
     }
 );
-Device.displayName = 'Device';
-
-function SceneView({ film, time, narrow = false }: { film: LessonFilmData; time: number; narrow?: boolean }) {
-    const { beat, packet, states, values, counts } = sampleFilm(film, time);
-    const nodes = [...film.nodes].sort((a, b) => a.x + a.y - (b.x + b.y));
+Device.displayName = 'AnatomyDevice';
+function SceneView({
+    film,
+    time,
+    narrow = false,
+    assets,
+}: {
+    film: LessonFilmData;
+    time: number;
+    narrow?: boolean;
+    assets: Record<string, string>;
+}): React.JSX.Element {
+    const state = sampleFilm(film, time),
+        { beat } = state;
+    const cables = useMemo(
+        () =>
+            film.links.map(([a, b]) => ({
+                a,
+                b,
+                route: signalRoute(
+                    film.nodes,
+                    film.nodes.find((n) => n.id === a)!,
+                    film.nodes.find((n) => n.id === b)!
+                ),
+            })),
+        [film]
+    );
+    const current = cables.find(
+        (c) => (c.a === beat.from && c.b === beat.to) || (c.b === beat.from && c.a === beat.to)
+    );
+    const route = current && (current.a === beat.from ? current.route : [...current.route].reverse());
+    const progress = beat.lost ? Math.min(state.progress, 0.55) : state.progress;
+    const packet = route && state.packet ? routePoint(route, progress) : null;
+    const focused = state.progress < 1 ? beat.from : beat.to;
+    const nodes = useMemo(() => [...film.nodes].sort((a, b) => a.x + a.y - b.x - b.y), [film]);
     return (
         <svg
             className={`lf-scene ${narrow ? 'lf-scene-mobile' : 'lf-scene-desktop'}`}
-            viewBox={narrow ? '220 0 480 460' : '0 0 920 460'}
+            viewBox={narrow ? '218 -12 484 530' : '0 -12 920 360'}
             aria-hidden="true"
             focusable="false"
         >
-            <g className="lf-grid">
-                {Array.from({ length: 13 }, (_, i) => {
-                    const a = project([-360 + i * 60, -260, 0]);
-                    const b = project([-360 + i * 60, 240, 0]);
-                    return <path key={`x${i}`} d={`M${a}L${b}`} />;
-                })}
-                {Array.from({ length: 10 }, (_, i) => {
-                    const a = project([-360, -260 + i * 55, 0]);
-                    const b = project([360, -260 + i * 55, 0]);
-                    return <path key={`y${i}`} d={`M${a}L${b}`} />;
-                })}
-            </g>
-            {film.links.map(([a, b]) => {
-                const from = film.nodes.find((n) => n.id === a)!;
-                const to = film.nodes.find((n) => n.id === b)!;
-                const p = project([from.x, from.y, 9]);
-                const q = project([to.x, to.y, 9]);
-                const active = (beat.from === a && beat.to === b) || (beat.from === b && beat.to === a);
-                return (
-                    <g key={`${a}-${b}`} className={`lf-cable ${active ? 'lf-cable-active' : ''}`}>
-                        <path className="lf-cable-bed" d={`M${p}L${q}`} />
-                        <path d={`M${p}L${q}`} />
-                    </g>
-                );
-            })}
+            <defs>
+                <pattern
+                    id={`${film.id}-${narrow ? 'n' : 'w'}-grid`}
+                    width="42"
+                    height="22"
+                    patternUnits="userSpaceOnUse"
+                >
+                    <path d="M0 11 21 0 42 11 21 22Z" className="lf-grid-tile" />
+                </pattern>
+            </defs>
+            <rect
+                x="0"
+                y="-12"
+                width="920"
+                height={narrow ? 530 : 360}
+                fill={`url(#${film.id}-${narrow ? 'n' : 'w'}-grid)`}
+                opacity=".32"
+            />
+            {cables.map((c) => (
+                <g key={`${c.a}-${c.b}`} className={`lf-cable ${c === current ? 'lf-cable-active' : ''}`}>
+                    <path
+                        className="lf-cable-bed"
+                        d={c.route.map((p, i) => `${i ? 'L' : 'M'}${p}`).join(' ')}
+                    />
+                    <path d={c.route.map((p, i) => `${i ? 'L' : 'M'}${p}`).join(' ')} />
+                </g>
+            ))}
             {nodes.map((node) => (
                 <Device
                     key={node.id}
                     node={node}
-                    state={states[node.id] ?? 'idle'}
-                    value={values[node.id]}
-                    count={counts[node.id]}
+                    state={state.states[node.id] ?? 'idle'}
+                    value={state.values[node.id]}
+                    count={state.counts[node.id]}
+                    focused={focused === node.id}
+                    asset={assets[node.kind]}
                 />
             ))}
             {packet && (
-                <g className={`lf-packet ${packet.lost ? 'lf-packet-lost' : ''}`}>
-                    <Block x={packet.x - 9} y={packet.y - 7} z={30} w={18} d={14} h={13} tone="lf-data" />
-                    <g transform={`translate(${project([packet.x, packet.y, 72]).join(' ')})`}>
-                        <rect x="-96" y="-19" width="192" height="30" rx="15" />
+                <g
+                    className={`lf-packet ${state.packet?.lost ? 'lf-packet-lost' : ''}`}
+                    transform={`translate(${packet})`}
+                >
+                    <path d="M-7 -6 0 -10 7 -6 7 3 0 7 -7 3Z" className="lf-message-body" />
+                    <path d="m-7-6 7 4 7-4M0-2v9" className="lf-message-edge" />
+                    <g transform="translate(0 -25)">
+                        <rect x="-82" y="-17" width="164" height="27" rx="13" />
                         <text textAnchor="middle" y="1">
-                            {packet.lost ? '× message lost' : beat.packet}
+                            {state.packet?.lost ? '× message lost' : (beat.packet ?? 'Message').slice(0, 25)}
                         </text>
                     </g>
                 </g>
@@ -289,45 +178,34 @@ function SceneView({ film, time, narrow = false }: { film: LessonFilmData; time:
         </svg>
     );
 }
-
 export default function Scene({ film, time }: { film: LessonFilmData; time: number }): React.JSX.Element {
-    const positions = useMemo(
+    const base = useId();
+    const assets = useMemo(
         () =>
-            film.nodes.length === 2
-                ? [
-                      [330, 245],
-                      [595, 245],
-                  ]
-                : film.nodes.length === 3
-                  ? [
-                        [330, 160],
-                        [595, 160],
-                        [465, 350],
-                    ]
-                  : [
-                        [330, 145],
-                        [595, 145],
-                        [330, 345],
-                        [595, 345],
-                    ],
-        [film.nodes.length]
+            Object.fromEntries(
+                [...new Set(film.nodes.map((node) => node.kind))].map((kind) => [kind, `${base}-${kind}`])
+            ),
+        [base, film]
     );
-    const narrowFilm = useMemo(
-        () => ({
-            ...film,
-            nodes: film.nodes.map((node, i) => {
-                const [px, py] = positions[i];
-                const diff = (px - 460) / 0.91;
-                const sum = (py - 267) / 0.36;
-                return { ...node, x: (sum + diff) / 2, y: (sum - diff) / 2 };
-            }),
-        }),
-        [film, positions]
-    );
+    const narrow = useMemo(() => responsiveFilm(film), [film]);
+    const wide = useMemo(() => responsiveFilm(film, false), [film]);
     return (
         <>
-            <SceneView film={film} time={time} />
-            <SceneView film={narrowFilm} time={time} narrow />
+            <svg className="lf-assets" width="0" height="0" aria-hidden="true" focusable="false">
+                <defs>
+                    {Object.entries(assets).map(([kind, id]) => (
+                        <symbol
+                            key={kind}
+                            id={id}
+                            className="an-hardware"
+                            overflow="visible"
+                            dangerouslySetInnerHTML={{ __html: HARDWARE[kind as keyof typeof HARDWARE].svg }}
+                        />
+                    ))}
+                </defs>
+            </svg>
+            <SceneView assets={assets} film={wide} time={time} />
+            <SceneView assets={assets} film={narrow} time={time} narrow />
         </>
     );
 }

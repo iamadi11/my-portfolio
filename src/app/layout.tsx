@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next';
 import { Arimo } from 'next/font/google';
 
 import { SITE } from '@/content/site';
+import { PORTFOLIO_APPEARANCE_BOOTSTRAP } from '@/lib/appearance';
 import { getSiteOrigin, siteDescription } from '@/lib/site';
 
 import './globals.css';
@@ -156,6 +157,7 @@ export default function RootLayout({
     return (
         <html lang="en-IN" className="motion-safe:scroll-smooth" suppressHydrationWarning>
             <head>
+                <script dangerouslySetInnerHTML={{ __html: PORTFOLIO_APPEARANCE_BOOTSTRAP }} />
                 {/* Before first paint: lets CSS hide what the driver will draw (see globals.css). */}
                 <script
                     dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }}

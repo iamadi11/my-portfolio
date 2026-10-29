@@ -8,8 +8,8 @@
         "prebuild": "npm run eidos-sw",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint",
-        "lint:fix": "next lint --fix",
+        "lint": "eslint src",
+        "lint:fix": "eslint src --fix",
         "lint-staged": "lint-staged",
         "test": "vitest run",
         "test:browser": "node tests/browser/run.cjs",
@@ -18,8 +18,10 @@
         "eidos-sw": "node -e \"require('fs').copyFileSync(require.resolve('@sweidos/eidos/sw'), 'public/eidos-sw.js')\""
     },
     "dependencies": {
+        "@gsap/react": "^2.1.2",
         "@sweidos/eidos": "^2.5.2",
         "critters": "^0.0.23",
+        "gsap": "^3.15.0",
         "next": "^15.5.27",
         "react": "19.0.0",
         "react-dom": "19.0.0",

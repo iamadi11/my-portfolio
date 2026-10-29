@@ -37,3 +37,7 @@ These are engineering and instructional design criteria. They do not establish t
 - Manual stepping changes the actual clock to a settled event frame. Resuming Play must continue from that frame without rewinding committed state.
 - A case walkthrough must show real request/data paths and concrete component fault states. Do not send “failure scenario” or “tradeoff” packets as if narration were a protocol.
 - Distinguish users, requests, event time, processing time and watermark progress in controls and quantity labels.
+
+- A mode is not an outcome. Derive the outcome from state (valid reference + either constraint policy → accepted). Test agreement between verdict, counts and narration at input boundaries.
+- Map broad objectives to separate visible mechanisms: relational joins/set operations, B-tree/LSM layout, HTTP conditional validation, prepared-transaction uncertainty and UUID version bits each need their own events. Reuse an enclosure, never substitute its drawing for these mechanisms.
+- Static Play holds each event for the same declared reading duration divided by speed. An accessibility mode must not flash long captions at a fixed 900 ms interval.

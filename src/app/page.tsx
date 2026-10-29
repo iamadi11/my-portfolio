@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Driver from '@/components/blueprint/Driver';
+import PortfolioTheme from '@/components/blueprint/PortfolioTheme';
 import Assemblies from '@/components/blueprint/sections/Assemblies';
 import Contact from '@/components/blueprint/sections/Contact';
 import Nav from '@/components/blueprint/sections/Nav';
@@ -21,6 +22,7 @@ export default function Page(): React.JSX.Element {
     return (
         <>
             <Nav />
+            <PortfolioTheme />
             <main id="main-content" tabIndex={-1}>
                 <Title />
                 <Results />
