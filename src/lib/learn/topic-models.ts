@@ -174,7 +174,7 @@ export const TOPIC_MODELS = {
         2
     ),
     redelivery: define(
-        'Delivery attempts after a crash',
+        'Replacement work requests after a crash',
         ['Acknowledge before processing', 'Acknowledge after durable effect'],
         ['Work lost after early ack', 'Work retained for redelivery'],
         ['Broker', 'Worker', 'Durable effects'],
@@ -260,7 +260,7 @@ export const TOPIC_MODELS = {
         ['Healthy work starved', 'Healthy capacity protected'],
         ['Dependency pool', 'Shared capacity', 'Healthy work'],
         6,
-        4
+        1
     ),
     retry: define(
         'Callers with uncertain results',
@@ -1169,36 +1169,101 @@ export function simulateTopic(kind: TopicMechanism, input: ExperimentInput): Tra
             break;
         }
         case 'redelivery': {
+            const markWorker = (state: 'idle' | 'active' | 'done' | 'failed'): void => {
+                beats[beats.length - 1].states = { b: state };
+            };
             add(
                 'Broker retains work',
-                'A delivery is not the same as a durable application effect.',
-                { a: 'one unacked job' },
-                { a: 1 }
+                'The broker retains one work obligation until acknowledgment. Worker 0 is ready.',
+                { a: 'one ready job', b: 'worker 0 ready', d: 'no durable effect' },
+                { a: 1, b: 0, d: 0 }
             );
-            if (!alt)
+            markWorker('idle');
+            add(
+                'Deliver job 1',
+                'Worker 0 receives the job. Receiving it has not saved its application effect.',
+                { a: 'one unacked job', b: 'worker 0 processing' },
+                { a: 1, b: 1 },
+                'a',
+                'b'
+            );
+            markWorker('active');
+            if (!alt) {
                 add(
                     'Early ack',
-                    'The broker drops its delivery obligation before the effect is saved.',
-                    { a: 'acked' },
+                    'The broker drops its work obligation before the application effect is saved.',
+                    { a: 'acked; no pending job' },
                     { a: 0 },
                     'b',
                     'a'
                 );
-            add('Worker crashes', 'The worker crashes before saving the effect.', { b: 'crashed' }, { d: 0 });
-            if (alt)
-                for (let i = 1; i <= n; i++)
+                markWorker('active');
+            }
+            add(
+                'Worker 0 crashes',
+                alt
+                    ? 'Assume its channel closes. The unacknowledged job is requeued; no effect has been saved.'
+                    : 'The acknowledged job is gone, but its effect was never saved.',
+                { a: alt ? 'one requeued job' : 'empty', b: 'worker 0 crashed' },
+                { a: alt ? 1 : 0, d: 0 }
+            );
+            markWorker('failed');
+            let deliveries = 1;
+            for (let i = 1; i <= n; i++) {
+                if (alt || i === 1) {
                     add(
-                        `Redelivery opportunity ${i}`,
-                        'Without an ack, the retained job can be delivered again. This model keeps the worker failed to expose the obligation.',
-                        { a: 'unacked, eligible' },
-                        { a: 1 },
+                        `Start replacement ${i}`,
+                        'A live replacement starts before asking the broker for work.',
+                        { b: `replacement ${i} ready` }
+                    );
+                    markWorker('idle');
+                }
+                add(
+                    `Work request ${i}`,
+                    'The live replacement asks whether a job is available.',
+                    { b: `live worker requests work ${i}` },
+                    {},
+                    'b',
+                    'a'
+                );
+                markWorker('active');
+                if (alt) {
+                    deliveries++;
+                    add(
+                        `Redeliver job 1, attempt ${i}`,
+                        'The requeued job reaches a live replacement. Its durable effect is still pending.',
+                        { a: 'one unacked job', b: `replacement ${i} processing` },
+                        { a: 1, b: deliveries, d: 0 },
                         'a',
                         'b'
                     );
+                    markWorker('active');
+                    add(
+                        `Replacement ${i} crashes`,
+                        'It crashes before saving the effect or acknowledging. Channel closure requeues the same job again.',
+                        { a: 'one requeued job', b: `replacement ${i} crashed` },
+                        { a: 1, d: 0 }
+                    );
+                    markWorker('failed');
+                } else {
+                    add(
+                        `Empty result ${i}`,
+                        'The early acknowledgment removed the obligation. This live worker receives no job.',
+                        { a: 'empty', b: 'live; no job received' },
+                        { a: 0, b: deliveries, d: 0 },
+                        'a',
+                        'b'
+                    );
+                    markWorker('done');
+                }
+            }
             result = alt;
+            metric('Replacement work requests', n);
+            metric('Actual job deliveries', deliveries);
+            metric('Saved durable effects', 0);
             metric('Retained work obligations', alt ? 1 : 0);
             explanation =
-                'Acknowledge after durable processing, then make reprocessing safe. A crash after saving the effect but before ack creates duplicates; idempotency addresses that separate case.';
+                'Each delivery targets a live worker. This fault run makes every receiving worker crash before durable processing; late acknowledgment preserves one obligation, not completed work. A crash after saving an effect but before ack is a separate duplicate-effect risk requiring safe reprocessing.';
             break;
         }
         case 'flow': {
@@ -1363,17 +1428,31 @@ export function simulateTopic(kind: TopicMechanism, input: ExperimentInput): Tra
                 b: 'v2',
                 d: 'v1',
             });
+            const replies = ['d', 'a', 'b'].slice(0, n);
+            replies.forEach((replica, index) => {
+                add(
+                    `Reply ${index + 1} of ${n}`,
+                    index === 0
+                        ? 'C replies first with v1. Returning now can be stale.'
+                        : alt
+                          ? 'Include this v2 reply when choosing the newest model version.'
+                          : 'This newer reply arrives after the first-reply read already returned v1.',
+                    { c: alt ? `${index + 1} replies collected` : 'returned v1' },
+                    { c: index + 1, [replica]: 1 },
+                    replica,
+                    'c'
+                );
+            });
             add(
-                'Read chosen replies',
+                'Choose the read result',
                 alt
-                    ? `Read ${n} versions including at least one v2; select the newest model version.`
-                    : 'Return C’s first reply without comparing versions.',
-                { c: alt ? 'v2' : 'v1' },
-                {},
-                alt ? 'a' : 'd',
-                'c'
+                    ? 'Compare all requested versions; at least one contains v2.'
+                    : 'Only the first reply determined the returned value.',
+                { c: alt ? 'v2' : 'v1' }
             );
             result = alt;
+            metric('Replies requested', n);
+            metric('Replies used for result', alt ? n : 1);
             metric('Returned version', alt ? 2 : 1);
             explanation =
                 'For this fixed completed write, R≥2 and W=2 intersect among N=3 replicas. Concurrent writes, sloppy quorums, version ordering and failures require more rules; quorum arithmetic alone is not linearizability.';
@@ -1465,18 +1544,20 @@ export function simulateTopic(kind: TopicMechanism, input: ExperimentInput): Tra
             break;
         }
         case 'bulkhead': {
-            const occupied = alt ? 2 : 4,
-                available = 4 - occupied;
+            const capacity = alt ? 2 : 4,
+                occupied = Math.min(n, capacity),
+                available = 4 - occupied,
+                rejected = n - occupied;
             add(
                 'Finite pool',
-                'There are 4 slots; calls to the broken dependency hold slots until timeout.',
+                'There are 4 slots; slow calls hold slots until timeout. Calls over their pool limit are rejected without a queue.',
                 { b: '4 total slots' },
                 { b: 4 }
             );
             add(
                 'Broken calls occupy slots',
                 `${n} calls compete for ${alt ? 'an isolated pool of 2' : 'the shared pool of 4'}.`,
-                { a: `${occupied} occupied` },
+                { a: `${occupied} occupied; ${rejected} rejected` },
                 { a: occupied },
                 'c',
                 'a'
@@ -1491,7 +1572,9 @@ export function simulateTopic(kind: TopicMechanism, input: ExperimentInput): Tra
                 'c',
                 'd'
             );
-            result = alt;
+            result = available > 0;
+            metric('Calls holding slots', occupied);
+            metric('Calls rejected at pool limit', rejected);
             metric('Slots available for healthy work', available);
             explanation =
                 'Resource isolation bounds one failure’s blast radius. It trades shared utilization for protected capacity and still needs queue bounds and deadlines.';

@@ -435,3 +435,10 @@
     font-size: 11px;
     line-height: 1.5;
 }
+
+.asm-inspect {display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0;font-size:13px;color:var(--ink-2)}
+.asm-inspect>span {margin-right:8px}
+.asm-inspect button {min-height:44px;padding:8px 12px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);font:inherit;cursor:pointer;border-radius:3px}
+.asm-inspect button[aria-pressed=true] {background:var(--ink);color:var(--paper)}
+.asm-inspect button:focus-visible {outline:2px solid var(--ink);outline-offset:3px}
+@media print {.asm-inspect {display:none}}

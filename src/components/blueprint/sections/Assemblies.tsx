@@ -7,6 +7,7 @@ import { SITE } from '@/content/site';
 import type { Project } from '@/content/types';
 import { projectStats, type ProjectStats } from '@/lib/live';
 
+import AssemblyControls from '../AssemblyControls';
 import ProjectTour from '../ProjectTour';
 import { ASSEMBLIES, generic } from './assemblies/configs';
 import { drawAssembly } from './assemblies/drawing';
@@ -130,6 +131,7 @@ function Assembly({
                     {PROJECT_FILMS[project.id] && (
                         <ProjectTour title={project.title} film={PROJECT_FILMS[project.id]} />
                     )}
+                    <AssemblyControls detail={!!cfg.detail} />
                     <p className="asm-schematic">Conceptual software assembly · spacing is schematic</p>
                     <Ref stats={stats} title={project.title} />
                     <p className="asm-cta" {...win(1.6, 2.4)}>

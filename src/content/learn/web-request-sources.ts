@@ -9,6 +9,13 @@ export type Source = { id: string; title: string; publisher: string; url: string
 
 export const SOURCES: Source[] = [
     {
+        id: 'rfc9113',
+        title: 'RFC 9113: HTTP/2',
+        publisher: 'IETF',
+        url: 'https://www.rfc-editor.org/rfc/rfc9113.html#section-9.1.1',
+        read: 'Published RFC §9.1.1 connection reuse read via web on 2026-10-30; cross-authority reuse requires authority and valid certificate.',
+    },
+    {
         id: 'rfc9110',
         title: 'RFC 9110: HTTP Semantics (June 2022)',
         publisher: 'IETF (Fielding, Nottingham, Reschke, eds.)',

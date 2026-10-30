@@ -510,5 +510,69 @@
         "publisher": "www.postgresql.org",
         "read": "Opened 2026-10-30; Durable preparation, external coordinator, retained locks and resolution.",
         "scope": "Durable preparation, external coordinator, retained locks and resolution"
+    },
+    "nginx-lb": {
+        "id": "nginx-lb",
+        "title": "NGINX HTTP load balancing",
+        "publisher": "NGINX",
+        "url": "https://nginx.org/en/docs/http/load_balancing.html",
+        "read": "Read load balancing methods, least connected load balancing and health checks via web on 2026-10-30.",
+        "scope": "Round robin, least-connections, passive failure detection; finite model thresholds are explicit teaching assumptions."
+    },
+    "kafka-design-41": {
+        "id": "kafka-design-41",
+        "title": "Apache Kafka 4.1 design",
+        "publisher": "Apache Kafka",
+        "url": "https://kafka.apache.org/41/design/design/",
+        "read": "Read The Consumer, Consumer Position, Message Delivery Semantics and Using Transactions via web on 2026-10-30.",
+        "scope": "Classic partition group ownership, committed next offsets, independent groups and processing/commit failure boundary; no exactly-once external effect claim."
+    },
+    "nginx-l4": {
+        "id": "nginx-l4",
+        "title": "NGINX TCP and UDP load balancing",
+        "publisher": "NGINX",
+        "url": "https://docs.nginx.com/nginx/admin-guide/load-balancer/tcp-udp-load-balancer/",
+        "read": "Read introduction and configuring reverse proxy/load balancing via web on 2026-10-30.",
+        "scope": "Stream TCP/UDP routing contrasted with HTTP request-aware routing."
+    },
+    "security-oidc": {
+        "id": "security-oidc",
+        "title": "OpenID Connect Core 1.0",
+        "publisher": "OpenID Foundation",
+        "url": "https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation",
+        "read": "Read via web on 2026-10-30: §2; §3.1.3.7 token purpose, audience and nonce validation.",
+        "scope": "§2; §3.1.3.7 token purpose, audience and nonce validation"
+    },
+    "security-oauth": {
+        "id": "security-oauth",
+        "title": "RFC 6749 OAuth 2.0",
+        "publisher": "IETF",
+        "url": "https://www.rfc-editor.org/rfc/rfc6749.html#section-1.4",
+        "read": "Read via web on 2026-10-30: §1.4 access tokens; §3.3 scope.",
+        "scope": "§1.4 access tokens; §3.3 scope"
+    },
+    "security-accessJwt": {
+        "id": "security-accessJwt",
+        "title": "RFC 9068 JWT access token profile",
+        "publisher": "IETF",
+        "url": "https://www.rfc-editor.org/rfc/rfc9068.html#section-4",
+        "read": "Read via web on 2026-10-30: §2 explicit access-token type; §4 resource audience validation.",
+        "scope": "§2 explicit access-token type; §4 resource audience validation"
+    },
+    "security-xss": {
+        "id": "security-xss",
+        "title": "OWASP XSS prevention cheat sheet",
+        "publisher": "OWASP",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html",
+        "read": "Read via web on 2026-10-30: HTML sanitization, safe sinks, dangerous contexts.",
+        "scope": "HTML sanitization, safe sinks, dangerous contexts"
+    },
+    "security-csrf": {
+        "id": "security-csrf",
+        "title": "OWASP CSRF prevention cheat sheet",
+        "publisher": "OWASP",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html",
+        "read": "Read via web on 2026-10-30: Synchronizer Token Pattern; SameSite defense in depth.",
+        "scope": "Synchronizer Token Pattern; SameSite defense in depth"
     }
 }

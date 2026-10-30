@@ -325,7 +325,7 @@ export default function Page(): React.JSX.Element {
                                     (persistent connections, HTTP/1.1) <C ids={['mdn-http-overview']} />. A
                                     fresh cached response skips the server too.{' '}
                                     <C ids={['rfc9111']} at="§1" /> <C ids={['mdn-caching']} /> In the
-                                    Interactive Lab, switch the visit and those segments shrink to nothing.
+                                    Explore, switch the visit and those segments shrink to nothing.
                                 </p>
                             </details>
                         </>

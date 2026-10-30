@@ -512,10 +512,10 @@ function specErrors(c) {
     if (rank(c.status) >= rank('implemented')) {
         const tabs = section(text, 'Tabs');
         if (!tabs)
-            errs.push(`${c.id}: status ${c.status} needs "## Tabs" with Learn, Lab and Quiz (three-tabs.md)`);
+            errs.push(`${c.id}: status ${c.status} needs "## Tabs" with Learn, Explore and Assess (three-tabs.md)`);
         else
-            for (const name of ['Learn', 'Lab', 'Quiz'])
-                if (!tabs.some((l) => new RegExp(`^- ${name}:\\s*\\S`).test(l)))
+            for (const [name, aliases] of [['Learn', ['Learn']], ['Explore', ['Explore', 'Lab']], ['Assess', ['Assess', 'Quiz']]])
+                if (!tabs.some((l) => new RegExp(`^- (${aliases.join('|')}):\\s*\\S`).test(l)))
                     errs.push(`${c.id}: "## Tabs" needs "- ${name}: <what this tab does>"`);
     }
     if (

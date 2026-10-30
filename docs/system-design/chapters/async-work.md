@@ -1,82 +1,103 @@
 # async-work: When should a request wait for work and when should it enqueue it?
 
-Id: async-work · Status lives only in CURRICULUM.md.
+Id: async-work · Stage: 6 · Paths: beginner interview production (status lives only in CURRICULUM.md)
+Prerequisites: utilisation-queueing stateless-services
 Standard: anatomy-3d
-Authoring authority: `src/content/learn/academy-lessons.json` entry `async-work`; model `queue`. This compact record references shared code to avoid loading duplicate implementations.
+Authoring authority: `src/content/learn/academy-lessons.json` entry `async-work`; model `communication`.
 
 ## Boundary
 
-1. Explain: Asynchronous acceptance separates receiving a task from completing its effect.
-2. Predict the observable result after changing jobs arriving in one window or the declared policy.
+1. Distinguish an accepted reply from a completed-work reply.
+2. Predict that the same jobs still need the same modeled worker time in synchronous and asynchronous modes.
+3. Explain what status and recovery contract the caller needs after early acceptance.
 
+In scope: A request, a durable pending-work boundary and one worker. Each job takes one invented tick. No cancellation, duplicate processing, crash/recovery or queue-capacity experiment is implemented here.
 Limit: Accepted is not completed; callers need status, error handling and bounded backlog.
 Misconception: A 202-style acceptance means the requested work already succeeded.
 
 ## Concept decomposition
 
-Hardest: connect this chapter’s rule to the actual state owner: Pending jobs, Completed jobs, Workers.
-Hardest: distinguish the selected teaching policy from a production guarantee. Accepted is not completed; callers need status, error handling and bounded backlog.
+Mechanism: Asynchronous acceptance separates receiving a task from completing its effect.
+Temporal behavior: event traces own component values, counts, direction and results; display time is independent of simulated state.
+Quantitative relations: values below are finite teaching assumptions, not measured performance.
+Hardest: An early successful acceptance does not prove the requested effect completed (A1).
+Hardest: Moving waiting off the caller does not remove processing work or backlog (A1).
+
+## Parts you will meet
+
+Synchronous reply: waits for the modeled jobs to finish. Asynchronous acceptance: confirms the modeled jobs were saved for later work. Completion status: a later report of the effect’s outcome.
 
 ## Storyboard
 
-Baseline input: Jobs arriving in one window = 6; policy: One worker; 3 jobs per window. The contrasting policy is Two workers; 6 jobs per window.
-
-1. Arrival burst: 6 jobs arrive in one illustrative service window.
-2. Complete job 1: One job leaves the queue only when the model completes it.
-3. Complete job 2: One job leaves the queue only when the model completes it.
-4. Complete job 3: One job leaves the queue only when the model completes it.
-
-For case chapters and capstone, `design-guides.ts` additionally owns the requirement, explicit workload arithmetic, full read/write path, failure, tradeoff and transfer challenge. The mechanism film is a zoom into one decision, not the complete architecture.
+Baseline: Background jobs required = 6; “Wait synchronously for all work”. Comparison: “Persist work and acknowledge acceptance”.
+1. Request needs later work: 6 jobs each take one illustrative tick on a single worker.
+2. Acceptance boundary: Keep the caller waiting until all jobs complete.
+3. Worker completes jobs: The worker completes 6 jobs over 6 ticks in both modes.
 
 ## Animation sense
 
 Mechanism: Asynchronous acceptance separates receiving a task from completing its effect.
-Moving quantity: model events between the actual owning components; displayed counts and versions change only from the event trace.
-Model field: simulateMechanism('queue', input).beats; counts, values, from/to and outcome; sampleFilm maps trace time into visible state.
-Learner predicts: one of the model’s two outcomes after selecting a changed input and policy.
-If the moving part is deleted: the lesson is gone as a temporal causal demonstration; static steps and transcript retain the accessible explanation.
-Research (before drawing): the relevant source sections below were read before the current mechanism implementation, on 2026-10-29.
+Moving quantity: Request handler, Durable queue, Worker; event messages explain each state transition, not decoration.
+Model field: simulateMechanism('communication', input).beats; sampleFilm derives a legal frame from that trace.
+Learner predicts: Reply waits for completion or Reply means accepted only, then explains the relevant assumption.
+If the moving part is deleted: the lesson is gone as a temporal causal demonstration; complete static steps and transcript preserve its accessible explanation.
+Research (before drawing): primary records below retain their actual earlier access dates; this reconciliation adds no claim that every source was reopened. NGINX methods/health and PostgreSQL WAL were reopened in the 2026-10-30 mission audit.
 
 ## Asset plan
 
-### A1. Model-driven worked example and experiment
+### A1. Causal comparison and experiment
 
-- objective: 1, 2
+- objective: 1, 2, 3
 - type: 3d
-- object: Pending jobs, Completed jobs, Workers, displayed with recognizable service, storage and host geometry
+- object: Request handler, Durable queue, Worker, shown as named components using shared recognizable hardware
 - render: anatomy-iso
-- fidelity: computed discrete event trace, quantities and outcome; scaled device geometry and playback timing; assumed finite workload, no benchmark or real network simulation
-- pattern: step manipulate predict
-- learner sees: before, event and after states for the chapter’s queue mechanism
-- animated: message translation and model-owned visible counts/values change along the causal trace; static stepping shows the committed event state
-- learner does: play or step, choose an input and policy, commit a prediction, run and compare
-- notice: A 202-style acceptance means the requested work already succeeded.
-- model: simulateMechanism in experiment-model.ts delegates topic-specific state machines to topic-models.ts when applicable
-- feedback: the experiment trace supplies the film, verdict, explanatory boundaries and displayed metrics
-- assumptions: Accepted is not completed; callers need status, error handling and bounded backlog. Inputs are clamped to 1–8; five-second beats are display time only.
+- fidelity: computed trace/counts/values; scaled isometric geometry; assumed workload and playback timing; no latency or throughput benchmark
+- pattern: step manipulate predict compare
+- learner sees: Synchronous reply: waits for the modeled jobs to finish. Asynchronous acceptance: confirms the modeled jobs were saved for later work. Completion status: a later report of the effect’s outcome.
+- animated: a model message travels between explicit component ports; arrival commits its owned state; refusals and timeouts do not become packet loss
+- learner does: play, pause, seek, step, compare the policies, change inputs, commit a prediction, run and reset
+- notice: An early successful acceptance does not prove the requested effect completed (A1).
+- model: simulateMechanism('communication', {amount, alternative}); amount 1–8, default 6; modes: Wait synchronously for all work / Persist work and acknowledge acceptance.
+- feedback: trace-derived outcome, explanation, visible state and metrics are shown only after the prediction
+- assumptions: A request, a durable pending-work boundary and one worker. Each job takes one invented tick. No cancellation, duplicate processing, crash/recovery or queue-capacity experiment is implemented here. Beat lengths are caption-dependent playback durations from paceFilm, never real system timing.
 - outcome: Asynchronous acceptance separates receiving a task from completing its effect.
-- accessibility: keyboard transport, transcript, explicit static steps, dynamic reduced motion, HTML state summary, theme tokens and readable text
-- tests: every allowed input has a selectable result, finite nonnegative quantities, deterministic seeks and known endpoints; additional misconception invariants
-- evidence: source/model implementation; independent review coverage and rendered checks are recorded separately in EXPANSION_QA.md, never inferred from this spec
-- built: `src/components/learn/AcademyChapter.tsx`, `src/components/learn/film/AcademyPractice.tsx`, `src/components/learn/film/Scene.tsx`, `src/lib/learn/experiment-model.ts`, `src/lib/learn/topic-models.ts`, `src/lib/learn/experiment-model.test.ts`
+- accessibility: keyboard controls, transcript, HTML state summary, static steps, reduced motion and theme-aware geometry
+- tests: finite-input invariants and misconception counterexamples; current report separates these from browser acceptance
+- evidence: source/model correspondence recorded in MISSION_COURSE_AUDIT.md; no independent rendered acceptance inferred
+- built: `src/components/learn/AcademyChapter.tsx`, `src/components/learn/film/AcademyPractice.tsx`, `src/components/learn/film/Scene.tsx`, `src/lib/learn/topic-models.ts`, `src/lib/learn/anatomy-refinement.test.ts`
 
 ## Tabs
 
-- Learn: term definition, prerequisite links, model film, takeaway and worked assumptions. Cases add the whole design and workload calculation.
-- Lab: changed quantity/policy, required prediction before result, computed trace and explanation.
-- Quiz: a changed-input scenario, shuffled correct position, hidden feedback until commitment and an open transfer reflection.
+- Learn: visual worked comparison, prerequisites and concise rule; deeper assumptions remain disclosed.
+- Lab: UI label **Explore**; commit a prediction, change an actual input/policy, run, inspect the trace and reset.
+- Quiz: UI label **Assess**; commit scenario answers before feedback; scores and revisit links reflect this attempt only; open transfer remains self-assessed.
 
 ## Explanation (14 questions)
 
-The authored question is “When should a request wait for work and when should it enqueue it?” The rule, misconception and boundary live in the compact blueprint. The executable storyboard shows the mechanism rather than replacing it with generic packet motion. Terms are defined before the film; prerequisites are linked. Technical depth is disclosed after the short film. The changed-input quiz requires applying assumptions instead of copying the takeaway. Cases require a defended read/write path, estimate, failure and tradeoff. These are teaching aids, not empirical proof of learning outcomes or comprehensive production training.
+1. **Problem:** A request starts work that takes longer than a screen should wait.
+2. **Why it matters:** Calling acceptance completion can falsely assure a user that work succeeded.
+3. **First attempt:** Keep the caller waiting for every job.
+4. **When it works:** That gives a completion answer when the delay is acceptable and the connection survives.
+5. **Failure:** Long work exceeds the caller’s waiting budget or interrupts the user flow.
+6. **Closer observation:** Separate reply semantics from worker completion ticks.
+7. **Mechanism:** Both modes process all jobs; asynchronous mode persists work before returning accepted.
+8. **Experiment:** Change job count 1–8 and whether the caller waits for completion.
+9. **Alternatives:** Wait for completion or return a durable work identity/status contract after acceptance.
+10. **Tradeoffs:** Early replies reduce waiting in that request but add later status, retry and recovery responsibilities.
+11. **Choose it when:** Choose early acceptance when the user can tolerate deferred completion with honest status.
+12. **Do not infer:** Do not return accepted for work that has not crossed the declared durable boundary.
+13. **In your own words:** Explain what a user safely knows immediately after acceptance.
+14. **Transfer:** Apply accepted-versus-completed states to a notification send or file conversion.
 
 ## Visual
 
-Shared isometric SVG renderer, genuine message endpoints and model-owned state labels. Quantities beyond the drawn mark budget keep their full numeric count and an abbreviation label. Refusal and delay are not labelled packet loss.
+A frozen frame must agree with trace state. Device anatomy identifies the state owner; small details are not protocol events. Counts remain exact even where marks are abbreviated. No depth, light or motion effect changes the model verdict.
 
 ## Practice
 
-Predict Backlog remains or Backlog drained under the selected policy. Run only after choosing. Explain which state changed and why. Recall later under a changed quantity; mixed reviews draw from prerequisite mechanisms. Optional device-local activity is separated into viewed, practiced and recall checked.
+Commit to a prediction, inspect the changed state, then answer: Explain what a user safely knows immediately after acceptance.
+Transfer: Apply accepted-versus-completed states to a notification send or file conversion.
+Assess recommendations come from missed committed scenarios, including registered companion mechanisms. They are deterministic guidance, not inferred mastery.
 
 ## Sources
 
@@ -96,4 +117,4 @@ accessed: Opened 2026-10-29; relevant material: Publisher confirms, consumer ack
 
 ## Evidence
 
-Implementation and bounded model tests are tracked in `docs/system-design/EXPANSION_QA.md`. This chapter remains implemented, not tested or verified: a full per-chapter independent review, physical-device check, screen-reader check, axe/Lighthouse and learner outcome study are not claimed.
+This author record was reconciled with the actual model/controls in the 2026-10-30 mission. Status remains implemented. Unit/model evidence and browser results belong in the mission audit/QA reports; a spec rewrite does not establish independent technical acceptance, physical-device accessibility or learner outcomes.

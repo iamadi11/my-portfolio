@@ -36,3 +36,11 @@ Shared anatomy parts and explicit port routes replace bespoke device paths. `pac
 `COMPANION_MODELS` in academy.ts adds tested comparisons and labs when a broad objective needs more than its primary model. Do not copy a chapter component. `anatomy-refinement.test.ts` checks published films, companions, portfolio tours, part mounts, routes and pacing together. Preserve source/model limitations; an SVG geometry invariant is not a rendered acceptance result.
 
 Owner-approved ceilings are 180,000 bytes first-load JS for `/`, 200,000 for course routes and 600,000 additional on demand. Compare measured compressed assets after a production build; do not increase a ceiling merely to hide a regression. The font remains the bundled Arimo variable font.
+
+## Mission refinements
+
+`ChapterTabs` exposes Learn / Explore / Assess, with query deep links and legacy lab/quiz aliases. `TabFromUrl` observes search params behind a small Suspense boundary so server lesson HTML remains available. Use `history.replaceState(null, ...)`: Next copies router state; passing its existing `__NA` state bypasses URL-hook synchronization. Chapter-keyed tabs prevent one chapter’s answers leaking into another.
+
+`Assessment.tsx` owns committed scored attempts and missed-question revisit links; `Question.tsx` owns committed open reasoning and explicitly manual self-review. Do not import the entire experiment engine merely to render an assessment. `DeferredAcademyLab` downloads it when Explore (or a companion disclosure) becomes visible, then retains it across tab changes. Browser-check first activation as well as cached reuse.
+
+Rich model pilots (load-balancing, partitioned logs, caching) may expose several orthogonal controls and inspectable event ledgers while using the same player and hardware. Register their bounded adapters in the model authority so tests, blueprint metadata and generic question generation reflect the actual mechanism. Never leave a corrected route’s blueprint pointing at the old related-sounding model.

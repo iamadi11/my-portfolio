@@ -1,0 +1,30 @@
+.lb-worked > .lf-main-controls {
+    margin-block: 18px;
+}
+.lb-worked button[aria-pressed='true'] {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+}
+.lb-ledger {
+    max-width: 100%;
+    overflow-x: auto;
+    margin-block: 16px;
+}
+.lb-ledger table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+    font-size: 16px;
+}
+.lb-ledger caption {
+    text-align: left;
+    padding-bottom: 12px;
+    color: var(--ink-2);
+}
+.lb-ledger th,
+.lb-ledger td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+}

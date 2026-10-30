@@ -89,7 +89,7 @@ export default function ClientServerQuiz(): React.JSX.Element {
                 &ldquo;Network error&rdquo; and press &ldquo;Pay&rdquo; again. List what may have happened on
                 the server each time, and what goes wrong if the app just repeats the request. Then say what
                 the app could do instead: first without new technology (hint: which method could find out what
-                happened?), then with one new header field. Try the cases in the Interactive Lab with{' '}
+                happened?), then with one new header field. Try the cases in the Explore with{' '}
                 <code>POST</code> and with <code>POST</code> plus a key.
             </p>
             <details className="ln-q">

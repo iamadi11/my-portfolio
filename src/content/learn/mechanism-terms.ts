@@ -2,6 +2,26 @@ import type { Mechanism } from '@/lib/learn/experiment-model';
 
 /** Short definitions beside the first use, not a prerequisite textbook. */
 export const MECHANISM_TERMS: Record<Mechanism, [string, string]> = {
+    tokenPurpose: [
+        'Token purpose',
+        'An OAuth access token grants scoped API access; an OIDC ID token reports authentication to its intended client. Recipients and validation rules differ.',
+    ],
+    xssContext: [
+        'Safe rendering context',
+        'Untrusted markup can be interpreted by an HTML sink. A plain-text sink in an ordinary element keeps that same input as text.',
+    ],
+    csrf: [
+        'CSRF defense',
+        'A session cookie alone does not prove a protected action was intended. A synchronizer token is checked against session state before a write.',
+    ],
+    partitionedLog: [
+        'Partitioned log',
+        'A retained topic orders records within each partition; classic consumer groups divide ownership and save independent next offsets.',
+    ],
+    loadBalance: [
+        'Load balancing',
+        'A routing policy chooses among application replicas using turns or observed connection load; capacity and health still constrain success.',
+    ],
     sqlJoin: [
         'Join',
         'Pairing rows from tables according to a predicate such as matching customer identifiers.',

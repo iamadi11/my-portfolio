@@ -1,0 +1,1982 @@
+{
+  "audit_date": "2026-10-30",
+  "baseline_commit": "37293fa",
+  "scope": "Working-tree source inventory on2026-10-30. Initial findings from37293fa retained with source repair dispositions. This is not119-chapter rendered or independent teaching acceptance.",
+  "chapter_count": 119,
+  "stage_count": 12,
+  "finite_mechanism_count": 90,
+  "distinct_primary_mechanisms": 81,
+  "review_defaults": {
+    "inventory": "source inspected",
+    "graph": "119 registered routes; backward edges and path prerequisite closure checked; course.mjs check passes without warnings after three legacy author-record reconciliations",
+    "finite_tests": "126tests across4files passed; behavioral bounds do not prove teaching completeness",
+    "primary_sources": "historical catalog retained; only four selected documents reopened in report",
+    "rendered_acceptance": "pending",
+    "independent_teaching_acceptance": "pending",
+    "single_binary_assessment": "one changed-input scenario does not cover every misconception; open transfer is self-assessed"
+  },
+  "source_urls": {
+    "rfc9113": "https://www.rfc-editor.org/rfc/rfc9113.html#section-9.1.1",
+    "rfc9110": "https://www.rfc-editor.org/rfc/rfc9110",
+    "mdn-url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Web_mechanics/What_is_a_URL",
+    "mdn-dns": "https://developer.mozilla.org/en-US/docs/Glossary/DNS",
+    "rfc9846": "https://www.rfc-editor.org/rfc/rfc9846",
+    "mdn-http-overview": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview",
+    "mdn-tcp-handshake": "https://developer.mozilla.org/en-US/docs/Glossary/TCP_handshake",
+    "mdn-rtt": "https://developer.mozilla.org/en-US/docs/Glossary/Round_Trip_Time",
+    "mdn-how-browsers-work": "https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work",
+    "rfc9111": "https://www.rfc-editor.org/rfc/rfc9111",
+    "mdn-crp": "https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path",
+    "navtiming-2": "https://w3c.github.io/navigation-timing/",
+    "mdn-nav-timing": "https://developer.mozilla.org/en-US/docs/Web/API/Performance_API/Navigation_timing",
+    "mdn-prt": "https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming",
+    "fetch": "https://fetch.spec.whatwg.org/",
+    "mdn-caching": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching",
+    "mdn-messages": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Messages",
+    "rfc6265": "https://www.rfc-editor.org/rfc/rfc6265",
+    "mdn-cookies": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies",
+    "pg-architecture": "https://www.postgresql.org/docs/current/tutorial-arch.html",
+    "rfc9112": "https://www.rfc-editor.org/rfc/rfc9112",
+    "mdn-sse": "https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events",
+    "mdn-websockets": "https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API",
+    "idempotency-key-draft": "https://github.com/ietf-wg-httpapi/idempotency",
+    "rfc791": "https://www.rfc-editor.org/rfc/rfc791",
+    "rfc2606": "https://www.rfc-editor.org/rfc/rfc2606",
+    "rfc4291": "https://www.rfc-editor.org/rfc/rfc4291",
+    "rfc5737": "https://www.rfc-editor.org/rfc/rfc5737",
+    "rfc9114": "https://www.rfc-editor.org/rfc/rfc9114",
+    "rfc9293": "https://www.rfc-editor.org/rfc/rfc9293",
+    "rfc6335": "https://www.rfc-editor.org/rfc/rfc6335",
+    "rfc1122": "https://www.rfc-editor.org/rfc/rfc1122",
+    "rfc8085": "https://www.rfc-editor.org/rfc/rfc8085",
+    "rfc768": "https://www.rfc-editor.org/rfc/rfc768",
+    "rfc1034": "https://www.rfc-editor.org/rfc/rfc1034",
+    "rfc8446": "https://www.rfc-editor.org/rfc/rfc8446",
+    "rfc9000": "https://www.rfc-editor.org/rfc/rfc9000",
+    "rfc9113_37": "https://www.rfc-editor.org/rfc/rfc9113",
+    "rfc1918": "https://www.rfc-editor.org/rfc/rfc1918",
+    "rfc3022": "https://www.rfc-editor.org/rfc/rfc3022",
+    "rfc1242": "https://www.rfc-editor.org/rfc/rfc1242",
+    "rfc5136": "https://www.rfc-editor.org/rfc/rfc5136",
+    "nist-percentile": "https://www.itl.nist.gov/div898/handbook/prc/section2/prc262.htm",
+    "tail-at-scale": "https://cacm.acm.org/research/the-tail-at-scale/",
+    "norvig-latency": "https://norvig.com/21-days.html",
+    "scott-latency": "https://raw.githubusercontent.com/colin-scott/interactive_latencies/master/interactive_latency.html",
+    "sre-nalsd": "https://sre.google/workbook/non-abstract-design/",
+    "little-1961": "https://pubsonline.informs.org/doi/pdf/10.1287/opre.9.3.383",
+    "sigman-littles-law": "https://www.columbia.edu/~ks20/stochastic-I/stochastic-I-LL.pdf",
+    "http-semantics": "https://www.rfc-editor.org/rfc/rfc9110.html#section-9.3.4",
+    "rest-constraints": "https://ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm",
+    "grpc-core": "https://grpc.io/docs/what-is-grpc/core-concepts/",
+    "grpc-deadlines": "https://grpc.io/docs/guides/deadlines/",
+    "graphql-query": "https://graphql.org/learn/queries/",
+    "graphql-execution": "https://spec.graphql.org/October2021/#sec-Executing-Selection-Sets",
+    "sse": "https://html.spec.whatwg.org/multipage/server-sent-events.html",
+    "websocket": "https://www.rfc-editor.org/rfc/rfc6455.html#section-1.2",
+    "stripe": "https://docs.stripe.com/api/idempotent_requests",
+    "pagination": "https://google.aip.dev/158",
+    "protobuf": "https://protobuf.dev/programming-guides/proto3/",
+    "tokens": "https://www.rfc-editor.org/rfc/rfc3290",
+    "pg-model": "https://www.postgresql.org/docs/18/ddl-constraints.html",
+    "mongo": "https://www.mongodb.com/docs/manual/data-modeling/",
+    "pg-join": "https://www.postgresql.org/docs/18/tutorial-join.html",
+    "pg-sets": "https://www.postgresql.org/docs/18/queries-union.html",
+    "pg-storage": "https://www.postgresql.org/docs/18/storage-page-layout.html",
+    "pg-wal": "https://www.postgresql.org/docs/18/wal-intro.html",
+    "rocks-layout": "https://github.com/meta/rocksdb/wiki/RocksDB-Overview",
+    "pg-index": "https://www.postgresql.org/docs/18/indexes-types.html",
+    "pg-explain": "https://www.postgresql.org/docs/18/using-explain.html",
+    "pg-tx": "https://www.postgresql.org/docs/18/tutorial-transactions.html",
+    "pg-isolation": "https://www.postgresql.org/docs/18/transaction-iso.html",
+    "pg-mvcc": "https://www.postgresql.org/docs/18/mvcc-intro.html",
+    "pg-bloom": "https://www.postgresql.org/docs/18/bloom.html",
+    "pg-search": "https://www.postgresql.org/docs/18/textsearch-indexes.html",
+    "postgis": "https://postgis.net/docs/using_postgis_dbmanagement.html",
+    "bigquery": "https://cloud.google.com/bigquery/docs/storage_overview",
+    "s3": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html",
+    "sre-overload": "https://sre.google/sre-book/handling-overload/",
+    "sre-lb": "https://sre.google/sre-book/load-balancing-datacenter/",
+    "nginx-lb": "https://nginx.org/en/docs/http/load_balancing.html",
+    "nginx-l4": "https://docs.nginx.com/nginx/admin-guide/load-balancer/tcp-udp-load-balancer/",
+    "k8s-probe": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+    "k8s-deploy": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/",
+    "k8s-scale": "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/",
+    "http-cache": "https://www.rfc-editor.org/rfc/rfc9111.html",
+    "redis-evict": "https://redis.io/docs/latest/develop/reference/eviction/",
+    "cache-aside": "https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside",
+    "rabbit": "https://www.rabbitmq.com/docs/confirms",
+    "kafka": "https://kafka.apache.org/41/design/design/",
+    "rabbit-fanout": "https://www.rabbitmq.com/tutorials/tutorial-three-javascript",
+    "kafka-design-41": "https://kafka.apache.org/41/design/design/",
+    "beam": "https://beam.apache.org/documentation/programming-guide/#watermarks-and-late-data",
+    "mapreduce": "https://research.google/pubs/mapreduce-simplified-data-processing-on-large-clusters/",
+    "outbox": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html",
+    "pg-logical": "https://www.postgresql.org/docs/18/logical-replication.html",
+    "retry": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/",
+    "pg-replication": "https://www.postgresql.org/docs/18/warm-standby.html",
+    "dynamo": "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf",
+    "crdt": "https://arxiv.org/html/1805.06358",
+    "cap": "https://www.comp.nus.edu.sg/~gilbert/pubs/BrewersConjecture-SigAct.pdf",
+    "consistency-levels": "https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels",
+    "pacelc": "https://www.cs.umd.edu/~abadi/papers/abadi-pacelc.pdf",
+    "pg-partition": "https://www.postgresql.org/docs/18/ddl-partitioning.html",
+    "pg-prepare": "https://www.postgresql.org/docs/18/sql-prepare-transaction.html",
+    "clocks": "https://www.microsoft.com/en-us/research/publication/time-clocks-ordering-events-distributed-system/",
+    "uuid": "https://www.rfc-editor.org/rfc/rfc9562.html",
+    "raft": "https://raft.github.io/raft.pdf",
+    "sre-cascade": "https://sre.google/sre-book/addressing-cascading-failures/",
+    "sre-slo": "https://sre.google/sre-book/service-level-objectives/",
+    "sre-monitor": "https://sre.google/sre-book/monitoring-distributed-systems/",
+    "trace": "https://opentelemetry.io/docs/concepts/signals/traces/",
+    "alerts": "https://sre.google/workbook/alerting-on-slos/",
+    "sre-incident": "https://sre.google/sre-book/managing-incidents/",
+    "canary": "https://sre.google/workbook/canarying-releases/",
+    "authn": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html",
+    "authz": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+    "secrets": "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html",
+    "security-oidc": "https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation",
+    "security-oauth": "https://www.rfc-editor.org/rfc/rfc6749.html#section-1.4",
+    "security-accessJwt": "https://www.rfc-editor.org/rfc/rfc9068.html#section-4",
+    "injection": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+    "security-xss": "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html",
+    "security-csrf": "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html",
+    "privacy": "https://www.w3.org/TR/privacy-principles/",
+    "boundaries": "https://martinfowler.com/bliki/MonolithFirst.html",
+    "cost": "https://docs.aws.amazon.com/wellarchitected/latest/cost-optimization-pillar/welcome.html",
+    "adr": "https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions",
+    "robots": "https://www.rfc-editor.org/rfc/rfc9309.html"
+  },
+  "models": {
+    "embedding": {
+      "label": "Line items read with one order",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Separate item lookups",
+        "Embed order-owned items"
+      ],
+      "predictions": [
+        "Several record fetches",
+        "One record fetch"
+      ],
+      "roles": [
+        "Order record",
+        "Item records",
+        "Fetched records"
+      ]
+    },
+    "sqlJoin": {
+      "label": "Orders belonging to customer 1",
+      "min": 1,
+      "max": 6,
+      "initial": 3,
+      "modes": [
+        "INNER JOIN customers to orders",
+        "LEFT JOIN customers to orders"
+      ],
+      "predictions": [
+        "Only matching customers returned",
+        "Unmatched customer retained with NULL"
+      ],
+      "roles": [
+        "Customers table",
+        "Orders table",
+        "Query result"
+      ]
+    },
+    "sqlSets": {
+      "label": "Copies of row 1 in first query",
+      "min": 1,
+      "max": 6,
+      "initial": 3,
+      "modes": [
+        "UNION ALL",
+        "UNION"
+      ],
+      "predictions": [
+        "Duplicate rows retained",
+        "Duplicate rows removed"
+      ],
+      "roles": [
+        "Query A result",
+        "Query B result",
+        "Combined result"
+      ]
+    },
+    "storageLayout": {
+      "label": "Key to update",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "B-tree leaf update",
+        "LSM buffer and flush"
+      ],
+      "predictions": [
+        "Leaf page updated",
+        "Sorted run written"
+      ],
+      "roles": [
+        "WAL",
+        "Mutable structure",
+        "Durable pages / runs"
+      ]
+    },
+    "httpValidation": {
+      "label": "Origin representation version",
+      "min": 2,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Stored validator still matches",
+        "Stored validator differs"
+      ],
+      "predictions": [
+        "304 reuses stored body",
+        "200 replaces stored body"
+      ],
+      "roles": [
+        "Browser cache",
+        "Origin",
+        "Rendered representation"
+      ]
+    },
+    "twoPhase": {
+      "label": "Units reserved by participant A",
+      "min": 1,
+      "max": 8,
+      "initial": 4,
+      "modes": [
+        "Coordinator unavailable after prepare",
+        "Coordinator recovers durable commit decision"
+      ],
+      "predictions": [
+        "Prepared participants remain waiting",
+        "Both participants commit"
+      ],
+      "roles": [
+        "Coordinator log",
+        "Participant A",
+        "Participant B"
+      ]
+    },
+    "uuidLayout": {
+      "label": "Clock rollback between generations (ms)",
+      "min": 1,
+      "max": 8,
+      "initial": 3,
+      "modes": [
+        "UUID version 4 layout",
+        "UUID version 7 layout"
+      ],
+      "predictions": [
+        "No timestamp prefix",
+        "Timestamp prefix visible"
+      ],
+      "roles": [
+        "Generator",
+        "First identifier",
+        "Later identifier"
+      ]
+    },
+    "cacheWrite": {
+      "label": "New profile version",
+      "min": 2,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Cache-aside without invalidation",
+        "Write through database then cache"
+      ],
+      "predictions": [
+        "Stale cached version returned",
+        "Updated cached version returned"
+      ],
+      "roles": [
+        "Application",
+        "Database",
+        "Cache"
+      ]
+    },
+    "consistencyHistory": {
+      "label": "Version acknowledged by writer",
+      "min": 2,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Read lagging replica",
+        "Coordinate read with completed write"
+      ],
+      "predictions": [
+        "History violates linearizability",
+        "History respects completed write"
+      ],
+      "roles": [
+        "Writer",
+        "Replica group",
+        "Later reader"
+      ]
+    },
+    "foreignKey": {
+      "label": "Customer id on new order",
+      "min": 1,
+      "max": 8,
+      "initial": 5,
+      "modes": [
+        "No reference constraint",
+        "Enforce customer foreign key"
+      ],
+      "predictions": [
+        "Order accepted",
+        "Order rejected"
+      ],
+      "roles": [
+        "Customers: 1, 2, 3",
+        "New order",
+        "Validation"
+      ]
+    },
+    "planner": {
+      "label": "Matching rows out of 8",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Force index access",
+        "Compare illustrative costs"
+      ],
+      "predictions": [
+        "Index path selected",
+        "Sequential path selected"
+      ],
+      "roles": [
+        "Planner",
+        "Index + table",
+        "Sequential scan"
+      ]
+    },
+    "mvcc": {
+      "label": "New uncommitted value",
+      "min": 2,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Dirty read",
+        "Read committed version"
+      ],
+      "predictions": [
+        "Uncommitted value read",
+        "Committed version read"
+      ],
+      "roles": [
+        "Writer",
+        "Version store",
+        "Reader"
+      ]
+    },
+    "upload": {
+      "label": "Chunks needed for object",
+      "min": 2,
+      "max": 8,
+      "initial": 4,
+      "modes": [
+        "Publish metadata before upload",
+        "Publish after completed upload"
+      ],
+      "predictions": [
+        "Dangling metadata exposed",
+        "Incomplete upload hidden"
+      ],
+      "roles": [
+        "Upload session",
+        "Object bytes",
+        "Published metadata"
+      ]
+    },
+    "storageChoice": {
+      "label": "Related rows in atomic update",
+      "min": 2,
+      "max": 8,
+      "initial": 4,
+      "modes": [
+        "Choose object bytes only",
+        "Choose transactional row store"
+      ],
+      "predictions": [
+        "Required invariant unsupported",
+        "Required invariant supported"
+      ],
+      "roles": [
+        "Atomic row requirement",
+        "Selected storage",
+        "Decision record"
+      ]
+    },
+    "session": {
+      "label": "Items in user cart",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Keep cart only in worker A",
+        "Use shared durable cart"
+      ],
+      "predictions": [
+        "Next worker loses cart",
+        "Next worker reads cart"
+      ],
+      "roles": [
+        "Worker A",
+        "Shared cart",
+        "Worker B"
+      ]
+    },
+    "proxy": {
+      "label": "Public requests",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Expose each private service",
+        "Route through public proxy"
+      ],
+      "predictions": [
+        "Private services directly exposed",
+        "Private services behind boundary"
+      ],
+      "roles": [
+        "Public proxy",
+        "Private service",
+        "Ingress decisions"
+      ]
+    },
+    "replacement": {
+      "label": "Jobs after worker failure",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "No desired-state controller",
+        "Replace failed worker"
+      ],
+      "predictions": [
+        "Capacity stays reduced",
+        "Capacity restored"
+      ],
+      "roles": [
+        "Controller",
+        "Live workers",
+        "Pending work"
+      ]
+    },
+    "scaleLag": {
+      "label": "Jobs arriving each window",
+      "min": 4,
+      "max": 6,
+      "initial": 4,
+      "modes": [
+        "Keep one worker",
+        "Add worker after one window"
+      ],
+      "predictions": [
+        "Backlog persists",
+        "Backlog recovers"
+      ],
+      "roles": [
+        "Scaling controller",
+        "Workers",
+        "Backlog"
+      ]
+    },
+    "coalesce": {
+      "label": "Concurrent misses for same key",
+      "min": 2,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Every caller fetches origin",
+        "Share one in-flight fetch"
+      ],
+      "predictions": [
+        "One origin fetch",
+        "Several origin fetches"
+      ],
+      "roles": [
+        "In-flight key",
+        "Origin fetches",
+        "Waiting callers"
+      ]
+    },
+    "redelivery": {
+      "label": "Replacement work requests after a crash",
+      "min": 1,
+      "max": 4,
+      "initial": 3,
+      "modes": [
+        "Acknowledge before processing",
+        "Acknowledge after durable effect"
+      ],
+      "predictions": [
+        "Work lost after early ack",
+        "Work retained for redelivery"
+      ],
+      "roles": [
+        "Broker",
+        "Worker",
+        "Durable effects"
+      ]
+    },
+    "flow": {
+      "label": "Produced jobs in one window",
+      "min": 4,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Unbounded admission",
+        "Admit only available capacity"
+      ],
+      "predictions": [
+        "Backlog grows",
+        "Excess work stays upstream"
+      ],
+      "roles": [
+        "Admission credits",
+        "Completed work",
+        "Upstream waiting"
+      ]
+    },
+    "offsets": {
+      "label": "Entries appended to log",
+      "min": 2,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Consumers share one cursor",
+        "Consumers keep own offsets"
+      ],
+      "predictions": [
+        "Reader B skips entries",
+        "Reader B replays all entries"
+      ],
+      "roles": [
+        "Append-only log",
+        "Reader A",
+        "Reader B"
+      ]
+    },
+    "mapReduce": {
+      "label": "Input numbers, each worth 1",
+      "min": 2,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "One worker counts everything",
+        "Split, count, reduce"
+      ],
+      "predictions": [
+        "One map task",
+        "Parallel map tasks"
+      ],
+      "roles": [
+        "Map tasks",
+        "Partial counts",
+        "Reduced total"
+      ]
+    },
+    "outbox": {
+      "label": "Committed business changes",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Database then direct publish; crash",
+        "Write business row + outbox atomically"
+      ],
+      "predictions": [
+        "Event intent lost",
+        "Event intent recoverable"
+      ],
+      "roles": [
+        "Database transaction",
+        "Outbox rows",
+        "Broker delivery"
+      ]
+    },
+    "uncertain": {
+      "label": "Wait deadline (ticks)",
+      "min": 1,
+      "max": 8,
+      "initial": 3,
+      "modes": [
+        "Assume timeout means no commit",
+        "Keep outcome unknown and reconcile"
+      ],
+      "predictions": [
+        "Unsafe retry assumption",
+        "Uncertainty preserved"
+      ],
+      "roles": [
+        "Caller deadline",
+        "Remote effect",
+        "Reconciliation"
+      ]
+    },
+    "readQuorum": {
+      "label": "Replies requested from 3 replicas",
+      "min": 2,
+      "max": 3,
+      "initial": 2,
+      "modes": [
+        "Return first stale reply",
+        "Read versions from quorum"
+      ],
+      "predictions": [
+        "Stale value returned",
+        "Latest model version returned"
+      ],
+      "roles": [
+        "Replica A: v2",
+        "Replica B: v2",
+        "Replica C: v1"
+      ]
+    },
+    "saga": {
+      "label": "Units reserved for an order",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "No compensation after payment failure",
+        "Release reservation on failure"
+      ],
+      "predictions": [
+        "Reservation leaked",
+        "Reservation compensated"
+      ],
+      "roles": [
+        "Inventory reservation",
+        "Payment service",
+        "Compensation"
+      ]
+    },
+    "election": {
+      "label": "Votes reachable in a 3-node term",
+      "min": 1,
+      "max": 3,
+      "initial": 1,
+      "modes": [
+        "Self-elect without majority",
+        "Require majority in this term"
+      ],
+      "predictions": [
+        "Unsafe self-election",
+        "Single-majority rule respected"
+      ],
+      "roles": [
+        "Candidate A",
+        "Voters",
+        "Candidate B"
+      ]
+    },
+    "gossip": {
+      "label": "Gossip rounds",
+      "min": 2,
+      "max": 5,
+      "initial": 2,
+      "modes": [
+        "Repeat contact with same peer",
+        "Contact a new informed peer each round"
+      ],
+      "predictions": [
+        "Membership reaches only two nodes",
+        "Membership reaches all nodes"
+      ],
+      "roles": [
+        "Node A",
+        "Node B",
+        "Node C"
+      ]
+    },
+    "bulkhead": {
+      "label": "Calls to failing dependency",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Share pool of 4 slots",
+        "Isolate dependency to 2 slots"
+      ],
+      "predictions": [
+        "Healthy work starved",
+        "Healthy capacity protected"
+      ],
+      "roles": [
+        "Dependency pool",
+        "Shared capacity",
+        "Healthy work"
+      ]
+    },
+    "retry": {
+      "label": "Callers with uncertain results",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Retry twice immediately",
+        "Bound to one delayed retry"
+      ],
+      "predictions": [
+        "Amplified immediate attempts",
+        "Bounded delayed attempts"
+      ],
+      "roles": [
+        "Retry policy",
+        "Downstream attempts",
+        "Callers"
+      ]
+    },
+    "canary": {
+      "label": "Request observations before rollback (at most one/user)",
+      "min": 1,
+      "max": 4,
+      "initial": 2,
+      "modes": [
+        "Release to all 8 users",
+        "Canary to 2 of 8 users"
+      ],
+      "predictions": [
+        "All users exposed",
+        "Canary limits exposure"
+      ],
+      "roles": [
+        "Release router",
+        "New version",
+        "Old version"
+      ]
+    },
+    "migration": {
+      "label": "Old application instances",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Drop old field immediately",
+        "Expand, backfill, switch, contract"
+      ],
+      "predictions": [
+        "Old readers break",
+        "Both versions supported"
+      ],
+      "roles": [
+        "Old readers",
+        "Schema versions",
+        "New readers"
+      ]
+    },
+    "recovery": {
+      "label": "Committed version in region A",
+      "min": 3,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Fail over before replication catches up",
+        "Replicate before region failure"
+      ],
+      "predictions": [
+        "Recent writes missing",
+        "Model writes retained"
+      ],
+      "roles": [
+        "Region A",
+        "Region B",
+        "Recovery read"
+      ]
+    },
+    "injection": {
+      "label": "Workers removed out of 3",
+      "min": 1,
+      "max": 2,
+      "initial": 1,
+      "modes": [
+        "No recovery automation",
+        "Restore desired count after observation"
+      ],
+      "predictions": [
+        "Reduced service capacity",
+        "Service capacity restored"
+      ],
+      "roles": [
+        "Fault injector",
+        "Healthy workers",
+        "Recovery controller"
+      ]
+    },
+    "sql": {
+      "label": "Matching legitimate rows",
+      "min": 1,
+      "max": 8,
+      "initial": 3,
+      "modes": [
+        "Concatenate untrusted SQL",
+        "Bind text as one parameter"
+      ],
+      "predictions": [
+        "Query structure changed",
+        "Input stays data"
+      ],
+      "roles": [
+        "Query parser",
+        "Bound data",
+        "Rows exposed"
+      ]
+    },
+    "boundaries": {
+      "label": "Calls across a feature path",
+      "min": 2,
+      "max": 8,
+      "initial": 4,
+      "modes": [
+        "Deploy each step separately",
+        "Keep modules within one deployment"
+      ],
+      "predictions": [
+        "Network boundaries multiplied",
+        "Local module boundaries"
+      ],
+      "roles": [
+        "Feature entry",
+        "Module boundaries",
+        "Network hops"
+      ]
+    },
+    "communication": {
+      "label": "Background jobs required",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Wait synchronously for all work",
+        "Persist work and acknowledge acceptance"
+      ],
+      "predictions": [
+        "Reply waits for completion",
+        "Reply means accepted only"
+      ],
+      "roles": [
+        "Request handler",
+        "Durable queue",
+        "Worker"
+      ]
+    },
+    "sharedQuota": {
+      "label": "Requests per server (two servers)",
+      "min": 2,
+      "max": 6,
+      "initial": 3,
+      "modes": [
+        "Each server grants bucket of 3",
+        "Share one bucket of 3"
+      ],
+      "predictions": [
+        "Global allowance exceeded",
+        "Global allowance preserved"
+      ],
+      "roles": [
+        "Server A",
+        "Shared quota",
+        "Server B"
+      ]
+    },
+    "feed": {
+      "label": "Followers of one author",
+      "min": 2,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Fan-out on write",
+        "Assemble on one reader request"
+      ],
+      "predictions": [
+        "Publish pays copying cost",
+        "Read pays assembly cost"
+      ],
+      "roles": [
+        "Post store",
+        "Feed copies",
+        "Reader"
+      ]
+    },
+    "chat": {
+      "label": "Messages accepted while recipient offline",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Call accepted messages read",
+        "Track accepted, delivered, read separately"
+      ],
+      "predictions": [
+        "Receipt overstated",
+        "Receipt remains accepted"
+      ],
+      "roles": [
+        "Durable chat log",
+        "Offline recipient",
+        "Receipt state"
+      ]
+    },
+    "crawler": {
+      "label": "URLs queued for the same host",
+      "min": 2,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Fetch all concurrently",
+        "Allow one per-host slot"
+      ],
+      "predictions": [
+        "Host overloaded",
+        "Per-host politeness preserved"
+      ],
+      "roles": [
+        "URL frontier",
+        "Host slots",
+        "Deferred URLs"
+      ]
+    },
+    "prefix": {
+      "label": "Prefix characters of “cart”",
+      "min": 1,
+      "max": 4,
+      "initial": 2,
+      "modes": [
+        "Scan all suggestion strings",
+        "Retrieve prefix posting list"
+      ],
+      "predictions": [
+        "All strings inspected",
+        "Prefix candidates narrowed"
+      ],
+      "roles": [
+        "Prefix lookup",
+        "Candidate suggestions",
+        "Ranked results"
+      ]
+    },
+    "inverted": {
+      "label": "Term to search (1=red, 2=blue, 3=green)",
+      "min": 1,
+      "max": 3,
+      "initial": 1,
+      "modes": [
+        "Scan every document",
+        "Read term posting list"
+      ],
+      "predictions": [
+        "All documents inspected",
+        "Posting list retrieved"
+      ],
+      "roles": [
+        "Term dictionary",
+        "Document ids",
+        "Matching documents"
+      ]
+    },
+    "fileVersions": {
+      "label": "Edits on device A since base version",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Overwrite with last arrival",
+        "Keep both divergent versions"
+      ],
+      "predictions": [
+        "Concurrent edit overwritten",
+        "Conflict preserved for resolution"
+      ],
+      "roles": [
+        "Device A branch",
+        "Device B branch",
+        "Version metadata"
+      ]
+    },
+    "segments": {
+      "label": "Viewers of the same segment",
+      "min": 2,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Fetch every copy from origin",
+        "Reuse versioned segment at edge"
+      ],
+      "predictions": [
+        "Origin serves every viewer",
+        "Edge reuses segment"
+      ],
+      "roles": [
+        "Media origin",
+        "Edge segment cache",
+        "Viewers"
+      ]
+    },
+    "consensusLog": {
+      "label": "Reachable replicas, including leader",
+      "min": 1,
+      "max": 3,
+      "initial": 2,
+      "modes": [
+        "Acknowledge immediately after local append",
+        "Wait for current-term majority commit"
+      ],
+      "predictions": [
+        "Acknowledgement before evidence",
+        "Commit evidence respected"
+      ],
+      "roles": [
+        "Leader log",
+        "Follower B log",
+        "Follower C log"
+      ]
+    },
+    "partitionChoice": {
+      "label": "Version written on majority side",
+      "min": 3,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Isolated replica serves its old copy",
+        "Require majority for this read"
+      ],
+      "predictions": [
+        "Isolated read returns old value",
+        "Isolated read unavailable"
+      ],
+      "roles": [
+        "Majority side",
+        "Isolated replica",
+        "Read result"
+      ]
+    },
+    "architecture": {
+      "label": "Checkout requests in one window",
+      "min": 4,
+      "max": 6,
+      "initial": 6,
+      "modes": [
+        "One worker; retry external effect blindly",
+        "Two workers + durable operation key"
+      ],
+      "predictions": [
+        "Backlog and duplicate risk",
+        "Capacity and effect bounded"
+      ],
+      "roles": [
+        "Admission + workers",
+        "Order + operation log",
+        "External provider"
+      ]
+    },
+    "tokenPurpose": {
+      "label": "Token case: 1 valid, 2 wrong audience, 3 scope/nonce mismatch, 4 wrong token kind",
+      "min": 1,
+      "max": 4,
+      "initial": 2,
+      "modes": [
+        "API validates access token",
+        "Client validates OIDC ID token"
+      ],
+      "predictions": [
+        "Token rejected for this purpose",
+        "Token accepted for this purpose"
+      ],
+      "roles": [
+        "Trusted issuer",
+        "Purpose-specific validator",
+        "Validated result"
+      ]
+    },
+    "xssContext": {
+      "label": "Untrusted comment fragments",
+      "min": 1,
+      "max": 8,
+      "initial": 3,
+      "modes": [
+        "Insert untrusted HTML without sanitization",
+        "Write plain text to ordinary element"
+      ],
+      "predictions": [
+        "Untrusted markup interpreted",
+        "Untrusted content stays text"
+      ],
+      "roles": [
+        "Untrusted comments",
+        "Rendering sink",
+        "Browser content"
+      ]
+    },
+    "csrf": {
+      "label": "POST case: 1 valid token, 2 missing token, 3 wrong token, 4 no session cookie",
+      "min": 1,
+      "max": 4,
+      "initial": 2,
+      "modes": [
+        "Trust session cookie alone",
+        "Check session and synchronizer token"
+      ],
+      "predictions": [
+        "State unchanged",
+        "State changed"
+      ],
+      "roles": [
+        "Browser request",
+        "Server request checks",
+        "Account settings"
+      ]
+    },
+    "partitionedLog": {
+      "label": "Records per partition",
+      "min": 1,
+      "max": 4,
+      "initial": 2,
+      "modes": [
+        "Crash before committing offset",
+        "Crash after committing offset"
+      ],
+      "predictions": [
+        "Group A repeats an already processed record",
+        "Group A does not repeat a processed record"
+      ],
+      "roles": [
+        "Topic partitions",
+        "Consumer group A",
+        "Consumer group B"
+      ]
+    },
+    "loadBalance": {
+      "label": "Requests arriving",
+      "min": 1,
+      "max": 12,
+      "initial": 9,
+      "modes": [
+        "Round robin",
+        "Least active connections"
+      ],
+      "predictions": [
+        "All requests accepted",
+        "At least one request rejected or failed"
+      ],
+      "roles": [
+        "Server A",
+        "Server B",
+        "Server C"
+      ]
+    },
+    "dedup": {
+      "label": "Delivery attempts",
+      "min": 1,
+      "max": 8,
+      "initial": 4,
+      "modes": [
+        "No operation key",
+        "Reuse one durable key"
+      ],
+      "predictions": [
+        "One effect",
+        "Repeated effects"
+      ],
+      "roles": [
+        "Operation keys",
+        "Saved effects",
+        "Reply"
+      ]
+    },
+    "pagination": {
+      "label": "Previously returned row id",
+      "min": 2,
+      "max": 7,
+      "initial": 4,
+      "modes": [
+        "Offset after deletion",
+        "Continue after last key"
+      ],
+      "predictions": [
+        "One row skipped",
+        "No row skipped"
+      ],
+      "roles": [
+        "Ordered rows",
+        "Next page",
+        "Last key"
+      ]
+    },
+    "version": {
+      "label": "Proposed new field number",
+      "min": 2,
+      "max": 8,
+      "initial": 4,
+      "modes": [
+        "Add a new field",
+        "Reuse old field 1"
+      ],
+      "predictions": [
+        "Old meaning preserved",
+        "Old meaning overwritten"
+      ],
+      "roles": [
+        "New schema",
+        "Old reader",
+        "Field meanings"
+      ]
+    },
+    "bucket": {
+      "label": "Requests in this burst",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "One burst",
+        "One refill between requests"
+      ],
+      "predictions": [
+        "All admitted",
+        "Some rejected"
+      ],
+      "roles": [
+        "Available tokens",
+        "Admitted requests",
+        "Rejected requests"
+      ]
+    },
+    "index": {
+      "label": "Sorted records to search",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Sequential scan",
+        "Binary search proxy"
+      ],
+      "predictions": [
+        "All rows inspected",
+        "Candidates narrowed"
+      ],
+      "roles": [
+        "Search steps",
+        "Candidate records",
+        "Matching record"
+      ]
+    },
+    "transaction": {
+      "label": "Starting balance in each account",
+      "min": 3,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Separate writes; crash midway",
+        "Atomic group; crash midway"
+      ],
+      "predictions": [
+        "Total preserved",
+        "Partial transfer"
+      ],
+      "roles": [
+        "Account A",
+        "Account B",
+        "Transfer log"
+      ]
+    },
+    "isolation": {
+      "label": "Starting counter value",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Unprotected read-modify-write",
+        "Serialize both increments"
+      ],
+      "predictions": [
+        "One increment lost",
+        "Both increments kept"
+      ],
+      "roles": [
+        "Writer A",
+        "Writer B",
+        "Stored counter"
+      ]
+    },
+    "log": {
+      "label": "Committed log entries",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Crash before page update",
+        "Replay the durable log"
+      ],
+      "predictions": [
+        "Page behind log",
+        "Page recovered"
+      ],
+      "roles": [
+        "Durable log",
+        "Data page",
+        "Recovery"
+      ]
+    },
+    "bloom": {
+      "label": "Key to look up",
+      "min": 1,
+      "max": 8,
+      "initial": 7,
+      "modes": [
+        "Check filter first",
+        "Read authoritative set directly"
+      ],
+      "predictions": [
+        "Origin lookup required",
+        "Origin lookup skipped"
+      ],
+      "roles": [
+        "Bit filter",
+        "Authoritative set",
+        "Membership result"
+      ]
+    },
+    "queue": {
+      "label": "Jobs arriving in one window",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "One worker; 3 jobs per window",
+        "Two workers; 6 jobs per window"
+      ],
+      "predictions": [
+        "Backlog remains",
+        "Backlog drained"
+      ],
+      "roles": [
+        "Pending jobs",
+        "Completed jobs",
+        "Workers"
+      ]
+    },
+    "cache": {
+      "label": "Age of cached copy (ticks)",
+      "min": 0,
+      "max": 8,
+      "initial": 2,
+      "modes": [
+        "Reuse if policy-fresh",
+        "Invalidate before reading"
+      ],
+      "predictions": [
+        "Older copy returned",
+        "Current copy returned"
+      ],
+      "roles": [
+        "Cached version",
+        "Origin version",
+        "Returned version"
+      ]
+    },
+    "eviction": {
+      "label": "New key number",
+      "min": 4,
+      "max": 8,
+      "initial": 4,
+      "modes": [
+        "Exact LRU cache",
+        "Keep every key"
+      ],
+      "predictions": [
+        "Bounded cache",
+        "Memory limit exceeded"
+      ],
+      "roles": [
+        "Cache slots",
+        "Origin store",
+        "New key"
+      ]
+    },
+    "fanout": {
+      "label": "Independent subscribers",
+      "min": 2,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Deliver to one subscriber only",
+        "Deliver to every subscriber"
+      ],
+      "predictions": [
+        "Some subscribers missed",
+        "Every subscriber received"
+      ],
+      "roles": [
+        "Event publisher",
+        "Delivery copies",
+        "Subscriber receipts"
+      ]
+    },
+    "replication": {
+      "label": "Leader version",
+      "min": 3,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Follower trails by 2 versions",
+        "Wait for follower to catch up"
+      ],
+      "predictions": [
+        "Older replica read",
+        "Current replica read"
+      ],
+      "roles": [
+        "Leader",
+        "Follower",
+        "Read result"
+      ]
+    },
+    "quorum": {
+      "label": "Reachable voters out of 3",
+      "min": 1,
+      "max": 3,
+      "initial": 3,
+      "modes": [
+        "Use reachable voters",
+        "Partition leaves only one reachable"
+      ],
+      "predictions": [
+        "Majority available",
+        "Majority unavailable"
+      ],
+      "roles": [
+        "Voter A",
+        "Voter B",
+        "Voter C"
+      ]
+    },
+    "merge": {
+      "label": "Replica A increments",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Add duplicated component totals",
+        "Merge components with max"
+      ],
+      "predictions": [
+        "Duplicate counted",
+        "Idempotent merge"
+      ],
+      "roles": [
+        "Replica A",
+        "Replica B",
+        "Merged counter"
+      ]
+    },
+    "partition": {
+      "label": "Keys or requests to route",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Even modulo placement",
+        "Every request hits one hot key"
+      ],
+      "predictions": [
+        "Load within per-shard capacity",
+        "Hot shard"
+      ],
+      "roles": [
+        "Shard A",
+        "Shard B",
+        "Shard C"
+      ]
+    },
+    "hashring": {
+      "label": "Keys in the teaching ring",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Original 3 tokens",
+        "Add token 50"
+      ],
+      "predictions": [
+        "No ownership changes",
+        "Only a subset moves"
+      ],
+      "roles": [
+        "Token 33",
+        "Token 66",
+        "Token 99"
+      ]
+    },
+    "clock": {
+      "label": "Sender logical time",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Order by a skewed wall clock",
+        "Apply Lamport receive rule"
+      ],
+      "predictions": [
+        "Wall-clock order ambiguous",
+        "Causal timestamp advanced"
+      ],
+      "roles": [
+        "Sender clock",
+        "Receiver clock",
+        "Observation"
+      ]
+    },
+    "lease": {
+      "label": "Incoming fencing token",
+      "min": 1,
+      "max": 8,
+      "initial": 2,
+      "modes": [
+        "Accept without token check",
+        "Reject tokens older than 3"
+      ],
+      "predictions": [
+        "Write accepted",
+        "Stale write rejected"
+      ],
+      "roles": [
+        "Protected resource",
+        "Latest token",
+        "Delayed write"
+      ]
+    },
+    "budget": {
+      "label": "Bad requests out of 100",
+      "min": 0,
+      "max": 8,
+      "initial": 4,
+      "modes": [
+        "95% objective",
+        "99% objective"
+      ],
+      "predictions": [
+        "Within error budget",
+        "Budget exceeded"
+      ],
+      "roles": [
+        "Allowed failures",
+        "Observed failures",
+        "Remaining budget"
+      ]
+    },
+    "gate": {
+      "label": "Requests for another user’s resource",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Check sign-in only",
+        "Check identity and resource permission"
+      ],
+      "predictions": [
+        "Unauthorized exposure",
+        "Access denied"
+      ],
+      "roles": [
+        "Policy check",
+        "Protected resource",
+        "Denied requests"
+      ]
+    },
+    "copies": {
+      "label": "Copies holding one shared fact",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Update one duplicate",
+        "Update all declared copies"
+      ],
+      "predictions": [
+        "Stale copies remain",
+        "Copies agree"
+      ],
+      "roles": [
+        "Copies",
+        "Updated copies",
+        "Stale copies"
+      ]
+    },
+    "window": {
+      "label": "Event-time watermark before event 3 arrives",
+      "min": 3,
+      "max": 10,
+      "initial": 8,
+      "modes": [
+        "No late corrections after close",
+        "Accept a late correction"
+      ],
+      "predictions": [
+        "Two events counted",
+        "Three events counted"
+      ],
+      "roles": [
+        "Arriving events",
+        "Window aggregate",
+        "Late events"
+      ]
+    },
+    "unique": {
+      "label": "Local counter on both nodes",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Use local counter alone",
+        "Namespace by distinct node ids"
+      ],
+      "predictions": [
+        "Identifier collision",
+        "Distinct identifiers"
+      ],
+      "roles": [
+        "Node 1",
+        "Node 2",
+        "Generated IDs"
+      ]
+    },
+    "retention": {
+      "label": "Age of retained record (ticks)",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Delete primary copy only",
+        "Propagate deletion to two backups"
+      ],
+      "predictions": [
+        "Retained copies remain",
+        "All modelled copies deleted"
+      ],
+      "roles": [
+        "Primary copy",
+        "Backup copies",
+        "Deletion work"
+      ]
+    },
+    "cost": {
+      "label": "Work units in this example",
+      "min": 1,
+      "max": 8,
+      "initial": 8,
+      "modes": [
+        "Plan A: 10 + 2 per unit",
+        "Plan B: 15 + 2 per pair"
+      ],
+      "predictions": [
+        "Plan A cheaper",
+        "Plan B cheaper"
+      ],
+      "roles": [
+        "Compute work",
+        "Fixed cost",
+        "Illustrative total"
+      ]
+    },
+    "signals": {
+      "label": "Failed requests out of 100",
+      "min": 1,
+      "max": 8,
+      "initial": 4,
+      "modes": [
+        "Inspect CPU alone",
+        "Inspect user request errors"
+      ],
+      "predictions": [
+        "User symptom hidden",
+        "User errors visible"
+      ],
+      "roles": [
+        "CPU snapshot",
+        "User errors",
+        "Observed signal"
+      ]
+    },
+    "trace": {
+      "label": "Duration of parallel child A (ticks)",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Sum overlapping child spans",
+        "Take the parallel critical path"
+      ],
+      "predictions": [
+        "Overcounted latency",
+        "Critical path respected"
+      ],
+      "roles": [
+        "Child A",
+        "Child B: 3 ticks",
+        "Request duration"
+      ]
+    },
+    "breaker": {
+      "label": "Calls during a failing period",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Keep calling",
+        "Open after two failures"
+      ],
+      "predictions": [
+        "Failure load continues",
+        "Calls bounded by breaker"
+      ],
+      "roles": [
+        "Circuit state",
+        "Failing dependency",
+        "Rejected locally"
+      ]
+    },
+    "health": {
+      "label": "Incoming requests",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Route to a running but unready process",
+        "Honor readiness and route to a ready process"
+      ],
+      "predictions": [
+        "Unready host receives traffic",
+        "Traffic sent to ready host"
+      ],
+      "roles": [
+        "Unready host",
+        "Ready host",
+        "Failed requests"
+      ]
+    },
+    "identity": {
+      "label": "Credential age (ticks)",
+      "min": 4,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Ignore expiry",
+        "Check expiry at tick 3"
+      ],
+      "predictions": [
+        "Expired credential accepted",
+        "Expired credential rejected"
+      ],
+      "roles": [
+        "Credential validator",
+        "Identity result",
+        "Rejected requests"
+      ]
+    },
+    "rotation": {
+      "label": "Incoming credential generation",
+      "min": 1,
+      "max": 2,
+      "initial": 2,
+      "modes": [
+        "Trust retired generations",
+        "Reject generations older than 3"
+      ],
+      "predictions": [
+        "Retired credential accepted",
+        "Retired credential rejected"
+      ],
+      "roles": [
+        "Credential policy",
+        "Active generation",
+        "Retired credential"
+      ]
+    },
+    "spatial": {
+      "label": "Search radius (coordinate units)",
+      "min": 1,
+      "max": 6,
+      "initial": 4,
+      "modes": [
+        "Accept every bounding-box candidate",
+        "Check exact Euclidean distance"
+      ],
+      "predictions": [
+        "False candidate retained",
+        "Exact matches only"
+      ],
+      "roles": [
+        "Bounding-box index",
+        "Candidate places",
+        "Exact results"
+      ]
+    },
+    "columns": {
+      "label": "Columns per stored record",
+      "min": 2,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Read all columns",
+        "Read one selected column"
+      ],
+      "predictions": [
+        "Unrelated cells read",
+        "Only selected column read"
+      ],
+      "roles": [
+        "Stored columns",
+        "Cells read",
+        "Selected column"
+      ]
+    },
+    "decision": {
+      "label": "Required units of capacity",
+      "min": 1,
+      "max": 8,
+      "initial": 6,
+      "modes": [
+        "Cheap plan: capacity 3",
+        "Larger plan: capacity 8"
+      ],
+      "predictions": [
+        "Requirement met",
+        "Requirement missed"
+      ],
+      "roles": [
+        "Requirement",
+        "Chosen capacity",
+        "Unserved work"
+      ]
+    }
+  },
+  "chapters": [
+    {"id":"web-request","order":1,"prerequisites":[],"paths":["beginner","interview","production"],"objective":"Name, in order, the steps between pressing Enter on `https://example.com/` and seeing the page: - read the URL - look up the hostname - open a connection - secure it - send the request - receive the response - parse and render","models":["web-request-model.ts"],"guide":false,"sources":["rfc9113","rfc9110","mdn-url","mdn-dns","rfc9846","mdn-http-overview","mdn-tcp-handshake","mdn-rtt","mdn-how-browsers-work","rfc9111","mdn-crp","navtiming-2","mdn-nav-timing","mdn-prt","fetch","mdn-caching"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":5,"retrieval":["web-request"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":"Q3 incorrectly makes same-origin connection reuse categorical; HTTP/2 coalescing is an explicit counterexample. Legacy spec needs alignment with current film.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Q3 coalescing wording corrected; committed self-review and current anatomy/rail asset contract added."},
+    {"id":"client-server","order":2,"prerequisites":["web-request"],"paths":["beginner","interview","production"],"objective":"Say which program is the client and which is the server in a described exchange, including a program that is a server on one connection and a client on another.","models":["client-server-model.ts"],"guide":false,"sources":["rfc9110","mdn-messages","rfc6265","mdn-cookies","pg-architecture","mdn-http-overview","rfc9112","mdn-sse","mdn-websockets","idempotency-key-draft"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":5,"retrieval":["client-server"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":"Legacy spec standard and current reusable film need reconciliation; existing written questions reveal answers without a recorded attempt.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed written self-review and anatomy/specialist-exchange contract reconciled."},
+    {"id":"ip-and-ports","order":3,"prerequisites":["client-server"],"paths":["beginner","interview","production"],"objective":"Given a packet's destination address, transport protocol and destination port, predict which program on a host receives it, or what comes back when none does (TCP reset, ICMP Port Unreachable, or nothing at all).","models":["demux-model.ts","network-model.ts"],"guide":false,"sources":["rfc791","rfc2606","rfc4291","rfc5737","rfc9110","rfc9114","rfc9293","rfc6335","rfc1122","rfc9112","rfc8085","rfc768"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":3,"retrieval":["ip-and-ports"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":"Legacy visual-first spec needs alignment with current anatomy renderer; preserve both demultiplexing and network labs.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed written self-review and anatomy/endpoint/network asset contracts reconciled."},
+    {"id":"dns","order":4,"prerequisites":["ip-and-ports"],"paths":["beginner","interview","production"],"objective":"Predict that a stored address returns from the resolver and that the root, the TLD, and the authoritative server are not asked.","models":["dns-model.ts"],"guide":false,"sources":["rfc1034"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":3,"retrieval":["dns"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed self-review"},
+    {"id":"tcp","order":5,"prerequisites":["ip-and-ports"],"paths":["beginner","interview","production"],"objective":"Predict that a segment already at the receiver stays unread while an earlier segment is missing.","models":["tcp-model.ts"],"guide":false,"sources":["rfc9293"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":3,"retrieval":["tcp"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed self-review"},
+    {"id":"tls","order":6,"prerequisites":["tcp"],"paths":["beginner","interview","production"],"objective":"Predict that a body still on the handshake is a step the other side can read, and that the application body has not left yet.","models":["tls-model.ts"],"guide":false,"sources":["rfc8446"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":3,"retrieval":["tls"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed self-review"},
+    {"id":"http","order":7,"prerequisites":["tcp"],"paths":["beginner","interview","production"],"objective":"Name what a request message carries (method, request target, header fields) and what a response message carries (status code, header fields), and where the message sits.","models":["http-model.ts"],"guide":false,"sources":["rfc9110"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":3,"retrieval":["http"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed self-review"},
+    {"id":"udp-quic","order":8,"prerequisites":["tcp","tls"],"paths":["beginner","production"],"objective":"After one lost packet, point at the two bodies and say which stream is held and which is delivered when each body is its own stream.","models":["udp-quic-model.ts"],"guide":false,"sources":["rfc9000","rfc768"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":3,"retrieval":["udp-quic"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed self-review"},
+    {"id":"http-versions","order":9,"prerequisites":["http","udp-quic"],"paths":["beginner","production"],"objective":"After one lost carrier, point at the three response bodies on the HTTP/3 run and say that one is held and the other two are delivered.","models":["http-versions-model.ts"],"guide":false,"sources":["rfc9114","rfc9112","rfc9113_37"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":3,"retrieval":["http-versions"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed self-review"},
+    {"id":"cloud-networking","order":10,"prerequisites":["ip-and-ports"],"paths":["production"],"objective":"Point at the packet and say its place: outside, the public subnet, stopped at the boundary, through the NAT, or the private subnet.","models":["cloud-networking-model.ts"],"guide":false,"sources":["rfc1918","rfc5737","rfc3022"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":3,"retrieval":["cloud-networking"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed self-review"},
+    {"id":"latency-throughput","order":11,"prerequisites":["web-request"],"paths":["beginner","interview","production"],"objective":"For one bed that stays busy, predict that the first piece finishes at the service time S and that the tray holds the window divided by S.","models":["latency-model.ts"],"guide":false,"sources":["rfc1242","rfc5136"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":3,"retrieval":["latency-throughput"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed self-review"},
+    {"id":"percentiles","order":12,"prerequisites":["latency-throughput"],"paths":["beginner","interview","production"],"objective":"For the assumed list, predict that the 50th percentile is 20 ms at rank 50.5, among the short pins, and that the 99th percentile is 198.4 ms at rank 99.99, at the slow end.","models":["percentile-model.ts"],"guide":false,"sources":["nist-percentile","tail-at-scale"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":3,"retrieval":["percentiles"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed self-review"},
+    {"id":"latency-numbers","order":13,"prerequisites":["latency-throughput"],"paths":["beginner","interview","production"],"objective":"For the durations on this bench, predict that the carriage's place is the base-10 logarithm of the nanoseconds, so the L1 fetch sits at magnitude log10(0.5) and the US–Europe packet sits at magnitude log10(150,000,000).","models":["latency-numbers-model.ts"],"guide":false,"sources":["norvig-latency","scott-latency"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":3,"retrieval":["latency-numbers"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed self-review"},
+    {"id":"estimation","order":14,"prerequisites":["latency-numbers"],"paths":["beginner","interview","production"],"objective":"Compute requests per second for a described product as assumed daily actions divided by 86,400.","models":["estimation-model.ts"],"guide":false,"sources":["sre-nalsd"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":3,"retrieval":["estimation"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed self-review"},
+    {"id":"utilisation-queueing","order":15,"prerequisites":["percentiles"],"paths":["beginner","interview","production"],"objective":"For the assumed rates, state that the mean number in the system equals the arrival rate times the mean time in the system: at 5 per second, 1 = 5 × 0.2 s; at 9 per second, 9 = 9 × 1 s.","models":["utilisation-queueing-model.ts"],"guide":false,"sources":["little-1961","sigman-littles-law"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":3,"retrieval":["utilisation-queueing"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed self-review"},
+    {"id":"api-design","order":16,"prerequisites":["http"],"paths":["beginner","interview","production"],"objective":"Name what this plate promises a caller: method GET, the teaching target item, status 200 when that call matches, and status 405 when the method is not allowed.","models":["api-design-model.ts"],"guide":false,"sources":["rfc9110"],"assessment":{"kind":"committed written reasoning + explicit self-assessment","count":3,"retrieval":["api-design"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Committed self-review"},
+    {"id":"rest","order":17,"prerequisites":["api-design"],"paths":["beginner","interview","production"],"objective":"Read and replace one note. Then repeat the request and see what changes.","models":["api-experiment.ts"],"guide":false,"sources":["http-semantics","rest-constraints"],"assessment":{"kind":"committed multiple choice + explanation","count":1,"retrieval":["rest"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"rpc","order":18,"prerequisites":["api-design"],"paths":["beginner","interview","production"],"objective":"Follow a typed call from your program to a remote service and back.","models":["api-experiment.ts"],"guide":false,"sources":["grpc-core","grpc-deadlines"],"assessment":{"kind":"committed multiple choice + explanation","count":1,"retrieval":["rpc"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":"Deadline-exceeded resultFilm marks message lost and service failed although timeout does not establish either fact.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Deadline and unknown remote effect separated in pure API film adapter; no false loss/server-failure marker."},
+    {"id":"graphql","order":19,"prerequisites":["api-design"],"paths":["interview","production"],"objective":"Ask for a name, then add post titles. Watch the work fan out behind one request.","models":["api-experiment.ts"],"guide":false,"sources":["graphql-query","graphql-execution"],"assessment":{"kind":"committed multiple choice + explanation","count":1,"retrieval":["graphql"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"realtime","order":20,"prerequisites":["http"],"paths":["beginner","interview","production"],"objective":"Compare asking again, receiving a server event, and keeping a two-way conversation open.","models":["api-experiment.ts"],"guide":false,"sources":["sse","websocket"],"assessment":{"kind":"committed multiple choice + explanation","count":1,"retrieval":["realtime"]},"boundary":"See authored Boundary scope and deferred mechanisms in chapter spec.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"idempotency","order":21,"prerequisites":["api-design"],"paths":["beginner","interview","production"],"objective":"Can you retry a payment after losing its reply?","models":["dedup"],"guide":false,"sources":["stripe"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["idempotency"]},"boundary":"Keys need retention, payload matching and atomic coordination with the effect.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"pagination","order":22,"prerequisites":["rest"],"paths":["interview","production"],"objective":"Why did an item disappear between pages?","models":["pagination"],"guide":false,"sources":["pagination"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["pagination"]},"boundary":"A cursor is not automatically a snapshot of a changing collection.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"encoding-evolution","order":23,"prerequisites":["api-design"],"paths":["interview","production"],"objective":"Can an old reader understand a new message?","models":["version"],"guide":false,"sources":["protobuf"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["encoding-evolution"]},"boundary":"Wire compatibility does not guarantee that business semantics remain compatible.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"rate-limiting","order":24,"prerequisites":["api-design"],"paths":["beginner","interview","production"],"objective":"How do you allow a short burst without unlimited traffic?","models":["bucket"],"guide":false,"sources":["tokens"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["rate-limiting"]},"boundary":"A local bucket cannot enforce a global quota across independent servers.","spec_drift":false,"initial_finding":"Token bucket is executable; leaky-bucket behavior in the curriculum title is not separately demonstrated.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"data-modelling","order":25,"prerequisites":["api-design"],"paths":["beginner","interview","production"],"objective":"What should an order store and what should it reference?","models":["embedding"],"guide":false,"sources":["pg-model","mongo"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["data-modelling"]},"boundary":"Duplicated data reduces some reads but creates update coordination work.","spec_drift":false,"initial_finding":"Executable example covers bounded order embedding, not a complete entity/access-pattern design exercise.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"relational-model","order":26,"prerequisites":["data-modelling"],"paths":["beginner","interview","production"],"objective":"How can a database reject an order for a nonexistent customer?","models":["foreignKey","sqlJoin","sqlSets"],"guide":false,"sources":["pg-model","pg-join","pg-sets"],"assessment":{"kind":"committed binary scenario + open transfer","count":3,"retrieval":["relational-model","relational-model","relational-model"]},"boundary":"Constraints protect declared rules, not every possible business rule.","spec_drift":false,"initial_finding":"FK, joins and set-operation films exist; recallFor currently assesses only primary FK model.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Assess now includes FK, join and set-operation scenarios."},
+    {"id":"normalisation","order":27,"prerequisites":["relational-model"],"paths":["beginner","interview","production"],"objective":"Why did changing one address leave another copy behind?","models":["copies"],"guide":false,"sources":["pg-model","mongo"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["normalisation"]},"boundary":"Normalisation can require joins; denormalisation trades read convenience for write complexity.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"document-model","order":28,"prerequisites":["relational-model"],"paths":["beginner","interview","production"],"objective":"Should related information live together or in separate records?","models":["embedding"],"guide":false,"sources":["mongo"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["document-model"]},"boundary":"Document databases still need schema decisions, validation and capacity planning.","spec_drift":false,"initial_finding":"Executable example teaches embedding versus references; key-value, wide-column and graph access patterns are not separately explained by this model.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"storage-engines","order":29,"prerequisites":["relational-model","latency-numbers"],"paths":["beginner","interview","production"],"objective":"Where does a database put a write, and how can it recover after a crash?","models":["storageLayout","log"],"guide":false,"sources":["pg-storage","pg-wal","rocks-layout","pg-index"],"assessment":{"kind":"committed binary scenario + open transfer","count":2,"retrieval":["storage-engines","storage-engines"]},"boundary":"These separate layout and recovery models omit real buffering, checksums, compaction, torn writes and hardware failures.","spec_drift":false,"initial_finding":"Headline/rule promise WAL crash recovery; selected storageLayout assumes WAL and teaches B-tree/LSM layout. Author spec still names log.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Layout objective aligned; distinct WAL crash/replay companion plus its Assess scenario; author record reconciled."},
+    {"id":"indexes","order":30,"prerequisites":["storage-engines"],"paths":["beginner","interview","production"],"objective":"How can you find one row without inspecting every row?","models":["index"],"guide":false,"sources":["pg-index"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["indexes"]},"boundary":"Indexes consume space and add maintenance to writes; the example uses binary search as a teaching proxy.","spec_drift":false,"initial_finding":"Binary-search proxy is explicitly simplified; index maintenance and unsuitable predicates are not executable.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"query-planning","order":31,"prerequisites":["indexes"],"paths":["production"],"objective":"Why did a database ignore an available index?","models":["planner"],"guide":false,"sources":["pg-explain"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["query-planning"]},"boundary":"The example compares invented access-work costs, not PostgreSQL cost estimates or a complete optimizer.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"transactions","order":32,"prerequisites":["relational-model"],"paths":["beginner","interview","production"],"objective":"What if a transfer crashes after subtracting the money?","models":["transaction"],"guide":false,"sources":["pg-tx"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["transactions"]},"boundary":"Atomicity alone does not define the isolation seen by concurrent transactions.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"isolation","order":33,"prerequisites":["transactions"],"paths":["interview","production"],"objective":"Can two individually correct updates lose one increment?","models":["isolation"],"guide":false,"sources":["pg-isolation"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["isolation"]},"boundary":"Isolation guarantees are engine-specific; serializable transactions may need retries.","spec_drift":false,"initial_finding":"Lost update versus serialization is executable; full isolation-level/anomaly matrix is outside model.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"concurrency-control","order":34,"prerequisites":["isolation","storage-engines"],"paths":["production"],"objective":"How can readers continue while another transaction writes?","models":["mvcc"],"guide":false,"sources":["pg-mvcc","pg-isolation"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["concurrency-control"]},"boundary":"MVCC does not remove write conflicts or guarantee serializability by itself.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"probabilistic-structures","order":35,"prerequisites":["storage-engines"],"paths":["interview","production"],"objective":"Can a tiny filter avoid a disk lookup without storing every key?","models":["bloom"],"guide":false,"sources":["pg-bloom"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["probabilistic-structures"]},"boundary":"The guarantee assumes correct construction and maintenance; this deterministic example is not a measured false-positive rate.","spec_drift":false,"initial_finding":"Deterministic Bloom example is executable; sketches in curriculum title have no distinct model.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"search-indexes","order":36,"prerequisites":["indexes"],"paths":["interview","production"],"objective":"How can a word lead directly to matching documents?","models":["inverted"],"guide":false,"sources":["pg-search"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["search-indexes"]},"boundary":"Retrieval is not relevance ranking; stemming and tokenisation change what a term means.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"geospatial-indexes","order":37,"prerequisites":["indexes"],"paths":["interview","production"],"objective":"How can you find nearby places without checking every coordinate?","models":["spatial"],"guide":false,"sources":["postgis"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["geospatial-indexes"]},"boundary":"Coordinate system, distance units and boundary conditions must be explicit.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"analytics-storage","order":38,"prerequisites":["storage-engines","indexes"],"paths":["interview","production"],"objective":"Why read entire customer records to sum one numeric field?","models":["columns"],"guide":false,"sources":["bigquery"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["analytics-storage"]},"boundary":"Row layout can be preferable for retrieving or updating complete individual records.","spec_drift":false,"initial_finding":"Row/column cell-count comparison is executable; warehouse ingestion and update paths are outside model.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"object-storage","order":39,"prerequisites":["storage-engines"],"paths":["beginner","interview","production"],"objective":"Where should an application put a large uploaded file?","models":["upload"],"guide":false,"sources":["s3"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["object-storage"]},"boundary":"A durable object does not make metadata updates and object writes one atomic transaction.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"choosing-a-database","order":40,"prerequisites":["document-model","indexes","transactions"],"paths":["beginner","interview","production"],"objective":"How do you choose storage before choosing a brand?","models":["storageChoice"],"guide":false,"sources":["pg-tx","mongo","s3"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["choosing-a-database"]},"boundary":"One product label cannot determine consistency, cost and operational behavior for every deployment.","spec_drift":false,"initial_finding":"Decision model contrasts object bytes with transactional row requirements; wider storage choices require additional defended comparisons.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"vertical-horizontal","order":41,"prerequisites":["utilisation-queueing"],"paths":["beginner","interview","production"],"objective":"Do you need a larger machine or more machines?","models":["queue"],"guide":false,"sources":["sre-overload"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["vertical-horizontal"]},"boundary":"Shared state, coordination and serial work can remain bottlenecks.","spec_drift":false,"initial_finding":"Worker-count comparison teaches parallel capacity; vertical scaling and serial bottleneck comparison need distinct treatment.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"stateless-services","order":42,"prerequisites":["vertical-horizontal"],"paths":["beginner","interview","production"],"objective":"What happens if the next request reaches another server?","models":["session"],"guide":false,"sources":["sre-lb"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["stateless-services"]},"boundary":"Stateless workers still depend on stateful storage and valid authentication.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"load-balancing","order":43,"prerequisites":["stateless-services","tcp","http"],"paths":["beginner","interview","production"],"objective":"Which replica should receive the next request?","models":["loadBalance"],"guide":false,"sources":["nginx-lb","sre-lb","nginx-l4"],"assessment":{"kind":"committed binary scenario + open transfer","count":2,"retrieval":["load-balancing","load-balancing"]},"boundary":"One request uses one connection in this finite model. Equal weights, no keepalive or multiplexing, no retries or queue, and simplified passive health detection are assumed.","spec_drift":false,"initial_finding":"Primary partition model routes synthetic keys to shards. It does not demonstrate request-balancing algorithm, backend health, or L4/L7 distinction.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Dedicated backend routing model and rich Explore: policy, arrival spacing, duration, connection limit, health.","rich_explore":{"numeric":["requests1–12","arrival spacing0–3ticks","A service1–8ticks","capacity1–4connections"],"choices":["round-robin/least-connections","healthy/undetected-failure/excluded"]}},
+    {"id":"reverse-proxies","order":44,"prerequisites":["load-balancing"],"paths":["beginner","interview","production"],"objective":"What belongs between public clients and private services?","models":["proxy"],"guide":false,"sources":["sre-lb"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["reverse-proxies"]},"boundary":"Centralising routing also creates a capacity and availability responsibility.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"health-checks","order":45,"prerequisites":["load-balancing"],"paths":["beginner","interview","production"],"objective":"Should a process receive traffic merely because it is running?","models":["health"],"guide":false,"sources":["k8s-probe"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["health-checks"]},"boundary":"A shallow probe can miss dependency or data failures and an aggressive probe can amplify an outage.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"compute-platforms","order":46,"prerequisites":["stateless-services"],"paths":["production"],"objective":"What does an orchestrator do after a worker disappears?","models":["replacement"],"guide":false,"sources":["k8s-deploy"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["compute-platforms"]},"boundary":"A desired count is an intention, not a guarantee of available compute capacity.","spec_drift":false,"initial_finding":"Desired-replica reconciliation is executable; VM/container isolation is not demonstrated by that controller trace.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"autoscaling","order":47,"prerequisites":["vertical-horizontal","estimation"],"paths":["interview","production"],"objective":"Why does a traffic spike hurt before extra servers help?","models":["scaleLag"],"guide":false,"sources":["k8s-scale"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["autoscaling"]},"boundary":"A shared database or quota can limit useful scale-out; warm capacity costs money.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"caching-basics","order":48,"prerequisites":["latency-numbers"],"paths":["beginner","interview","production"],"objective":"Why is the second read often cheaper than the first?","models":["cache"],"guide":false,"sources":["http-cache","redis-evict"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["caching-basics"]},"boundary":"A hit can be stale if invalidation and freshness rules do not match the application.","spec_drift":false,"initial_finding":"Version-age freshness comparison is executable; request-pattern, capacity and observed hit-rate lab is absent.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"http-caching","order":49,"prerequisites":["caching-basics","http"],"paths":["beginner","interview","production"],"objective":"When can a browser reuse a response without downloading it again?","models":["httpValidation"],"guide":false,"sources":["http-cache"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["http-caching"]},"boundary":"A validation response still requires communication; cache policy is not an authorization mechanism.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Author record matches conditional-validator/body model."},
+    {"id":"cdn","order":50,"prerequisites":["http-caching","dns"],"paths":["beginner","interview","production"],"objective":"How can a distant user avoid fetching every byte from one origin?","models":["cache"],"guide":false,"sources":["http-cache","sre-lb"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["cdn"]},"boundary":"Private content, invalidation and cache keys need explicit policies.","spec_drift":false,"initial_finding":"Reuses same cache freshness model as caching-basics/invalidation; edge/origin topology and network-distance effect are not modeled.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"app-caching","order":51,"prerequisites":["caching-basics","stateless-services"],"paths":["beginner","interview","production"],"objective":"Who updates the cache after the database changes?","models":["cacheWrite"],"guide":false,"sources":["redis-evict","cache-aside"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["app-caching"]},"boundary":"Write-back needs durable pending work and recovery; a volatile cache is not automatically authoritative storage.","spec_drift":false,"initial_finding":"Cache-aside stale read versus write-through is executable; write-back recovery is discussed only. Author spec still names cache.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Author record matches cache-write model; write-back remains an explicit unexecuted boundary."},
+    {"id":"eviction","order":52,"prerequisites":["caching-basics"],"paths":["beginner","interview","production"],"objective":"Which item should leave when the cache is full?","models":["eviction"],"guide":false,"sources":["redis-evict"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["eviction"]},"boundary":"Redis approximates some policies; the lab is an exact small LRU teaching example.","spec_drift":false,"initial_finding":"Exact LRU is executable; LFU and TTL mechanisms in curriculum title are not separately exercised.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"cache-invalidation","order":53,"prerequisites":["app-caching"],"paths":["beginner","interview","production"],"objective":"Why did a successful update still return the old profile?","models":["cache"],"guide":false,"sources":["http-cache","redis-evict"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["cache-invalidation"]},"boundary":"Races between a stale load and invalidation can repopulate old data.","spec_drift":false,"initial_finding":"Version-age comparison is executable; stale-fill/invalidation race named in boundary is not exercised.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"cache-failure-modes","order":54,"prerequisites":["cache-invalidation","load-balancing"],"paths":["interview","production"],"objective":"What happens when many requests miss the same key together?","models":["coalesce"],"guide":false,"sources":["sre-overload","redis-evict"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["cache-failure-modes"]},"boundary":"A hot key and a failed cache can still overload a remaining dependency.","spec_drift":false,"initial_finding":"Coalescing same-key misses is executable; cache outage and hot-key routing are distinct missing experiments.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"async-work","order":55,"prerequisites":["utilisation-queueing","stateless-services"],"paths":["beginner","interview","production"],"objective":"When should a request wait for work and when should it enqueue it?","models":["communication"],"guide":false,"sources":["sre-overload","rabbit"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["async-work"]},"boundary":"Accepted is not completed; callers need status, error handling and bounded backlog.","spec_drift":false,"initial_finding":"Accepted/completed model fits question; author spec still names queue rather than communication.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Author record matches accepted/completed communication model."},
+    {"id":"message-queues","order":56,"prerequisites":["async-work"],"paths":["beginner","interview","production"],"objective":"What happens to work when a worker crashes before acknowledging it?","models":["redelivery"],"guide":false,"sources":["rabbit"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["message-queues"]},"boundary":"Redelivery can repeat an effect; acknowledgments and side effects need coordinated design.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"delivery-semantics","order":57,"prerequisites":["message-queues","idempotency"],"paths":["beginner","interview","production"],"objective":"Can redelivery be safe without pretending messages arrive once?","models":["dedup"],"guide":false,"sources":["rabbit","stripe"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["delivery-semantics"]},"boundary":"The guarantee is scoped to the deduplication boundary and retention period.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"pub-sub","order":58,"prerequisites":["message-queues"],"paths":["beginner","interview","production"],"objective":"How does one event reach several independent consumers?","models":["fanout"],"guide":false,"sources":["rabbit","kafka","rabbit-fanout"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["pub-sub"]},"boundary":"Subscription durability and replay depend on the chosen broker and configuration.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"backpressure","order":59,"prerequisites":["message-queues"],"paths":["interview","production"],"objective":"What should a fast producer do when consumers fall behind?","models":["flow"],"guide":false,"sources":["sre-overload","rabbit"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["backpressure"]},"boundary":"Buffering buys time but cannot absorb sustained overload forever.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"logs-streams","order":60,"prerequisites":["pub-sub","storage-engines"],"paths":["interview","production"],"objective":"Who owns each partition, and where does a consumer resume after a crash?","models":["partitionedLog"],"guide":false,"sources":["kafka","kafka-design-41"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["logs-streams"]},"boundary":"This finite classic consumer-group model omits broker replication, transactions, retention expiry and network timing. External effects are not atomically committed with offsets.","spec_drift":true,"initial_finding":"Independent cursors/replay are executable; partition ownership, consumer-group assignment, offsets per partition and failure reassignment are absent.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Dedicated partition/group/offset/rebalance model and rich Explore replace shared-cursor-only teaching.","rich_explore":{"numeric":["partitions","groupA consumers","records per partition","groupB reads"],"choices":["crash point","cross-partition fetch order"]}},
+    {"id":"stream-processing","order":61,"prerequisites":["logs-streams"],"paths":["interview","production"],"objective":"When is a time window finished if an event arrives late?","models":["window"],"guide":false,"sources":["kafka","beam"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["stream-processing"]},"boundary":"A watermark is a policy about completeness, not proof that no late event can ever arrive.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"batch-processing","order":62,"prerequisites":["storage-engines","estimation"],"paths":["interview","production"],"objective":"How can a large bounded dataset be processed in parallel?","models":["mapReduce"],"guide":false,"sources":["mapreduce"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["batch-processing"]},"boundary":"Skew, failed tasks and shuffle cost can dominate a parallel batch.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"event-driven","order":63,"prerequisites":["logs-streams","transactions"],"paths":["interview","production"],"objective":"How can a committed database update reliably cause an event?","models":["outbox"],"guide":false,"sources":["outbox","pg-logical"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["event-driven"]},"boundary":"The relay can duplicate publication, so consumers still need idempotent handling.","spec_drift":false,"initial_finding":"Atomic outbox is executable; change-data-capture path in curriculum title is not separately shown.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"review-foundations","order":64,"prerequisites":["event-driven","cache-failure-modes","choosing-a-database"],"paths":["interview","production"],"objective":"Can you explain a slow checkout without guessing a technology?","models":["architecture"],"guide":false,"sources":["sre-overload","pg-tx"],"assessment":{"kind":"committed binary scenario + open transfer","count":4,"retrieval":["idempotency","cache-invalidation","transactions","load-balancing"]},"boundary":"A toy capacity estimate is a hypothesis to validate against measurements.","spec_drift":false,"initial_finding":"Four binary changed scenarios cover idempotency/cache invalidation/transactions/load balancing; no earlier networking or estimation retrieval in mixed review.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"distributed-trouble","order":65,"prerequisites":["tcp","health-checks"],"paths":["beginner","interview","production"],"objective":"What can you conclude when another machine stops answering?","models":["uncertain"],"guide":false,"sources":["retry"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["distributed-trouble"]},"boundary":"A timeout is a waiting policy, not a perfect failure detector.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"replication","order":66,"prerequisites":["distributed-trouble","transactions"],"paths":["beginner","interview","production"],"objective":"How does another machine acquire a copy of a committed write?","models":["replication"],"guide":false,"sources":["pg-replication"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["replication"]},"boundary":"A copy can lag; redundancy alone does not define read freshness or failover safety.","spec_drift":false,"initial_finding":"Same replication-lag comparison reused by next chapter; normal propagation, acknowledgment and failover need clearer distinct roles.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"replication-lag","order":67,"prerequisites":["replication"],"paths":["beginner","interview","production"],"objective":"Why did a user fail to read the update they just saved?","models":["replication"],"guide":false,"sources":["pg-replication"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["replication-lag"]},"boundary":"Read-your-writes needs a routing, version-waiting or consistency strategy.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"multi-leader-leaderless","order":68,"prerequisites":["replication-lag"],"paths":["interview","production"],"objective":"How many copies need to answer before a read or write completes?","models":["readQuorum"],"guide":false,"sources":["dynamo"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["multi-leader-leaderless"]},"boundary":"Overlap alone does not establish linearizability; failures, versions and concurrent writes still matter.","spec_drift":false,"initial_finding":"Amount2 vs3 changes caption only, not contacted replicas, metrics or result. Model assumes fixed completed write; multi-leader conflict behavior is separate.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Requested replies now produce individual replica events and inspected-reply metrics."},
+    {"id":"conflict-resolution","order":69,"prerequisites":["multi-leader-leaderless"],"paths":["interview","production"],"objective":"Can two offline counters merge without counting a replay twice?","models":["merge"],"guide":false,"sources":["crdt"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["conflict-resolution"]},"boundary":"This counter rule cannot be applied blindly to arbitrary deletes or business invariants.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"consistency-models","order":70,"prerequisites":["replication-lag","isolation"],"paths":["interview","production"],"objective":"What does a reader get to assume about other clients' writes?","models":["consistencyHistory"],"guide":false,"sources":["cap","consistency-levels"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["consistency-models"]},"boundary":"Eventual convergence alone does not guarantee immediate freshness or read-your-writes.","spec_drift":false,"initial_finding":"Completed-write history comparison is executable; author spec still names replication; causal/session histories are not modeled.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Author record matches completed-write history model; further histories tracked separately."},
+    {"id":"cap-pacelc","order":71,"prerequisites":["consistency-models"],"paths":["interview","production"],"objective":"What does a partition force you to give up?","models":["partitionChoice"],"guide":false,"sources":["cap","pacelc"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["cap-pacelc"]},"boundary":"CAP's availability is a formal condition, not a dashboard uptime percentage.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"partitioning","order":72,"prerequisites":["replication","indexes"],"paths":["beginner","interview","production"],"objective":"How do you split data without duplicating the entire dataset everywhere?","models":["partition"],"guide":false,"sources":["pg-partition","dynamo"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["partitioning"]},"boundary":"A partition is not a replica, and cross-partition operations can require coordination.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"consistent-hashing","order":73,"prerequisites":["partitioning"],"paths":["interview","production"],"objective":"Can you add a node without moving every key?","models":["hashring"],"guide":false,"sources":["dynamo"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["consistent-hashing"]},"boundary":"Virtual nodes, replication and load skew require further policy; the lab shows one simple ring.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"hot-partitions","order":74,"prerequisites":["consistent-hashing"],"paths":["interview","production"],"objective":"Why is one shard overloaded when the dataset is evenly split?","models":["partition"],"guide":false,"sources":["dynamo"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["hot-partitions"]},"boundary":"Salting can spread writes but complicate ordered or grouped reads.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"distributed-transactions","order":75,"prerequisites":["partitioning","event-driven"],"paths":["interview","production"],"objective":"How do you coordinate changes owned by different services?","models":["saga","twoPhase"],"guide":false,"sources":["outbox","pg-tx","pg-prepare"],"assessment":{"kind":"committed binary scenario + open transfer","count":2,"retrieval":["distributed-transactions","distributed-transactions"]},"boundary":"A saga compensation is a new action and may not perfectly erase an external effect.","spec_drift":false,"initial_finding":"Saga and 2PC films/labs exist; recallFor currently assesses saga only.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Assess now includes saga and 2PC scenarios."},
+    {"id":"time-clocks","order":76,"prerequisites":["distributed-trouble"],"paths":["interview","production"],"objective":"Can timestamps prove which distributed event caused another?","models":["clock"],"guide":false,"sources":["clocks"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["time-clocks"]},"boundary":"A smaller Lamport timestamp alone does not prove that event caused the larger one.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"unique-ids","order":77,"prerequisites":["time-clocks","partitioning"],"paths":["interview","production"],"objective":"Can several machines create identifiers without calling one counter?","models":["uuidLayout"],"guide":false,"sources":["uuid"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["unique-ids"]},"boundary":"Uniqueness assumptions and information leakage depend on the chosen variant and implementation.","spec_drift":false,"initial_finding":"Illustrative v4/v7 bit layout and clock rollback are executable; author spec still names unique.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Author record matches UUID layout/rollback model."},
+    {"id":"leader-election","order":78,"prerequisites":["time-clocks","health-checks"],"paths":["interview","production"],"objective":"How do you stop two isolated candidates from both acting as leader?","models":["election"],"guide":false,"sources":["raft"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["leader-election"]},"boundary":"Being elected is not sufficient without safe state replication and stale-leader protection.","spec_drift":false,"initial_finding":"Fixed-term majority election is executable; lease/fencing mechanisms in title are deferred to next chapter.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"distributed-locks","order":79,"prerequisites":["leader-election"],"paths":["interview","production"],"objective":"What stops a paused old lock holder from writing after its lease expires?","models":["lease"],"guide":false,"sources":["raft"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["distributed-locks"]},"boundary":"A lease timer alone cannot stop a paused process from executing later.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"consensus","order":80,"prerequisites":["leader-election","replication"],"paths":["interview","production"],"objective":"How do several machines agree which command is committed?","models":["consensusLog"],"guide":false,"sources":["raft"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["consensus"]},"boundary":"The lab isolates quorum formation, not the complete Raft protocol or its safety proof.","spec_drift":false,"initial_finding":"Current-term commit boundary is executable; full Raft election/log-matching/reconfiguration not modeled, correctly limited.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"membership-gossip","order":81,"prerequisites":["distributed-trouble"],"paths":["production"],"objective":"How can nodes learn about membership without one central announcer?","models":["gossip"],"guide":false,"sources":["dynamo"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["membership-gossip"]},"boundary":"A suspected failure is not certain death, and convergence takes time.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"coordination-services","order":82,"prerequisites":["consensus","load-balancing"],"paths":["interview","production"],"objective":"Where should services publish names and coordinate ownership?","models":["lease"],"guide":false,"sources":["raft"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["coordination-services"]},"boundary":"Cached discovery results and leases can outlive a disconnected client.","spec_drift":false,"initial_finding":"Fencing-token comparison is executable; service registration/discovery/watch/session lifecycle is absent.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"failure-modes","order":83,"prerequisites":["distributed-trouble"],"paths":["beginner","interview","production"],"objective":"How do you keep one broken dependency from affecting every feature?","models":["bulkhead"],"guide":false,"sources":["sre-cascade"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["failure-modes"]},"boundary":"Shared databases, credentials or capacity can reconnect supposedly isolated domains.","spec_drift":false,"initial_finding":"Amount4-8 changes caption only; fixed occupied slots conceal offered workload and admission. Outcome follows mode rather than demand boundary.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Pool occupancy and rejected calls now derive from actual offered work, including low-demand boundary."},
+    {"id":"timeouts-retries","order":84,"prerequisites":["failure-modes","idempotency"],"paths":["beginner","interview","production"],"objective":"When does retrying help and when does it amplify an outage?","models":["retry"],"guide":false,"sources":["retry"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["timeouts-retries"]},"boundary":"Retrying at several stack layers can multiply attempts and overload a struggling dependency.","spec_drift":false,"initial_finding":"Retry attempt budget is executable; actual backoff schedule and jitter distribution are not visualized.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"circuit-breakers","order":85,"prerequisites":["timeouts-retries"],"paths":["interview","production"],"objective":"When should a caller stop repeatedly hitting a failing service?","models":["breaker"],"guide":false,"sources":["sre-cascade"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["circuit-breakers"]},"boundary":"Recovery probes and thresholds require tuning; a breaker is not a repair for the dependency.","spec_drift":false,"initial_finding":"Open/closed behavior is executable; recovery probes and bulkhead capacity are separate mechanisms.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"cascading-failures","order":86,"prerequisites":["circuit-breakers","backpressure"],"paths":["interview","production"],"objective":"Why did retrying one slow service take down healthy services?","models":["bulkhead"],"guide":false,"sources":["sre-cascade"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["cascading-failures"]},"boundary":"Capacity limits and admission policy matter more than merely increasing timeouts.","spec_drift":false,"initial_finding":"Same inert bulkhead amount control as failure-modes; cross-dependency overload/retry propagation is not represented.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared bulkhead control repaired; network-wide cascade model remains outside current scope."},
+    {"id":"slos","order":87,"prerequisites":["percentiles","failure-modes"],"paths":["beginner","interview","production"],"objective":"How much failure is compatible with the promised service target?","models":["budget"],"guide":false,"sources":["sre-slo"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["slos"]},"boundary":"An average over a broad window can hide a severe short outage.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"observability","order":88,"prerequisites":["slos"],"paths":["beginner","interview","production"],"objective":"Which signal helps explain what a user experienced?","models":["signals"],"guide":false,"sources":["sre-monitor"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["observability"]},"boundary":"Telemetry needs meaningful context and sampling; collecting more data is not automatically diagnosis.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"distributed-tracing","order":89,"prerequisites":["observability"],"paths":["production"],"objective":"Where did time go across one request's dependencies?","models":["trace"],"guide":false,"sources":["trace"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["distributed-tracing"]},"boundary":"Summing overlapping span durations can exceed wall-clock request duration.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"alerting-incidents","order":90,"prerequisites":["observability"],"paths":["production"],"objective":"What should wake someone when users are being harmed?","models":["budget"],"guide":false,"sources":["alerts","sre-incident"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["alerting-incidents"]},"boundary":"An alert needs an owner and a response path; noise can hide the next real incident.","spec_drift":false,"initial_finding":"Error-budget arithmetic is executable; burn-rate windows and actionable incident-response workflow need explicit practice.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"deployments","order":91,"prerequisites":["health-checks","observability"],"paths":["interview","production"],"objective":"How can a bad release hurt fewer users before you stop it?","models":["canary"],"guide":false,"sources":["canary","k8s-deploy"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["deployments"]},"boundary":"A canary with unrepresentative traffic can miss a failure affecting the wider population.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"zero-downtime-migrations","order":92,"prerequisites":["encoding-evolution","deployments","replication"],"paths":["production"],"objective":"How can old and new application versions coexist during a data change?","models":["migration"],"guide":false,"sources":["protobuf","pg-logical"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["zero-downtime-migrations"]},"boundary":"Large backfills can load storage and replication; rollback needs data compatibility too.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"multi-region","order":93,"prerequisites":["replication-lag","cdn","failure-modes","cap-pacelc"],"paths":["interview","production"],"objective":"What survives when a whole region becomes unavailable?","models":["recovery"],"guide":false,"sources":["pg-replication","pacelc"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["multi-region"]},"boundary":"Failover requires tested routing, capacity and split-brain policies; distance adds coordination cost.","spec_drift":false,"initial_finding":"Replication-before-failure versus missing writes is executable; routing, RTO and safe promotion are outside model.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"fault-injection","order":94,"prerequisites":["failure-modes","observability"],"paths":["production"],"objective":"How can you test a resilience claim before a real outage?","models":["injection"],"guide":false,"sources":["sre-cascade"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["fault-injection"]},"boundary":"A passing small fault experiment is not proof against every failure combination.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"security-map","order":95,"prerequisites":["api-design","tls"],"paths":["beginner","interview","production"],"objective":"Which boundary decides who may do what to which data?","models":["gate"],"guide":false,"sources":["authn","authz","secrets"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["security-map"]},"boundary":"No single control removes the need for the others or for secure defaults.","spec_drift":false,"initial_finding":"Authorization gate alone does not supply the promised authentication/authorization/encryption threat map.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"authentication","order":96,"prerequisites":["security-map"],"paths":["beginner","interview","production"],"objective":"What does the service actually know about the caller?","models":["identity","tokenPurpose"],"guide":false,"sources":["authn","security-oidc","security-oauth","security-accessJwt"],"assessment":{"kind":"committed binary scenario + open transfer","count":2,"retrieval":["authentication","authentication"]},"boundary":"A valid identity does not imply permission for every resource; tokens need correct issuer and audience checks.","spec_drift":false,"initial_finding":"Credential identity check is executable; sessions, OAuth and OIDC flows in title are not demonstrated.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Access-token versus OIDC ID-token purpose/audience/context companion added; not a full login flow."},
+    {"id":"authorization","order":97,"prerequisites":["authentication"],"paths":["beginner","interview","production"],"objective":"Can a signed-in user read another user's private note?","models":["gate"],"guide":false,"sources":["authz"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["authorization"]},"boundary":"Client-side hiding is not an authorization boundary.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"encryption-secrets","order":98,"prerequisites":["security-map"],"paths":["interview","production"],"objective":"Where should keys live and what happens when one leaks?","models":["rotation"],"guide":false,"sources":["secrets"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["encryption-secrets"]},"boundary":"Encrypted bytes remain exposed if the attacker can use the same decryption key.","spec_drift":false,"initial_finding":"Key rotation is executable; in-transit TLS is elsewhere and at-rest access/key boundaries need explicit cross-links.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"web-vulnerabilities","order":99,"prerequisites":["authorization"],"paths":["beginner","interview","production"],"objective":"How can untrusted text become an unintended database command?","models":["sql","xssContext","csrf"],"guide":false,"sources":["injection","authz","security-xss","security-csrf"],"assessment":{"kind":"committed binary scenario + open transfer","count":3,"retrieval":["web-vulnerabilities","web-vulnerabilities","web-vulnerabilities"]},"boundary":"A SQL-injection defense is not a complete defense against XSS, CSRF or access-control failures.","spec_drift":false,"initial_finding":"SQL injection separation is executable; XSS/CSRF and other OWASP classes are explicitly unmodeled.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"XSS output-context and CSRF request-check companions added beside SQLi; not all OWASP classes."},
+    {"id":"abuse-protection","order":100,"prerequisites":["rate-limiting","cdn","security-map"],"paths":["interview","production"],"objective":"How do you protect useful traffic without trusting every client?","models":["bucket"],"guide":false,"sources":["tokens","authz"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["abuse-protection"]},"boundary":"A per-IP rule can punish shared networks and miss distributed abuse.","spec_drift":false,"initial_finding":"Token quota is executable; distributed abuse and shared-IP false positives remain unexercised.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"privacy-retention","order":101,"prerequisites":["security-map"],"paths":["production"],"objective":"Why keep personal data after its purpose has ended?","models":["retention"],"guide":false,"sources":["privacy"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["privacy-retention"]},"boundary":"Deletion must account for replicas, derived data and retention obligations; this is engineering guidance, not legal advice.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"service-boundaries","order":102,"prerequisites":["stateless-services","api-design"],"paths":["beginner","interview","production"],"objective":"When should one application become several services?","models":["boundaries"],"guide":false,"sources":["boundaries"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["service-boundaries"]},"boundary":"A modular monolith can preserve boundaries without distributed deployment.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"service-communication","order":103,"prerequisites":["service-boundaries","rpc","message-queues"],"paths":["interview","production"],"objective":"Should one service call synchronously or publish work for later?","models":["communication"],"guide":false,"sources":["rabbit","retry"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["service-communication"]},"boundary":"Async work still needs a contract, observability and explicit failure handling.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"cost","order":104,"prerequisites":["estimation","autoscaling"],"paths":["production"],"objective":"Which design meets requirements without spending on unused work?","models":["cost"],"guide":false,"sources":["cost"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["cost"]},"boundary":"A cheaper unit price can lose to overprovisioning, transfer volume or operational burden.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"decision-records","order":105,"prerequisites":["service-boundaries"],"paths":["interview","production"],"objective":"How will the next engineer know why this tradeoff was chosen?","models":["decision"],"guide":false,"sources":["adr"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["decision-records"]},"boundary":"A decision record is revisable evidence of reasoning, not a permanent ban on alternatives.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"review-distributed","order":106,"prerequisites":["consensus","multi-region","service-communication","cascading-failures"],"paths":["interview","production"],"objective":"Can your design explain an unavailable read during a partition?","models":["quorum"],"guide":false,"sources":["raft","sre-cascade"],"assessment":{"kind":"committed binary scenario + open transfer","count":4,"retrieval":["consensus","replication-lag","cap-pacelc","circuit-breakers"]},"boundary":"A single successful scenario does not establish a complete distributed safety argument.","spec_drift":false,"initial_finding":"Four scenarios cover consensus/lag/CAP/breaker; operation/security/service-boundary concepts from stages9-11 are not retrieved.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"interview-method","order":107,"prerequisites":["estimation","api-design","data-modelling"],"paths":["interview"],"objective":"How do you turn a vague product prompt into a defensible design?","models":["architecture"],"guide":false,"sources":["sre-overload","adr"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["interview-method"]},"boundary":"Interview estimates are stated assumptions, not measured production facts.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"case-url-shortener","order":108,"prerequisites":["interview-method","unique-ids","app-caching","choosing-a-database"],"paths":["interview"],"objective":"How would a short link stay fast and resolve to the right target?","models":["cache"],"guide":true,"sources":["http-cache","uuid"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["case-url-shortener"]},"boundary":"Key collisions, hot links and malicious destinations need policies beyond a fast cache.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"case-rate-limiter","order":109,"prerequisites":["interview-method","rate-limiting","app-caching","consistency-models"],"paths":["interview"],"objective":"How do several servers share a single admission budget?","models":["sharedQuota"],"guide":true,"sources":["tokens"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["case-rate-limiter"]},"boundary":"Availability during a partition can conflict with enforcing a strict global quota.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"case-news-feed","order":110,"prerequisites":["interview-method","pub-sub","app-caching","partitioning"],"paths":["interview"],"objective":"Should a post be copied to every follower or assembled when read?","models":["feed"],"guide":true,"sources":["rabbit","pg-partition"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["case-news-feed"]},"boundary":"Large audiences, privacy changes and freshness requirements can favor a hybrid.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"case-chat","order":111,"prerequisites":["interview-method","realtime","message-queues","partitioning"],"paths":["interview"],"objective":"What does sent mean when a chat recipient is offline?","models":["chat"],"guide":true,"sources":["kafka","rabbit"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["case-chat"]},"boundary":"Ordering needs a scope; reconnect, duplicate delivery and device sync require explicit policies.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"case-notifications","order":112,"prerequisites":["interview-method","delivery-semantics","rate-limiting"],"paths":["interview"],"objective":"How do you retry a notification without sending it forever?","models":["dedup"],"guide":true,"sources":["rabbit","stripe"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["case-notifications"]},"boundary":"A provider acknowledgment does not establish that a person saw a notification.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"case-web-crawler","order":113,"prerequisites":["interview-method","dns","message-queues","probabilistic-structures"],"paths":["interview"],"objective":"How does a crawler explore many sites without overwhelming one host?","models":["crawler"],"guide":true,"sources":["robots"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["case-web-crawler"]},"boundary":"Robots rules are requests to crawlers, not an authorization or security control.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"case-search-autocomplete","order":114,"prerequisites":["interview-method","search-indexes","app-caching"],"paths":["interview"],"objective":"How can a partial query quickly produce useful suggestions?","models":["prefix"],"guide":true,"sources":["pg-search"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["case-search-autocomplete"]},"boundary":"Popularity, freshness and privacy require explicit data and update decisions.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"case-file-storage","order":115,"prerequisites":["interview-method","object-storage","cdn","conflict-resolution"],"paths":["interview"],"objective":"What happens when two devices edit the same offline file?","models":["fileVersions"],"guide":true,"sources":["s3","crdt"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["case-file-storage"]},"boundary":"Keeping divergent file versions exposes conflicts; it does not automatically merge text or binary edits.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"case-video-streaming","order":116,"prerequisites":["interview-method","object-storage","cdn","batch-processing"],"paths":["interview"],"objective":"How can many viewers play one video without one origin sending every byte?","models":["segments"],"guide":true,"sources":["s3","http-cache"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["case-video-streaming"]},"boundary":"Encoding cost, startup delay, bitrate adaptation and content rights remain distinct design responsibilities.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"case-proximity","order":117,"prerequisites":["interview-method","geospatial-indexes","app-caching"],"paths":["interview"],"objective":"How can a nearby search narrow candidates and still get distance right?","models":["spatial"],"guide":true,"sources":["postgis"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["case-proximity"]},"boundary":"A rectangular prefilter is not an exact circular-distance test.","spec_drift":false,"initial_finding":null,"review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"case-payments","order":118,"prerequisites":["interview-method","idempotency","distributed-transactions","isolation"],"paths":["interview"],"objective":"How can a checkout retry without charging twice or losing its ledger record?","models":["dedup"],"guide":true,"sources":["stripe","pg-tx","outbox"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["case-payments"]},"boundary":"A local database transaction cannot atomically commit an unrelated provider's side effect.","spec_drift":false,"initial_finding":"Whole request/fault guide plus dedup zoom exist; ledger balance/reconciliation invariant is not executable.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"},
+    {"id":"capstone","order":119,"prerequisites":["decision-records","review-distributed","case-payments"],"paths":["interview"],"objective":"Can you defend a complete design when a core assumption fails?","models":["architecture"],"guide":true,"sources":["adr","sre-overload","pg-tx"],"assessment":{"kind":"committed binary scenario + open transfer","count":1,"retrieval":["capstone"]},"boundary":"This course's small models support reasoning; a production design needs workload measurement and deeper validation.","spec_drift":false,"initial_finding":"Full-design worksheet is explicitly self-assessed; one binary architecture scenario is not independent end-to-end design validation.","review":"source-only; rendered and independent teaching acceptance pending","source_repair":"Shared committed scoring/revisit/reset contract"}
+  ]
+}

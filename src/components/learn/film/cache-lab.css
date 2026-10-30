@@ -1,0 +1,53 @@
+.cache-lab .cache-write-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    cursor: pointer;
+}
+.cache-write-control input {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+}
+.cache-workload {
+    overflow-wrap: anywhere;
+}
+.cache-ledger {
+    max-width: 100%;
+    overflow-x: auto;
+    margin-block: 16px;
+    border: 1px solid var(--rule);
+}
+.cache-ledger:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+}
+.cache-ledger table {
+    width: 100%;
+    min-width: 600px;
+    border-collapse: collapse;
+    font-size: 16px;
+    line-height: 1.5;
+}
+.cache-ledger caption {
+    text-align: left;
+    padding: 12px;
+}
+.cache-ledger th,
+.cache-ledger td {
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+    border-top: 1px solid var(--rule);
+}
+.cache-ledger th {
+    font-weight: 700;
+}
+.cache-worked > .lf-main-controls {
+    margin-block: 18px;
+}
+.cache-worked button[aria-pressed='true'] {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+}

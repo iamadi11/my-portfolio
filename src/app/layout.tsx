@@ -94,13 +94,12 @@ const structuredDataJsonLd = {
     ],
 } as const;
 
-/** White paper, single light theme by design (`globals.css`). */
+/** Both themes are supported. CSS and the before-paint preference script choose the actual appearance. */
 export const viewport: Viewport = {
     width: 'device-width',
     initialScale: 1,
     viewportFit: 'cover',
-    themeColor: '#ffffff',
-    colorScheme: 'light',
+    colorScheme: 'light dark',
 };
 
 export const metadata: Metadata = {

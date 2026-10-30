@@ -1,19 +1,37 @@
 'use client';
 
-import React, { useId, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useId, useRef, useState } from 'react';
+
+import { useSearchParams } from 'next/navigation';
 
 /**
- * Learn, Interactive Lab, Quiz. One chapter, three jobs. Inactive panels stay mounted so a lab's
+ * Learn, Explore, Assess. One chapter, three jobs. Inactive panels stay mounted so a lab's
  * inputs survive a tab change, and they are hidden from the accessibility tree.
  */
 
 const TABS = [
     { id: 'learn', label: 'Learn' },
-    { id: 'lab', label: 'Interactive Lab' },
-    { id: 'quiz', label: 'Quiz' },
+    { id: 'explore', label: 'Explore' },
+    { id: 'assess', label: 'Assess' },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
+
+/** Keep server-rendered lesson content while only the URL observer needs a Suspense boundary. */
+function TabFromUrl({ select }: { select: (tab: TabId) => void }): null {
+    const params = useSearchParams();
+    const value = params.get('tab');
+    useEffect(() => {
+        select(
+            value === 'explore' || value === 'lab'
+                ? 'explore'
+                : value === 'assess' || value === 'quiz'
+                  ? 'assess'
+                  : 'learn'
+        );
+    }, [select, value]);
+    return null;
+}
 
 export default function ChapterTabs({
     learn,
@@ -41,13 +59,20 @@ export default function ChapterTabs({
         ) : (
             learn
         ),
-        lab,
-        quiz,
+        explore: lab,
+        assess: quiz,
     };
 
+    const change = (next: TabId): void => {
+        setTab(next);
+        const url = new URL(window.location.href);
+        if (next === 'learn') url.searchParams.delete('tab');
+        else url.searchParams.set('tab', next);
+        window.history.replaceState(null, '', url);
+    };
     const select = (index: number): void => {
         const next = (index + TABS.length) % TABS.length;
-        setTab(TABS[next].id);
+        change(TABS[next].id);
         buttons.current[next]?.focus();
     };
 
@@ -70,6 +95,9 @@ export default function ChapterTabs({
 
     return (
         <div className="ln-chapter-tabs">
+            <Suspense fallback={null}>
+                <TabFromUrl select={setTab} />
+            </Suspense>
             <div role="tablist" aria-label="Chapter sections" onKeyDown={onKeyDown}>
                 {TABS.map((item, index) => {
                     const selected = tab === item.id;
@@ -86,7 +114,7 @@ export default function ChapterTabs({
                             aria-controls={`${base}-${item.id}-panel`}
                             tabIndex={selected ? 0 : -1}
                             className="ln-tab"
-                            onClick={() => setTab(item.id)}
+                            onClick={() => change(item.id)}
                         >
                             {item.label}
                         </button>

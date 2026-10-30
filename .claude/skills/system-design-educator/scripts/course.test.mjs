@@ -507,7 +507,7 @@ test('anatomy-3d: an implemented animation needs Animation sense, and tested nee
     );
 });
 
-test('implemented chapter needs Learn, Lab and Quiz', () => {
+test('implemented chapter needs three jobs, accepting current and historical tab labels', () => {
     const rows = [row('a', 1, '', 'implemented')];
     const bare = READ.replace(
         '## Tabs\n\n- Learn: the figure, not the controls\n- Lab: the model inputs\n- Quiz: retrieval, answer hidden\n\n',
@@ -515,8 +515,11 @@ test('implemented chapter needs Learn, Lab and Quiz', () => {
     );
     assert.match(run(course({ rows, specs: { a: bare } }), 'check').out, /needs "## Tabs"/);
     const noQuiz = READ.replace('- Quiz: retrieval, answer hidden\n', '');
-    assert.match(run(course({ rows, specs: { a: noQuiz } }), 'check').out, /needs "- Quiz:/);
+    assert.match(run(course({ rows, specs: { a: noQuiz } }), 'check').out, /needs "- Assess:/);
     assert.doesNotMatch(run(course({ rows, specs: { a: READ } }), 'check').out, /## Tabs/);
+    const current = READ.replace('- Lab:', '- Explore:').replace('- Quiz:', '- Assess:');
+    assert.doesNotMatch(run(course({ rows, specs: { a: current } }), 'check').out, /## Tabs/);
+    assert.match(run(course({ rows, specs: { a: current.replace('- Explore: the model inputs', '') } }), 'check').out, /needs "- Explore:/);
 });
 
 test('visual-first: missing asset plan, fields, coverage and unknown type fail', () => {

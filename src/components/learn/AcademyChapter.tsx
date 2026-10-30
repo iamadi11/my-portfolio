@@ -2,16 +2,21 @@ import React from 'react';
 
 import Link from 'next/link';
 
-import { COMPANION_MODELS, recallFor, type AcademyLesson } from '@/content/learn/academy';
+import { COMPANION_MODELS, companionFor, recallFor, type AcademyLesson } from '@/content/learn/academy';
 import { DESIGN_GUIDES, designFilm } from '@/content/learn/design-guides';
 import { MECHANISM_TERMS } from '@/content/learn/mechanism-terms';
 import { makeExperimentFilm, MECHANISMS, simulateMechanism } from '@/lib/learn/experiment-model';
+import { LOAD_BALANCING_QUESTIONS } from '@/lib/learn/load-balancing';
+import { PARTITIONED_LOG_QUESTIONS } from '@/lib/learn/partitioned-log';
 
 import ChapterTabs from './ChapterTabs';
 import DesignWorksheet from './DesignWorksheet';
-import { AcademyLab, AcademyQuiz } from './film/AcademyPractice';
+import AcademyQuiz from './film/Assessment';
+import AcademyLab from './film/DeferredAcademyLab';
 import LessonFilm from './film/LessonFilm';
+import LoadBalancingLab, { LoadBalancingLearn } from './film/LoadBalancingLab';
 import MechanismCompare from './film/MechanismCompare';
+import PartitionedLogLab, { PartitionedLogLearn } from './film/PartitionedLogLab';
 
 export default function AcademyChapter({ lesson }: { lesson: AcademyLesson }): React.JSX.Element {
     const spec = MECHANISMS[lesson.model],
@@ -27,12 +32,7 @@ export default function AcademyChapter({ lesson }: { lesson: AcademyLesson }): R
         lesson.id.startsWith('case-') ||
         ['capstone', 'interview-method', 'decision-records'].includes(lesson.id);
     const guide = DESIGN_GUIDES[lesson.id];
-    const companions = (COMPANION_MODELS[lesson.id] ?? []).map((model) => ({
-        ...lesson,
-        model,
-        question: `What changes between “${MECHANISMS[model].modes[0]}” and “${MECHANISMS[model].modes[1]}”?`,
-        rule: MECHANISM_TERMS[model][1],
-    }));
+    const companions = (COMPANION_MODELS[lesson.id] ?? []).map((model) => companionFor(lesson, model));
     return (
         <article aria-labelledby="ch-h">
             <header className="ln-head">
@@ -45,6 +45,7 @@ export default function AcademyChapter({ lesson }: { lesson: AcademyLesson }): R
                 <p className="ln-lede">{lesson.question}</p>
             </header>
             <ChapterTabs
+                key={lesson.id}
                 learn={
                     <>
                         <aside className="ac-primer" aria-label="Before you watch">
@@ -92,14 +93,27 @@ export default function AcademyChapter({ lesson }: { lesson: AcademyLesson }): R
                                 <h2 className="ac-experiment-heading">Zoom into one design decision</h2>
                             </>
                         )}
-                        <MechanismCompare
-                            bundled={lesson.model === 'architecture'}
-                            modes={spec.modes}
-                            examples={[
-                                { film, ...example },
-                                { film: alternativeFilm, ...alternative },
-                            ]}
-                        />
+                        {lesson.id === 'load-balancing' ? (
+                            <>
+                                <p className="al-why">
+                                    Layer 4 routes transport connections; layer 7 can inspect application
+                                    requests, such as an HTTP path. This model isolates routing: one request
+                                    holds one connection, with no multiplexing.
+                                </p>
+                                <LoadBalancingLearn />
+                            </>
+                        ) : lesson.id === 'logs-streams' ? (
+                            <PartitionedLogLearn />
+                        ) : (
+                            <MechanismCompare
+                                bundled={lesson.model === 'architecture'}
+                                modes={spec.modes}
+                                examples={[
+                                    { film, ...example },
+                                    { film: alternativeFilm, ...alternative },
+                                ]}
+                            />
+                        )}
                         {companions.map((companion) => {
                             const definition = MECHANISMS[companion.model];
                             return (
@@ -174,7 +188,13 @@ export default function AcademyChapter({ lesson }: { lesson: AcademyLesson }): R
                 }
                 lab={
                     <>
-                        <AcademyLab lesson={lesson} />
+                        {lesson.id === 'load-balancing' ? (
+                            <LoadBalancingLab />
+                        ) : lesson.id === 'logs-streams' ? (
+                            <PartitionedLogLab />
+                        ) : (
+                            <AcademyLab lesson={lesson} />
+                        )}
                         {companions.map((companion) => (
                             <details className="ln-watch-depth" key={companion.model}>
                                 <summary>Experiment with {MECHANISM_TERMS[companion.model][0]}</summary>
@@ -183,7 +203,18 @@ export default function AcademyChapter({ lesson }: { lesson: AcademyLesson }): R
                         ))}
                     </>
                 }
-                quiz={<AcademyQuiz id={lesson.id} questions={recallFor(lesson)} />}
+                quiz={
+                    <AcademyQuiz
+                        id={lesson.id}
+                        questions={
+                            lesson.id === 'load-balancing'
+                                ? LOAD_BALANCING_QUESTIONS
+                                : lesson.id === 'logs-streams'
+                                  ? PARTITIONED_LOG_QUESTIONS
+                                  : recallFor(lesson)
+                        }
+                    />
+                }
             />
         </article>
     );

@@ -7,7 +7,7 @@ Authoring authority: `src/content/learn/academy-lessons.json` entry `message-que
 ## Boundary
 
 1. Explain: A broker can keep work pending until acknowledgment and redeliver under the selected policy.
-2. Predict the observable result after changing delivery attempts after a crash or the declared policy.
+2. Predict the observable result after changing replacement work requests after a crash or the declared policy.
 
 Limit: Redelivery can repeat an effect; acknowledgments and side effects need coordinated design.
 Misconception: Receiving a message once guarantees its effect executes exactly once.
@@ -19,11 +19,14 @@ Hardest: distinguish the selected teaching policy from a production guarantee. R
 
 ## Storyboard
 
-Baseline input: Delivery attempts after a crash = 3; policy: Acknowledge before processing. The contrasting policy is Acknowledge after durable effect.
+Baseline input: Replacement work requests after a crash = 3. Policies: acknowledge before processing versus retain the obligation until durable processing finishes.
 
-1. Broker retains work: A delivery is not the same as a durable application effect.
-2. Early ack: The broker drops its delivery obligation before the effect is saved.
-3. Worker crashes: The worker crashes before saving the effect.
+1. A ready worker receives one job; delivery and durable effect are separate states.
+2. Under early acknowledgment, the broker drops its obligation before that worker crashes. A live replacement makes three work requests and receives empty results.
+3. Under late acknowledgment, channel closure requeues the job. Before every replacement delivery, the trace starts a live replacement and records its work request.
+4. Every receiving replacement crashes before saving an effect or acknowledging; the same one obligation remains. Three replacements therefore add three actual deliveries but no saved effects.
+
+This intentionally repeated-failure run illustrates retention, not successful completion or a guarantee of progress. Broker availability, connection-closure detection and successful requeue are assumptions. A crash after durable effect but before acknowledgment is a different duplicate-effect example.
 
 For case chapters and capstone, `design-guides.ts` additionally owns the requirement, explicit workload arithmetic, full read/write path, failure, tradeoff and transfer challenge. The mechanism film is a zoom into one decision, not the complete architecture.
 
@@ -52,7 +55,7 @@ Research (before drawing): the relevant source sections below were read before t
 - notice: Receiving a message once guarantees its effect executes exactly once.
 - model: simulateMechanism in experiment-model.ts delegates topic-specific state machines to topic-models.ts when applicable
 - feedback: the experiment trace supplies the film, verdict, explanatory boundaries and displayed metrics
-- assumptions: Redelivery can repeat an effect; acknowledgments and side effects need coordinated design. Inputs are clamped to 1–4; five-second beats are display time only.
+- assumptions: Redelivery can repeat an effect; acknowledgments and side effects need coordinated design. Inputs are clamped to 1–4; player seconds are display time only. Channel closure requeues unacknowledged work; every actual job delivery requires a live receiver.
 - outcome: A broker can keep work pending until acknowledgment and redeliver under the selected policy.
 - accessibility: keyboard transport, transcript, explicit static steps, dynamic reduced motion, HTML state summary, theme tokens and readable text
 - tests: every allowed input has a selectable result, finite nonnegative quantities, deterministic seeks and known endpoints; additional misconception invariants
@@ -62,8 +65,8 @@ Research (before drawing): the relevant source sections below were read before t
 ## Tabs
 
 - Learn: term definition, prerequisite links, model film, takeaway and worked assumptions. Cases add the whole design and workload calculation.
-- Lab: changed quantity/policy, required prediction before result, computed trace and explanation.
-- Quiz: a changed-input scenario, shuffled correct position, hidden feedback until commitment and an open transfer reflection.
+- Explore: changed quantity/policy, required prediction before result, computed trace and explanation.
+- Assess: a changed-input scenario, shuffled correct position, hidden feedback until commitment and an open transfer reflection.
 
 ## Explanation (14 questions)
 
@@ -89,3 +92,7 @@ accessed: Opened 2026-10-29; relevant material: Publisher confirms, consumer ack
 ## Evidence
 
 Implementation and bounded model tests are tracked in `docs/system-design/EXPANSION_QA.md`. This chapter remains implemented, not tested or verified: a full per-chapter independent review, physical-device check, screen-reader check, axe/Lighthouse and learner outcome study are not claimed.
+
+## Mission repair M2
+
+Removed arrivals at a worker kept crashed. The model explicitly starts each receiving replacement before delivery; early acknowledgment produces empty broker responses instead of invented jobs. The quantity controls actual work requests under both policies. `src/lib/learn/redelivery.test.ts` checks legal intermediate receiver states, retained obligations, delivery counts, repeated failures and early-ack loss across all bounded inputs. Primary RabbitMQ source was reread 2026-10-30, section “When Consumers Fail or Lose Connection: Automatic Requeueing”. Rendered acceptance remains separate.

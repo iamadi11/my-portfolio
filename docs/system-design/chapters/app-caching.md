@@ -1,81 +1,104 @@
 # app-caching: Who updates the cache after the database changes?
 
-Id: app-caching · Status lives only in CURRICULUM.md.
+Id: app-caching · Stage: 5 · Paths: beginner interview production (status lives only in CURRICULUM.md)
+Prerequisites: caching-basics stateless-services
 Standard: anatomy-3d
-Authoring authority: `src/content/learn/academy-lessons.json` entry `app-caching`; model `cache`. This compact record references shared code to avoid loading duplicate implementations.
+Authoring authority: `src/content/learn/academy-lessons.json` entry `app-caching`; model `cacheWrite`.
 
 ## Boundary
 
-1. Explain: Cache-aside loads on a miss; write-through and write-back put different steps on the write path.
-2. Predict the observable result after changing age of cached copy (ticks) or the declared policy.
+1. Trace a database write that leaves a warm cache entry stale when invalidation is missing.
+2. Trace the contrasting ordered database-then-cache update before acknowledgement.
+3. Explain why the illustrated sequence is not an atomic database/cache transaction and why write-back needs separate recovery.
 
+In scope: Cache-aside with missing invalidation versus one assumed-successful write-through sequence. Write-back, concurrent stale fills, failure between writes and eviction are discussed boundaries, not executable guarantees.
 Limit: Write-back needs durable pending work and recovery; a volatile cache is not automatically authoritative storage.
 Misconception: Updating the database and cache separately is an atomic operation.
 
 ## Concept decomposition
 
-Hardest: connect this chapter’s rule to the actual state owner: Cached version, Origin version, Returned version.
-Hardest: distinguish the selected teaching policy from a production guarantee. Write-back needs durable pending work and recovery; a volatile cache is not automatically authoritative storage.
+Mechanism: Cache-aside loads on a miss; write-through and write-back put different steps on the write path.
+Temporal behavior: event traces own component values, counts, direction and results; display time is independent of simulated state.
+Quantitative relations: values below are finite teaching assumptions, not measured performance.
+Hardest: A successful database commit does not modify a separately stored cache entry (A1).
+Hardest: A coordinated two-step update is not atomic; write-back durability is a different unmodeled contract (A1).
+
+## Parts you will meet
+
+Cache-aside: application fetches and caches on a miss. Write-through here: update database then cache before success. Write-back: acknowledge cached work before later origin persistence, requiring its own durable pending-work policy.
 
 ## Storyboard
 
-Baseline input: Age of cached copy (ticks) = 2; policy: Reuse if policy-fresh. The contrasting policy is Invalidate before reading.
-
-1. Two stored versions: The origin is version 2; the cache still holds version 1.
-2. Check freshness: A cached copy aged 2 ticks is policy-fresh only while its age is below 3.
-3. Read result: The policy permits an older copy; policy-fresh does not mean the newest origin version.
-
-For case chapters and capstone, `design-guides.ts` additionally owns the requirement, explicit workload arithmetic, full read/write path, failure, tradeoff and transfer challenge. The mechanism film is a zoom into one decision, not the complete architecture.
+Baseline: New profile version = 6; “Cache-aside without invalidation”. Comparison: “Write through database then cache”.
+1. Warm cache: Database and cache both hold version 5.
+2. Write database: Application commits version 6 to the database.
+3. Missing invalidation: The database changed but this cache-aside implementation neither deletes nor updates the old cache entry.
+4. Read cache hit: A later read hits version 5; it does not fetch the database on a hit.
 
 ## Animation sense
 
 Mechanism: Cache-aside loads on a miss; write-through and write-back put different steps on the write path.
-Moving quantity: model events between the actual owning components; displayed counts and versions change only from the event trace.
-Model field: simulateMechanism('cache', input).beats; counts, values, from/to and outcome; sampleFilm maps trace time into visible state.
-Learner predicts: one of the model’s two outcomes after selecting a changed input and policy.
-If the moving part is deleted: the lesson is gone as a temporal causal demonstration; static steps and transcript retain the accessible explanation.
-Research (before drawing): the relevant source sections below were read before the current mechanism implementation, on 2026-10-29.
+Moving quantity: Application, Database, Cache; event messages explain each state transition, not decoration.
+Model field: simulateMechanism('cacheWrite', input).beats; sampleFilm derives a legal frame from that trace.
+Learner predicts: Stale cached version returned or Updated cached version returned, then explains the relevant assumption.
+If the moving part is deleted: the lesson is gone as a temporal causal demonstration; complete static steps and transcript preserve its accessible explanation.
+Research (before drawing): primary records below retain their actual earlier access dates; this reconciliation adds no claim that every source was reopened. NGINX methods/health and PostgreSQL WAL were reopened in the 2026-10-30 mission audit.
 
 ## Asset plan
 
-### A1. Model-driven worked example and experiment
+### A1. Causal comparison and experiment
 
-- objective: 1, 2
+- objective: 1, 2, 3
 - type: 3d
-- object: Cached version, Origin version, Returned version, displayed with recognizable service, storage and host geometry
+- object: Application, Database, Cache, shown as named components using shared recognizable hardware
 - render: anatomy-iso
-- fidelity: computed discrete event trace, quantities and outcome; scaled device geometry and playback timing; assumed finite workload, no benchmark or real network simulation
-- pattern: step manipulate predict
-- learner sees: before, event and after states for the chapter’s cache mechanism
-- animated: message translation and model-owned visible counts/values change along the causal trace; static stepping shows the committed event state
-- learner does: play or step, choose an input and policy, commit a prediction, run and compare
-- notice: Updating the database and cache separately is an atomic operation.
-- model: simulateMechanism in experiment-model.ts delegates topic-specific state machines to topic-models.ts when applicable
-- feedback: the experiment trace supplies the film, verdict, explanatory boundaries and displayed metrics
-- assumptions: Write-back needs durable pending work and recovery; a volatile cache is not automatically authoritative storage. Inputs are clamped to 0–8; five-second beats are display time only.
+- fidelity: computed trace/counts/values; scaled isometric geometry; assumed workload and playback timing; no latency or throughput benchmark
+- pattern: step manipulate predict compare
+- learner sees: Cache-aside: application fetches and caches on a miss. Write-through here: update database then cache before success. Write-back: acknowledge cached work before later origin persistence, requiring its own durable pending-work policy.
+- animated: a model message travels between explicit component ports; arrival commits its owned state; refusals and timeouts do not become packet loss
+- learner does: play, pause, seek, step, compare the policies, change inputs, commit a prediction, run and reset
+- notice: A successful database commit does not modify a separately stored cache entry (A1).
+- model: simulateMechanism('cacheWrite', {amount, alternative}); amount 2–8, default 6; modes: Cache-aside without invalidation / Write through database then cache.
+- feedback: trace-derived outcome, explanation, visible state and metrics are shown only after the prediction
+- assumptions: Cache-aside with missing invalidation versus one assumed-successful write-through sequence. Write-back, concurrent stale fills, failure between writes and eviction are discussed boundaries, not executable guarantees. Beat lengths are caption-dependent playback durations from paceFilm, never real system timing.
 - outcome: Cache-aside loads on a miss; write-through and write-back put different steps on the write path.
-- accessibility: keyboard transport, transcript, explicit static steps, dynamic reduced motion, HTML state summary, theme tokens and readable text
-- tests: every allowed input has a selectable result, finite nonnegative quantities, deterministic seeks and known endpoints; additional misconception invariants
-- evidence: source/model implementation; independent review coverage and rendered checks are recorded separately in EXPANSION_QA.md, never inferred from this spec
-- built: `src/components/learn/AcademyChapter.tsx`, `src/components/learn/film/AcademyPractice.tsx`, `src/components/learn/film/Scene.tsx`, `src/lib/learn/experiment-model.ts`, `src/lib/learn/topic-models.ts`, `src/lib/learn/experiment-model.test.ts`
+- accessibility: keyboard controls, transcript, HTML state summary, static steps, reduced motion and theme-aware geometry
+- tests: finite-input invariants and misconception counterexamples; current report separates these from browser acceptance
+- evidence: source/model correspondence recorded in MISSION_COURSE_AUDIT.md; no independent rendered acceptance inferred
+- built: `src/components/learn/AcademyChapter.tsx`, `src/components/learn/film/AcademyPractice.tsx`, `src/components/learn/film/Scene.tsx`, `src/lib/learn/topic-models.ts`, `src/lib/learn/anatomy-refinement.test.ts`
 
 ## Tabs
 
-- Learn: term definition, prerequisite links, model film, takeaway and worked assumptions. Cases add the whole design and workload calculation.
-- Lab: changed quantity/policy, required prediction before result, computed trace and explanation.
-- Quiz: a changed-input scenario, shuffled correct position, hidden feedback until commitment and an open transfer reflection.
+- Learn: visual worked comparison, prerequisites and concise rule; deeper assumptions remain disclosed.
+- Lab: UI label **Explore**; commit a prediction, change an actual input/policy, run, inspect the trace and reset.
+- Quiz: UI label **Assess**; commit scenario answers before feedback; scores and revisit links reflect this attempt only; open transfer remains self-assessed.
 
 ## Explanation (14 questions)
 
-The authored question is “Who updates the cache after the database changes?” The rule, misconception and boundary live in the compact blueprint. The executable storyboard shows the mechanism rather than replacing it with generic packet motion. Terms are defined before the film; prerequisites are linked. Technical depth is disclosed after the short film. The changed-input quiz requires applying assumptions instead of copying the takeaway. Cases require a defended read/write path, estimate, failure and tradeoff. These are teaching aids, not empirical proof of learning outcomes or comprehensive production training.
+1. **Problem:** A saved profile still displays its old value.
+2. **Why it matters:** Users can act on stale data despite a successful write.
+3. **First attempt:** Change only the authoritative database.
+4. **When it works:** Later reads are current if no older cached entry is reused.
+5. **Failure:** A warm cache returns its old version after the database changes.
+6. **Closer observation:** Compare database version, cache version and the returned version.
+7. **Mechanism:** The baseline omits invalidation; the alternative updates the cache before acknowledging.
+8. **Experiment:** Change the new version 2–8 and the write-path policy.
+9. **Alternatives:** Invalidate on database writes, write through, or use a separately designed write-back workflow.
+10. **Tradeoffs:** Additional cache writes and coordination cost work; delayed persistence introduces recovery responsibility.
+11. **Choose it when:** Use the application’s freshness, failure and durability requirements.
+12. **Do not infer:** Do not promise atomicity across independent database and cache writes.
+13. **In your own words:** Explain why clearing or updating one cache entry differs from committing the database.
+14. **Transfer:** Apply the same stale-derived-copy reasoning to an edge cache or search projection.
 
 ## Visual
 
-Shared isometric SVG renderer, genuine message endpoints and model-owned state labels. Quantities beyond the drawn mark budget keep their full numeric count and an abbreviation label. Refusal and delay are not labelled packet loss.
+A frozen frame must agree with trace state. Device anatomy identifies the state owner; small details are not protocol events. Counts remain exact even where marks are abbreviated. No depth, light or motion effect changes the model verdict.
 
 ## Practice
 
-Predict Older copy returned or Current copy returned under the selected policy. Run only after choosing. Explain which state changed and why. Recall later under a changed quantity; mixed reviews draw from prerequisite mechanisms. Optional device-local activity is separated into viewed, practiced and recall checked.
+Commit to a prediction, inspect the changed state, then answer: Explain why clearing or updating one cache entry differs from committing the database.
+Transfer: Apply the same stale-derived-copy reasoning to an edge cache or search projection.
+Assess recommendations come from missed committed scenarios, including registered companion mechanisms. They are deterministic guidance, not inferred mastery.
 
 ## Sources
 
@@ -86,6 +109,13 @@ via: read
 supports: [mechanism, boundary]
 accessed: Opened 2026-10-29; relevant material: Memory limit, LRU/LFU and cache copies.
 
+- id: cache-aside
+title: Microsoft cache-aside pattern
+url: https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside
+via: read
+supports: [mechanism, boundary]
+accessed: Opened 2026-10-30; solution and staleness-after-writes sections.
+
 ## Evidence
 
-Implementation and bounded model tests are tracked in `docs/system-design/EXPANSION_QA.md`. This chapter remains implemented, not tested or verified: a full per-chapter independent review, physical-device check, screen-reader check, axe/Lighthouse and learner outcome study are not claimed.
+This author record was reconciled with the actual model/controls in the 2026-10-30 mission. Status remains implemented. Unit/model evidence and browser results belong in the mission audit/QA reports; a spec rewrite does not establish independent technical acceptance, physical-device accessibility or learner outcomes.

@@ -1,23 +1,29 @@
 # Map: what happens when you open a website
 
 Id: web-request · Stage: 1 · Paths: beginner interview production (status lives only in CURRICULUM.md)
-Standard: legacy — written before the visual-first standard (2026-10-27); a mode D pass adds the storyboard and asset plan
+Standard: anatomy-3d
 Implementation: `src/app/learn/web-request/page.tsx`, `src/components/learn/web-request/JourneyStepper.tsx`,
 `src/lib/learn/web-request-model.ts` (+ `.test.ts`), `src/content/learn/web-request-sources.ts`
 Prerequisites: none · Related: client-server, dns, tcp, tls, http, http-caching, latency-throughput, http-versions
+
+## Current implementation contract · 2026-10-30
+
+Learn starts with `LESSON_FILMS` through the shared anatomy SVG player. The original explanation and specialist visual remain inside Go deeper. Explore retains its original pure model and meaningful inputs; it is not replaced by the introductory film. Assess now requires a written commitment before its explanation, followed by explicit self-assessment and optional experiment revisit. No automatic mastery score is inferred.
+
+The asset plan below maps the original objectives to actual live files. Original review/evidence blocks retain their historical scope; this reconciliation is source inspection, not a new rendered acceptance or independent teaching review. Playback durations come from the current player pacing contract, not a fixed five-second promise.
 
 ## Boundary
 
 Objectives (observable):
 
 1. Name, in order, the steps between pressing Enter on `https://example.com/` and seeing the page:
-   1. read the URL
-   2. look up the hostname
-   3. open a connection
-   4. secure it
-   5. send the request
-   6. receive the response
-   7. parse and render
+   - read the URL
+   - look up the hostname
+   - open a connection
+   - secure it
+   - send the request
+   - receive the response
+   - parse and render
 2. Say which steps wait on the network, and count the round trips a first visit needs before the first byte of the
    page arrives.
 3. Predict which steps a repeat visit can skip (cached name, reused connection, fresh cached response) and why that
@@ -53,6 +59,66 @@ Misconceptions targeted:
   connection that stays open for later requests [mdn-http-overview] pays it only once (derived).
 - "Once the HTML arrives, the page is done." The browser still has to parse, fetch subresources, lay out and paint.
   [mdn-how-browsers-work]
+
+## Concept decomposition
+
+Mental model: a first HTTPS visit waits on distinct dependencies before the first byte. The intro names the components; the time rail explains the assumed time.
+Mechanism: DNS plus TCP/TLS/request round trips and server processing, with steps removed under explicit reuse/cache assumptions.
+Hardest: count round trips separately from server work; A2 shows the sum and travel share.
+Hardest: a reused connection or fresh cached body skips work only under the declared policy; A1 orients and A2 compares the cases.
+
+## Storyboard
+
+1. Watch the five authored beats: start with a name, resolve it, connect securely, request and receive the page.
+2. Open Go deeper to separate the TCP and TLS steps, then inspect the timing rail and its explicit assumptions.
+3. In Explore choose visit/RTT/DNS/server time, commit the changed repeat-visit prediction, and compare the computed milliseconds.
+4. In Assess commit reasoning about ordering/reuse/timing, compare explanations and choose whether to revisit Explore. HTTP/2 connection coalescing is a later boundary, not forbidden by the model.
+
+## Asset plan
+
+### A1. Component-oriented page-load introduction
+
+- objective: 1
+- type: 3d
+- object: named browser, service/network and storage/endpoint devices from this chapter’s authored film
+- render: anatomy-iso
+- fidelity: computed event state/message position; scaled shared hardware geometry and caption-dependent playback time; no physical dimensions or measured latency
+- pattern: step manipulate compare
+- learner sees: the authored web-request five-beat film, paused initially
+- animated: messages move between explicit ports; arrival applies the same beat’s state; only genuinely lost messages carry loss marks
+- learner does: play, pause, seek, step and inspect a transcript
+- notice: a message or response can be at a different stage from the application’s knowledge
+- model: LESSON_FILMS['web-request'] with sampleFilm; GSAP-owned disposable playback clock; deterministic seeks
+- feedback: event captions and visible state, plus the specialist model’s computed result where applicable
+- assumptions: fixed authored sequence; the film orients rather than replacing the original specialist lab
+- outcome: explain the sequence using actual named state owners
+- accessibility: explicit controls, text alternatives and reduced-motion behavior; actual browser acceptance remains separate
+- tests: model invariants and authored-film endpoint/count/seek checks; per-chapter browser evidence is recorded separately
+- evidence: sources retained below; this source reconciliation does not certify independent teaching or visual review
+- built: `src/content/learn/films.ts`, `src/components/learn/film/LessonFilm.tsx`, `src/components/learn/film/Scene.tsx`, `src/lib/learn/film-model.ts`, `src/lib/learn/film-content.test.ts`, `src/lib/learn/anatomy-refinement.test.ts`
+
+### A2. Time rail and changed-visit prediction
+
+- objective: 1, 2, 3
+- type: animated-2d
+- object: none — elapsed durations require a flat additive scale
+- render: flat-2d
+- fidelity: computed widths/marker position from summarize; assumed milliseconds and scaled transitions
+- pattern: step manipulate compare
+- learner sees: a flat additive rail for DNS/TCP/TLS/request time
+- animated: the selected-step marker follows elapsedAt; this is a duration explanation, not bytes moving in a network
+- learner does: change visit, round trip, DNS and server time; enter the changed repeat-visit prediction before revealing its result
+- notice: bandwidth does not remove the model’s round-trip waits
+- model: steps, summarize and predictAt in web-request-model.ts; source-defined ranges; selected-step elapsed sum
+- feedback: event captions and visible state, plus the specialist model’s computed result where applicable
+- assumptions: TLS1.3 over TCP, no transmission time, redirects, loss,0-RTT or subresource timing
+- outcome: calculate the first-byte total and explain which earlier work can be skipped
+- accessibility: explicit controls, text alternatives and reduced-motion behavior; actual browser acceptance remains separate
+- tests: model invariants and authored-film endpoint/count/seek checks; per-chapter browser evidence is recorded separately
+- evidence: sources retained below; this source reconciliation does not certify independent teaching or visual review
+- built: `src/components/learn/web-request/JourneyStepper.tsx`, `src/components/learn/web-request/TimeRail.tsx`, `src/lib/learn/web-request-model.ts`, `src/lib/learn/web-request-model.test.ts`
+
+- text-only: 4 — annotated browser Timing-entry examples and arithmetic in the explanation/Assess teach reading real timing fields; a fabricated network animation would not supply browser evidence.
 
 ## Parts you'll meet
 
@@ -298,6 +364,8 @@ Simplifications flagged (each corrected in its chapter):
 
 ## Visual
 
+Current main visual: the authored anatomy film (A1). The following rail discussion describes A2 inside the original explanation and Explore, not the entire Learn tab.
+
 Decision: **time rail** (2026-10-28). The sorting bench is gone. A carriage between captions did not show a wait. Segment width is `networkMs + serverMs`. The marker's position is the running sum through the selected step (`elapsedAt` in `TimeRail.tsx`). Flat on purpose: a solid of stations would name machines the model does not simulate.
 
 Flat exception: the mechanism is a duration. An isometric bench would teach the metaphor.
@@ -308,9 +376,9 @@ Previous reviews do not cover the rail. Status stays `implemented` until the ani
 
 ## Tabs
 
-- Learn: the time rail, stepped. No sliders and no prediction.
-- Lab: visit and the three times, then the repeat-visit prediction. The rail shows the same model. Not the quiz.
-- Quiz: the five questions. Answers stay behind "Show the answer".
+- Learn: shared authored anatomy film first; the original stepped time rail and worked explanation remain under Go deeper.
+- Lab: UI label **Explore**; visit and the three times, then the repeat-visit prediction. The rail shows the same model. Not the quiz.
+- Quiz: UI label **Assess**; the five questions. Written reasoning must be committed before the explanation; explicit self-review is not automatic grading.
 
 ## Animation sense
 
@@ -326,7 +394,7 @@ Previous reviews do not cover the rail. Status stays `implemented` until the ani
 - The journey is a sequence of discrete steps, which is the stepper case in visualization-and-simulation.md (now `step` in
   interaction-patterns.md).
 - The "where time goes" claim depends on a few inputs, so a tiny closed-form model computes it.
-- No discrete-event simulation is needed. There is no 3D: depth carries no meaning here.
+- The additive rail does not need a discrete-event network simulation or depth. The separate introductory component film uses isometric geometry without claiming that depth measures time.
 
 Visual spec (the 14-step process):
 
@@ -935,4 +1003,4 @@ Topology: Your browser, DNS resolver, App server.
 4. Ask for the page — The request reaches the server. The server prepares a response.
 5. Receive the page — The response returns. Cached DNS information and a reusable connection can avoid some earlier work.
 
-Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Caption-dependent playback durations and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

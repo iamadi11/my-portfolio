@@ -6,8 +6,8 @@ tab is a reject.
 ## Contents
 
 - Learn
-- Interactive Lab
-- Quiz
+- Explore
+- Assess
 - What is not a tab
 
 ## Learn
@@ -17,14 +17,14 @@ sentences name the part, the rule and the limit. No parameter panel, no predicti
 figure needs a control to move, that control only steps the story (previous, next). It does not change the
 model's inputs.
 
-## Interactive Lab
+## Explore
 
 The same model, in the learner's hands. They change inputs that the model actually reads, predict before the
 run, then see the figure change. Where the model has a fault, a drop, a retry or a skip, the lab exposes it.
 A button that does not change the picture is not a lab. A quiz is not a lab. The outcome line states the
 model's result and the rule that produced it, in one or two sentences, not an essay.
 
-## Quiz
+## Assess
 
 Questions only, after the lab can be used. Conceptual, a short scenario, or a reason. The answer starts
 hidden. Feedback says why the choice is right or wrong and names the misconception. It does not appear
@@ -39,3 +39,9 @@ before the learner commits or opens it. Do not paste the Learn caption or the La
 
 The spec records the split under `## Tabs`, one line each: what that tab shows, and what it refuses to repeat.
 `course.mjs check` requires the three lines from `implemented` on.
+
+## Connected practice
+
+`?tab=learn|explore|assess` is the shared deep-link contract. Preserve experimental inputs across tab switches. Assess requires an explicit submission after all choices, a score scoped to that attempt, and explanatory feedback. Recommend a chapter and its Explore experience only from an actually missed scenario. Reset clears the committed attempt. Open design reflections remain self-assessed; never imply automated mastery or AI personalization.
+
+A timeout must leave remote completion unknown unless the model supplies evidence. An application rejection is not a lost packet. Learn, Explore and Assess must use that same distinction.

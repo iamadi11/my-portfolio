@@ -2,23 +2,17 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
+import { contactDelivery, readContactReceipt, type ContactState as State } from './delivery';
 import type { Payload } from './send';
 
 import './contact-form.css';
 
 /**
  * "Send a message" on the contact sheet, delivered by Eidos (the owner's library). Write it on a train with no
- * signal and press Send: the message is kept on this device and goes out when the connection is back, once, under
- * its idempotency key. The drawing beside the form shows the visitor's own message moving: FORM → QUEUE → SERVER.
+ * signal and press Send: the message is kept on this device for replay with the same idempotency key. The API
+ * deduplicates that key for seven days. The drawing shows the observed progress: FORM → QUEUE → SERVER.
  * Eidos (`./send`) is loaded on the first focus of the form, so it costs nothing until someone writes.
  */
-
-type State =
-    | { s: 'idle' }
-    | { s: 'sending'; key?: string }
-    | { s: 'queued'; key: string }
-    | { s: 'delivered'; key?: string; id: string; duplicate?: boolean }
-    | { s: 'rejected'; error: string };
 
 type SendModule = typeof import('./send');
 let mod: Promise<SendModule> | null = null;
@@ -27,9 +21,10 @@ const load = (): Promise<SendModule> => (mod ??= import('./send'));
 const STATUS: Record<State['s'], string> = {
     idle: '',
     sending: 'Sending…',
-    queued: 'You are offline. The message is saved on this device and will be sent when you are back online.',
-    delivered: 'Delivered. Thank you, I will reply by email.',
+    queued: 'The message is saved on this device and waiting to retry. Keep this page available when you reconnect.',
+    delivered: 'Message stored by the server. Thank you, I will reply by email.',
     rejected: '',
+    unconfirmed: 'Delivery could not be confirmed. Check your connection before sending again.',
 };
 
 function short(key?: string): string {
@@ -102,11 +97,11 @@ function Sequence({ st }: { st: State }): React.JSX.Element {
             </text>
             <text x={560} y={100} textAnchor="end" className="cf-s">
                 {st.s === 'queued'
-                    ? 'Offline · held, replays on reconnect'
+                    ? 'Waiting · saved for replay'
                     : st.s === 'delivered'
                       ? st.duplicate
-                          ? 'Retry recognised · stored once'
-                          : 'Stored once'
+                          ? 'Retry recognised by server'
+                          : 'Accepted by server'
                       : 'At-least-once · deduplicated by key'}
             </text>
         </svg>
@@ -117,25 +112,27 @@ export default function ContactForm(): React.JSX.Element {
     const [st, setSt] = useState<State>({ s: 'idle' });
     const watching = useRef<(() => void) | undefined>(undefined);
 
-    /** Follow a queued message through Eidos' queue until it is delivered. */
+    /** Follow one logical message; only an API receipt can establish acceptance/rejection. */
     const watch = (m: SendModule, key?: string): void => {
         watching.current?.();
+        let trackedKey = key;
         watching.current = m.eidosQueue.subscribe((items) => {
             const mine = items.filter((it) => it.actionName === 'contactMessage');
-            const item = key ? mine.find((it) => it.idempotencyKey === key) : mine[0];
-            if (!item || item.status === 'succeeded') {
-                if (mine.every((it) => it.status === 'succeeded')) {
-                    try {
+            trackedKey ??= mine.find(
+                (it) => it.status === 'pending' || it.status === 'replaying'
+            )?.idempotencyKey;
+            const next = contactDelivery(
+                items,
+                trackedKey,
+                trackedKey ? readContactReceipt(trackedKey) : undefined
+            );
+            if (next.s === 'delivered' || next.s === 'rejected') {
+                try {
+                    if (localStorage.getItem(m.QUEUED_FLAG) === trackedKey)
                         localStorage.removeItem(m.QUEUED_FLAG);
-                    } catch {}
-                    setSt((p) =>
-                        p.s === 'queued' || p.s === 'sending' ? { s: 'delivered', key: p.key, id: '' } : p
-                    );
-                }
-                return;
+                } catch {}
             }
-            if (item.status === 'replaying') setSt({ s: 'sending', key: item.idempotencyKey });
-            else if (item.status === 'pending') setSt({ s: 'queued', key: item.idempotencyKey });
+            setSt(next);
         });
     };
 
@@ -159,14 +156,27 @@ export default function ContactForm(): React.JSX.Element {
 
     // A message queued on a previous visit: load Eidos when the browser is idle and let it finish the job.
     useEffect(() => {
-        let flag = false;
+        let flag: string | null = null;
         try {
-            flag = localStorage.getItem('bp-contact-queued') === '1';
+            flag = localStorage.getItem('bp-contact-queued');
         } catch {}
         if (!flag) return () => watching.current?.();
+        let cancelled = false;
         const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1500));
-        idle(() => load().then((m) => watch(m)));
-        return () => watching.current?.();
+        idle(() => {
+            void load()
+                .then((m) => {
+                    if (!cancelled) watch(m, flag === '1' ? undefined : (flag ?? undefined));
+                })
+                .catch(() => {
+                    mod = null;
+                    if (!cancelled) setSt({ s: 'unconfirmed' });
+                });
+        });
+        return () => {
+            cancelled = true;
+            watching.current?.();
+        };
     }, []);
 
     const submit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
@@ -179,6 +189,8 @@ export default function ContactForm(): React.JSX.Element {
             message: String(f.get('message') ?? ''),
             website: String(f.get('website') ?? ''),
         };
+        watching.current?.();
+        watching.current = undefined;
         setSt({ s: 'sending' });
         let m: SendModule;
         try {
@@ -195,8 +207,17 @@ export default function ContactForm(): React.JSX.Element {
         try {
             localStorage.setItem(m.QUEUED_FLAG, '1');
         } catch {}
-        const r = await m.sendMessage(p);
+        let r: Awaited<ReturnType<SendModule['sendMessage']>>;
+        try {
+            r = await m.sendMessage(p);
+        } catch {
+            setSt({ s: 'unconfirmed' });
+            return;
+        }
         if ('queued' in r) {
+            try {
+                localStorage.setItem(m.QUEUED_FLAG, r.idempotencyKey);
+            } catch {}
             setSt({ s: 'queued', key: r.idempotencyKey });
             watch(m, r.idempotencyKey);
             return;
@@ -210,7 +231,7 @@ export default function ContactForm(): React.JSX.Element {
         } else setSt({ s: 'rejected', error: r.error });
     };
 
-    const busy = st.s === 'sending';
+    const busy = st.s === 'sending' || st.s === 'queued';
     return (
         <form
             ref={formRef}
@@ -242,7 +263,7 @@ export default function ContactForm(): React.JSX.Element {
                 <button type="submit" className="cf-btn" disabled={busy} aria-busy={busy}>
                     Send message <span aria-hidden="true">→</span>
                 </button>
-                <p className="cf-note">Works offline: it is sent when you are back online.</p>
+                <p className="cf-note">Offline messages are saved on this device for replay.</p>
             </div>
             <p className="cf-status" role="status" aria-live="polite">
                 {st.s === 'rejected' ? st.error : STATUS[st.s]}

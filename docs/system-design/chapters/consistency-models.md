@@ -1,81 +1,105 @@
 # consistency-models: What does a reader get to assume about other clients' writes?
 
-Id: consistency-models · Status lives only in CURRICULUM.md.
+Id: consistency-models · Stage: 7 · Paths: interview production (status lives only in CURRICULUM.md)
+Prerequisites: replication-lag isolation
 Standard: anatomy-3d
-Authoring authority: `src/content/learn/academy-lessons.json` entry `consistency-models`; model `replication`. This compact record references shared code to avoid loading duplicate implementations.
+Authoring authority: `src/content/learn/academy-lessons.json` entry `consistency-models`; model `consistencyHistory`.
 
 ## Boundary
 
-1. Explain: A consistency model defines allowed observations; linearizability respects a single real-time-compatible order of operations.
-2. Predict the observable result after changing leader version or the declared policy.
+1. Read a history in which one client’s acknowledged write completes before another client begins reading.
+2. Predict whether a stale or coordinated read respects that completed write.
+3. Explain why eventual convergence later does not repair a past real-time-order violation.
 
+In scope: One completed write and a nonoverlapping later read of a single illustrative register. Not a proof of an implementation, full concurrent histories, causal delivery or all session guarantees.
 Limit: Eventual convergence alone does not guarantee immediate freshness or read-your-writes.
 Misconception: Eventual consistency means every read is random forever.
 
 ## Concept decomposition
 
-Hardest: connect this chapter’s rule to the actual state owner: Leader, Follower, Read result.
-Hardest: distinguish the selected teaching policy from a production guarantee. Eventual convergence alone does not guarantee immediate freshness or read-your-writes.
+Mechanism: A consistency model defines allowed observations; linearizability respects a single real-time-compatible order of operations.
+Temporal behavior: event traces own component values, counts, direction and results; display time is independent of simulated state.
+Quantitative relations: values below are finite teaching assumptions, not measured performance.
+Hardest: Operation invocation/response order, rather than packet proximity, determines the nonoverlap constraint (A1).
+Hardest: Eventual convergence and linearizability answer different questions about a history (A1).
+
+## Parts you will meet
+
+History: recorded operation invocations and responses. Nonoverlapping operations: one response finishes before another invocation begins. Linearizability: operations admit one order respecting real-time nonoverlap.
 
 ## Storyboard
 
-Baseline input: Leader version = 6; policy: Follower trails by 2 versions. The contrasting policy is Wait for follower to catch up.
-
-1. Leader commits: The leader's illustrative version is 6.
-2. Propagation is pending: The asynchronous follower has not applied the final two versions.
-3. Read from follower: The chosen read sees version 4.
-
-For case chapters and capstone, `design-guides.ts` additionally owns the requirement, explicit workload arithmetic, full read/write path, failure, tradeoff and transfer challenge. The mechanism film is a zoom into one decision, not the complete architecture.
+Baseline: Version acknowledged by writer = 6; “Read lagging replica”. Comparison: “Coordinate read with completed write”.
+1. Initial state: Both replicas start at version 5. The network may delay replication.
+2. Write completes: Writer receives success for version 6 before the other client invokes its read.
+3. Later read invoked: This read begins after the successful write response: these operations do not overlap.
+4. Read response: The lagging follower returns v5. No real-time-compatible order can put this read before the completed write.
+5. Replica catches up: The follower eventually receives v6. Later convergence does not change the earlier read history.
 
 ## Animation sense
 
 Mechanism: A consistency model defines allowed observations; linearizability respects a single real-time-compatible order of operations.
-Moving quantity: model events between the actual owning components; displayed counts and versions change only from the event trace.
-Model field: simulateMechanism('replication', input).beats; counts, values, from/to and outcome; sampleFilm maps trace time into visible state.
-Learner predicts: one of the model’s two outcomes after selecting a changed input and policy.
-If the moving part is deleted: the lesson is gone as a temporal causal demonstration; static steps and transcript retain the accessible explanation.
-Research (before drawing): the relevant source sections below were read before the current mechanism implementation, on 2026-10-29.
+Moving quantity: Writer, Replica group, Later reader; event messages explain each state transition, not decoration.
+Model field: simulateMechanism('consistencyHistory', input).beats; sampleFilm derives a legal frame from that trace.
+Learner predicts: History violates linearizability or History respects completed write, then explains the relevant assumption.
+If the moving part is deleted: the lesson is gone as a temporal causal demonstration; complete static steps and transcript preserve its accessible explanation.
+Research (before drawing): primary records below retain their actual earlier access dates; this reconciliation adds no claim that every source was reopened. NGINX methods/health and PostgreSQL WAL were reopened in the 2026-10-30 mission audit.
 
 ## Asset plan
 
-### A1. Model-driven worked example and experiment
+### A1. Causal comparison and experiment
 
-- objective: 1, 2
+- objective: 1, 2, 3
 - type: 3d
-- object: Leader, Follower, Read result, displayed with recognizable service, storage and host geometry
+- object: Writer, Replica group, Later reader, shown as named components using shared recognizable hardware
 - render: anatomy-iso
-- fidelity: computed discrete event trace, quantities and outcome; scaled device geometry and playback timing; assumed finite workload, no benchmark or real network simulation
-- pattern: step manipulate predict
-- learner sees: before, event and after states for the chapter’s replication mechanism
-- animated: message translation and model-owned visible counts/values change along the causal trace; static stepping shows the committed event state
-- learner does: play or step, choose an input and policy, commit a prediction, run and compare
-- notice: Eventual consistency means every read is random forever.
-- model: simulateMechanism in experiment-model.ts delegates topic-specific state machines to topic-models.ts when applicable
-- feedback: the experiment trace supplies the film, verdict, explanatory boundaries and displayed metrics
-- assumptions: Eventual convergence alone does not guarantee immediate freshness or read-your-writes. Inputs are clamped to 3–8; five-second beats are display time only.
+- fidelity: computed trace/counts/values; scaled isometric geometry; assumed workload and playback timing; no latency or throughput benchmark
+- pattern: step manipulate predict compare
+- learner sees: History: recorded operation invocations and responses. Nonoverlapping operations: one response finishes before another invocation begins. Linearizability: operations admit one order respecting real-time nonoverlap.
+- animated: a model message travels between explicit component ports; arrival commits its owned state; refusals and timeouts do not become packet loss
+- learner does: play, pause, seek, step, compare the policies, change inputs, commit a prediction, run and reset
+- notice: Operation invocation/response order, rather than packet proximity, determines the nonoverlap constraint (A1).
+- model: simulateMechanism('consistencyHistory', {amount, alternative}); amount 2–8, default 6; modes: Read lagging replica / Coordinate read with completed write.
+- feedback: trace-derived outcome, explanation, visible state and metrics are shown only after the prediction
+- assumptions: One completed write and a nonoverlapping later read of a single illustrative register. Not a proof of an implementation, full concurrent histories, causal delivery or all session guarantees. Beat lengths are caption-dependent playback durations from paceFilm, never real system timing.
 - outcome: A consistency model defines allowed observations; linearizability respects a single real-time-compatible order of operations.
-- accessibility: keyboard transport, transcript, explicit static steps, dynamic reduced motion, HTML state summary, theme tokens and readable text
-- tests: every allowed input has a selectable result, finite nonnegative quantities, deterministic seeks and known endpoints; additional misconception invariants
-- evidence: source/model implementation; independent review coverage and rendered checks are recorded separately in EXPANSION_QA.md, never inferred from this spec
-- built: `src/components/learn/AcademyChapter.tsx`, `src/components/learn/film/AcademyPractice.tsx`, `src/components/learn/film/Scene.tsx`, `src/lib/learn/experiment-model.ts`, `src/lib/learn/topic-models.ts`, `src/lib/learn/experiment-model.test.ts`
+- accessibility: keyboard controls, transcript, HTML state summary, static steps, reduced motion and theme-aware geometry
+- tests: finite-input invariants and misconception counterexamples; current report separates these from browser acceptance
+- evidence: source/model correspondence recorded in MISSION_COURSE_AUDIT.md; no independent rendered acceptance inferred
+- built: `src/components/learn/AcademyChapter.tsx`, `src/components/learn/film/AcademyPractice.tsx`, `src/components/learn/film/Scene.tsx`, `src/lib/learn/topic-models.ts`, `src/lib/learn/anatomy-refinement.test.ts`
 
 ## Tabs
 
-- Learn: term definition, prerequisite links, model film, takeaway and worked assumptions. Cases add the whole design and workload calculation.
-- Lab: changed quantity/policy, required prediction before result, computed trace and explanation.
-- Quiz: a changed-input scenario, shuffled correct position, hidden feedback until commitment and an open transfer reflection.
+- Learn: visual worked comparison, prerequisites and concise rule; deeper assumptions remain disclosed.
+- Lab: UI label **Explore**; commit a prediction, change an actual input/policy, run, inspect the trace and reset.
+- Quiz: UI label **Assess**; commit scenario answers before feedback; scores and revisit links reflect this attempt only; open transfer remains self-assessed.
 
 ## Explanation (14 questions)
 
-The authored question is “What does a reader get to assume about other clients' writes?” The rule, misconception and boundary live in the compact blueprint. The executable storyboard shows the mechanism rather than replacing it with generic packet motion. Terms are defined before the film; prerequisites are linked. Technical depth is disclosed after the short film. The changed-input quiz requires applying assumptions instead of copying the takeaway. Cases require a defended read/write path, estimate, failure and tradeoff. These are teaching aids, not empirical proof of learning outcomes or comprehensive production training.
+1. **Problem:** A user reads an older value after another user’s save already finished.
+2. **Why it matters:** The application must know what ordering and freshness assumptions are safe.
+3. **First attempt:** Read whichever replica answers without coordination.
+4. **When it works:** That can meet an application contract that tolerates older copies.
+5. **Failure:** It cannot meet the illustrated linearizable register contract after the completed write.
+6. **Closer observation:** Inspect write response before read invocation, then the returned version.
+7. **Mechanism:** A completed vN write followed by a new read must return a value compatible with that real-time order.
+8. **Experiment:** Change acknowledged version 2–8 and lagging versus coordinated read.
+9. **Alternatives:** Allow older replica observations under a weaker contract or coordinate the read.
+10. **Tradeoffs:** Coordination can cost communication or availability; this model measures neither.
+11. **Choose it when:** Choose guarantees from the actual cross-client invariant and failure requirements.
+12. **Do not infer:** Do not infer global real-time ordering merely from eventual convergence or a causal timestamp.
+13. **In your own words:** Explain why catching up afterwards does not change what the earlier reader observed.
+14. **Transfer:** Apply history reasoning to a stock counter read after a confirmed purchase.
 
 ## Visual
 
-Shared isometric SVG renderer, genuine message endpoints and model-owned state labels. Quantities beyond the drawn mark budget keep their full numeric count and an abbreviation label. Refusal and delay are not labelled packet loss.
+A frozen frame must agree with trace state. Device anatomy identifies the state owner; small details are not protocol events. Counts remain exact even where marks are abbreviated. No depth, light or motion effect changes the model verdict.
 
 ## Practice
 
-Predict Older replica read or Current replica read under the selected policy. Run only after choosing. Explain which state changed and why. Recall later under a changed quantity; mixed reviews draw from prerequisite mechanisms. Optional device-local activity is separated into viewed, practiced and recall checked.
+Commit to a prediction, inspect the changed state, then answer: Explain why catching up afterwards does not change what the earlier reader observed.
+Transfer: Apply history reasoning to a stock counter read after a confirmed purchase.
+Assess recommendations come from missed committed scenarios, including registered companion mechanisms. They are deterministic guidance, not inferred mastery.
 
 ## Sources
 
@@ -86,6 +110,13 @@ via: read
 supports: [mechanism, boundary]
 accessed: Opened 2026-10-29; relevant material: Consistency and availability under partition assumptions.
 
+- id: consistency-levels
+title: Azure Cosmos DB consistency levels
+url: https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels
+via: read
+supports: [mechanism, boundary]
+accessed: Opened 2026-10-30; guarantees, strong and eventual consistency sections.
+
 ## Evidence
 
-Implementation and bounded model tests are tracked in `docs/system-design/EXPANSION_QA.md`. This chapter remains implemented, not tested or verified: a full per-chapter independent review, physical-device check, screen-reader check, axe/Lighthouse and learner outcome study are not claimed.
+This author record was reconciled with the actual model/controls in the 2026-10-30 mission. Status remains implemented. Unit/model evidence and browser results belong in the mission audit/QA reports; a spec rewrite does not establish independent technical acceptance, physical-device accessibility or learner outcomes.

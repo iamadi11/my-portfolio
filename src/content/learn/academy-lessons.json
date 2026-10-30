@@ -75,9 +75,9 @@
         "id": "storage-engines",
         "model": "storageLayout",
         "sources": ["pg-storage", "pg-wal", "rocks-layout", "pg-index"],
-        "question": "How does a write survive before its data page is updated?",
-        "rule": "Write-ahead logging records a change durably before the corresponding page update is considered durable.",
-        "limit": "This log-and-page model omits real buffering, checksums, compaction and hardware failures.",
+        "question": "Where does a database put a write, and how can it recover after a crash?",
+        "rule": "B-trees update sorted pages; LSM designs buffer writes and flush sorted runs. A durable write-ahead log supports recovery before data pages catch up.",
+        "limit": "These separate layout and recovery models omit real buffering, checksums, compaction, torn writes and hardware failures.",
         "misconception": "Acknowledging a change in RAM alone proves it survives a crash."
     },
     {
@@ -199,12 +199,12 @@
     },
     {
         "id": "load-balancing",
-        "model": "partition",
-        "sources": ["sre-lb"],
-        "question": "Why is one server busy while the others are idle?",
-        "rule": "A balancing policy chooses a healthy backend using a defined routing rule rather than assuming arrivals distribute themselves.",
-        "limit": "Even request counts can hide unequal request cost and long-lived connections.",
-        "misconception": "Round robin guarantees equal CPU usage on every backend."
+        "model": "loadBalance",
+        "sources": ["nginx-lb", "sre-lb", "nginx-l4"],
+        "question": "Which replica should receive the next request?",
+        "rule": "Round robin takes turns among eligible replicas. Least-connections uses observed active connections; health detection and admission limits still affect success.",
+        "limit": "One request uses one connection in this finite model. Equal weights, no keepalive or multiplexing, no retries or queue, and simplified passive health detection are assumed.",
+        "misconception": "A routing policy creates capacity or can avoid a failure it has not detected."
     },
     {
         "id": "reverse-proxies",
@@ -352,11 +352,11 @@
     },
     {
         "id": "logs-streams",
-        "model": "offsets",
-        "sources": ["kafka"],
-        "question": "Why can two consumers read the same event at different times?",
-        "rule": "A retained append log lets consumers track their own positions independently.",
-        "limit": "Ordering is normally scoped to a partition; retention eventually removes old history.",
+        "model": "partitionedLog",
+        "sources": ["kafka", "kafka-design-41"],
+        "question": "Who owns each partition, and where does a consumer resume after a crash?",
+        "rule": "A topic retains ordered records per partition. Classic consumer groups divide partition ownership and commit their own next offsets; processing before a commit can repeat an effect after reassignment.",
+        "limit": "This finite classic consumer-group model omits broker replication, transactions, retention expiry and network timing. External effects are not atomically committed with offsets.",
         "misconception": "A topic provides one total order across every partition by default."
     },
     {
@@ -677,7 +677,7 @@
     {
         "id": "authentication",
         "model": "identity",
-        "sources": ["authn"],
+        "sources": ["authn", "security-oidc", "security-oauth", "security-accessJwt"],
         "question": "What does the service actually know about the caller?",
         "rule": "Authentication verifies an identity claim using a defined credential and validation flow.",
         "limit": "A valid identity does not imply permission for every resource; tokens need correct issuer and audience checks.",
@@ -704,7 +704,7 @@
     {
         "id": "web-vulnerabilities",
         "model": "sql",
-        "sources": ["injection", "authz"],
+        "sources": ["injection", "authz", "security-xss", "security-csrf"],
         "question": "How can untrusted text become an unintended database command?",
         "rule": "Parameterized statements keep data separate from query structure; output handling and authorization protect other boundaries.",
         "limit": "A SQL-injection defense is not a complete defense against XSS, CSRF or access-control failures.",

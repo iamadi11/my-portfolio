@@ -135,6 +135,9 @@ function camera(c: NonNullable<Scene['cam']>, t: number, small: boolean, still: 
 }
 
 function apply(s: Scene, t: number, small: boolean, still = false): void {
+    const inspected = s.root.getAttribute('data-inspection-time');
+    if (!still && inspected !== null && Number.isFinite(Number(inspected)))
+        t = Math.max(0, Math.min(s.T, Number(inspected)));
     // Camera composition depends on viewport/mode even when scene time is unchanged.
     if (s.cam) camera(s.cam, t, small, still);
     if (t === s.lastT) return;
@@ -290,6 +293,16 @@ export function drive(): () => void {
         });
         ScrollTrigger.refresh();
     };
+    const inspect = (event: Event): void => {
+        const scene = scenes.find((item) => item.root === event.target);
+        if (!scene) return;
+        const time = (event as CustomEvent<{ time: number | null }>).detail?.time;
+        if (typeof time === 'number' && Number.isFinite(time))
+            scene.root.setAttribute('data-inspection-time', String(Math.max(0, Math.min(scene.T, time))));
+        else scene.root.removeAttribute('data-inspection-time');
+        apply(scene, typeof time === 'number' ? time : Math.max(0, scene.cur), small.matches);
+    };
+    document.addEventListener('bp-inspect', inspect);
     const beforePrint = (): void => {
         printing = true;
         context?.revert();
@@ -320,6 +333,7 @@ export function drive(): () => void {
         window.removeEventListener('beforeprint', beforePrint);
         window.removeEventListener('afterprint', afterPrint);
         window.removeEventListener('resize', resize);
+        document.removeEventListener('bp-inspect', inspect);
         document.removeEventListener('visibilitychange', visibility);
         small.removeEventListener('change', resize);
         motion.removeEventListener('change', create);

@@ -1,8 +1,29 @@
 import type { FilmBeat, FilmNode, LessonFilmData } from './film-model';
+import {
+    LOAD_BALANCING_DEFAULT,
+    ROUTING_PREDICTIONS,
+    makeLoadBalancingFilm,
+    simulateLoadBalancer,
+} from './load-balancing';
+import {
+    PARTITIONED_LOG_DEFAULT,
+    LOG_PREDICTIONS,
+    makePartitionedLogFilm,
+    simulatePartitionedLog,
+} from './partitioned-log';
+import {
+    SECURITY_MODELS,
+    isSecurityMechanism,
+    simulateSecurity,
+    type SecurityMechanism,
+} from './security-models';
 import { TOPIC_MODELS, isTopicMechanism, simulateTopic, type TopicMechanism } from './topic-models';
 
 export type Mechanism =
     | TopicMechanism
+    | SecurityMechanism
+    | 'partitionedLog'
+    | 'loadBalance'
     | 'dedup'
     | 'pagination'
     | 'version'
@@ -76,6 +97,25 @@ const def = (
 });
 export const MECHANISMS: Record<Mechanism, MechanismDefinition> = {
     ...TOPIC_MODELS,
+    ...SECURITY_MODELS,
+    partitionedLog: def(
+        'Records per partition',
+        ['Crash before committing offset', 'Crash after committing offset'],
+        [...LOG_PREDICTIONS],
+        ['Topic partitions', 'Consumer group A', 'Consumer group B'],
+        2,
+        1,
+        4
+    ),
+    loadBalance: def(
+        'Requests arriving',
+        ['Round robin', 'Least active connections'],
+        [...ROUTING_PREDICTIONS],
+        ['Server A', 'Server B', 'Server C'],
+        9,
+        1,
+        12
+    ),
     dedup: def(
         'Delivery attempts',
         ['No operation key', 'Reuse one durable key'],
@@ -338,12 +378,49 @@ export const MECHANISMS: Record<Mechanism, MechanismDefinition> = {
 /** Finite, discrete teaching models. No live network, random output or benchmark claims. */
 export function simulateMechanism(kind: Mechanism, input: ExperimentInput): Trace {
     if (isTopicMechanism(kind)) return simulateTopic(kind, input);
+    if (isSecurityMechanism(kind)) return simulateSecurity(kind, input);
     const spec = MECHANISMS[kind];
     const n = Math.max(
         spec.min,
         Math.min(spec.max, Math.floor(Number.isFinite(input.amount) ? input.amount : spec.initial))
     );
     const alt = input.alternative;
+    if (kind === 'partitionedLog') {
+        const run = simulatePartitionedLog({
+            ...PARTITIONED_LOG_DEFAULT,
+            recordsPerPartition: n,
+            crash: alt ? 'after-commit' : 'before-commit',
+        });
+        return {
+            beats: run.beats,
+            outcome: run.outcome,
+            explanation:
+                'Classic groups divide partition ownership and save independent next offsets. Processing before committing can repeat an effect after reassignment; reading does not delete records. No cross-partition total order is implied.',
+            metrics: [
+                { label: 'Retained records', value: String(run.retained) },
+                { label: 'Repeated effects in group A', value: String(run.duplicatesA) },
+                { label: 'Group B unread records', value: String(run.lagB) },
+            ],
+        };
+    }
+    if (kind === 'loadBalance') {
+        const run = simulateLoadBalancer({
+            ...LOAD_BALANCING_DEFAULT,
+            requests: n,
+            policy: alt ? 'least-connections' : 'round-robin',
+        });
+        return {
+            beats: run.beats,
+            outcome: run.outcome,
+            explanation:
+                'A takes six ticks; B/C take one, with one active connection per server. Round robin takes turns; least-connections compares current active connections. Routing does not create capacity.',
+            metrics: [
+                { label: 'Accepted requests', value: String(run.accepted) },
+                { label: 'Capacity rejections', value: String(run.rejected) },
+                { label: 'Connection failures', value: String(run.failed) },
+            ],
+        };
+    }
     const beats: FilmBeat[] = [];
     const add = (
         title: string,
@@ -708,13 +785,13 @@ export function simulateMechanism(kind: Mechanism, input: ExperimentInput): Trac
             add(
                 'Earlier page ended',
                 `The client previously received rows through id ${n}.`,
-                { a: 8 },
+                { a: 10 },
                 { d: `last id ${n}` }
             );
             add(
                 'Delete an earlier row',
                 'Row 1 is removed before the next page is fetched.',
-                { a: 8 },
+                { a: 9 },
                 { a: 'row 1 deleted' }
             );
             add(
@@ -1342,6 +1419,30 @@ export function makeExperimentFilm(
     kind: Mechanism,
     input: ExperimentInput
 ): LessonFilmData {
+    if (kind === 'partitionedLog')
+        return {
+            ...makePartitionedLogFilm({
+                ...PARTITIONED_LOG_DEFAULT,
+                recordsPerPartition: Number.isFinite(input.amount)
+                    ? input.amount
+                    : MECHANISMS.partitionedLog.initial,
+                crash: input.alternative ? 'after-commit' : 'before-commit',
+            }),
+            id,
+            question,
+            takeaway: rule,
+        };
+    if (kind === 'loadBalance')
+        return {
+            ...makeLoadBalancingFilm({
+                ...LOAD_BALANCING_DEFAULT,
+                requests: Number.isFinite(input.amount) ? input.amount : MECHANISMS.loadBalance.initial,
+                policy: input.alternative ? 'least-connections' : 'round-robin',
+            }),
+            id,
+            question,
+            takeaway: rule,
+        };
     const spec = MECHANISMS[kind],
         trace = simulateMechanism(kind, input);
     const nodes: FilmNode[] = [

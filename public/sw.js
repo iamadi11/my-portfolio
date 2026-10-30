@@ -1,8 +1,8 @@
 // fallow-ignore-file unused-file
 // Served at /sw.js and registered at runtime by src/components/blueprint/Driver.tsx.
 /*
- * Offline support for the drawing set. `/` is one page, so offline means: the last good copy of `/` plus the
- * hashed build files it needs. Navigations go to the network first (fresh copy wins), build files come from the
+ * Offline support for previously visited pages plus the hashed build files they need.
+ * Navigations go to the network first (fresh copy wins), build files come from the
  * cache first (their names change with their content), everything else is served from the cache while a fresh
  * copy is fetched.
  */
@@ -10,7 +10,7 @@
 // this same worker, so one registration serves both. Copied from node_modules by `npm run eidos-sw` (pre-build).
 importScripts('/eidos-sw.js');
 
-const VERSION = 'v2';
+const VERSION = 'v3';
 const PAGES = `pages-${VERSION}`;
 const BUILD = `build-${VERSION}`;
 const OTHER = `other-${VERSION}`;
@@ -54,13 +54,28 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(
             fetch(req)
                 .then((res) => {
-                    if (res.ok && url.pathname === '/') {
+                    if (res.ok && res.headers.get('Content-Type')?.includes('text/html')) {
                         const copy = res.clone();
-                        caches.open(PAGES).then((c) => c.put('/', copy));
+                        event.waitUntil(caches.open(PAGES).then((c) => c.put(req, copy)));
                     }
                     return res;
                 })
-                .catch(() => caches.match('/', { cacheName: PAGES }).then((r) => r || Response.error()))
+                .catch(() =>
+                    caches.match(req, { cacheName: PAGES }).then(
+                        (hit) =>
+                            hit ||
+                            new Response(
+                                '<!doctype html><html lang="en"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>Page unavailable offline</title><style>body{font:18px/1.6 system-ui,sans-serif;max-width:36rem;margin:15vh auto;padding:1.5rem}a,button{display:inline-block;padding:.75rem}</style><main><h1>This page is not saved offline</h1><p>Reconnect to load this page. Previously visited pages may still be available.</p><p><a href="">Try again</a> <a href="/">Portfolio home</a></p></main></html>',
+                                {
+                                    status: 503,
+                                    headers: {
+                                        'Content-Type': 'text/html; charset=utf-8',
+                                        'Cache-Control': 'no-store',
+                                    },
+                                }
+                            )
+                    )
+                )
         );
         return;
     }

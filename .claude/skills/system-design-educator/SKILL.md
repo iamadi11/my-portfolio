@@ -19,6 +19,10 @@ Outcome: a college fresher can predict a system’s next event, explain why it h
 
 For this owner-requested refinement use [anatomy-gsap.md](references/anatomy-gsap.md) before changes: detailed shared anatomy geometry, explicit ports/depth, GSAP-owned disposable timing, readable beat lengths and meaningful before/after comparisons. Audit all 119 ids compactly; report representative review as representative. Owner authorizes portfolio dark mode, GSAP and documented budget increases.
 
+## Whole-course missions
+
+Use [acceptance.md](references/acceptance.md) for an entire-course upgrade or independent review. Inventory every reachable id first; distinguish structural coverage, executable evidence, technical review and rendered acceptance in a per-chapter matrix. Validate one demanding pilot before propagating shared changes, then revisit every remaining id. The matrix is evidence, not permission to stop after a pilot. Read only failing families and the next chapter batch; never reload all 119 storyboards.
+
 ## Objective coverage before polish
 
 Split a broad chapter objective into observable claims. Map each claim to a model event, comparison, exercise or explicitly justified static explanation. A foreign-key check does not cover joins; WAL does not cover LSM layout; replica lag does not prove a consistency history. If one model cannot teach the objective, add a small companion model through `COMPANION_MODELS` and reuse the same renderer and lab. Never fill the gap by renaming a device.
@@ -39,7 +43,7 @@ Check all curriculum ids, not just built pages: routes, prerequisites, sources, 
 - **Watch:** a video-like, model-driven 3D sequence. One causal idea per beat; short caption and visible component names. Show before → event → after, then failure/tradeoff. Motion conveys message progress, ordering, quantity, loss or state. Distinct concepts need distinct topologies/events; renaming an identical animation is insufficient.
 - **Experiment:** change an input or fault, predict, run, compare. Reuse the same deterministic model; results and geometry must agree. No random per-frame state, hidden answer before prediction, or fake benchmark.
 - **Recall:** scenario + answer hidden until commitment + explanation of the misconception. Include a transfer question, not just term recall.
-- Keep Learn / Interactive Lab / Quiz; put technical depth in a disclosure and bibliography on `/learn/sources`.
+- Keep Learn / Explore / Assess; put technical depth in a disclosure and bibliography on `/learn/sources`.
 
 ## Visual/runtime contract
 

@@ -1,62 +1,39 @@
 'use client';
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 
-import { useClock } from '@/components/learn/kit/useClock';
 import type { ApiLesson } from '@/content/learn/api-lessons';
 import { experiment, type ExperimentResult } from '@/lib/learn/api-experiment';
+import { apiExperimentFilm } from '@/lib/learn/api-experiment-film';
 import { type LessonFilmData } from '@/lib/learn/film-model';
 
+import Assessment from './Assessment';
+import LessonFilm from './LessonFilm';
 import Scene from './Scene';
 
 export function ApiLab({ lesson, film }: { lesson: ApiLesson; film: LessonFilmData }): React.JSX.Element {
-    const target = useRef<HTMLElement>(null);
-    const marks = useMemo(() => [0, 5], []);
-    const clock = useClock({ marks, end: 5, target, rate: 1.5 });
+    const titleId = useId();
     const [variant, setVariant] = useState(lesson.variants[0][0]);
     const [amount, setAmount] = useState(3);
     const [guess, setGuess] = useState('');
+    const [runNumber, setRunNumber] = useState(0);
     const [result, setResult] = useState<ExperimentResult | null>(null);
     const clear = () => {
-        clock.reset();
         setGuess('');
         setResult(null);
     };
     const run = () => {
+        setRunNumber((n) => n + 1);
         setResult(experiment(lesson.id, variant, amount));
-        clock.restart();
     };
-    const resultFilm: LessonFilmData = result
-        ? {
-              ...film,
-              nodes: film.nodes.map((node) =>
-                  lesson.id === 'rest' && node.id === 'd' && variant === 'POST'
-                      ? { ...node, label: 'Notes collection' }
-                      : node
-              ),
-              beats: [
-                  {
-                      title: 'Your experiment',
-                      caption: result.reason,
-                      from: lesson.id === 'realtime' && variant === 'feed' ? 's' : 'c',
-                      to: lesson.id === 'realtime' && variant === 'feed' ? 'c' : 's',
-                      packet: result.value,
-                      lost: result.failed,
-                      states: {
-                          s: result.failed ? 'failed' : 'done',
-                          d: 'done',
-                          c: result.failed ? 'failed' : 'done',
-                      },
-                      values: { s: result.value },
-                      counts: { d: result.count, p: result.count },
-                  },
-              ],
-          }
-        : film;
+    const resultFilm = useMemo(
+        () => (result ? apiExperimentFilm(film, lesson.id, variant, result) : null),
+        [film, lesson.id, variant, result]
+    );
     return (
-        <section ref={target} className="al-lab" aria-labelledby="experiment-title">
+        <section className="al-lab" aria-labelledby={titleId}>
             <p className="ln-kicker">Change one thing. Predict. Run.</p>
-            <h2 id="experiment-title">Try the mechanism yourself</h2>
+            <h2 id={titleId}>Try the mechanism yourself</h2>
             <div className="al-inputs">
                 <label>
                     {lesson.inputLabel}
@@ -97,7 +74,7 @@ export function ApiLab({ lesson, film }: { lesson: ApiLesson; film: LessonFilmDa
                     <label key={answer}>
                         <input
                             type="radio"
-                            name={`guess-${lesson.id}`}
+                            name={`guess-${titleId}`}
                             checked={guess === answer}
                             onChange={() => {
                                 setGuess(answer);
@@ -111,9 +88,24 @@ export function ApiLab({ lesson, film }: { lesson: ApiLesson; film: LessonFilmDa
             <button className="al-run" type="button" disabled={!guess} onClick={run}>
                 Run experiment →
             </button>
-            <div className="al-result-scene">
-                <Scene film={resultFilm} time={result ? (clock.reduced ? 5 : clock.t) : 0} />
-            </div>
+            <button
+                className="al-run"
+                type="button"
+                onClick={() => {
+                    setVariant(lesson.variants[0][0]);
+                    setAmount(3);
+                    clear();
+                }}
+            >
+                Reset experiment
+            </button>
+            {resultFilm ? (
+                <LessonFilm key={runNumber} film={resultFilm} autoPlay trackProgress={false} />
+            ) : (
+                <div className="al-result-scene">
+                    <Scene film={film} time={0} />
+                </div>
+            )}
             {result ? (
                 <div className="al-feedback" role="status">
                     <strong>
@@ -130,31 +122,18 @@ export function ApiLab({ lesson, film }: { lesson: ApiLesson; film: LessonFilmDa
     );
 }
 export function ApiQuiz({ lesson }: { lesson: ApiLesson }): React.JSX.Element {
-    const [choice, setChoice] = useState<number | null>(null);
     return (
-        <section className="al-lab" aria-labelledby="quiz-title">
-            <p className="ln-kicker">Make the idea stick</p>
-            <h2 id="quiz-title">Use what you learned</h2>
-            <fieldset>
-                <legend>{lesson.question}</legend>
-                {lesson.choices.map((text, i) => (
-                    <label key={text}>
-                        <input
-                            type="radio"
-                            name={`quiz-${lesson.id}`}
-                            checked={choice === i}
-                            onChange={() => setChoice(i)}
-                        />
-                        {text}
-                    </label>
-                ))}
-            </fieldset>
-            {choice !== null && (
-                <p className="al-feedback" role="status">
-                    <strong>{choice === lesson.correct ? 'Correct.' : 'Try that assumption again.'}</strong>{' '}
-                    {lesson.explanation}
-                </p>
-            )}
-        </section>
+        <Assessment
+            id={lesson.id}
+            questions={[
+                {
+                    chapter: lesson.id,
+                    prompt: lesson.question,
+                    choices: [lesson.choices[0], lesson.choices[1]],
+                    correct: lesson.correct,
+                    explanation: lesson.explanation,
+                },
+            ]}
+        />
     );
 }

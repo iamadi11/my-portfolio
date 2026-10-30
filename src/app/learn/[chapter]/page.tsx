@@ -70,6 +70,7 @@ export default async function Page({
                     </p>
                 </header>
                 <ChapterTabs
+                    key={lesson.id}
                     learn={
                         <>
                             <LessonFilm film={film} />

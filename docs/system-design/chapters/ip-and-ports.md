@@ -1,12 +1,18 @@
 # Addresses, packets and ports
 
 Id: ip-and-ports · Stage: 1 · Paths: beginner interview production (status lives only in CURRICULUM.md)
-Standard: visual-first
+Standard: anatomy-3d
 Implementation: `src/app/learn/ip-and-ports/page.tsx`, `src/components/learn/ip-and-ports/*`,
 `src/components/learn/kit/{useClock.ts,Transport.tsx,NearViewport.tsx,verdict.ts}`,
 `src/lib/learn/demux-model.ts`, `src/lib/learn/network-model.ts` (+ `.test.ts`),
 `src/content/learn/ip-and-ports-sources.ts`.
 Prerequisites: client-server · Related: dns, tcp, udp-quic, cloud-networking, load-balancing
+
+## Current implementation contract · 2026-10-30
+
+Learn starts with `LESSON_FILMS` through the shared anatomy SVG player. The original explanation and specialist visual remain inside Go deeper. Explore retains its original pure model and meaningful inputs; it is not replaced by the introductory film. Assess now requires a written commitment before its explanation, followed by explicit self-assessment and optional experiment revisit. No automatic mastery score is inferred.
+
+The asset plan below maps the original objectives to actual live files. Original review/evidence blocks retain their historical scope; this reconciliation is source inspection, not a new rendered acceptance or independent teaching review. Playback durations come from the current player pacing contract, not a fixed five-second promise.
 
 ## Boundary
 
@@ -97,6 +103,8 @@ Demultiplexing: the host's job of handing each arriving packet to the right prog
 
 ## Storyboard
 
+Current entry: watch A4, the authored endpoint film, then open Go deeper for the original host exploration and guided runs below. Explore keeps both independent models.
+
 1. **Fig. 1, explore the parts.** One server drawn as a box: a name tag (www.example.com) with a dashed arrow
    "name → address (dns, chapter 4)", an address tab (203.0.113.10; "32 bits (IPv6: 128)"), TCP and UDP lanes,
    port tabs (443, 8125) and programs (web server, metrics collector). The learner selects Name, Address,
@@ -134,6 +142,9 @@ Objective coverage: 1 → A2 · 2 → A2 · 3 → A3 · 4 → A1
 
 - objective: 4
 - type: precision-2d
+- object: none — structural endpoint nesting is a flat selection diagram
+- render: flat-2d
+- fidelity: standard-defined address sizes; illustrative interface/program labels and scaled flat conceptual nesting
 - pattern: explore
 - learner sees: a name tag (www.example.com) with a dashed arrow "name → address (dns, chapter 4)" to one host box with its address tab (203.0.113.10; "32 bits (IPv6: 128)"), TCP and UDP lanes, port tabs (443, 8125) and programs (web server, metrics collector), an unused 9000; a "Select a part" group (Name, Address, Protocol, Port, Program)
 - animated: none — selecting a part changes its line weight and fill over 200 ms (none under reduced motion); nothing here happens in time, so nothing travels
@@ -151,7 +162,10 @@ Objective coverage: 1 → A2 · 2 → A2 · 3 → A3 · 4 → A1
 ### A2. Which program gets this packet?
 
 - objective: 1, 2
-- type: simulation
+- type: 3d
+- object: cutaway host, lookup wells, protocol lanes, socket rows and moving packet bodies in the original Metal renderer
+- render: anatomy-iso
+- fidelity: computed lookup stages/result and selected-stage position; scaled host geometry; assumed stepping duration
 - pattern: predict, step, break, compare
 - learner sees: a cutaway of this server. Wells are the address, the firewall when it is on, the TCP and UDP lanes, the socket rows (50001, 50002, 443, 8125) and the empty pins, plus another host. The packet the learner built is named above the machine
 - animated: one body. Its place is the well the current stage reads (address, firewall, protocol lane, socket table, then the matching pin). Travel between wells is pacing, not a model time. The well being read is drawn heavy. A reply body travels back to the sender. Deleting the body deletes the lesson
@@ -169,7 +183,10 @@ Objective coverage: 1 → A2 · 2 → A2 · 3 → A3 · 4 → A1
 ### A3. Five datagrams through a network
 
 - objective: 3
-- type: simulation
+- type: 3d
+- object: sender, receiver, four routers, wires, packet bodies and queue in the original Metal renderer
+- render: anatomy-iso
+- fidelity: computed routes, queue times, drops and application deliveries; assumed tick delays and scaled scene geometry
 - pattern: predict, break, compare, step
 - learner sees: six machines (sender, R1–R4, host) as solids. Wires join them. Each wire is labelled with its delay in ticks. The heavy wire is R1's current route. Controls for the event, the service time when congested, the transport and the prediction
 - animated: each datagram is a body. Its place is `positionAt(copy, t)`: on a wire, in R2's queue (lined up beside R2), or dropped off the wire beside the router that could not forward it (marked ×n, and it stays). The failed wire is dashed and labelled "× failed". A resend is a second body with the same number. Every frame is that function of the model's run
@@ -183,6 +200,27 @@ Objective coverage: 1 → A2 · 2 → A2 · 3 → A3 · 4 → A1
 - tests: model (network-model.test.ts, 37): arrivals with no event; the route change reorders 1 and 2 under UDP and TCP holds 2 one tick; the failure drops 2 and 3 at R2 at ticks 4 and 6, UDP reads 1 4 5, TCP resends at 14 and 16 and reads all by tick 23, packet 4 held 10 ticks; congestion at 3 ticks: largest queue 2, reads 6, 9, 12, 15, 18, waits 0 to 4; at 1 and 2 ticks no queue; conservation; determinism; `positionAt` in the queue, on a link and for a lost copy. Browser: six runs against the model; the comparison table's numbers; the service control only for congestion; tags move while playing, stop on Pause, Reset returns to tick 0, Replay plays again; nothing before Run or before the run ends; a change clears it; reduced motion steps; lazy loading
 - evidence: rfc791 §1.2 and §1.4 IP has no acknowledgements, retransmission or sequencing (standard-defined); rfc768 Introduction delivery not guaranteed (standard-defined); rfc8085 §3.3 reordering from routing transients, loss, no retransmission in UDP (standard-defined, BCP); rfc9293 §2.2 and §3.4 reliable in-order stream by sequence numbers and retransmission (standard-defined); the topology, link delays, reconvergence time, timer and FIFO queue (illustrative, teaching model, labelled in the caption)
 - built: `src/lib/learn/network-model.ts`, `src/lib/learn/network-model.test.ts`, `src/components/learn/ip-and-ports/NetworkLab.tsx`, `src/components/learn/ip-and-ports/LazyLabs.tsx`, `src/components/learn/kit/NearViewport.tsx`, `src/components/learn/kit/verdict.ts`
+
+### A4. Host and transport endpoint introduction
+
+- objective: 1, 4
+- type: 3d
+- object: named browser, service/network and storage/endpoint devices from this chapter’s authored film
+- render: anatomy-iso
+- fidelity: computed event state/message position; scaled shared hardware geometry and caption-dependent playback time; no physical dimensions or measured latency
+- pattern: step manipulate compare
+- learner sees: the authored ip-and-ports five-beat film, paused initially
+- animated: messages move between explicit ports; arrival applies the same beat’s state; only genuinely lost messages carry loss marks
+- learner does: play, pause, seek, step and inspect a transcript
+- notice: a message or response can be at a different stage from the application’s knowledge
+- model: LESSON_FILMS['ip-and-ports'] with sampleFilm; GSAP-owned disposable playback clock; deterministic seeks
+- feedback: event captions and visible state, plus the specialist model’s computed result where applicable
+- assumptions: fixed authored sequence; the film orients rather than replacing the original specialist lab
+- outcome: explain the sequence using actual named state owners
+- accessibility: explicit controls, text alternatives and reduced-motion behavior; actual browser acceptance remains separate
+- tests: model invariants and authored-film endpoint/count/seek checks; per-chapter browser evidence is recorded separately
+- evidence: sources retained below; this source reconciliation does not certify independent teaching or visual review
+- built: `src/content/learn/films.ts`, `src/components/learn/film/LessonFilm.tsx`, `src/components/learn/film/Scene.tsx`, `src/lib/learn/film-model.ts`, `src/lib/learn/film-content.test.ts`, `src/lib/learn/anatomy-refinement.test.ts`
 
 ## Explanation (14 questions)
 
@@ -386,9 +424,9 @@ gets this flow".
 
 ## Tabs
 
-- Learn: the host, part by part. No packet run.
-- Lab: demux (predict, then Run) and the five-datagram network (drop, reroute, congest).
-- Quiz: the three check-yourself questions. Answers stay closed until opened.
+- Learn: shared authored anatomy film first; original host explorer and guided demux/network examples remain under Go deeper.
+- Lab: UI label **Explore**; demux (predict, then Run) and the five-datagram network (drop, reroute, congest).
+- Quiz: UI label **Assess**; the three check-yourself questions. Written reasoning must be committed before the explanation; explicit self-review is not automatic grading.
 
 ## Animation sense
 
@@ -524,4 +562,4 @@ Topology: Your browser, Network router, TCP port 443, UDP port 8125.
 4. A different transport — A UDP datagram for port 8125 selects a different endpoint. A port number alone is not the complete address.
 5. Nobody listening — A host can receive a packet even when no program is listening on the requested port.
 
-Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Caption-dependent playback durations and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

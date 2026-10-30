@@ -1,80 +1,105 @@
 # unique-ids: Can several machines create identifiers without calling one counter?
 
-Id: unique-ids · Status lives only in CURRICULUM.md.
+Id: unique-ids · Stage: 8 · Paths: interview production (status lives only in CURRICULUM.md)
+Prerequisites: time-clocks partitioning
 Standard: anatomy-3d
-Authoring authority: `src/content/learn/academy-lessons.json` entry `unique-ids`; model `unique`. This compact record references shared code to avoid loading duplicate implementations.
+Authoring authority: `src/content/learn/academy-lessons.json` entry `unique-ids`; model `uuidLayout`.
 
 ## Boundary
 
-1. Explain: UUID variants use defined bit layouts and generation rules to reduce coordination needs.
-2. Predict the observable result after changing local counter on both nodes or the declared policy.
+1. Recognize fixed version/variant positions in illustrative UUIDv4 and UUIDv7 values.
+2. Distinguish v4 without a time prefix from v7 with a 48-bit millisecond time prefix.
+3. Predict lexical reordering when the clock rolls backward and no monotonic correction is assumed.
 
+In scope: Valid illustrative v4/v7 layouts with a rollback of1–8 ms. Entropy generation, collision probability, secure implementation, monotonic correction and range allocation are not simulated.
 Limit: Uniqueness assumptions and information leakage depend on the chosen variant and implementation.
 Misconception: An identifier that sorts by time automatically proves causal order.
 
 ## Concept decomposition
 
-Hardest: connect this chapter’s rule to the actual state owner: Node 1, Node 2, Generated IDs.
-Hardest: distinguish the selected teaching policy from a production guarantee. Uniqueness assumptions and information leakage depend on the chosen variant and implementation.
+Mechanism: UUID variants use defined bit layouts and generation rules to reduce coordination needs.
+Temporal behavior: event traces own component values, counts, direction and results; display time is independent of simulated state.
+Quantitative relations: values below are finite teaching assumptions, not measured performance.
+Hardest: A timestamp prefix is a layout, not evidence of causal or generation order under rollback (A1).
+Hardest: Fixed illustrative UUID values are not an entropy source, collision experiment or production generator (A1).
+
+## Parts you will meet
+
+UUID: identifier with defined 128-bit layout. Version: bits selecting the generation format. Variant: bits identifying the layout family. Timestamp prefix: v7’s leading 48-bit Unix-time field in milliseconds.
 
 ## Storyboard
 
-Baseline input: Local counter on both nodes = 6; policy: Use local counter alone. The contrasting policy is Namespace by distinct node ids.
-
-1. Two generators: Both nodes have reached the same local counter value.
-2. Generate IDs: Both nodes expose the local counter without a namespace.
-
-For case chapters and capstone, `design-guides.ts` additionally owns the requirement, explicit workload arithmetic, full read/write path, failure, tradeoff and transfer challenge. The mechanism film is a zoom into one decision, not the complete architecture.
+Baseline: Clock rollback between generations (ms) = 3; “UUID version 4 layout”. Comparison: “UUID version 7 layout”.
+1. Declare illustrative fields: These fixed example bits illustrate layout, not a secure UUID generator or a measured collision rate.
+2. Create first identifier: ffffffff-ffff-4fff-8fff-ffffffffffff
+3. Clock moves backwards: The observed clock moves from 1000 ms to 997 ms before the next generation. No monotonic correction is assumed.
+4. Create later identifier: 00000000-0000-4000-8000-000000000001
+5. Inspect sorting: v4 has no time prefix. Lexical sorting does not recover generation order.
 
 ## Animation sense
 
 Mechanism: UUID variants use defined bit layouts and generation rules to reduce coordination needs.
-Moving quantity: model events between the actual owning components; displayed counts and versions change only from the event trace.
-Model field: simulateMechanism('unique', input).beats; counts, values, from/to and outcome; sampleFilm maps trace time into visible state.
-Learner predicts: one of the model’s two outcomes after selecting a changed input and policy.
-If the moving part is deleted: the lesson is gone as a temporal causal demonstration; static steps and transcript retain the accessible explanation.
-Research (before drawing): the relevant source sections below were read before the current mechanism implementation, on 2026-10-29.
+Moving quantity: Generator, First identifier, Later identifier; event messages explain each state transition, not decoration.
+Model field: simulateMechanism('uuidLayout', input).beats; sampleFilm derives a legal frame from that trace.
+Learner predicts: No timestamp prefix or Timestamp prefix visible, then explains the relevant assumption.
+If the moving part is deleted: the lesson is gone as a temporal causal demonstration; complete static steps and transcript preserve its accessible explanation.
+Research (before drawing): primary records below retain their actual earlier access dates; this reconciliation adds no claim that every source was reopened. NGINX methods/health and PostgreSQL WAL were reopened in the 2026-10-30 mission audit.
 
 ## Asset plan
 
-### A1. Model-driven worked example and experiment
+### A1. Causal comparison and experiment
 
-- objective: 1, 2
+- objective: 1, 2, 3
 - type: 3d
-- object: Node 1, Node 2, Generated IDs, displayed with recognizable service, storage and host geometry
+- object: Generator, First identifier, Later identifier, shown as named components using shared recognizable hardware
 - render: anatomy-iso
-- fidelity: computed discrete event trace, quantities and outcome; scaled device geometry and playback timing; assumed finite workload, no benchmark or real network simulation
-- pattern: step manipulate predict
-- learner sees: before, event and after states for the chapter’s unique mechanism
-- animated: message translation and model-owned visible counts/values change along the causal trace; static stepping shows the committed event state
-- learner does: play or step, choose an input and policy, commit a prediction, run and compare
-- notice: An identifier that sorts by time automatically proves causal order.
-- model: simulateMechanism in experiment-model.ts delegates topic-specific state machines to topic-models.ts when applicable
-- feedback: the experiment trace supplies the film, verdict, explanatory boundaries and displayed metrics
-- assumptions: Uniqueness assumptions and information leakage depend on the chosen variant and implementation. Inputs are clamped to 1–8; five-second beats are display time only.
+- fidelity: computed trace/counts/values; scaled isometric geometry; assumed workload and playback timing; no latency or throughput benchmark
+- pattern: step manipulate predict compare
+- learner sees: UUID: identifier with defined 128-bit layout. Version: bits selecting the generation format. Variant: bits identifying the layout family. Timestamp prefix: v7’s leading 48-bit Unix-time field in milliseconds.
+- animated: a model message travels between explicit component ports; arrival commits its owned state; refusals and timeouts do not become packet loss
+- learner does: play, pause, seek, step, compare the policies, change inputs, commit a prediction, run and reset
+- notice: A timestamp prefix is a layout, not evidence of causal or generation order under rollback (A1).
+- model: simulateMechanism('uuidLayout', {amount, alternative}); amount 1–8, default 3; modes: UUID version 4 layout / UUID version 7 layout.
+- feedback: trace-derived outcome, explanation, visible state and metrics are shown only after the prediction
+- assumptions: Valid illustrative v4/v7 layouts with a rollback of1–8 ms. Entropy generation, collision probability, secure implementation, monotonic correction and range allocation are not simulated. Beat lengths are caption-dependent playback durations from paceFilm, never real system timing.
 - outcome: UUID variants use defined bit layouts and generation rules to reduce coordination needs.
-- accessibility: keyboard transport, transcript, explicit static steps, dynamic reduced motion, HTML state summary, theme tokens and readable text
-- tests: every allowed input has a selectable result, finite nonnegative quantities, deterministic seeks and known endpoints; additional misconception invariants
-- evidence: source/model implementation; independent review coverage and rendered checks are recorded separately in EXPANSION_QA.md, never inferred from this spec
-- built: `src/components/learn/AcademyChapter.tsx`, `src/components/learn/film/AcademyPractice.tsx`, `src/components/learn/film/Scene.tsx`, `src/lib/learn/experiment-model.ts`, `src/lib/learn/topic-models.ts`, `src/lib/learn/experiment-model.test.ts`
+- accessibility: keyboard controls, transcript, HTML state summary, static steps, reduced motion and theme-aware geometry
+- tests: finite-input invariants and misconception counterexamples; current report separates these from browser acceptance
+- evidence: source/model correspondence recorded in MISSION_COURSE_AUDIT.md; no independent rendered acceptance inferred
+- built: `src/components/learn/AcademyChapter.tsx`, `src/components/learn/film/AcademyPractice.tsx`, `src/components/learn/film/Scene.tsx`, `src/lib/learn/topic-models.ts`, `src/lib/learn/anatomy-refinement.test.ts`
 
 ## Tabs
 
-- Learn: term definition, prerequisite links, model film, takeaway and worked assumptions. Cases add the whole design and workload calculation.
-- Lab: changed quantity/policy, required prediction before result, computed trace and explanation.
-- Quiz: a changed-input scenario, shuffled correct position, hidden feedback until commitment and an open transfer reflection.
+- Learn: visual worked comparison, prerequisites and concise rule; deeper assumptions remain disclosed.
+- Lab: UI label **Explore**; commit a prediction, change an actual input/policy, run, inspect the trace and reset.
+- Quiz: UI label **Assess**; commit scenario answers before feedback; scores and revisit links reflect this attempt only; open transfer remains self-assessed.
 
 ## Explanation (14 questions)
 
-The authored question is “Can several machines create identifiers without calling one counter?” The rule, misconception and boundary live in the compact blueprint. The executable storyboard shows the mechanism rather than replacing it with generic packet motion. Terms are defined before the film; prerequisites are linked. Technical depth is disclosed after the short film. The changed-input quiz requires applying assumptions instead of copying the takeaway. Cases require a defended read/write path, estimate, failure and tradeoff. These are teaching aids, not empirical proof of learning outcomes or comprehensive production training.
+1. **Problem:** Several machines need identifiers without synchronously incrementing one counter.
+2. **Why it matters:** The identifier must fit uniqueness assumptions and information-disclosure requirements.
+3. **First attempt:** Use current time as if time alone established identity and order.
+4. **When it works:** Increasing clocks can give superficially sorted examples, but that is not a uniqueness proof.
+5. **Failure:** A later generation observes an earlier clock time.
+6. **Closer observation:** Inspect actual version bits and compare the two identifier strings.
+7. **Mechanism:** The fixed examples contrast v4 payload layout with a v7 time prefix.
+8. **Experiment:** Choose v4/v7 and rollback 1–8milliseconds.
+9. **Alternatives:** Randomized identifiers, time-ordered formats or coordinated allocation have different assumptions.
+10. **Tradeoffs:** Time structure can expose timing; randomized generation needs adequate entropy and a correct implementation.
+11. **Choose it when:** Choose a documented generator and format compatible with storage and privacy requirements.
+12. **Do not infer:** Do not use an identifier as an authorization token or claim lexical order proves causality.
+13. **In your own words:** Explain why the second v7 example sorts before the first.
+14. **Transfer:** Apply the same caution to sorting distributed events by generated IDs.
 
 ## Visual
 
-Shared isometric SVG renderer, genuine message endpoints and model-owned state labels. Quantities beyond the drawn mark budget keep their full numeric count and an abbreviation label. Refusal and delay are not labelled packet loss.
+A frozen frame must agree with trace state. Device anatomy identifies the state owner; small details are not protocol events. Counts remain exact even where marks are abbreviated. No depth, light or motion effect changes the model verdict.
 
 ## Practice
 
-Predict Identifier collision or Distinct identifiers under the selected policy. Run only after choosing. Explain which state changed and why. Recall later under a changed quantity; mixed reviews draw from prerequisite mechanisms. Optional device-local activity is separated into viewed, practiced and recall checked.
+Commit to a prediction, inspect the changed state, then answer: Explain why the second v7 example sorts before the first.
+Transfer: Apply the same caution to sorting distributed events by generated IDs.
+Assess recommendations come from missed committed scenarios, including registered companion mechanisms. They are deterministic guidance, not inferred mastery.
 
 ## Sources
 
@@ -87,4 +112,4 @@ accessed: Opened 2026-10-29; relevant material: Identifier layouts and generatio
 
 ## Evidence
 
-Implementation and bounded model tests are tracked in `docs/system-design/EXPANSION_QA.md`. This chapter remains implemented, not tested or verified: a full per-chapter independent review, physical-device check, screen-reader check, axe/Lighthouse and learner outcome study are not claimed.
+This author record was reconciled with the actual model/controls in the 2026-10-30 mission. Status remains implemented. Unit/model evidence and browser results belong in the mission audit/QA reports; a spec rewrite does not establish independent technical acceptance, physical-device accessibility or learner outcomes.

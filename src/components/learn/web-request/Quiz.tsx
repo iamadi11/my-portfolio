@@ -37,12 +37,12 @@ export default function WebRequestQuiz(): React.JSX.Element {
                 ask="The page loads its fonts from a second hostname. Which extra steps can that cost on a first visit?"
             >
                 <p>
-                    Its own DNS lookup, because each hostname needs one <C ids={['mdn-how-browsers-work']} />,
-                    and usually its own TCP and TLS handshakes, because the Fetch standard reuses a connection
-                    only for the same origin: the same scheme, host and port <C ids={['fetch']} />{' '}
-                    <C ids={['rfc9110']} at="§4.3.1" />. &ldquo;Nothing, the browser is already
-                    connected&rdquo; is wrong in general: that connection belongs to the first
-                    hostname&rsquo;s origin.
+                    A second hostname can require its own DNS lookup and a new TCP/TLS connection. This
+                    chapter’s first-visit model assumes a separate connection. Connection reuse depends on
+                    protocol and authority: HTTP/2 can share one connection across hostnames when the server
+                    is authoritative for them and the certificate is valid for the requested host{' '}
+                    <C ids={['rfc9113']} at="§9.1.1" />. A second hostname therefore does not always mean
+                    another handshake.
                 </p>
             </Q>
             <Q
@@ -84,9 +84,9 @@ export default function WebRequestQuiz(): React.JSX.Element {
                 Use the model&rsquo;s assumed values, but with a 120 ms round trip, as for a user far from the
                 server. Compute the first-visit time to first byte and its network share. Then decide which
                 helps more: halving the server processing time, or serving from a place with a 30 ms round
-                trip. Then check in the Interactive Lab: choose First visit, set the round trip to 120 ms and
-                read the total and network share. Set the server time to 25 ms (the halved case) and read the
-                total; put it back to 50 ms, set the round trip to 30 ms, and compare.
+                trip. Then check in the Explore: choose First visit, set the round trip to 120 ms and read the
+                total and network share. Set the server time to 25 ms (the halved case) and read the total;
+                put it back to 50 ms, set the round trip to 30 ms, and compare.
             </p>
             <details className="ln-q">
                 <summary>Show the worked answer</summary>

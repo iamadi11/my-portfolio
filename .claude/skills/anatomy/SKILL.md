@@ -183,3 +183,7 @@ Read these as you need them:
 - `references/3d.md`: the optional 3D mode: groups and poses, live layers, convex parts and their rules, materials, free groups, hinge chains, painter's order, static clutter around a turntable, shaders that follow the turn, the orbit audit, browser checks, performance and limits.
 - `references/print.md`: printable A4 or Letter sheets from a built figure: the three formats, the `sheet.mjs` spec (poses, parts as selectors, focus, hide, crops, rasters for WebGL) and how to check the PDF.
 - `references/publish.md`: sharing a finished figure in the community gallery with `scripts/publish.mjs`, only when the user asks; nothing is pushed for them.
+
+## Interactive portfolio review
+
+For a portfolio refinement, inspect actual rendered scenes before preserving their geometry. Separate a model's factual process from its conceptual enclosure. Provide explicit inspection poses alongside scroll choreography; preserve readable content and ordinary navigation. Manual inspection must use the same scene state and camera as playback, support keyboard and reduced motion, and release listeners/timelines on unmount. Check intermediate poses on a narrow screen, not only the assembled desktop frame. Document visual judgments separately from measured defects; do not claim photorealism or performance from detailed SVG geometry alone.

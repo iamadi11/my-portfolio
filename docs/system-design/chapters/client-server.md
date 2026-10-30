@@ -1,12 +1,18 @@
 # Clients, servers and request–response
 
 Id: client-server · Stage: 1 · Paths: beginner interview production (status lives only in CURRICULUM.md)
-Standard: legacy — written before the visual-first standard (2026-10-27); a mode D pass adds the storyboard and asset plan
+Standard: anatomy-3d
 Implementation: `src/app/learn/client-server/page.tsx`, `src/components/learn/client-server/ExchangeStepper.tsx`,
 `src/lib/learn/client-server-model.ts` (+ `.test.ts`), `src/content/learn/client-server-sources.ts` (owner
 authorized integration on 2026-10-27).
 Prerequisites: web-request · Related: http, idempotency, timeouts-retries, stateless-services, realtime,
 message-queues, ip-and-ports
+
+## Current implementation contract · 2026-10-30
+
+Learn starts with `LESSON_FILMS` through the shared anatomy SVG player. The original explanation and specialist visual remain inside Go deeper. Explore retains its original pure model and meaningful inputs; it is not replaced by the introductory film. Assess now requires a written commitment before its explanation, followed by explicit self-assessment and optional experiment revisit. No automatic mastery score is inferred.
+
+The asset plan below maps the original objectives to actual live files. Original review/evidence blocks retain their historical scope; this reconciliation is source inspection, not a new rendered acceptance or independent teaching review. Playback durations come from the current player pacing contract, not a fixed five-second promise.
 
 ## Boundary
 
@@ -53,6 +59,67 @@ Misconceptions targeted:
 - "The server remembers me because I'm still connected." HTTP is stateless: each request is understood on its own,
   and a server must not assume that two requests on one connection come from the same user agent. State travels in
   the requests themselves, for example in cookies. [rfc9110 §3.3; rfc6265 §3; mdn-cookies]
+
+## Concept decomposition
+
+Mental model: the caller sees replies, while the remote application owns its saved state. The two observations can differ.
+Mechanism: an exchange can deliver, lose or delay a request/reply; repeating an operation depends on its intended effect and declared server coordination.
+Hardest: identical no-response observations can hide different server states; A1/A2 compare those boundaries.
+Hardest: a repeated POST is not the same as a repeated PUT or a server-coordinated keyed operation; A2 derives effects from the chosen method and fault.
+
+## Storyboard
+
+1. Watch the component film: client request, server write, persisted result, lost reply, caller uncertainty.
+2. In the original specialist exchange, inspect who initiated each message and what the remote server saved.
+3. Explore compares GET/PUT/POST/keyed POST, request loss/reply loss/reply delay, and one optional retry. Commit the embedded prediction before checking its feedback; Run then exposes the chosen scenario.
+4. Assess requires committed written reasoning about roles, message contents, timeout uncertainty and state, then explicit self-review.
+
+## Asset plan
+
+### A1. Saved operation with a lost reply
+
+- objective: 1, 3
+- type: 3d
+- object: named browser, service/network and storage/endpoint devices from this chapter’s authored film
+- render: anatomy-iso
+- fidelity: computed event state/message position; scaled shared hardware geometry and caption-dependent playback time; no physical dimensions or measured latency
+- pattern: step manipulate compare
+- learner sees: the authored client-server five-beat film, paused initially
+- animated: messages move between explicit ports; arrival applies the same beat’s state; only genuinely lost messages carry loss marks
+- learner does: play, pause, seek, step and inspect a transcript
+- notice: a message or response can be at a different stage from the application’s knowledge
+- model: LESSON_FILMS['client-server'] with sampleFilm; GSAP-owned disposable playback clock; deterministic seeks
+- feedback: event captions and visible state, plus the specialist model’s computed result where applicable
+- assumptions: fixed authored sequence; the film orients rather than replacing the original specialist lab
+- outcome: explain the sequence using actual named state owners
+- accessibility: explicit controls, text alternatives and reduced-motion behavior; actual browser acceptance remains separate
+- tests: model invariants and authored-film endpoint/count/seek checks; per-chapter browser evidence is recorded separately
+- evidence: sources retained below; this source reconciliation does not certify independent teaching or visual review
+- built: `src/content/learn/films.ts`, `src/components/learn/film/LessonFilm.tsx`, `src/components/learn/film/Scene.tsx`, `src/lib/learn/film-model.ts`, `src/lib/learn/film-content.test.ts`, `src/lib/learn/anatomy-refinement.test.ts`
+
+### A2. Method, fault and retry exchange
+
+- objective: 1, 3
+- type: 3d
+- object: client/server bodies, message bodies and saved-effect state from the original Metal isometric renderer
+- render: anatomy-iso
+- fidelity: computed ordered events and operation state from exchange; scaled geometry and discrete playback
+- pattern: step manipulate compare
+- learner sees: a client and server with request/reply events and visible saved effects
+- animated: message position follows the selected event; request/reply loss is distinguished from a late reply
+- learner does: choose method, fault and one retry; run and step; compare the embedded prediction with its explanation
+- notice: a caller timeout does not prove the remote operation did not occur
+- model: exchange({method,fault,retry}) in client-server-model.ts; ordered attempt events and derived effects
+- feedback: event captions and visible state, plus the specialist model’s computed result where applicable
+- assumptions: at most one retry, which arrives; no competing writers; server effect and keyed record coordination assumed as specified in the model
+- outcome: explain caller knowledge separately from server effects and safe retry assumptions
+- accessibility: explicit controls, text alternatives and reduced-motion behavior; actual browser acceptance remains separate
+- tests: model invariants and authored-film endpoint/count/seek checks; per-chapter browser evidence is recorded separately
+- evidence: sources retained below; this source reconciliation does not certify independent teaching or visual review
+- built: `src/components/learn/client-server/ExchangeStepper.tsx`, `src/lib/learn/client-server-model.ts`, `src/lib/learn/client-server-model.test.ts`
+
+- text-only: 2 — annotated raw HTTP/1.1 request and response text directly exposes message fields; geometric motion would not improve parsing.
+- text-only: 4 — cookie/request examples and the explanation locate state outside the connection; no persistence mechanism is fabricated in the intro.
 
 ## Parts you'll meet
 
@@ -326,10 +393,11 @@ What this example simplifies:
 
 ## Visual
 
+Current main visual: A1, the authored anatomy film. The specialist exchange below remains A2 inside Go deeper and Explore; it derives behavior from exchange(), independently of the intro.
+
 Decision: **stepper with a small discrete model** because the mechanism is a short sequence of discrete events
 (request sent, maybe lost, server acts, response sent, maybe lost or late, client decides, maybe retries), and the
-point is to compare a few cases side by side. No simulation is needed: there is no load, randomness or time
-series. No 3D.
+point is to compare a few cases side by side. There is no load or random network simulation. The original exchange now uses scaled isometric Metal geometry; the introductory A1 uses the shared detailed anatomy player.
 
 Visual spec (the 14-step process; revised at implementation, 2026-10-27, to add the idempotency-key case and
 predict-then-run):
@@ -651,9 +719,9 @@ Spaced review:
 
 ## Tabs
 
-- Learn: one GET that arrives, stepped. No method picker and no prediction.
-- Lab: method, fault, and retry. Predict cases A–C before Run. The packet's position is the event.
-- Quiz: the retrieval questions. Answers stay closed until opened.
+- Learn: authored anatomy film first; original specialist exchange and explanation remain under Go deeper.
+- Lab: UI label **Explore**; method, fault, and retry. Predict cases A–C before Run. The packet's position is the event.
+- Quiz: UI label **Assess**; the retrieval questions. Written reasoning must be committed before the explanation; explicit self-review is not automatic grading.
 
 ## Animation sense
 
@@ -749,4 +817,4 @@ Topology: Your browser, App server, Data store.
 4. Lose the reply — The response disappears in transit. The saved order stays in the data store.
 5. Uncertainty is real — The client cannot distinguish a lost request from a lost reply. A safe retry needs an explicit design.
 
-Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Five-second playback beats and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.
+Motion: sampleFilm().packet.x/y is message progress between named endpoints. Event state and captions share the same beat record. Caption-dependent playback durations and geometry are scaled teaching aids, not network timings. Existing source records support reused claims; no new source access claimed. New film needs browser validation; old review evidence does not verify this upgrade.

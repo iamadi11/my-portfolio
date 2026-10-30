@@ -1,16 +1,19 @@
 import { type ActionContext, action, eidosQueue, initEidos, replayQueue } from '@sweidos/eidos';
 
+import { type ContactReceipt, recordContactReceipt } from './delivery';
+
 /**
  * The contact form's write, made with the owner's own library (Eidos, `@sweidos/eidos`): `neverLose` keeps the
- * message in IndexedDB until `/api/contact` accepts it, retrying with the same idempotency key so the server stores
- * it once. Defined at module scope (Eidos needs this to replay queued items after a reload). Loaded lazily: on the
+ * message in IndexedDB for replay, retrying with the same idempotency key. The API deduplicates that key for seven
+ * days. Permanent rejection stops replay; exhaustion is not delivery. Defined at module scope for reload replay.
+ * Loaded lazily: on the
  * first interaction with the form, or on idle when a previous visit left a message queued.
  */
 
 export type Payload = { name: string; email: string; message: string; website: string };
 
 /** What the server answered: stored (maybe as a recognised retry), or rejected as invalid. */
-type Sent = { ok: true; id: string; duplicate?: boolean } | { ok: false; error: string };
+type Sent = ContactReceipt;
 
 /** Set while a message is queued, so the next visit loads this module and delivers it. */
 // Read through the form's dynamic import():
@@ -35,13 +38,24 @@ export const sendMessage = action<[Payload], Sent>(
             body: JSON.stringify(p),
             signal: ctx.signal,
         });
-        // 4xx: the message itself is wrong; don't retry it forever. 5xx / network: throw, Eidos keeps it.
-        if (res.status >= 400 && res.status < 500) {
+        // Permanent 4xx: don't retry invalid input forever. Timeouts/rate limits and 5xx/network can retry.
+        if (res.status >= 400 && res.status < 500 && res.status !== 408 && res.status !== 429) {
             const body = (await res.json().catch(() => ({}))) as { error?: string };
-            return { ok: false, error: body.error ?? `Rejected (${res.status})` };
+            const rejected: Sent = {
+                ok: false,
+                error: typeof body.error === 'string' ? body.error : `Rejected (${res.status})`,
+            };
+            recordContactReceipt(ctx.idempotencyKey, rejected);
+            return rejected;
         }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return { ok: true, ...((await res.json()) as { id: string; duplicate?: boolean }) };
+        const body = (await res.json()) as { id?: unknown; duplicate?: unknown };
+        if (typeof body.id !== 'string' || !body.id) throw new Error('Missing contact acknowledgement');
+        const accepted: Sent = { ok: true, id: body.id, duplicate: body.duplicate === true };
+        // A replay that resolves {ok:false} is still "succeeded" in Eidos. Keep the API outcome before its
+        // queue entry changes or disappears, so foreground/reloaded forms can report the actual result.
+        recordContactReceipt(ctx.idempotencyKey, accepted);
+        return accepted;
     },
     { reliability: 'neverLose', name: 'contactMessage' }
 );

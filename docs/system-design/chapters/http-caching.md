@@ -1,81 +1,104 @@
 # http-caching: When can a browser reuse a response without downloading it again?
 
-Id: http-caching · Status lives only in CURRICULUM.md.
+Id: http-caching · Stage: 5 · Paths: beginner interview production (status lives only in CURRICULUM.md)
+Prerequisites: caching-basics http
 Standard: anatomy-3d
-Authoring authority: `src/content/learn/academy-lessons.json` entry `http-caching`; model `cache`. This compact record references shared code to avoid loading duplicate implementations.
+Authoring authority: `src/content/learn/academy-lessons.json` entry `http-caching`; model `httpValidation`.
 
 ## Boundary
 
-1. Explain: Freshness rules govern reuse; validation can confirm a stored representation without retransmitting the whole body.
-2. Predict the observable result after changing age of cached copy (ticks) or the declared policy.
+1. Predict 304 with reuse of a stored body when its validator still matches.
+2. Predict 200 with a replacement body when the origin representation has changed.
+3. Distinguish no-cache validation from no-store and from freshness without validation.
 
+In scope: One browser and origin, one validator and stored body. Freshness policy is explained; the model specifically executes required validation, not TTL timing, intermediaries, Vary or authorization rules.
 Limit: A validation response still requires communication; cache policy is not an authorization mechanism.
 Misconception: A 304 response contains a complete replacement representation.
 
 ## Concept decomposition
 
-Hardest: connect this chapter’s rule to the actual state owner: Cached version, Origin version, Returned version.
-Hardest: distinguish the selected teaching policy from a production guarantee. A validation response still requires communication; cache policy is not an authorization mechanism.
+Mechanism: Freshness rules govern reuse; validation can confirm a stored representation without retransmitting the whole body.
+Temporal behavior: event traces own component values, counts, direction and results; display time is independent of simulated state.
+Quantitative relations: values below are finite teaching assumptions, not measured performance.
+Hardest: A body can be reused even though a network validation exchange still occurs (A1).
+Hardest: A 304 has no replacement representation body; the rendered bytes come from the stored response (A1).
+
+## Parts you will meet
+
+Validator: metadata identifying a representation version, here an ETag. Conditional request: a request that supplies that validator. 304: validation permits reuse of the stored body; it is not a new body.
 
 ## Storyboard
 
-Baseline input: Age of cached copy (ticks) = 2; policy: Reuse if policy-fresh. The contrasting policy is Invalidate before reading.
-
-1. Two stored versions: The origin is version 2; the cache still holds version 1.
-2. Check freshness: A cached copy aged 2 ticks is policy-fresh only while its age is below 3.
-3. Read result: The policy permits an older copy; policy-fresh does not mean the newest origin version.
-
-For case chapters and capstone, `design-guides.ts` additionally owns the requirement, explicit workload arithmetic, full read/write path, failure, tradeoff and transfer challenge. The mechanism film is a zoom into one decision, not the complete architecture.
+Baseline: Origin representation version = 6; “Stored validator still matches”. Comparison: “Stored validator differs”.
+1. Stored response needs validation: Cache holds body v6, ETag "v6", and Cache-Control: no-cache. no-cache permits storage but requires validation before reuse.
+2. Send conditional request: Browser sends If-None-Match: "v6". Validation requires a network exchange.
+3. Compare validator: The validator matches; return 304 with metadata and no response body.
+4. Render representation: Update applicable cache metadata and render the body already stored.
 
 ## Animation sense
 
 Mechanism: Freshness rules govern reuse; validation can confirm a stored representation without retransmitting the whole body.
-Moving quantity: model events between the actual owning components; displayed counts and versions change only from the event trace.
-Model field: simulateMechanism('cache', input).beats; counts, values, from/to and outcome; sampleFilm maps trace time into visible state.
-Learner predicts: one of the model’s two outcomes after selecting a changed input and policy.
-If the moving part is deleted: the lesson is gone as a temporal causal demonstration; static steps and transcript retain the accessible explanation.
-Research (before drawing): the relevant source sections below were read before the current mechanism implementation, on 2026-10-29.
+Moving quantity: Browser cache, Origin, Rendered representation; event messages explain each state transition, not decoration.
+Model field: simulateMechanism('httpValidation', input).beats; sampleFilm derives a legal frame from that trace.
+Learner predicts: 304 reuses stored body or 200 replaces stored body, then explains the relevant assumption.
+If the moving part is deleted: the lesson is gone as a temporal causal demonstration; complete static steps and transcript preserve its accessible explanation.
+Research (before drawing): primary records below retain their actual earlier access dates; this reconciliation adds no claim that every source was reopened. NGINX methods/health and PostgreSQL WAL were reopened in the 2026-10-30 mission audit.
 
 ## Asset plan
 
-### A1. Model-driven worked example and experiment
+### A1. Causal comparison and experiment
 
-- objective: 1, 2
+- objective: 1, 2, 3
 - type: 3d
-- object: Cached version, Origin version, Returned version, displayed with recognizable service, storage and host geometry
+- object: Browser cache, Origin, Rendered representation, shown as named components using shared recognizable hardware
 - render: anatomy-iso
-- fidelity: computed discrete event trace, quantities and outcome; scaled device geometry and playback timing; assumed finite workload, no benchmark or real network simulation
-- pattern: step manipulate predict
-- learner sees: before, event and after states for the chapter’s cache mechanism
-- animated: message translation and model-owned visible counts/values change along the causal trace; static stepping shows the committed event state
-- learner does: play or step, choose an input and policy, commit a prediction, run and compare
-- notice: A 304 response contains a complete replacement representation.
-- model: simulateMechanism in experiment-model.ts delegates topic-specific state machines to topic-models.ts when applicable
-- feedback: the experiment trace supplies the film, verdict, explanatory boundaries and displayed metrics
-- assumptions: A validation response still requires communication; cache policy is not an authorization mechanism. Inputs are clamped to 0–8; five-second beats are display time only.
+- fidelity: computed trace/counts/values; scaled isometric geometry; assumed workload and playback timing; no latency or throughput benchmark
+- pattern: step manipulate predict compare
+- learner sees: Validator: metadata identifying a representation version, here an ETag. Conditional request: a request that supplies that validator. 304: validation permits reuse of the stored body; it is not a new body.
+- animated: a model message travels between explicit component ports; arrival commits its owned state; refusals and timeouts do not become packet loss
+- learner does: play, pause, seek, step, compare the policies, change inputs, commit a prediction, run and reset
+- notice: A body can be reused even though a network validation exchange still occurs (A1).
+- model: simulateMechanism('httpValidation', {amount, alternative}); amount 2–8, default 6; modes: Stored validator still matches / Stored validator differs.
+- feedback: trace-derived outcome, explanation, visible state and metrics are shown only after the prediction
+- assumptions: One browser and origin, one validator and stored body. Freshness policy is explained; the model specifically executes required validation, not TTL timing, intermediaries, Vary or authorization rules. Beat lengths are caption-dependent playback durations from paceFilm, never real system timing.
 - outcome: Freshness rules govern reuse; validation can confirm a stored representation without retransmitting the whole body.
-- accessibility: keyboard transport, transcript, explicit static steps, dynamic reduced motion, HTML state summary, theme tokens and readable text
-- tests: every allowed input has a selectable result, finite nonnegative quantities, deterministic seeks and known endpoints; additional misconception invariants
-- evidence: source/model implementation; independent review coverage and rendered checks are recorded separately in EXPANSION_QA.md, never inferred from this spec
-- built: `src/components/learn/AcademyChapter.tsx`, `src/components/learn/film/AcademyPractice.tsx`, `src/components/learn/film/Scene.tsx`, `src/lib/learn/experiment-model.ts`, `src/lib/learn/topic-models.ts`, `src/lib/learn/experiment-model.test.ts`
+- accessibility: keyboard controls, transcript, HTML state summary, static steps, reduced motion and theme-aware geometry
+- tests: finite-input invariants and misconception counterexamples; current report separates these from browser acceptance
+- evidence: source/model correspondence recorded in MISSION_COURSE_AUDIT.md; no independent rendered acceptance inferred
+- built: `src/components/learn/AcademyChapter.tsx`, `src/components/learn/film/AcademyPractice.tsx`, `src/components/learn/film/Scene.tsx`, `src/lib/learn/topic-models.ts`, `src/lib/learn/anatomy-refinement.test.ts`
 
 ## Tabs
 
-- Learn: term definition, prerequisite links, model film, takeaway and worked assumptions. Cases add the whole design and workload calculation.
-- Lab: changed quantity/policy, required prediction before result, computed trace and explanation.
-- Quiz: a changed-input scenario, shuffled correct position, hidden feedback until commitment and an open transfer reflection.
+- Learn: visual worked comparison, prerequisites and concise rule; deeper assumptions remain disclosed.
+- Lab: UI label **Explore**; commit a prediction, change an actual input/policy, run, inspect the trace and reset.
+- Quiz: UI label **Assess**; commit scenario answers before feedback; scores and revisit links reflect this attempt only; open transfer remains self-assessed.
 
 ## Explanation (14 questions)
 
-The authored question is “When can a browser reuse a response without downloading it again?” The rule, misconception and boundary live in the compact blueprint. The executable storyboard shows the mechanism rather than replacing it with generic packet motion. Terms are defined before the film; prerequisites are linked. Technical depth is disclosed after the short film. The changed-input quiz requires applying assumptions instead of copying the takeaway. Cases require a defended read/write path, estimate, failure and tradeoff. These are teaching aids, not empirical proof of learning outcomes or comprehensive production training.
+1. **Problem:** A browser already has bytes; must it download the same representation again?
+2. **Why it matters:** Unnecessary bodies cost transfer, but stale or forbidden reuse is incorrect.
+3. **First attempt:** Reuse anything already saved.
+4. **When it works:** That is allowed while the applicable freshness policy permits reuse.
+5. **Failure:** A response requiring validation cannot be reused merely because bytes are present.
+6. **Closer observation:** Watch the validator exchange separately from body downloads.
+7. **Mechanism:** The model sends If-None-Match and compares the current ETag; matching yields 304, changed yields 200 plus body.
+8. **Experiment:** Change origin version 2–8 and whether the saved validator matches.
+9. **Alternatives:** Fresh reuse, conditional validation and no-store serve different policies.
+10. **Tradeoffs:** Validation saves an unchanged body transfer but still incurs communication.
+11. **Choose it when:** Use the representation’s actual cache directives and cache-key requirements.
+12. **Do not infer:** Do not use cache directives as authorization or assume no-cache forbids storage.
+13. **In your own words:** Explain where the visible page body came from after 304.
+14. **Transfer:** Apply conditional retrieval to an API representation whose data changes infrequently.
 
 ## Visual
 
-Shared isometric SVG renderer, genuine message endpoints and model-owned state labels. Quantities beyond the drawn mark budget keep their full numeric count and an abbreviation label. Refusal and delay are not labelled packet loss.
+A frozen frame must agree with trace state. Device anatomy identifies the state owner; small details are not protocol events. Counts remain exact even where marks are abbreviated. No depth, light or motion effect changes the model verdict.
 
 ## Practice
 
-Predict Older copy returned or Current copy returned under the selected policy. Run only after choosing. Explain which state changed and why. Recall later under a changed quantity; mixed reviews draw from prerequisite mechanisms. Optional device-local activity is separated into viewed, practiced and recall checked.
+Commit to a prediction, inspect the changed state, then answer: Explain where the visible page body came from after 304.
+Transfer: Apply conditional retrieval to an API representation whose data changes infrequently.
+Assess recommendations come from missed committed scenarios, including registered companion mechanisms. They are deterministic guidance, not inferred mastery.
 
 ## Sources
 
@@ -88,4 +111,4 @@ accessed: Opened 2026-10-29; relevant material: Freshness, validation and invali
 
 ## Evidence
 
-Implementation and bounded model tests are tracked in `docs/system-design/EXPANSION_QA.md`. This chapter remains implemented, not tested or verified: a full per-chapter independent review, physical-device check, screen-reader check, axe/Lighthouse and learner outcome study are not claimed.
+This author record was reconciled with the actual model/controls in the 2026-10-30 mission. Status remains implemented. Unit/model evidence and browser results belong in the mission audit/QA reports; a spec rewrite does not establish independent technical acceptance, physical-device accessibility or learner outcomes.

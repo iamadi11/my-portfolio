@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 
-import type { Blueprint, RecallQuestion } from '@/content/learn/academy';
+import type { Blueprint } from '@/content/learn/academy';
 import { makeExperimentFilm, MECHANISMS, simulateMechanism, type Trace } from '@/lib/learn/experiment-model';
 
 import LessonFilm from './LessonFilm';
@@ -16,7 +16,8 @@ function remember(kind: string, id: string): void {
     }
 }
 export function AcademyLab({ lesson }: { lesson: Blueprint }): React.JSX.Element {
-    const titleId = `academy-lab-${lesson.id}-${lesson.model}`;
+    const instance = useId().replace(/[^a-zA-Z0-9_-]/g, '');
+    const titleId = `academy-lab-${lesson.id}-${lesson.model}-${instance}`;
     const spec = MECHANISMS[lesson.model];
     const [amount, setAmount] = useState(spec.initial),
         [alternative, setAlternative] = useState(false),
@@ -42,10 +43,10 @@ export function AcademyLab({ lesson }: { lesson: Blueprint }): React.JSX.Element
                               alternative: run.alternative,
                           }
                       ),
-                      id: `${lesson.id}-${lesson.model}-experiment`,
+                      id: `${lesson.id}-${lesson.model}-${instance}-experiment`,
                   }
                 : null,
-        [lesson, run]
+        [lesson, run, instance]
     );
     return (
         <section className="al-lab" aria-labelledby={titleId}>
@@ -53,9 +54,10 @@ export function AcademyLab({ lesson }: { lesson: Blueprint }): React.JSX.Element
             <h2 id={titleId}>Change the mechanism</h2>
             <p>{lesson.question}</p>
             <div className="al-inputs">
-                <label>
+                <label htmlFor={`${titleId}-amount`}>
                     {spec.label}
                     <input
+                        id={`${titleId}-amount`}
                         type="range"
                         min={spec.min}
                         max={spec.max}
@@ -65,7 +67,7 @@ export function AcademyLab({ lesson }: { lesson: Blueprint }): React.JSX.Element
                             clear();
                         }}
                     />
-                    <output>{amount}</output>
+                    <output htmlFor={`${titleId}-amount`}>{amount}</output>
                 </label>
                 <label>
                     Policy or condition
@@ -90,7 +92,7 @@ export function AcademyLab({ lesson }: { lesson: Blueprint }): React.JSX.Element
                     <label key={prediction}>
                         <input
                             type="radio"
-                            name={`predict-${lesson.id}-${lesson.model}`}
+                            name={`predict-${titleId}`}
                             checked={guess === prediction}
                             onChange={() => {
                                 setGuess(prediction);
@@ -112,6 +114,17 @@ export function AcademyLab({ lesson }: { lesson: Blueprint }): React.JSX.Element
                 }}
             >
                 Run experiment →
+            </button>
+            <button
+                className="al-run"
+                type="button"
+                onClick={() => {
+                    setAmount(spec.initial);
+                    setAlternative(false);
+                    clear();
+                }}
+            >
+                Reset experiment
             </button>
             {run && film && (
                 <>
@@ -149,80 +162,4 @@ export function AcademyLab({ lesson }: { lesson: Blueprint }): React.JSX.Element
         </section>
     );
 }
-export function AcademyQuiz({
-    id,
-    questions,
-}: {
-    id: string;
-    questions: RecallQuestion[];
-}): React.JSX.Element {
-    const [answers, setAnswers] = useState<Record<number, number>>({}),
-        [submitted, setSubmitted] = useState(false),
-        [reflection, setReflection] = useState('');
-    const allAnswered = questions.every((_, i) => answers[i] !== undefined);
-    return (
-        <section className="al-lab" aria-labelledby="academy-quiz-title">
-            <p className="ln-kicker">Recall, then transfer</p>
-            <h2 id="academy-quiz-title">Check your reasoning</h2>
-            {questions.map((question, index) => (
-                <fieldset key={question.chapter}>
-                    <legend>{question.prompt}</legend>
-                    {question.choices.map((choice, i) => (
-                        <label key={choice}>
-                            <input
-                                type="radio"
-                                name={`recall-${id}-${index}`}
-                                checked={answers[index] === i}
-                                onChange={() => {
-                                    setAnswers({ ...answers, [index]: i });
-                                    setSubmitted(false);
-                                }}
-                            />
-                            {choice}
-                        </label>
-                    ))}
-                    {submitted && (
-                        <p className="al-feedback" role="status">
-                            <strong>
-                                {answers[index] === question.correct
-                                    ? 'Correct.'
-                                    : 'Reconsider the assumption.'}
-                            </strong>{' '}
-                            {question.explanation}
-                        </p>
-                    )}
-                </fieldset>
-            ))}
-            <button
-                type="button"
-                className="al-run"
-                disabled={!allAnswered}
-                onClick={() => {
-                    setSubmitted(true);
-                    if (questions.every((q, i) => answers[i] === q.correct)) remember('recalled', id);
-                }}
-            >
-                Check my reasoning
-            </button>
-            <label className="ac-reflection">
-                Transfer the idea: what would change if a dependency failed or the workload doubled?
-                <textarea
-                    value={reflection}
-                    onChange={(event) => setReflection(event.target.value)}
-                    rows={4}
-                    placeholder="Name the changed assumption, the affected state, and a tradeoff."
-                />
-            </label>
-            {reflection.trim().length > 20 && (
-                <details className="ln-watch-depth">
-                    <summary>Compare with the reflection guide</summary>
-                    <p>
-                        A useful explanation names the requirement, tracks the affected state, predicts an
-                        observable result and states a limitation. This reflection is self-assessed; the
-                        course does not claim to grade an open design automatically.
-                    </p>
-                </details>
-            )}
-        </section>
-    );
-}
+export { default as AcademyQuiz } from './Assessment';
